@@ -6,7 +6,14 @@ import type { Episode } from "@/types";
 // Mock datastore before importing the page
 vi.mock("@/lib/datastore/episodes", () => ({
   getEpisodeBySlug: vi.fn(),
+  getEpisodeBySlugWithTranscript: vi.fn(),
   getEpisodes: vi.fn(),
+  getRelatedEpisodes: vi.fn().mockResolvedValue([]),
+}));
+
+// Mock chunks datastore
+vi.mock("@/lib/datastore/chunks", () => ({
+  getChaptersByVideoId: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock Next.js navigation - notFound throws to stop execution like the real one
@@ -19,7 +26,11 @@ vi.mock("next/navigation", () => ({
 
 // Import after mocks are set up
 import EpisodePage, { generateStaticParams, generateMetadata } from "./page";
-import { getEpisodeBySlug, getEpisodes } from "@/lib/datastore/episodes";
+import {
+  getEpisodeBySlug,
+  getEpisodeBySlugWithTranscript,
+  getEpisodes,
+} from "@/lib/datastore/episodes";
 
 const createMockEpisode = (overrides?: Partial<Episode>): Episode => ({
   id: "abc123",
@@ -59,6 +70,9 @@ const createMockEpisode = (overrides?: Partial<Episode>): Episode => ({
   ...overrides,
 });
 
+// Default search params for tests
+const defaultSearchParams = Promise.resolve({});
+
 describe("EpisodePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -66,10 +80,11 @@ describe("EpisodePage", () => {
 
   it("renders episode title and description", async () => {
     const mockEpisode = createMockEpisode();
-    vi.mocked(getEpisodeBySlug).mockResolvedValue(mockEpisode);
+    vi.mocked(getEpisodeBySlugWithTranscript).mockResolvedValue(mockEpisode);
 
     const Page = await EpisodePage({
       params: Promise.resolve({ slug: "test-episode" }),
+      searchParams: defaultSearchParams,
     });
     render(Page);
 
@@ -81,10 +96,11 @@ describe("EpisodePage", () => {
 
   it("renders episode topics", async () => {
     const mockEpisode = createMockEpisode({ topics: ["tech", "ai"] });
-    vi.mocked(getEpisodeBySlug).mockResolvedValue(mockEpisode);
+    vi.mocked(getEpisodeBySlugWithTranscript).mockResolvedValue(mockEpisode);
 
     const Page = await EpisodePage({
       params: Promise.resolve({ slug: "test-episode" }),
+      searchParams: defaultSearchParams,
     });
     render(Page);
 
@@ -93,25 +109,87 @@ describe("EpisodePage", () => {
   });
 
   it("calls notFound for invalid slug", async () => {
-    vi.mocked(getEpisodeBySlug).mockResolvedValue(null);
+    vi.mocked(getEpisodeBySlugWithTranscript).mockResolvedValue(null);
 
     await expect(
-      EpisodePage({ params: Promise.resolve({ slug: "invalid-slug" }) })
+      EpisodePage({
+        params: Promise.resolve({ slug: "invalid-slug" }),
+        searchParams: defaultSearchParams,
+      })
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(mockNotFound).toHaveBeenCalled();
   });
 
-  it("fetches episode by slug", async () => {
+  it("fetches episode by slug with transcript", async () => {
     const mockEpisode = createMockEpisode();
-    vi.mocked(getEpisodeBySlug).mockResolvedValue(mockEpisode);
+    vi.mocked(getEpisodeBySlugWithTranscript).mockResolvedValue(mockEpisode);
 
     const Page = await EpisodePage({
       params: Promise.resolve({ slug: "my-episode" }),
+      searchParams: defaultSearchParams,
     });
     render(Page);
 
-    expect(getEpisodeBySlug).toHaveBeenCalledWith("my-episode");
+    expect(getEpisodeBySlugWithTranscript).toHaveBeenCalledWith("my-episode");
+  });
+
+  it("renders ContentTabs with description and transcript tabs", async () => {
+    const mockEpisode = createMockEpisode({
+      description: "Episode description here",
+      transcriptSrt: `1
+00:00:00,000 --> 00:00:05,000
+Hello, welcome to the podcast!`,
+    });
+    vi.mocked(getEpisodeBySlugWithTranscript).mockResolvedValue(mockEpisode);
+
+    const Page = await EpisodePage({
+      params: Promise.resolve({ slug: "test-episode" }),
+      searchParams: defaultSearchParams,
+    });
+    render(Page);
+
+    // ContentTabs section should be present
+    expect(screen.getByRole("region", { name: /conteúdo do episódio/i })).toBeInTheDocument();
+    // Both tabs should be present
+    expect(screen.getByRole("tab", { name: /descrição/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /transcrição/i })).toBeInTheDocument();
+    // Both contents should be in DOM for SEO
+    expect(screen.getByText("Episode description here")).toBeInTheDocument();
+    expect(screen.getByText(/Hello, welcome to the podcast!/)).toBeInTheDocument();
+  });
+
+  it("renders only description tab when transcript is missing", async () => {
+    const mockEpisode = createMockEpisode({
+      description: "Episode description here",
+      transcriptSrt: undefined,
+    });
+    vi.mocked(getEpisodeBySlugWithTranscript).mockResolvedValue(mockEpisode);
+
+    const Page = await EpisodePage({
+      params: Promise.resolve({ slug: "test-episode" }),
+      searchParams: defaultSearchParams,
+    });
+    render(Page);
+
+    expect(screen.getByRole("tab", { name: /descrição/i })).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: /transcrição/i })).not.toBeInTheDocument();
+  });
+
+  it("does not render ContentTabs when both description and transcript are missing", async () => {
+    const mockEpisode = createMockEpisode({
+      description: undefined,
+      transcriptSrt: undefined,
+    });
+    vi.mocked(getEpisodeBySlugWithTranscript).mockResolvedValue(mockEpisode);
+
+    const Page = await EpisodePage({
+      params: Promise.resolve({ slug: "test-episode" }),
+      searchParams: defaultSearchParams,
+    });
+    render(Page);
+
+    expect(screen.queryByRole("region", { name: /conteúdo do episódio/i })).not.toBeInTheDocument();
   });
 });
 
@@ -161,6 +239,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ slug: "my-episode" }),
+      searchParams: defaultSearchParams,
     });
 
     expect(metadata.title).toBe("My Episode Title");
@@ -177,6 +256,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ slug: "test" }),
+      searchParams: defaultSearchParams,
     });
 
     // Should truncate at word boundary, not exceed 160 chars
@@ -192,6 +272,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ slug: "invalid" }),
+      searchParams: defaultSearchParams,
     });
 
     expect(metadata.title).toBe("Episodio nao encontrado");
@@ -203,6 +284,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ slug: "test" }),
+      searchParams: defaultSearchParams,
     });
 
     const ogImages = metadata.openGraph?.images as Array<{ url: string }>;
@@ -218,6 +300,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ slug: "test" }),
+      searchParams: defaultSearchParams,
     });
 
     expect(metadata.description).toBe(
@@ -231,6 +314,7 @@ describe("generateMetadata", () => {
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ slug: "test" }),
+      searchParams: defaultSearchParams,
     });
 
     expect(metadata.twitter?.card).toBe("summary_large_image");

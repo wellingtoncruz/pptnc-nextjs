@@ -8,9 +8,17 @@ import type { Episode } from "@/types";
 
 interface EpisodeHeaderProps {
   episode: Episode;
+  /** Callback when YouTube player is ready (for timestamp sync) */
+  onYouTubePlayerReady?: (player: YT.Player) => void;
+  /** Register a callback to start video playback */
+  registerStartPlayback?: (callback: () => void) => void;
 }
 
-export function EpisodeHeader({ episode }: EpisodeHeaderProps) {
+export function EpisodeHeader({
+  episode,
+  onYouTubePlayerReady,
+  registerStartPlayback,
+}: EpisodeHeaderProps) {
   return (
     <header className="space-y-6">
       {/* Media Player - YouTube with optional Spotify tab */}
@@ -19,6 +27,8 @@ export function EpisodeHeader({ episode }: EpisodeHeaderProps) {
         thumbnailUrl={episode.thumbnailUrl}
         spotifyUrl={episode.spotifyUrl}
         title={episode.title}
+        onYouTubePlayerReady={onYouTubePlayerReady}
+        registerStartPlayback={registerStartPlayback}
       />
 
       {/* Title */}

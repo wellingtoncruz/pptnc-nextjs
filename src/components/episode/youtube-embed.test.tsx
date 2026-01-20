@@ -266,7 +266,12 @@ describe("YouTubeEmbed", () => {
 
     it("calls onStateChange when player state changes", async () => {
       const onStateChange = vi.fn();
-      const mockPlayer = { playVideo: vi.fn(), destroy: vi.fn() };
+      const mockPlayer = {
+        playVideo: vi.fn(),
+        destroy: vi.fn(),
+        isMuted: vi.fn().mockReturnValue(false),
+        unMute: vi.fn(),
+      };
 
       // Mock the YouTube API with a proper constructor
       const MockPlayer = function (
@@ -275,13 +280,13 @@ describe("YouTubeEmbed", () => {
         config: {
           events: {
             onReady: (e: { target: typeof mockPlayer }) => void;
-            onStateChange: (e: { data: number }) => void;
+            onStateChange: (e: { data: number; target: typeof mockPlayer }) => void;
           };
         }
       ) {
         setTimeout(() => {
           config.events.onReady({ target: mockPlayer });
-          config.events.onStateChange({ data: 1 }); // 1 = playing
+          config.events.onStateChange({ data: 1, target: mockPlayer }); // 1 = playing
         }, 0);
         Object.assign(this, mockPlayer);
       } as unknown as typeof YT.Player;

@@ -32,6 +32,8 @@ interface YouTubeEmbedProps {
   onPlayerReady?: (player: YT.Player) => void;
   /** Callback when player state changes (for Epic 3 timestamp sync) */
   onStateChange?: (state: number) => void;
+  /** Register a callback that starts playback with optional start time (allows context to trigger video start) */
+  registerStartPlayback?: (callback: (startTime?: number) => void) => void;
 }
 
 export function YouTubeEmbed({
@@ -41,11 +43,14 @@ export function YouTubeEmbed({
   className,
   onPlayerReady,
   onStateChange,
+  registerStartPlayback,
 }: YouTubeEmbedProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YT.Player | null>(null);
+  const startTimeRef = useRef<number | undefined>(undefined);
+  const pendingSeekRef = useRef<number | undefined>(undefined);
 
   // Thumbnail fallback to YouTube default if not provided
   const thumbnail =
@@ -60,26 +65,63 @@ export function YouTubeEmbed({
     const initPlayer = () => {
       if (!containerRef.current || !isMounted) return;
 
+      // Store start time for later seek (after video establishes connection)
+      const startTime = startTimeRef.current;
+      startTimeRef.current = undefined;
+
+      if (startTime !== undefined) {
+        pendingSeekRef.current = startTime;
+      }
+
+      const playerVars: YT.PlayerVars = {
+        autoplay: 1,
+        rel: 0,
+        enablejsapi: 1,
+        origin: typeof window !== "undefined" ? window.location.origin : "",
+        modestbranding: 1,
+        playsinline: 1,
+        // Don't use start parameter - we'll seek after connection is established
+      };
+
       playerRef.current = new window.YT.Player(containerRef.current, {
         videoId: youtubeId,
-        playerVars: {
-          autoplay: 1,
-          rel: 0,
-          enablejsapi: 1,
-          origin: typeof window !== "undefined" ? window.location.origin : "",
-          modestbranding: 1,
-        },
+        playerVars,
         events: {
           onReady: (event: YT.PlayerEvent) => {
             if (isMounted) {
-              setIsLoading(false);
               onPlayerReady?.(event.target);
+              // If no pending seek, we're ready immediately
+              if (pendingSeekRef.current === undefined) {
+                setIsLoading(false);
+              }
             }
           },
           onStateChange: (event: YT.OnStateChangeEvent) => {
             if (isMounted) {
+              // When video starts playing (state 1)
+              if (event.data === 1) {
+                // If we have a pending seek, wait a moment for connection to stabilize, then seek
+                if (pendingSeekRef.current !== undefined) {
+                  const seekTime = pendingSeekRef.current;
+                  pendingSeekRef.current = undefined;
+
+                  // Wait 800ms for YouTube to establish stable connection, then seek
+                  setTimeout(() => {
+                    if (isMounted && playerRef.current) {
+                      playerRef.current.seekTo(seekTime, true);
+                      setIsLoading(false);
+                    }
+                  }, 800);
+                } else {
+                  setIsLoading(false);
+                }
+              }
               onStateChange?.(event.data);
             }
+          },
+          onError: () => {
+            setIsLoading(false);
+            pendingSeekRef.current = undefined;
           },
         },
       });
@@ -148,10 +190,25 @@ export function YouTubeEmbed({
     };
   }, [isPlaying, youtubeId, onPlayerReady, onStateChange]);
 
-  const handlePlay = useCallback(() => {
+  const handlePlay = useCallback((startTime?: number) => {
+    // Store start time if provided (used when creating player)
+    if (startTime !== undefined) {
+      startTimeRef.current = startTime;
+    }
     setIsPlaying(true);
     setIsLoading(true);
   }, []);
+
+  // Register the handlePlay callback so context can trigger video start
+  // Cleanup on unmount to prevent stale callback references
+  useEffect(() => {
+    if (registerStartPlayback) {
+      registerStartPlayback(handlePlay);
+      return () => {
+        registerStartPlayback(() => undefined);
+      };
+    }
+  }, [registerStartPlayback, handlePlay]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -187,20 +244,26 @@ export function YouTubeEmbed({
       )}
     >
       {isPlaying ? (
-        <>
+        <div className="absolute inset-0">
+          {/* Player container wrapper - keeps React happy when YouTube modifies the DOM */}
+          <div className="absolute inset-0">
+            <div
+              ref={containerRef}
+              data-youtube-player
+              className="h-full w-full"
+            />
+          </div>
           {/* Loading state while iframe loads */}
           {isLoading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
               <Loader2 className="h-12 w-12 animate-spin text-white" />
             </div>
           )}
-          {/* Player container - YouTube API will inject iframe here */}
-          <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-        </>
+        </div>
       ) : (
         <button
           type="button"
-          onClick={handlePlay}
+          onClick={() => handlePlay()}
           onKeyDown={handleKeyDown}
           className="group relative h-full w-full cursor-pointer"
           aria-label={`Reproduzir ${title}`}

@@ -12,3 +12,4 @@ export type {
 } from "./episode";
 export type { Guest, GuestEntity, GuestSocialLinks } from "./guest";
 export type { Topic } from "./topic";
+export type { Chunk, ChunkMetadata, Chapter } from "./chunk";

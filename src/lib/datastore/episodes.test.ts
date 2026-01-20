@@ -51,6 +51,7 @@ import {
   getAllTopics,
   getLatestEpisode,
   clearTopicsCache,
+  getRelatedEpisodes,
 } from "./episodes";
 
 // Sample mock document factory - matches Firestore document structure
@@ -597,5 +598,263 @@ describe("Field mapping edge cases", () => {
     const episodes = await getEpisodes();
 
     expect(episodes[0].id).toBe("doc-fallback-id");
+  });
+});
+
+describe("getRelatedEpisodes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetFirestoreClient();
+    clearTopicsCache();
+  });
+
+  it("returns episodes with shared topics sorted by number of shared topics", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: ["tech", "ai"],
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "ep1" },
+        topics: ["tech", "cloud"], // 1 shared
+        publishedAt: "2022-01-02T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "ep2" },
+        topics: ["tech", "ai"], // 2 shared
+        publishedAt: "2022-01-03T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "ep3" },
+        topics: ["business"], // 0 shared
+        publishedAt: "2022-01-04T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 2);
+
+    expect(related).toHaveLength(2);
+    // ep2 should be first (2 shared topics)
+    expect(related[0].id).toBe("ep2");
+    // ep1 should be second (1 shared topic)
+    expect(related[1].id).toBe("ep1");
+  });
+
+  it("excludes current episode from results", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: ["tech"],
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "other" },
+        topics: ["tech"],
+        publishedAt: "2022-01-02T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 4);
+
+    expect(related.every((ep) => ep.id !== "current")).toBe(true);
+    expect(related).toHaveLength(1);
+  });
+
+  it("falls back to recent episodes when not enough related found", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: ["tech"],
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "related" },
+        topics: ["tech"], // 1 shared
+        publishedAt: "2022-01-02T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "recent1" },
+        topics: ["business"], // 0 shared
+        publishedAt: "2022-01-04T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "recent2" },
+        topics: ["marketing"], // 0 shared
+        publishedAt: "2022-01-03T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 3);
+
+    expect(related).toHaveLength(3);
+    // First should be the related episode
+    expect(related[0].id).toBe("related");
+    // Then fill with recent (sorted by date desc)
+    expect(related[1].id).toBe("recent1");
+    expect(related[2].id).toBe("recent2");
+  });
+
+  it("returns recent episodes when current episode has no topics", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: [], // No topics
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "ep1" },
+        topics: ["tech"],
+        publishedAt: "2022-01-04T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "ep2" },
+        topics: ["business"],
+        publishedAt: "2022-01-03T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 2);
+
+    expect(related).toHaveLength(2);
+    // Returns recent episodes sorted by date (from cache order)
+    expect(related[0].id).toBe("ep1");
+    expect(related[1].id).toBe("ep2");
+  });
+
+  it("sorts by date when episodes have same number of shared topics", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: ["tech"],
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "older" },
+        topics: ["tech"], // 1 shared
+        publishedAt: "2022-01-02T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "newer" },
+        topics: ["tech"], // 1 shared
+        publishedAt: "2022-01-03T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 2);
+
+    expect(related).toHaveLength(2);
+    // Newer episode should come first when same shared topics
+    expect(related[0].id).toBe("newer");
+    expect(related[1].id).toBe("older");
+  });
+
+  it("respects limit parameter", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: ["tech"],
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      ...Array.from({ length: 10 }, (_, i) =>
+        createMockDocument({
+          resourceId: { videoId: `ep${i}` },
+          topics: ["tech"],
+          publishedAt: `2022-01-${String(i + 2).padStart(2, "0")}T00:00:00Z`,
+        })
+      ),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 4);
+
+    expect(related).toHaveLength(4);
+  });
+
+  it("returns empty array when only one episode exists", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "only" },
+        topics: ["tech"],
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes[0];
+    const related = await getRelatedEpisodes(currentEpisode, 4);
+
+    expect(related).toHaveLength(0);
+  });
+
+  it("returns recent episodes when current has topics but no matches found", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: ["unique-topic"], // No other episode has this
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "other1" },
+        topics: ["different"], // 0 shared
+        publishedAt: "2022-01-03T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "other2" },
+        topics: ["another"], // 0 shared
+        publishedAt: "2022-01-02T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 2);
+
+    // Should fallback to recent episodes
+    expect(related).toHaveLength(2);
+    expect(related[0].id).toBe("other1"); // More recent
+    expect(related[1].id).toBe("other2");
+  });
+
+  it("matches topics case-insensitively", async () => {
+    const docs = [
+      createMockDocument({
+        resourceId: { videoId: "current" },
+        topics: ["Tech", "AI"], // Capitalized
+        publishedAt: "2022-01-01T00:00:00Z",
+      }),
+      createMockDocument({
+        resourceId: { videoId: "match" },
+        topics: ["tech", "ai"], // Lowercase - should still match
+        publishedAt: "2022-01-02T00:00:00Z",
+      }),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+    const currentEpisode = episodes.find((e) => e.id === "current")!;
+    const related = await getRelatedEpisodes(currentEpisode, 2);
+
+    expect(related).toHaveLength(1);
+    expect(related[0].id).toBe("match");
   });
 });

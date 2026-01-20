@@ -277,6 +277,81 @@ export function clearTopicsCache(): void {
 }
 
 /**
+ * Finds episodes related to the current one based on shared topics.
+ * Falls back to recent episodes if not enough related found.
+ *
+ * Algorithm:
+ * 1. Exclude current episode from candidates
+ * 2. Score candidates by number of shared topics (case-insensitive matching)
+ * 3. Sort by shared topics (desc), then by date (desc)
+ * 4. Return top matches, filling with recent episodes if needed
+ *
+ * Note: publishedAt may be Date object or ISO string (after JSON cache serialization)
+ *
+ * @param currentEpisode - The episode to find related content for
+ * @param limit - Maximum number of related episodes to return (default: 4)
+ * @returns Array of related episodes
+ */
+export async function getRelatedEpisodes(
+  currentEpisode: Episode,
+  limit: number = 4
+): Promise<Episode[]> {
+  const allEpisodes = await getCachedAllEpisodes();
+
+  // Exclude current episode from candidates
+  const candidates = allEpisodes.filter((ep) => ep.id !== currentEpisode.id);
+
+  // If current episode has no topics, return most recent
+  if (currentEpisode.topics.length === 0) {
+    return candidates.slice(0, limit);
+  }
+
+  // Score each candidate by number of shared topics (case-insensitive)
+  const currentTopicsLower = currentEpisode.topics.map((t) => t.toLowerCase());
+  const scored = candidates.map((ep) => ({
+    episode: ep,
+    sharedTopics: ep.topics.filter((t) =>
+      currentTopicsLower.includes(t.toLowerCase())
+    ).length,
+  }));
+
+  // Sort by shared topics (desc), then by date (desc)
+  scored.sort((a, b) => {
+    if (b.sharedTopics !== a.sharedTopics) {
+      return b.sharedTopics - a.sharedTopics;
+    }
+    // Handle both Date objects and ISO strings (after JSON serialization)
+    const dateA =
+      a.episode.publishedAt instanceof Date
+        ? a.episode.publishedAt.getTime()
+        : new Date(a.episode.publishedAt).getTime();
+    const dateB =
+      b.episode.publishedAt instanceof Date
+        ? b.episode.publishedAt.getTime()
+        : new Date(b.episode.publishedAt).getTime();
+    return dateB - dateA;
+  });
+
+  // Get episodes with at least one shared topic
+  const related = scored
+    .filter((s) => s.sharedTopics > 0)
+    .slice(0, limit)
+    .map((s) => s.episode);
+
+  // Fallback: fill with recent episodes if not enough related
+  if (related.length < limit) {
+    const remaining = limit - related.length;
+    const relatedIds = new Set(related.map((e) => e.id));
+    const recent = candidates
+      .filter((e) => !relatedIds.has(e.id))
+      .slice(0, remaining);
+    return [...related, ...recent];
+  }
+
+  return related;
+}
+
+/**
  * Generates a URL-friendly slug from a title
  *
  * @param title - The episode title

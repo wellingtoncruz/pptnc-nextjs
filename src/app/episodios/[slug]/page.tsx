@@ -3,13 +3,23 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { Container } from "@/components/layout/container";
-import { EpisodeHeader, GuestSection, SocialActions, SubscriptionCta } from "@/components/episode";
+import { EpisodeYouTubeWrapper } from "@/components/episode";
 import { EpisodeJsonLd } from "@/components/seo";
-import { getEpisodeBySlug, getEpisodes } from "@/lib/datastore/episodes";
+import {
+  getEpisodeBySlug,
+  getEpisodeBySlugWithTranscript,
+  getEpisodes,
+  getRelatedEpisodes,
+} from "@/lib/datastore/episodes";
+import { getChaptersByVideoId } from "@/lib/datastore/chunks";
 
 interface EpisodePageProps {
   params: Promise<{
     slug: string;
+  }>;
+  searchParams: Promise<{
+    t?: string;
+    tab?: string;
   }>;
 }
 
@@ -92,9 +102,11 @@ export async function generateMetadata({
  */
 export default async function EpisodePage({
   params,
+  searchParams,
 }: EpisodePageProps) {
   const { slug } = await params;
-  const episode = await getEpisodeBySlug(slug);
+  const { t, tab } = await searchParams;
+  const episode = await getEpisodeBySlugWithTranscript(slug);
 
   if (!episode) {
     notFound();
@@ -103,35 +115,35 @@ export default async function EpisodePage({
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
   const episodeUrl = `${baseUrl}/episodios/${episode.slug}`;
 
+  // Parse and validate query params for deep linking
+  const parsedTimestamp = t ? parseInt(t, 10) : undefined;
+  const initialTimestamp = parsedTimestamp !== undefined && !Number.isNaN(parsedTimestamp) && parsedTimestamp >= 0
+    ? parsedTimestamp
+    : undefined;
+
+  const validTabs = ["descricao", "capitulos", "transcricao"] as const;
+  const initialTab = tab && validTabs.includes(tab as typeof validTabs[number])
+    ? (tab as typeof validTabs[number])
+    : undefined;
+
+  // Fetch related episodes and chapters in parallel
+  const [relatedEpisodes, chapters] = await Promise.all([
+    getRelatedEpisodes(episode, 4),
+    getChaptersByVideoId(episode.youtubeId),
+  ]);
+
   return (
     <>
       <EpisodeJsonLd episode={episode} baseUrl={baseUrl} />
       <Container className="py-8 md:py-12">
-        <article className="space-y-8">
-          {/* 1. Video/Audio + Title + Metadata + Topics */}
-          <EpisodeHeader episode={episode} />
-
-          {/* 2. Convidados */}
-          <GuestSection guests={episode.guests} />
-
-          {/* 3. CTA - Social Actions */}
-          <SocialActions episodeUrl={episodeUrl} />
-
-          {/* 4. Descrição */}
-          {episode.description && (
-            <section className="space-y-4" aria-labelledby="episode-description-heading">
-              <h2 id="episode-description-heading" className="text-xl font-semibold">
-                Sobre o episódio
-              </h2>
-              <p className="whitespace-pre-line text-lg leading-relaxed text-muted-foreground">
-                {episode.description}
-              </p>
-            </section>
-          )}
-
-          {/* 5. CTA de Conversão - Final call-to-action */}
-          <SubscriptionCta />
-        </article>
+        <EpisodeYouTubeWrapper
+          episode={episode}
+          episodeUrl={episodeUrl}
+          relatedEpisodes={relatedEpisodes}
+          chapters={chapters}
+          initialTimestamp={initialTimestamp}
+          initialTab={initialTab}
+        />
       </Container>
     </>
   );

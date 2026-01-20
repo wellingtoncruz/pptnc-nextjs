@@ -36,6 +36,8 @@ interface MediaTabsProps {
   onYouTubePlayerReady?: (player: YT.Player) => void;
   /** Callback when YouTube player state changes */
   onYouTubeStateChange?: (state: number) => void;
+  /** Register a callback to start video playback */
+  registerStartPlayback?: (callback: () => void) => void;
 }
 
 export function MediaTabs({
@@ -46,6 +48,7 @@ export function MediaTabs({
   className,
   onYouTubePlayerReady,
   onYouTubeStateChange,
+  registerStartPlayback,
 }: MediaTabsProps) {
   // If no Spotify URL, just render YouTube without tabs
   if (!spotifyUrl) {
@@ -57,35 +60,37 @@ export function MediaTabs({
         className={className}
         onPlayerReady={onYouTubePlayerReady}
         onStateChange={onYouTubeStateChange}
+        registerStartPlayback={registerStartPlayback}
       />
     );
   }
 
   return (
-    <Tabs defaultValue="spotify" className={cn("w-full", className)}>
+    <Tabs defaultValue="video" className={cn("w-full", className)}>
       <TabsList className="mb-4">
-        <TabsTrigger value="spotify" className="gap-2">
-          <SpotifyIcon className="h-4 w-4" />
-          Spotify
-        </TabsTrigger>
-        <TabsTrigger value="youtube" className="gap-2">
+        <TabsTrigger value="video" className="gap-2">
           <Youtube className="h-4 w-4" />
-          YouTube
+          Vídeo
+        </TabsTrigger>
+        <TabsTrigger value="audio" className="gap-2">
+          <SpotifyIcon className="h-4 w-4" />
+          Áudio
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="spotify">
-        <SpotifyEmbed spotifyUrl={spotifyUrl} title={title} />
-      </TabsContent>
-
-      <TabsContent value="youtube">
+      <TabsContent value="video">
         <YouTubeEmbed
           youtubeId={youtubeId}
           thumbnailUrl={thumbnailUrl}
           title={title}
           onPlayerReady={onYouTubePlayerReady}
           onStateChange={onYouTubeStateChange}
+          registerStartPlayback={registerStartPlayback}
         />
+      </TabsContent>
+
+      <TabsContent value="audio">
+        <SpotifyEmbed spotifyUrl={spotifyUrl} title={title} />
       </TabsContent>
     </Tabs>
   );
