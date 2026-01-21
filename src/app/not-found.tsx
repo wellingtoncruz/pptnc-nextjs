@@ -1,23 +1,34 @@
 import Link from "next/link";
+import { Home, List } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { Button } from "@/components/ui/button";
 
+/**
+ * Custom 404 Not Found page with styled design
+ */
 export default function NotFound() {
   return (
-    <Container className="py-16 md:py-24">
-      <div className="mx-auto max-w-md text-center">
-        <h1 className="text-6xl font-bold text-muted-foreground">404</h1>
-        <h2 className="mt-4 text-2xl font-semibold">Pagina nao encontrada</h2>
-        <p className="mt-4 text-muted-foreground">
-          A pagina que voce esta procurando nao existe ou foi movida.
+    <Container>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+        <h1 className="mb-4 text-7xl font-bold text-primary">404</h1>
+        <h2 className="mb-2 text-2xl font-semibold">Página não encontrada</h2>
+        <p className="mb-8 max-w-md text-muted-foreground">
+          Ops! A página que você está procurando não existe ou foi movida.
         </p>
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+
+        <div className="flex flex-col gap-4 sm:flex-row">
           <Button asChild>
-            <Link href="/">Voltar para Home</Link>
+            <Link href="/">
+              <Home className="mr-2 h-4 w-4" />
+              Voltar ao início
+            </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/episodios">Ver Episodios</Link>
+            <Link href="/episodios">
+              <List className="mr-2 h-4 w-4" />
+              Ver episódios
+            </Link>
           </Button>
         </div>
       </div>
