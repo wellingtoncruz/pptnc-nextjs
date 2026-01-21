@@ -90,7 +90,7 @@ export default async function EpisodesPage({ searchParams }: EpisodesPageProps) 
   return (
     <Container className="py-8 lg:py-12">
       <header>
-        <h1 className="text-3xl font-bold">Episódios</h1>
+        <h1 className="text-3xl font-bold text-primary">Episódios</h1>
         <p className="mt-2 text-muted-foreground">
           Explore todos os episódios do PPT Não Compila
         </p>
@@ -116,7 +116,7 @@ export default async function EpisodesPage({ searchParams }: EpisodesPageProps) 
       {episodes.length > 0 ? (
         <>
           <section className="mt-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {episodes.map((episode) => (
                 <article key={episode.id}>
                   <EpisodeCard episode={episode} variant="compact" />

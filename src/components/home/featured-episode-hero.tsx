@@ -31,7 +31,7 @@ export function FeaturedEpisodeHero({
   const episodeUrl = `/episodios/${episode.slug}`;
 
   return (
-    <Card className={cn("overflow-hidden", className)}>
+    <Card className={cn("overflow-hidden shadow-lg", className)}>
       <div className="grid gap-6 p-6 lg:grid-cols-2 lg:gap-8 lg:p-8">
         {/* Video Player Section + CTAs */}
         <div className="flex flex-col gap-4">

@@ -23,7 +23,7 @@ export interface SubscriptionCtaProps {
 export function SubscriptionCta({ className }: SubscriptionCtaProps) {
   return (
     <Card
-      className={cn("bg-primary/5 border-primary/20", className)}
+      className={cn("bg-primary/5 border-primary/20 shadow-lg", className)}
       role="complementary"
       aria-label="Inscreva-se no podcast"
     >

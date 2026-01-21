@@ -31,12 +31,21 @@ export default async function HomePage() {
 
   return (
     <Container className="py-8 lg:py-12">
-      <h1 className="sr-only">PPT Não Compila - Podcast</h1>
+      {/* Hero Section with Podcast Description */}
+      <header className="mb-10 text-center lg:mb-12">
+        <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+          PPT Não Compila
+        </h1>
+        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">
+          O podcast onde a tecnologia encontra histórias reais. Conversas com especialistas
+          sobre transformação digital, carreira em tech e as tendências que moldam o futuro.
+        </p>
+      </header>
 
       {/* Featured Episode Section */}
       {latestEpisode ? (
         <section aria-labelledby="featured-episode-title">
-          <h2 id="featured-episode-title" className="mb-6 text-xl font-semibold">
+          <h2 id="featured-episode-title" className="mb-6 text-xl font-semibold text-primary">
             Episódio mais recente
           </h2>
           <FeaturedEpisodeHero episode={latestEpisode} />
@@ -53,11 +62,11 @@ export default async function HomePage() {
 
       {/* Recent Episodes Section */}
       {recentEpisodes.length > 0 && (
-        <section className="mt-12 border-t pt-8" aria-labelledby="recent-episodes-title">
-          <h2 id="recent-episodes-title" className="mb-6 text-xl font-semibold">
+        <section className="mt-12 border-t border-border/50 pt-8" aria-labelledby="recent-episodes-title">
+          <h2 id="recent-episodes-title" className="mb-6 text-xl font-semibold text-primary">
             Episódios anteriores
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {recentEpisodes.map((episode) => (
               <article key={episode.id}>
                 <EpisodeCard episode={episode} variant="compact" />
