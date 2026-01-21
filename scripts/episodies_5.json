@@ -1,0 +1,1110 @@
+{
+    "href": "https://api.spotify.com/v1/shows/5aKHRdBlylb2wj5Ac8Kqpj/episodes?offset=200&limit=50&market=BR&locale=pt-BR,pt;q%3D0.9,en-US;q%3D0.8,en;q%3D0.7,es;q%3D0.6",
+    "items": [
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/3PlwLlmdcCam7UWoU4PQcg/clip_599569_659569.mp3",
+            "description": "Neste Episódio especial do PPT Não Compila você vai conhecer alguns palestrantes: Renato Ucha e Carla Krieger e junto com os hosts Wellington Cruz e Victor Gonçalves vão comentar os principais momentos e assuntos do primeiro dia do Agile Trends 2022! Carla Krieger https://www.linkedin.com/in/carla-krieger Renato Ucha https://www.linkedin.com/in/renatoucha",
+            "duration_ms": 2465408,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/6E8TIBZWvQxlsxesr4kLrz"
+            },
+            "href": "https://api.spotify.com/v1/episodes/6E8TIBZWvQxlsxesr4kLrz",
+            "html_description": "<p>Neste Episódio especial do PPT Não Compila você vai conhecer alguns palestrantes: Renato Ucha e Carla Krieger e junto com os hosts Wellington Cruz e Victor Gonçalves vão comentar os principais momentos e assuntos do primeiro dia do Agile Trends 2022!</p><br/><p>Carla Krieger</p><br/><p>https://www.linkedin.com/in/carla-krieger</p><br/><p>Renato Ucha</p><br/><p>https://www.linkedin.com/in/renatoucha</p>",
+            "id": "6E8TIBZWvQxlsxesr4kLrz",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8aa9b5eebec629828904d3b89c",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fa9b5eebec629828904d3b89c",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68da9b5eebec629828904d3b89c",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Agile Trends 2022 | Primeiro Dia",
+            "release_date": "2022-04-12",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:6E8TIBZWvQxlsxesr4kLrz"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/4VgudcYZAnX7lmgiVUK5OH/clip_169449_229449.mp3",
+            "description": "As APIs são conceitos de integração entre dois sistemas de tecnologia, porém, ainda acontece muita confusão sobre o que realmente é uma API, as suas utilizações e funcionalidades dentro do desenvolvimento de produtos e sistemas. Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Valdir Scarin, Arquiteto de Soluções da VM Bears, Edgar Silva, Head de business development na 42Crunch e com Arthur Soave, Tech Lead na Sulamérica. Juntos, eles vão falar sobre a API na realidade do desenvolvedor, e seus principais aspectos de desenvolvimento. Participantes: Arthur Soave: https://www.linkedin.com/in/arthur-soave/ Edgar Silva: https://www.linkedin.com/in/jedgarsilva/ Valdir Scarin: https://www.linkedin.com/in/valdir-scarin/ Disponível também no Spotify e outras plataformas: YouTube: Spotify: Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5309889,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/6XlY77TAoQifa55230Xfre"
+            },
+            "href": "https://api.spotify.com/v1/episodes/6XlY77TAoQifa55230Xfre",
+            "html_description": "<p>As APIs são conceitos de integração entre dois sistemas de tecnologia, porém, ainda acontece muita confusão sobre o que realmente é uma API, as suas utilizações e funcionalidades dentro do desenvolvimento de produtos e sistemas.</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Valdir Scarin, Arquiteto de Soluções da VM Bears, Edgar Silva, Head de business development na 42Crunch e com Arthur Soave, Tech Lead na Sulamérica. Juntos, eles vão falar sobre a API na realidade do desenvolvedor, e seus principais aspectos de desenvolvimento.</p><br/><p>Participantes:</p><br/><p>Arthur Soave: <a href=\"https://www.linkedin.com/in/arthur-soave/\" rel=\"nofollow\">https://www.linkedin.com/in/arthur-soave/<br /><br/></a>Edgar Silva: <a href=\"https://www.linkedin.com/in/jedgarsilva/\" rel=\"nofollow\">https://www.linkedin.com/in/jedgarsilva/<br /><br/></a>Valdir Scarin: <a href=\"https://www.linkedin.com/in/valdir-scarin/\" rel=\"nofollow\">https://www.linkedin.com/in/valdir-scarin/</a></p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>YouTube:</p><br/><p>Spotify:</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "6XlY77TAoQifa55230Xfre",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a27070713613eab20f80c911c",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f27070713613eab20f80c911c",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d27070713613eab20f80c911c",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "APIs: como fazer | T01EP023",
+            "release_date": "2022-04-06",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:6XlY77TAoQifa55230Xfre"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/5CO1OKkuVyB2DSgiQxoKEL/clip_455846_515846.mp3",
+            "description": "O PPT Não Compila vai participar do maior evento de agilidade do Brasil !!! Vamos gravar episódios ao vivo, distribuir camisetas do podcast e conversar com os participantes do evento e trocar muitas experiências !!! O Agile Trends ocorre em São Paulo no Centro de Convenções Frei Caneca de 11/04 a 14/04. Se inscreva! https://agiletrendsbr.com/agile-trends-2022/    ",
+            "duration_ms": 537966,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/0dBrQOz5kG5DtLWrOAuGRj"
+            },
+            "href": "https://api.spotify.com/v1/episodes/0dBrQOz5kG5DtLWrOAuGRj",
+            "html_description": "<p>O PPT Não Compila vai participar do maior evento de agilidade do Brasil !!!</p><br/><p>Vamos gravar episódios ao vivo, distribuir camisetas do podcast e conversar com os participantes do evento e trocar muitas experiências !!!</p><br/><p>O Agile Trends ocorre em São Paulo no Centro de Convenções Frei Caneca de 11/04 a 14/04.</p><br/><p>Se inscreva! https://agiletrendsbr.com/agile-trends-2022/</p><br/><p><br /></p><br/><p><br /></p><br/><p><br /></p><br/><p><br /></p>",
+            "id": "0dBrQOz5kG5DtLWrOAuGRj",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a5240c752b41f39d1163b89da",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f5240c752b41f39d1163b89da",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d5240c752b41f39d1163b89da",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "PPT Não Compila ao vivo no Agile Trends 2022 !!!",
+            "release_date": "2022-04-06",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:0dBrQOz5kG5DtLWrOAuGRj"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/6NzPv8H3JD5qRm81QWCU5h/clip_595824_655824.mp3",
+            "description": "Quem disse que tecnologia e filosofia não se encontram? O metaverso, que é reprodução de ambientes reais no virtual, já existe há algum tempo, porém, com o anúncio do metaverso criado por Mark Zuckerberg e pelo Facebook (que agora se chama Meta), o hype está maior do que nunca. Mas quais consequências essa imersão numa realidade virtual pode trazer para a sociedade, para economia e para as pessoas?   Neste episódio do “PPT Não Compila”, Wellington Cruz tem uma conversa especial com Victor Gonçalves, CDO da Verity e com Dr. Marco Antônio Calheiros, host do podcast Beyond the Cave sobre as implicações do metaverso em diferentes áreas da sociedade, sobre os desafios técnicos e as consequências sociais. Participantes: Victor Gonçalves: https://www.linkedin.com/in/victorgoncalves-/ Dr. Marco Antônio - Podcast Beyound the Cave: https://www.youtube.com/c/beyondthecavepdc Disponível também no Spotify e outras plataformas: YouTube: Spotify: Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5163510,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/7xnFLdl7mWLerMpiHjMwHR"
+            },
+            "href": "https://api.spotify.com/v1/episodes/7xnFLdl7mWLerMpiHjMwHR",
+            "html_description": "<p>Quem disse que tecnologia e filosofia não se encontram? O metaverso, que é reprodução de ambientes reais no virtual, já existe há algum tempo, porém, com o anúncio do metaverso criado por Mark Zuckerberg e pelo Facebook (que agora se chama Meta), o hype está maior do que nunca.</p><br/><p>Mas quais consequências essa imersão numa realidade virtual pode trazer para a sociedade, para economia e para as pessoas? <br /><br/><br /><br/>Neste episódio do “PPT Não Compila”, Wellington Cruz tem uma conversa especial com Victor Gonçalves, CDO da Verity e com Dr. Marco Antônio Calheiros, host do podcast Beyond the Cave sobre as implicações do metaverso em diferentes áreas da sociedade, sobre os desafios técnicos e as consequências sociais.</p><br/><p>Participantes:<br /><br/>Victor Gonçalves: https://www.linkedin.com/in/victorgoncalves-/</p><br/><p>Dr. Marco Antônio - Podcast Beyound the Cave: https://www.youtube.com/c/beyondthecavepdc</p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>YouTube:</p><br/><p>Spotify:</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "7xnFLdl7mWLerMpiHjMwHR",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a3fb744e482bb8b027447400c",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f3fb744e482bb8b027447400c",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d3fb744e482bb8b027447400c",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "A Filosofia do Metaverso | T01EP022",
+            "release_date": "2022-03-30",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:7xnFLdl7mWLerMpiHjMwHR"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/2InBahuF7ijWHTDEAV71Ql/clip_387870_447870.mp3",
+            "description": "O mercado digital está se transformando, e com ele, as metodologias de projetos das empresas também precisam ser transformadas.   Um exemplo é a atuação é a atuação dos PMs, Project Manager e Product Manager,  que é mais adaptada a necessidade do negócio, e voltada para metodologias ágeis que podem impulsionar os negócios. Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Ana Paula, Project Manager na Thoughtworks, Fabi Tomaz, Product Manager no Grupo Fleury e com Valdir Scarin,  Arquiteto de soluções na VM Bears sobre a transformação no mundo digital e a transição dessas metodologias. LinkedIn dos participantes:  Ana Paula Eugênia: https://www.linkedin.com/in/ana-paula-eug%C3%AAnia-mba-pmp-a24359/ Fabiana Tomaz: https://www.linkedin.com/in/fabianaalvestomaz/ Valdir Scarin: https://www.linkedin.com/in/valdir-scarin/ Disponível também no Spotify e outras plataformas: Youtube: https://youtu.be/9VLubi3Db-o Spotify: Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5617961,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/6B90KszzMMRcnyd7MHzS6Z"
+            },
+            "href": "https://api.spotify.com/v1/episodes/6B90KszzMMRcnyd7MHzS6Z",
+            "html_description": "<p>O mercado digital está se transformando, e com ele, as metodologias de projetos das empresas também precisam ser transformadas. <br /><br/><br /><br/>Um exemplo é a atuação é a atuação dos PMs, Project Manager e Product Manager,  que é mais adaptada a necessidade do negócio, e voltada para metodologias ágeis que podem impulsionar os negócios.</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Ana Paula, Project Manager na Thoughtworks, Fabi Tomaz, Product Manager no Grupo Fleury e com Valdir Scarin,  Arquiteto de soluções na VM Bears sobre a transformação no mundo digital e a transição dessas metodologias.</p><br/><p>LinkedIn dos participantes:<br /><br/><br /><br/>Ana Paula Eugênia: <a href=\"https://www.linkedin.com/in/ana-paula-eug%C3%AAnia-mba-pmp-a24359/\" rel=\"nofollow\">https://www.linkedin.com/in/ana-paula-eug%C3%AAnia-mba-pmp-a24359/<br /><br/></a>Fabiana Tomaz: <a href=\"https://www.linkedin.com/in/fabianaalvestomaz/\" rel=\"nofollow\">https://www.linkedin.com/in/fabianaalvestomaz/<br /><br/></a>Valdir Scarin: <a href=\"https://www.linkedin.com/in/valdir-scarin/\" rel=\"nofollow\">https://www.linkedin.com/in/valdir-scarin/</a></p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>Youtube: https://youtu.be/9VLubi3Db-o</p><br/><p>Spotify:</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "6B90KszzMMRcnyd7MHzS6Z",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8aa7e8eb2a116d033c54516273",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fa7e8eb2a116d033c54516273",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68da7e8eb2a116d033c54516273",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Profissão: Project? Product? Manager | T01EP021",
+            "release_date": "2022-03-23",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:6B90KszzMMRcnyd7MHzS6Z"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/66zmrRmNxjApGqSn7gmKWP/clip_523532_583532.mp3",
+            "description": "As profissões na tecnologia oferecem uma série de benefícios, mas se engana quem pensa que tudo é só felicidade. A profissão de TI é repleta de perrengues, situações inusitadas e muito desafiadoras. Então, vamos contar algumas histórias inesperadas, vem dar umas risadas com a gente nesse episódio, afinal é melhor rir do que chorar. Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Luiz Caldas, profissional de TI com um monte de histórias para contar. Convidados: https://www.linkedin.com/in/luizgustavorcaldas/ Disponível também no Spotify e outras plataformas: YouTube: https://youtu.be/OMsPzWxcbzI Spotify:  link spotify Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5563876,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/6uGDYfmILzs7T7csal0UNr"
+            },
+            "href": "https://api.spotify.com/v1/episodes/6uGDYfmILzs7T7csal0UNr",
+            "html_description": "<p>As profissões na tecnologia oferecem uma série de benefícios, mas se engana quem pensa que tudo é só felicidade. A profissão de TI é repleta de perrengues, situações inusitadas e muito desafiadoras. Então, vamos contar algumas histórias inesperadas, vem dar umas risadas com a gente nesse episódio, afinal é melhor rir do que chorar.</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Luiz Caldas, profissional de TI com um monte de histórias para contar.</p><br/><p>Convidados:<br /><br/>https://www.linkedin.com/in/luizgustavorcaldas/</p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>YouTube: https://youtu.be/OMsPzWxcbzI</p><br/><p>Spotify:  link spotify</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "6uGDYfmILzs7T7csal0UNr",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a87aba3a8de221198549f4e1a",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f87aba3a8de221198549f4e1a",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d87aba3a8de221198549f4e1a",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Eu sou de TI, o que poderia dar errado? | T01EP020",
+            "release_date": "2022-03-16",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:6uGDYfmILzs7T7csal0UNr"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/5Z7jy1lfVsW4ya7pUicQau/clip_233678_293678.mp3",
+            "description": "A pandemia foi um baque para todo o mundo. O mundo ficou muito mais digital e tecnológico, mesmo que à força, e essa tendência vem chegando nos sistemas de saúde.  Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Regina Mello, Executiva de saúde da Vivest e com Krissya Tigani, Gerente de inovação no instituto IDOR. O trio fala como a tecnologia chega à Saúde, o que ainda pode mudar e sobre o potencial que ela tem para melhorar experiências e transformar mercados na saúde. LinkedIn dos participantes: Regina Mello - https://www.linkedin.com/in/reginamello/ Krissya Tigani - https://www.linkedin.com/in/krissya-l-tigani-25378432/ Disponível também no Spotify e outras plataformas: YouTube: https://youtu.be/GdLEFgslhXo Spotify: https://open.spotify.com/episode/1wktwTQLUy9XP8rixx7Evd?si=Df2t85QbTZaV94LozbLvbQ Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 6623728,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/1wktwTQLUy9XP8rixx7Evd"
+            },
+            "href": "https://api.spotify.com/v1/episodes/1wktwTQLUy9XP8rixx7Evd",
+            "html_description": "<p>A pandemia foi um baque para todo o mundo. O mundo ficou muito mais digital e tecnológico, mesmo que à força, e essa tendência vem chegando nos sistemas de saúde.<br /><br/><br /><br/>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Regina Mello, Executiva de saúde da Vivest e com Krissya Tigani, Gerente de inovação no instituto IDOR.</p><br/><p>O trio fala como a tecnologia chega à Saúde, o que ainda pode mudar e sobre o potencial que ela tem para melhorar experiências e transformar mercados na saúde.</p><br/><p>LinkedIn dos participantes:<br /><br/>Regina Mello - <a href=\"https://www.linkedin.com/in/reginamello/\" rel=\"nofollow\">https://www.linkedin.com/in/reginamello/<br /><br/></a>Krissya Tigani - <a href=\"https://www.linkedin.com/in/krissya-l-tigani-25378432/\" rel=\"nofollow\">https://www.linkedin.com/in/krissya-l-tigani-25378432/</a></p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>YouTube: https://youtu.be/GdLEFgslhXo</p><br/><p>Spotify: https://open.spotify.com/episode/1wktwTQLUy9XP8rixx7Evd?si&#61;Df2t85QbTZaV94LozbLvbQ</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "1wktwTQLUy9XP8rixx7Evd",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a175da3fc452f5859dc49e42c",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f175da3fc452f5859dc49e42c",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d175da3fc452f5859dc49e42c",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Transformação digital: Saúde | T01EP019",
+            "release_date": "2022-03-09",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:1wktwTQLUy9XP8rixx7Evd"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/0Bye4lC3UqduTgwEBK2gFE/clip_585745_645745.mp3",
+            "description": "O techlead é um profissional que vem sendo cada vez mais procurado pelas empresas de tecnologia. Além de ter conhecimentos técnicos, ele precisa ter muita soft skill para liderar o time. Dando continuidade ao especial de profissões na área de tecnologia, agora é a hora de falar de techlead!   Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com José Eduardo Fiamengui, Gerente de DevOps e desenvolvimento e operações na CCEE, Rafael Suguro, Techlead no Ifood, Valdir Scarin, arquiteto da VM Bears e Fernando Tavares, gerente de arquiteto da CCEE para falar sobre as possibilidades, os desafios e as características dessa profissão que não para de crescer. LinkedIn dos participantes: José Eduardo Fiamengui - https://www.linkedin.com/in/jose-eduardo-fiamengui/ Rafael Suguro - https://www.linkedin.com/in/rafael-suguro-rodrigues-leite-55364a25/ Fernando Tavares - https://www.linkedin.com/in/ftcampos/ Valdir Scarin - https://www.linkedin.com/in/valdir-scarin/ Disponível também no Spotify e outras plataformas: YouTube: https://youtu.be/BgEJer43Xn8 Spotify: link spotify Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5143923,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/7aaHXgKGk4eHVDr5IJhb3P"
+            },
+            "href": "https://api.spotify.com/v1/episodes/7aaHXgKGk4eHVDr5IJhb3P",
+            "html_description": "<p>O techlead é um profissional que vem sendo cada vez mais procurado pelas empresas de tecnologia. Além de ter conhecimentos técnicos, ele precisa ter muita soft skill para liderar o time.</p><br/><p>Dando continuidade ao especial de profissões na área de tecnologia, agora é a hora de falar de techlead! <br /><br/><br /><br/>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com José Eduardo Fiamengui, Gerente de DevOps e desenvolvimento e operações na CCEE, Rafael Suguro, Techlead no Ifood, Valdir Scarin, arquiteto da VM Bears e Fernando Tavares, gerente de arquiteto da CCEE para falar sobre as possibilidades, os desafios e as características dessa profissão que não para de crescer.</p><br/><p>LinkedIn dos participantes:<br /><br/>José Eduardo Fiamengui - <a href=\"https://www.linkedin.com/in/jose-eduardo-fiamengui/\" rel=\"nofollow\">https://www.linkedin.com/in/jose-eduardo-fiamengui/<br /><br/></a>Rafael Suguro - <a href=\"https://www.linkedin.com/in/rafael-suguro-rodrigues-leite-55364a25/\" rel=\"nofollow\">https://www.linkedin.com/in/rafael-suguro-rodrigues-leite-55364a25/</a></p><br/><p>Fernando Tavares - <a href=\"https://www.linkedin.com/in/ftcampos/\" rel=\"nofollow\">https://www.linkedin.com/in/ftcampos/</a></p><br/><p>Valdir Scarin - <a href=\"https://www.linkedin.com/in/valdir-scarin/\" rel=\"nofollow\">https://www.linkedin.com/in/valdir-scarin/</a></p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>YouTube: <a href=\"https://youtu.be/BgEJer43Xn8\" rel=\"nofollow\">https://youtu.be/BgEJer43Xn8</a></p><br/><p>Spotify: link spotify</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "7aaHXgKGk4eHVDr5IJhb3P",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a9f59614d486990327026aa23",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f9f59614d486990327026aa23",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d9f59614d486990327026aa23",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Profissão: Techlead | T01EP018",
+            "release_date": "2022-03-02",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:7aaHXgKGk4eHVDr5IJhb3P"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/05OY74Zh9LleK38TxSI6qL/clip_514506_574506.mp3",
+            "description": "O Salesforce é uma plataforma de CRM que integra soluções de gerenciamento para todo o time que está envolvido na operação e no contato com os clientes.   Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Thiago Trevisan, Superintendente de tecnologia,  e João Nogueira, Gerente de tecnologia sobre a implementação da plataforma Salesforce nas empresas.   O trio fala sobre os prós e contras do seu uso, como ele pode ajudar na experiência do cliente e também, auxiliar na implementação das soluções da plataforma. LinkedIn dos participantes: João Nogueira: https://www.linkedin.com/in/joao-m-nogueira/ Thiago Trevisan: https://www.linkedin.com/in/thiagotrevisan/ Disponível também no Spotify e outras plataformas: YouTube: https://youtu.be/T2BwcuensuY Spotify: link spotify Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 6156323,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/2b9ff7e29ahkjX7KcMDPtc"
+            },
+            "href": "https://api.spotify.com/v1/episodes/2b9ff7e29ahkjX7KcMDPtc",
+            "html_description": "<p>O Salesforce é uma plataforma de CRM que integra soluções de gerenciamento para todo o time que está envolvido na operação e no contato com os clientes. <br /><br/><br /><br/>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Thiago Trevisan, Superintendente de tecnologia,  e João Nogueira, Gerente de tecnologia sobre a implementação da plataforma Salesforce nas empresas. <br /><br/><br /><br/>O trio fala sobre os prós e contras do seu uso, como ele pode ajudar na experiência do cliente e também, auxiliar na implementação das soluções da plataforma.</p><br/><p>LinkedIn dos participantes:<br /><br/>João Nogueira: <a href=\"https://www.linkedin.com/in/joao-m-nogueira/\" rel=\"nofollow\">https://www.linkedin.com/in/joao-m-nogueira/<br /><br/></a>Thiago Trevisan: https://www.linkedin.com/in/thiagotrevisan/</p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>YouTube: <a href=\"https://youtu.be/T2BwcuensuY\" rel=\"nofollow\">https://youtu.be/T2BwcuensuY</a></p><br/><p>Spotify: link spotify</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "2b9ff7e29ahkjX7KcMDPtc",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a3a78e180d6a2cd6dd1ba2bba",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f3a78e180d6a2cd6dd1ba2bba",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d3a78e180d6a2cd6dd1ba2bba",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Salesforce (Parte 1) | T01EP017",
+            "release_date": "2022-02-23",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:2b9ff7e29ahkjX7KcMDPtc"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/2NxHgjXlu3fY2whvrJp1HQ/clip_495206_555206.mp3",
+            "description": "Com a transformação digital, nem todas as aplicações podem ser gigantes e monolíticas  e é aí que a arquitetura de microsserviços se faz importante. Esse modelo de arquitetura está cada vez mais comum, mas a verdade é que nem todo mundo precisa dele.  Vem entender essa polêmica. Neste episódio do podcast “PPT Não Compila” Wellington Cruz conversa com Edgar Silva, Head de business developer na 42Crunch e com Valdir Scarin, Arquiteto da VM Bears sobre microsserviços, aplicações e também, temas polêmicos. LinkedIn dos participantes: Edgar Silva:  https://www.linkedin.com/in/jedgarsilva/ Valdir Scarin: https://www.linkedin.com/in/valdir-scarin/ Disponível também no Spotify e outras plataformas: Spotify: (link spotify) Outras plataformas: https://linktr.ee/pptnaocompila Acompanhe nas redes Instagram e Twitter: @pptnaocompila LinkedIn: https://www.linkedin.com/company/pptnaocompila Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5676307,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/1PEGf3f6WP3WJOUNGfhOZ6"
+            },
+            "href": "https://api.spotify.com/v1/episodes/1PEGf3f6WP3WJOUNGfhOZ6",
+            "html_description": "<p>Com a transformação digital, nem todas as aplicações podem ser gigantes e monolíticas  e é aí que a arquitetura de microsserviços se faz importante. Esse modelo de arquitetura está cada vez mais comum, mas a verdade é que nem todo mundo precisa dele.  Vem entender essa polêmica.</p><br/><p>Neste episódio do podcast “PPT Não Compila” Wellington Cruz conversa com Edgar Silva, Head de business developer na 42Crunch e com Valdir Scarin, Arquiteto da VM Bears sobre microsserviços, aplicações e também, temas polêmicos.</p><br/><p>LinkedIn dos participantes:<br /><br/>Edgar Silva:  <a href=\"https://www.linkedin.com/in/jedgarsilva/\" rel=\"nofollow\">https://www.linkedin.com/in/jedgarsilva/<br /><br/></a>Valdir Scarin: https://www.linkedin.com/in/valdir-scarin/</p><br/><p>Disponível também no Spotify e outras plataformas:</p><br/><p>Spotify: (link spotify)</p><br/><p>Outras plataformas: https://linktr.ee/pptnaocompila</p><br/><p>Acompanhe nas redes</p><br/><p>Instagram e Twitter: &#64;pptnaocompila</p><br/><p>LinkedIn: https://www.linkedin.com/company/pptnaocompila</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "1PEGf3f6WP3WJOUNGfhOZ6",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8ad5df3cead698aeee47eade0b",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fd5df3cead698aeee47eade0b",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68dd5df3cead698aeee47eade0b",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Microsserviço não é para todo mundo | T01EP012",
+            "release_date": "2022-02-16",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:1PEGf3f6WP3WJOUNGfhOZ6"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/2nrTVL19hsobhTJTLKVqze/clip_295988_355988.mp3",
+            "description": "Você já está cansado de saber que a área de tecnologia não para de crescer e com isso, as vagas para esta área de atuação também estão em crescimento. Porém, muita gente ainda não entende o que é ser um desenvolvedor. Neste episódio do “PPT Não Compila”, Wellington Cruz conversa com José Eduardo Fiamengui, Gerente de DevOps e desenvolvimento e operações na CCEE , Arthur Soave - Tech Lead na Sulamérica e com Marcelo Molina, do Time de arquitetura e desenvolvimento da CCEE. Juntos eles irão falar sobre formação, mercado, possibilidades e linguagens para quem quer saber mais sobre a carreira de desenvolvedor. Acompanhe nas redes:  Twitter e Instagram: @pptnaocompiila Linkedin: https://www.linkedin.com/company/pptnaocompila LinkedIn dos participantes: Arthur Soave - https://www.linkedin.com/in/arthur-soave-28866048/ José Eduardo Fiamengui - https://www.linkedin.com/in/jose-eduardo-fiamengui/ Marcelo Molina - https://www.linkedin.com/in/molinamarcelo/ Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 4877490,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/3K4osMJRB6h22hY1t5UDS0"
+            },
+            "href": "https://api.spotify.com/v1/episodes/3K4osMJRB6h22hY1t5UDS0",
+            "html_description": "<p>Você já está cansado de saber que a área de tecnologia não para de crescer e com isso, as vagas para esta área de atuação também estão em crescimento. Porém, muita gente ainda não entende o que é ser um desenvolvedor.</p><br/><p>Neste episódio do “PPT Não Compila”, Wellington Cruz conversa com José Eduardo Fiamengui, Gerente de DevOps e desenvolvimento e operações na CCEE , Arthur Soave - Tech Lead na Sulamérica e com Marcelo Molina, do Time de arquitetura e desenvolvimento da CCEE.</p><br/><p>Juntos eles irão falar sobre formação, mercado, possibilidades e linguagens para quem quer saber mais sobre a carreira de desenvolvedor.</p><br/><p>Acompanhe nas redes: <br /><br/>Twitter e Instagram: &#64;pptnaocompiila<br /><br/>Linkedin: https://www.linkedin.com/company/pptnaocompila</p><br/><p>LinkedIn dos participantes:<br /><br/>Arthur Soave - <a href=\"https://www.linkedin.com/in/arthur-soave-28866048/\" rel=\"nofollow\">https://www.linkedin.com/in/arthur-soave-28866048/</a></p><br/><p>José Eduardo Fiamengui - <a href=\"https://www.linkedin.com/in/jose-eduardo-fiamengui/\" rel=\"nofollow\">https://www.linkedin.com/in/jose-eduardo-fiamengui/</a></p><br/><p>Marcelo Molina - <a href=\"https://www.linkedin.com/in/molinamarcelo/\" rel=\"nofollow\">https://www.linkedin.com/in/molinamarcelo/</a></p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "3K4osMJRB6h22hY1t5UDS0",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8aa6b7a38813f46f0e20a3f31d",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fa6b7a38813f46f0e20a3f31d",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68da6b7a38813f46f0e20a3f31d",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Profissão: Desenvolvedor | T01EP011",
+            "release_date": "2022-02-09",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:3K4osMJRB6h22hY1t5UDS0"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/5O7W3eWxCPIhkFVJv1pWfW/clip_615986_675986.mp3",
+            "description": "O Tangerine’s Data & Analytics é uma comunidade feita para compartilhar conhecimento sobre dados. A importância da criação dessa comunidade envolve a crescente valorização dos dados por parte das empresas, que os utilizam para a tomada de decisões e consequente geração de valor. A iniciativa democratiza o acesso ao conhecimento para a formação de um profissional de dados. Governança, gerenciamento e armazenamento de dados, entre outros temas, também são debatidos neste encontro. Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Luís Rúdi, gerente de Governança de Dados na SulAmérica e cofundador da Comunidade Tangerines; Patrícia Novais, gerente de Dados e Inteligência Artificial da Basf Agro - América Latina; e Paulo Ruza, gerente de dados do Banco Carrefour. Em pauta, a importância das comunidades, corporativas ou não, governança e gerenciamento de dados, entre outros aspectos. LinkedIn dos participantes: Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 4504625,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/3YPeNgBkfTAWLjYewCRaYr"
+            },
+            "href": "https://api.spotify.com/v1/episodes/3YPeNgBkfTAWLjYewCRaYr",
+            "html_description": "<p>O Tangerine’s Data &amp; Analytics é uma comunidade feita para compartilhar conhecimento sobre dados. A importância da criação dessa comunidade envolve a crescente valorização dos dados por parte das empresas, que os utilizam para a tomada de decisões e consequente geração de valor. A iniciativa democratiza o acesso ao conhecimento para a formação de um profissional de dados. Governança, gerenciamento e armazenamento de dados, entre outros temas, também são debatidos neste encontro.</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Luís Rúdi, gerente de Governança de Dados na SulAmérica e cofundador da Comunidade Tangerines; Patrícia Novais, gerente de Dados e Inteligência Artificial da Basf Agro - América Latina; e Paulo Ruza, gerente de dados do Banco Carrefour. Em pauta, a importância das comunidades, corporativas ou não, governança e gerenciamento de dados, entre outros aspectos.</p><br/><p>LinkedIn dos participantes:</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "3YPeNgBkfTAWLjYewCRaYr",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a753b71355c28351d6d744594",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f753b71355c28351d6d744594",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d753b71355c28351d6d744594",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "TANGERINES | T01EP010",
+            "release_date": "2022-02-02",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:3YPeNgBkfTAWLjYewCRaYr"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/53py3yZwEwjHWcvcUyugqM/clip_468230_528230.mp3",
+            "description": "A partir da contextualização do que vem a ser um produto digital, toda uma esteira de atividades entra em ação para, entre outras ações, avaliar, pivotar e escalonar a proposta. Nos dias de hoje, é praticamente impossível ter um produto acabado para colocar valor de mercado. Aliado a isso, temos o processo de desenvolvimento de produtos digitais com gestão de tecnologia, arquitetura e débitos técnicos. Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Victor Gonçalves, head de Inovação e Agilidade do Grupo Verity e criador da Mind Blowing; e Rafael Mazaro, gerente de Transformação Digital. Em pauta, diferentes aspectos que envolvem os produtos digitais e suas especificidades.  Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 4612891,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/1Zye9OEyH4MkDIiuCB4fh0"
+            },
+            "href": "https://api.spotify.com/v1/episodes/1Zye9OEyH4MkDIiuCB4fh0",
+            "html_description": "<p>A partir da contextualização do que vem a ser um produto digital, toda uma esteira de atividades entra em ação para, entre outras ações, avaliar, pivotar e escalonar a proposta. Nos dias de hoje, é praticamente impossível ter um produto acabado para colocar valor de mercado. Aliado a isso, temos o processo de desenvolvimento de produtos digitais com gestão de tecnologia, arquitetura e débitos técnicos.</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Victor Gonçalves, head de Inovação e Agilidade do Grupo Verity e criador da Mind Blowing; e Rafael Mazaro, gerente de Transformação Digital. Em pauta, diferentes aspectos que envolvem os produtos digitais e suas especificidades.</p><br/><p><br /></p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "1Zye9OEyH4MkDIiuCB4fh0",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a1cbc9434465230eeaf67520e",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f1cbc9434465230eeaf67520e",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d1cbc9434465230eeaf67520e",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Produto digital na prática | T01EP009",
+            "release_date": "2022-01-26",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:1Zye9OEyH4MkDIiuCB4fh0"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/7Ea3m91pC9aojGaRTRBojj/clip_628470_688470.mp3",
+            "description": "A arquitetura orientada a eventos vem ganhando cada vez mais importância no nosso dia a dia. Dependendo da concepção do negócio, uma simples compra pela internet pode ser comparada a um evento, ressaltando a realização de diferentes operações concatenadas, só que de maneira assíncrona. Como começar nesse paradigma de arquitetura de software? Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Rômulo Barbosa, fundador da TechRom, empresa que ajuda os clientes a gerar insights a partir da inteligência de dados; e Rodrigo Ruas, arquiteto de TI, com experiência em gerenciamento de dados e arquitetura orientada para eventos. LinkedIn dos participantes: Rodrigo Ruas: https://www.linkedin.com/in/rodrigo-ruas-712b30a0/ Romulo Barbosa: https://www.linkedin.com/in/r%C3%B4mulo-barbosa/ Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 6256122,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/5pivaSntG3M5lsbbgPJXIx"
+            },
+            "href": "https://api.spotify.com/v1/episodes/5pivaSntG3M5lsbbgPJXIx",
+            "html_description": "<p>A arquitetura orientada a eventos vem ganhando cada vez mais importância no nosso dia a dia. Dependendo da concepção do negócio, uma simples compra pela internet pode ser comparada a um evento, ressaltando a realização de diferentes operações concatenadas, só que de maneira assíncrona. Como começar nesse paradigma de arquitetura de software?</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Rômulo Barbosa, fundador da TechRom, empresa que ajuda os clientes a gerar insights a partir da inteligência de dados; e Rodrigo Ruas, arquiteto de TI, com experiência em gerenciamento de dados e arquitetura orientada para eventos.</p><br/><p>LinkedIn dos participantes:</p><br/><p>Rodrigo Ruas: https://www.linkedin.com/in/rodrigo-ruas-712b30a0/</p><br/><p>Romulo Barbosa: https://www.linkedin.com/in/r%C3%B4mulo-barbosa/</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "5pivaSntG3M5lsbbgPJXIx",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8ad3286a8db8afc54902ce3035",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fd3286a8db8afc54902ce3035",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68dd3286a8db8afc54902ce3035",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Arquitetura orientada a eventos: como fazer | T01EP008",
+            "release_date": "2022-01-19",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:5pivaSntG3M5lsbbgPJXIx"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/163neT2FnH2rLZQooSM3kh/clip_603412_663412.mp3",
+            "description": "A Ciência de Dados pode ser caracterizada por uma multiplicidade de fatores. Trata-se do estudo de dados e informações variadas com o objetivo de extrair resultados. A Ciência de Dados busca, através de análises, projetar perspectivas para o futuro, diferentemente do que era feito até alguns anos atrás, quando as respostas obtidas faziam referência ao passado ou no máximo, ao presente. O cientista de dados estuda modelos matemáticos avançados em busca de respostas através do poder computacional existente. Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Thiago Rolemberg, Victor Gonçalves e Marcello Ribeiro, especialistas em Ciência de Dados. Em pauta, os diferentes aspectos que envolvem a Data Science, disciplina que ganha cada vez mais prestígio na sociedade contemporânea. LinkedIn dos participantes: Marcello Ribeiro: https://www.linkedin.com/in/marcello-ribeiro/ Thiago Rolemberg: https://www.linkedin.com/in/thiago-rolemberg-71a33a14/ Victor Gonçalves: https://www.linkedin.com/in/victorgoncalves-/ Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 6353565,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/4BSkWR3w0yxW8LCQNWvIU1"
+            },
+            "href": "https://api.spotify.com/v1/episodes/4BSkWR3w0yxW8LCQNWvIU1",
+            "html_description": "<p>A Ciência de Dados pode ser caracterizada por uma multiplicidade de fatores. Trata-se do estudo de dados e informações variadas com o objetivo de extrair resultados. A Ciência de Dados busca, através de análises, projetar perspectivas para o futuro, diferentemente do que era feito até alguns anos atrás, quando as respostas obtidas faziam referência ao passado ou no máximo, ao presente. O cientista de dados estuda modelos matemáticos avançados em busca de respostas através do poder computacional existente.</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Thiago Rolemberg, Victor Gonçalves e Marcello Ribeiro, especialistas em Ciência de Dados. Em pauta, os diferentes aspectos que envolvem a Data Science, disciplina que ganha cada vez mais prestígio na sociedade contemporânea.</p><br/><p>LinkedIn dos participantes:</p><br/><p>Marcello Ribeiro: https://www.linkedin.com/in/marcello-ribeiro/</p><br/><p>Thiago Rolemberg: https://www.linkedin.com/in/thiago-rolemberg-71a33a14/</p><br/><p>Victor Gonçalves: https://www.linkedin.com/in/victorgoncalves-/</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "4BSkWR3w0yxW8LCQNWvIU1",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8aa863911cad11a1f005774cf2",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fa863911cad11a1f005774cf2",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68da863911cad11a1f005774cf2",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Be Data Driven! | T01EP007",
+            "release_date": "2022-01-12",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:4BSkWR3w0yxW8LCQNWvIU1"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/7rgWkv2EejX4KmVOSn71Wo/clip_430019_490019.mp3",
+            "description": "O Open Banking e o Open Finance estão chegando para ficar. Com eles o usuário pode ser dono dos próprios dados e decidir livremente como, e com quem compartilhá-los. Mas como essa novidade afeta o mercado de tecnologia? Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Rogério Melfi, Head de OpenFinance na TecBan; Rafael Marins, Gerente de Produto na Red Hat e com Bruno Campos, CTO da Klever sobre as mudanças que Open Finance causa, e irá causar no mercado.   Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 4569940,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/2G2LjiJOctMtQMHtDbL7sS"
+            },
+            "href": "https://api.spotify.com/v1/episodes/2G2LjiJOctMtQMHtDbL7sS",
+            "html_description": "<p>O Open Banking e o Open Finance estão chegando para ficar. Com eles o usuário pode ser dono dos próprios dados e decidir livremente como, e com quem compartilhá-los. Mas como essa novidade afeta o mercado de tecnologia?</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Rogério Melfi, Head de OpenFinance na TecBan; Rafael Marins, Gerente de Produto na Red Hat e com Bruno Campos, CTO da Klever sobre as mudanças que Open Finance causa, e irá causar no mercado.</p><br/><p><br /><br/><br /><br/>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "2G2LjiJOctMtQMHtDbL7sS",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8aa155d9fa6465d94750f076e2",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fa155d9fa6465d94750f076e2",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68da155d9fa6465d94750f076e2",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Open Banking, Open Finance, Open Life? | T01EP006",
+            "release_date": "2022-01-05",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:2G2LjiJOctMtQMHtDbL7sS"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/1IG89Lr3pkS3o9ODDcuv4p/clip_530828_590828.mp3",
+            "description": "2021 foi um ano incomum. Ainda vivemos sob o impacto da pandemia, mas mesmo assim, o mercado de tecnologia avançou de forma nunca antes vista. Não faltaram notícias, polêmicas e situações inusitadas, então, vamos relembrar as principais notícias da área da tecnologia deste ano? Neste episódio do podcast “PPT Não Compila” Wellington Cruz conversa com Valdir Scarin e Victor Gonçalves, e o trio debate os principais acontecimentos tecnológicos de 2021, e as suas consequências para o futuro. LinkedIn dos participantes:  Victor Gonçalves https://www.linkedin.com/in/victorgoncalves-/ Valdir Scarin https://www.linkedin.com/in/valdir-scarin/ Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 7409258,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/5uXsCsSu0h73u2Lo2lWIXO"
+            },
+            "href": "https://api.spotify.com/v1/episodes/5uXsCsSu0h73u2Lo2lWIXO",
+            "html_description": "<p>2021 foi um ano incomum. Ainda vivemos sob o impacto da pandemia, mas mesmo assim, o mercado de tecnologia avançou de forma nunca antes vista. Não faltaram notícias, polêmicas e situações inusitadas, então, vamos relembrar as principais notícias da área da tecnologia deste ano?</p><br/><p>Neste episódio do podcast “PPT Não Compila” Wellington Cruz conversa com Valdir Scarin e Victor Gonçalves, e o trio debate os principais acontecimentos tecnológicos de 2021, e as suas consequências para o futuro.</p><br/><p>LinkedIn dos participantes:<br /><br/><br /><br/>Victor Gonçalves <a href=\"https://www.linkedin.com/in/victorgoncalves-/\" rel=\"nofollow\">https://www.linkedin.com/in/victorgoncalves-/</a></p><br/><p>Valdir Scarin https://www.linkedin.com/in/valdir-scarin/</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "5uXsCsSu0h73u2Lo2lWIXO",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a48fe12cdb8461f9a185cacd2",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f48fe12cdb8461f9a185cacd2",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d48fe12cdb8461f9a185cacd2",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "RETROSPECTIVA 2021 | T01EP005",
+            "release_date": "2021-12-29",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:5uXsCsSu0h73u2Lo2lWIXO"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/1qF9zrYMkIF7rEGp3HomrM/clip_468137_528137.mp3",
+            "description": "É hora de continuar o especial Cripto, e desta vez, falando de uma tema que está cada vez mais relevante, o mercado econômico e as criptomoedas! Neste episódio do podcast “PPT Não Compila”, Wellington Cruz recebe Bruno Campos, CTO da Klever; Fernando Sobreira, Diretor de BlockChain da Klever e Sam “The Carpet Man”, que é empreendedor e investidor de KOV nos Estados Unidos para uma conversa sobre economia e criptomoedas. Então, se você quer entender mais sobre bitcoins, blockchain, e como as criptomoedas afetam o mercado, cola o ouvido nesse episódio! Fique ligado! Alguns trechos deste episódio estão em inglês, mas no canal do Youtube do PPT Não Compila, você encontra o vídeo completo e legendado. Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5648348,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/4xqD8Z3WXKqZtIilpf9Zkg"
+            },
+            "href": "https://api.spotify.com/v1/episodes/4xqD8Z3WXKqZtIilpf9Zkg",
+            "html_description": "<p>É hora de continuar o especial Cripto, e desta vez, falando de uma tema que está cada vez mais relevante, o mercado econômico e as criptomoedas!</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz recebe Bruno Campos, CTO da Klever; Fernando Sobreira, Diretor de BlockChain da Klever e Sam “The Carpet Man”, que é empreendedor e investidor de KOV nos Estados Unidos para uma conversa sobre economia e criptomoedas.</p><br/><p>Então, se você quer entender mais sobre bitcoins, blockchain, e como as criptomoedas afetam o mercado, cola o ouvido nesse episódio!</p><br/><p>Fique ligado! Alguns trechos deste episódio estão em inglês, mas no canal do Youtube do PPT Não Compila, você encontra o vídeo completo e legendado.</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "4xqD8Z3WXKqZtIilpf9Zkg",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a60e3ffbb0b923f4f61a4b4cc",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f60e3ffbb0b923f4f61a4b4cc",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d60e3ffbb0b923f4f61a4b4cc",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Especial Cripto #3 - Shut up and take my cryptocurrencies!",
+            "release_date": "2021-12-22",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:4xqD8Z3WXKqZtIilpf9Zkg"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/22RAlRaoFKZCiHj7qwfYxx/clip_403714_463714.mp3",
+            "description": "O agile é um método cada vez mais comum no mundo do desenvolvimento, mas será que ele é pra todo mundo? Como funciona na vida real, fora do romantismo do método e dos evangelistas? A pergunta pode até ser polêmica, mas a resposta pode transformar empresas de todos os tamanhos e setores. Neste episódio do podcast “PPT Não Compila” Wellington Cruz conversa com Victor Gonçalves, CDO da Verity; Valdir Scarin, Líder de arquitetura da VMBears e Rogerio Melfi, Gerente de Open Finance na TecBan. O grupo fala sobre as práticas de agilidade no dia a dia do time de desenvolvimento, e como a agilidade pode ser aplicada para melhorar a eficiência. LinkedIn dos participantes: Victor Gonçalves https://www.linkedin.com/in/victorgoncalves-/ Rogério Melfi https://www.linkedin.com/in/rmelfi/ Valdir Scarin https://www.linkedin.com/in/valdir-scarin/ Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 6875653,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/7LvWAYDfoevSeGySINMdEI"
+            },
+            "href": "https://api.spotify.com/v1/episodes/7LvWAYDfoevSeGySINMdEI",
+            "html_description": "<p>O agile é um método cada vez mais comum no mundo do desenvolvimento, mas será que ele é pra todo mundo? Como funciona na vida real, fora do romantismo do método e dos evangelistas? A pergunta pode até ser polêmica, mas a resposta pode transformar empresas de todos os tamanhos e setores.</p><br/><p>Neste episódio do podcast “PPT Não Compila” Wellington Cruz conversa com Victor Gonçalves, CDO da Verity; Valdir Scarin, Líder de arquitetura da VMBears e Rogerio Melfi, Gerente de Open Finance na TecBan. O grupo fala sobre as práticas de agilidade no dia a dia do time de desenvolvimento, e como a agilidade pode ser aplicada para melhorar a eficiência.</p><br/><p>LinkedIn dos participantes:</p><br/><p>Victor Gonçalves <a href=\"https://www.linkedin.com/in/victorgoncalves-/\" rel=\"nofollow\">https://www.linkedin.com/in/victorgoncalves-/</a></p><br/><p>Rogério Melfi <a href=\"https://www.linkedin.com/in/rmelfi/\" rel=\"nofollow\">https://www.linkedin.com/in/rmelfi/</a></p><br/><p>Valdir Scarin https://www.linkedin.com/in/valdir-scarin/</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "7LvWAYDfoevSeGySINMdEI",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8ae5f2600d1e8cb409646a18f2",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fe5f2600d1e8cb409646a18f2",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68de5f2600d1e8cb409646a18f2",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Agile e squads na vida real | T01EP004",
+            "release_date": "2021-12-15",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:7LvWAYDfoevSeGySINMdEI"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/3Wjg53X3r7XtRAFZM7clzK/clip_376831_436831.mp3",
+            "description": "Neste episódio do podcast “PTT Não Compila”,  Wellington Cruz continua o “Especial Cripto”, comandando um time de profissionais para falar sobre desenvolvimento de soluções usando blockchain e criptomoedas, entrando em detalhes técnicos da implementação dessas soluções. Desta vez, os convidados são Bruno Campos, CTO; Marlon Gomes, Arquiteto; e Fernando Sobreira, diretor de BlockChain, todos da Klever. O grupo revela detalhes sobre segurança, compra, carteira de criptomoedas e soluções para clientes e desenvolvedores. Participantes Bruno Baiano Campos  https://www.linkedin.com/in/brunocamposssa/  Fernando Sobreira https://www.linkedin.com/in/fbsobreira/  Marlon Gomes https://www.linkedin.com/in/marlon-gomes-b49a8766/  Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 4241759,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/3vOHHVfx2CkBuEJVtnZSZL"
+            },
+            "href": "https://api.spotify.com/v1/episodes/3vOHHVfx2CkBuEJVtnZSZL",
+            "html_description": "<p>Neste episódio do podcast “PTT Não Compila”,  Wellington Cruz continua o “Especial Cripto”, comandando um time de profissionais para falar sobre desenvolvimento de soluções usando blockchain e criptomoedas, entrando em detalhes técnicos da implementação dessas soluções.</p><br/><p>Desta vez, os convidados são Bruno Campos, CTO; Marlon Gomes, Arquiteto; e Fernando Sobreira, diretor de BlockChain, todos da Klever. O grupo revela detalhes sobre segurança, compra, carteira de criptomoedas e soluções para clientes e desenvolvedores.</p><br/><p>Participantes</p><br/><p>Bruno Baiano Campos<br /><br/> <a href=\"https://www.linkedin.com/in/brunocamposssa/\" rel=\"nofollow\">https://www.linkedin.com/in/brunocamposssa/<br /><br/><br /><br/></a>Fernando Sobreira<br /><br/>https://www.linkedin.com/in/fbsobreira/<br /><br/><br /><br/>Marlon Gomes<br /><br/>https://www.linkedin.com/in/marlon-gomes-b49a8766/<br /><br/><br /><br/>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "3vOHHVfx2CkBuEJVtnZSZL",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8adf1d60a0409f7c6584d9e94e",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fdf1d60a0409f7c6584d9e94e",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68ddf1d60a0409f7c6584d9e94e",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Especial Cripto #2 - Soluções com Blockchain e Criptomoedas",
+            "release_date": "2021-12-08",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:3vOHHVfx2CkBuEJVtnZSZL"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/3BjNr5Yh6Ue3JEN6B6gZ5i/clip_278804_338804.mp3",
+            "description": "O open source diz respeito a projetos de código aberto, que seguem uma fonte original que pode ser adaptada para diversos usos e fins. O open source é cercado de vantagens, mas também de polêmicas. É correto monetizar o open source? Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Clauber Stipkovic, profissional de TI que participou ativamente da comunidade OpenSource da Mozilla; e Gabriel Maltarollo, Senior Account Manager na RedHat. O trio discute a utilização, polarização e monetização do open source, e apresentam as vantagens do sistema. LinkedIn dos participantes: Clauber Stipkovic https://www.linkedin.com/in/cstipkovic/ Gabriel Maltarollo https://www.linkedin.com/in/maltarollo/  Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5442283,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/2ZhqPxf0YHy25G0HjxQ3i4"
+            },
+            "href": "https://api.spotify.com/v1/episodes/2ZhqPxf0YHy25G0HjxQ3i4",
+            "html_description": "<p>O open source diz respeito a projetos de código aberto, que seguem uma fonte original que pode ser adaptada para diversos usos e fins. O open source é cercado de vantagens, mas também de polêmicas. É correto monetizar o open source?</p><br/><p>Neste episódio do podcast “PPT Não Compila”, Wellington Cruz conversa com Clauber Stipkovic, profissional de TI que participou ativamente da comunidade OpenSource da Mozilla; e Gabriel Maltarollo, Senior Account Manager na RedHat. O trio discute a utilização, polarização e monetização do open source, e apresentam as vantagens do sistema.</p><br/><p>LinkedIn dos participantes:</p><br/><p>Clauber Stipkovic https://www.linkedin.com/in/cstipkovic/</p><br/><p>Gabriel Maltarollo https://www.linkedin.com/in/maltarollo/<br /><br/><br /><br/>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "2ZhqPxf0YHy25G0HjxQ3i4",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a4b3fa0954c0f1dbdfd96f8df",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f4b3fa0954c0f1dbdfd96f8df",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d4b3fa0954c0f1dbdfd96f8df",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Quem tem medo do open source? | T01EP003",
+            "release_date": "2021-12-01",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:2ZhqPxf0YHy25G0HjxQ3i4"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/48urvyKJzwNfMz9eHwrmio/clip_350619_410619.mp3",
+            "description": "Algumas tecnologias chegaram para ficar. Bons exemplos são o blockchain, o NFT e as criptomoedas, tendo como representante mais conhecido, o bitcoin. Mas como essas tecnologias podem fazer parte do nosso dia a dia? Neste episódio do PPT Não Compila, Wellington Cruz começa a série “Especial Cripto” e recebe Reynaldo Perez, Arquiteto e Líder de Pesquisa e desenvolvimento na Sulamérica; Bruno Campos, CTO da Klever; Marlon Gomes, Head de Arquitetura da Klever; Felipe Rieger, PM da Klever e Head de NFT; e Dio Ianakiara, CEO da KLever; para falar sobre essas tecnologias que prometem revolucionar as nossas vidas. LinkedIn dos Convidados Reynaldo Perez : https://www.linkedin.com/in/reynaldoperezsanchez Bruno Campos: https://www.linkedin.com/in/brunocamposssa Felipe Rieger: https://www.linkedin.com/in/feliperieger Felipe Rieger: https://www.linkedin.com/in/dbuarque Bruno Campos: https://www.linkedin.com/in/marlon-gomes-b49a8766 Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 3496539,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/1fdXLQlwXpcYut8szJOE8c"
+            },
+            "href": "https://api.spotify.com/v1/episodes/1fdXLQlwXpcYut8szJOE8c",
+            "html_description": "<p>Algumas tecnologias chegaram para ficar. Bons exemplos são o blockchain, o NFT e as criptomoedas, tendo como representante mais conhecido, o bitcoin. Mas como essas tecnologias podem fazer parte do nosso dia a dia?</p><br/><p>Neste episódio do PPT Não Compila, Wellington Cruz começa a série “Especial Cripto” e recebe Reynaldo Perez, Arquiteto e Líder de Pesquisa e desenvolvimento na Sulamérica; Bruno Campos, CTO da Klever; Marlon Gomes, Head de Arquitetura da Klever; Felipe Rieger, PM da Klever e Head de NFT; e Dio Ianakiara, CEO da KLever; para falar sobre essas tecnologias que prometem revolucionar as nossas vidas.</p><br/><p>LinkedIn dos Convidados</p><br/><p>Reynaldo Perez : https://www.linkedin.com/in/reynaldoperezsanchez</p><br/><p>Bruno Campos: https://www.linkedin.com/in/brunocamposssa</p><br/><p>Felipe Rieger: https://www.linkedin.com/in/feliperieger</p><br/><p>Felipe Rieger: https://www.linkedin.com/in/dbuarque</p><br/><p>Bruno Campos: https://www.linkedin.com/in/marlon-gomes-b49a8766</p><br/><p>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "1fdXLQlwXpcYut8szJOE8c",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8ab81ad8bf43862a5f7504bcd7",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1fb81ad8bf43862a5f7504bcd7",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68db81ad8bf43862a5f7504bcd7",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "Especial Cripto #1- Introdução Blockchain e Bitcoin",
+            "release_date": "2021-11-24",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:1fdXLQlwXpcYut8szJOE8c"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/5zoYwOWM6YfBEanPiPbdcA/clip_341209_401209.mp3",
+            "description": "Há muito tempo, o mercado de tecnologia e T.I. é conhecido por ser dominado por homens, desde as universidades até os cargos de liderança e comando. Contudo, essa realidade vem mudando, ainda que de forma gradual. Mas afinal, por que as mulheres estão tão afastadas do mercado de tecnologia? Neste episódio do podcast “PTT Não Compila”, Wellington Cruz conversa com  Dérika Medeiros,  Office Manager da VM Bears; Carolina Bocuhy, Gerente Executiva de Arquitetura do Banco BV; e Prof. Dra. Daniela Cunha, diretora da Faculdade de Computação e Informática (FCI) e da Universidade Mackenzie. Em pauta, a inserção das mulheres no mercado de tecnologia, dificuldades, mudanças e um apanhado sobre o que já melhorou. LinkedIn dos Convidados Carolina Bocohy: https://www.linkedin.com/in/carolinabocuhy Profa Dra Daniela Cunha: https://www.linkedin.com/in/daniela-cunha-87b2833 Derika Medeiros: https://www.linkedin.com/in/derikaribeiro   Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 5425502,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/7Cd1kH1OE2SecfNjXFwfmf"
+            },
+            "href": "https://api.spotify.com/v1/episodes/7Cd1kH1OE2SecfNjXFwfmf",
+            "html_description": "<p>Há muito tempo, o mercado de tecnologia e T.I. é conhecido por ser dominado por homens, desde as universidades até os cargos de liderança e comando. Contudo, essa realidade vem mudando, ainda que de forma gradual. Mas afinal, por que as mulheres estão tão afastadas do mercado de tecnologia?</p><br/><p>Neste episódio do podcast “PTT Não Compila”, Wellington Cruz conversa com  Dérika Medeiros,  Office Manager da VM Bears; Carolina Bocuhy, Gerente Executiva de Arquitetura do Banco BV; e Prof. Dra. Daniela Cunha, diretora da Faculdade de Computação e Informática (FCI) e da Universidade Mackenzie. Em pauta, a inserção das mulheres no mercado de tecnologia, dificuldades, mudanças e um apanhado sobre o que já melhorou.</p><br/><p>LinkedIn dos Convidados</p><br/><p>Carolina Bocohy: <a href=\"https://www.linkedin.com/in/carolinabocuhy\" rel=\"nofollow\">https://www.linkedin.com/in/carolinabocuhy</a></p><br/><p>Profa Dra Daniela Cunha: <a href=\"https://www.linkedin.com/in/daniela-cunha-87b2833\" rel=\"nofollow\">https://www.linkedin.com/in/daniela-cunha-87b2833</a></p><br/><p>Derika Medeiros: <a href=\"https://www.linkedin.com/in/derikaribeiro\" rel=\"nofollow\">https://www.linkedin.com/in/derikaribeiro</a> <br /><br/><br /><br/>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "7Cd1kH1OE2SecfNjXFwfmf",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8afb6ac048acc4624974e3994b",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1ffb6ac048acc4624974e3994b",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68dfb6ac048acc4624974e3994b",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "As ‘minas’ de T.I | T01EP002",
+            "release_date": "2021-11-17",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:7Cd1kH1OE2SecfNjXFwfmf"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/5q77xNHaVs6aj6tZqp1TaU/clip_0_60000.mp3",
+            "description": "O mercado de tecnologia não para de crescer, e essa evolução constante se deve muito ao isolamento social e à pandemia. Com o fechamento da maior parte dos negócios, muitas empresas desengavetaram projetos de transformação tecnológica. Mas será que esse crescimento é sustentável? Neste episódio do podcast \"PPT Não Compila\", Wellington Cruz conversa com um time de especialistas: Prof. Dr. Joaquim Pessoa Filho, gerente da Apple Developer Academy da Universidade Mackenzie; João Pedro, Business Strategy na Klever; Vitor Pereira, Product Manager também na Klever; Silvia Molica, HeadHunter de tecnologia, e Diego Monteiro, especialista em produto sobre o mercado de TI no Brasil. Em pauta, as dificuldades da profissão e a possibilidade de expansão. Linkedin dos participantes: Prof Dr. Joaquim Pessoa Filho - https://www.linkedin.com/in/joaquimpfilho/ João Pedro - https://www.linkedin.com/in/joaocruzlima  Vitor Pereira - https://www.linkedin.com/in/vitor-martins-pereira/ Silvia Mollica - https://www.linkedin.com/in/silviamollica/ Diego Monteiro - https://www.linkedin.com/in/diegomont/   Produção: Voz e conteúdo | www.vozeconteudo.com.br - @vozeconteudo",
+            "duration_ms": 4034992,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/51yA6Irt3XCfuwtJ68MYSg"
+            },
+            "href": "https://api.spotify.com/v1/episodes/51yA6Irt3XCfuwtJ68MYSg",
+            "html_description": "<p>O mercado de tecnologia não para de crescer, e essa evolução constante se deve muito ao isolamento social e à pandemia. Com o fechamento da maior parte dos negócios, muitas empresas desengavetaram projetos de transformação tecnológica. Mas será que esse crescimento é sustentável?</p><br/><p>Neste episódio do podcast &#34;PPT Não Compila&#34;, Wellington Cruz conversa com um time de especialistas: Prof. Dr. Joaquim Pessoa Filho, gerente da Apple Developer Academy da Universidade Mackenzie; João Pedro, Business Strategy na Klever; Vitor Pereira, Product Manager também na Klever; Silvia Molica, HeadHunter de tecnologia, e Diego Monteiro, especialista em produto sobre o mercado de TI no Brasil. Em pauta, as dificuldades da profissão e a possibilidade de expansão.</p><br/><p>Linkedin dos participantes:</p><br/><p>Prof Dr. Joaquim Pessoa Filho - <a href=\"https://www.linkedin.com/in/joaquimpfilho/\" rel=\"nofollow\">https://www.linkedin.com/in/joaquimpfilho/<br /><br/></a>João Pedro - <a href=\"https://www.linkedin.com/in/joaocruzlima\" rel=\"nofollow\">https://www.linkedin.com/in/joaocruzlima</a> <br /><br/>Vitor Pereira - <a href=\"https://www.linkedin.com/in/vitor-martins-pereira/\" rel=\"nofollow\">https://www.linkedin.com/in/vitor-martins-pereira/<br /><br/></a>Silvia Mollica - <a href=\"https://www.linkedin.com/in/silviamollica/\" rel=\"nofollow\">https://www.linkedin.com/in/silviamollica/<br /><br/></a>Diego Monteiro - <a href=\"https://www.linkedin.com/in/diegomont/\" rel=\"nofollow\">https://www.linkedin.com/in/diegomont/</a> <br /><br/><br /><br/>Produção: Voz e conteúdo | www.vozeconteudo.com.br - &#64;vozeconteudo</p>",
+            "id": "51yA6Irt3XCfuwtJ68MYSg",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a874005dfb3d417f75dc72aff",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f874005dfb3d417f75dc72aff",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d874005dfb3d417f75dc72aff",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "MERCADO: Procura-se gente de TI | T01EP001",
+            "release_date": "2021-11-10",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:51yA6Irt3XCfuwtJ68MYSg"
+        },
+        {
+            "audio_preview_url": "https://podz-content.spotifycdn.com/audio/clips/5Kf4PPoZpMZSpMSw59Xx5e/clip_407458_467458.mp3",
+            "description": "Olá! Sejam bem-vindos ao PPT Não Compila, um podcast que fala de transformação digital, com uma proposta que vai muito além dos slides de uma apresentação de Power Point. Neste primeiro episódio, Wellington Cruz, gerente de Arquitetura, conversa com Bruno Campos, CTO da Klever; Valdir Scarin, arquiteto da VM Bears; e Marlon Gomes, head de arquitetura da Klever. Os quatro explicam qual é a importância da Arquitetura de TI para o desenvolvimento de projetos, além de ressaltar que a humanização da profissão é fundamental para a interação entre os times. Bruno Campos - https://www.linkedin.com/in/brunocamposssa/ Marlon Gomes - https://www.linkedin.com/in/marlon-gomes-b49a8766/ Valdir Scarin - https://www.linkedin.com/in/valdir-scarin/ Wellington Cruz - https://www.linkedin.com/in/wellingtoncruz/",
+            "duration_ms": 4376022,
+            "explicit": false,
+            "external_urls": {
+                "spotify": "https://open.spotify.com/episode/7g6EzCs1yMkRFuyf0lU2dC"
+            },
+            "href": "https://api.spotify.com/v1/episodes/7g6EzCs1yMkRFuyf0lU2dC",
+            "html_description": "<p>Olá! Sejam bem-vindos ao PPT Não Compila, um podcast que fala de transformação digital, com uma proposta que vai muito além dos slides de uma apresentação de Power Point. Neste primeiro episódio, Wellington Cruz, gerente de Arquitetura, conversa com Bruno Campos, CTO da Klever; Valdir Scarin, arquiteto da VM Bears; e Marlon Gomes, head de arquitetura da Klever.</p><br/><p>Os quatro explicam qual é a importância da Arquitetura de TI para o desenvolvimento de projetos, além de ressaltar que a humanização da profissão é fundamental para a interação entre os times.</p><br/><p>Bruno Campos - <a href=\"https://www.linkedin.com/in/brunocamposssa/\" rel=\"nofollow\">https://www.linkedin.com/in/brunocamposssa/<br /><br/></a>Marlon Gomes - <a href=\"https://www.linkedin.com/in/marlon-gomes-b49a8766/\" rel=\"nofollow\">https://www.linkedin.com/in/marlon-gomes-b49a8766/<br /><br/></a>Valdir Scarin - <a href=\"https://www.linkedin.com/in/valdir-scarin/\" rel=\"nofollow\">https://www.linkedin.com/in/valdir-scarin/<br /><br/></a>Wellington Cruz - https://www.linkedin.com/in/wellingtoncruz/</p>",
+            "id": "7g6EzCs1yMkRFuyf0lU2dC",
+            "images": [
+                {
+                    "height": 640,
+                    "url": "https://i.scdn.co/image/ab6765630000ba8a65bd907e4f9da6507806385d",
+                    "width": 640
+                },
+                {
+                    "height": 300,
+                    "url": "https://i.scdn.co/image/ab67656300005f1f65bd907e4f9da6507806385d",
+                    "width": 300
+                },
+                {
+                    "height": 64,
+                    "url": "https://i.scdn.co/image/ab6765630000f68d65bd907e4f9da6507806385d",
+                    "width": 64
+                }
+            ],
+            "is_externally_hosted": false,
+            "is_playable": true,
+            "language": "pt-BR",
+            "languages": [
+                "pt-BR"
+            ],
+            "name": "ARQUITETOS DE TI: O que são, onde vivem, o que comem? |T01EP000",
+            "release_date": "2021-11-03",
+            "release_date_precision": "day",
+            "resume_point": {
+                "fully_played": true,
+                "resume_position_ms": 0
+            },
+            "type": "episode",
+            "uri": "spotify:episode:7g6EzCs1yMkRFuyf0lU2dC"
+        }
+    ],
+    "limit": 50,
+    "next": null,
+    "offset": 200,
+    "previous": "https://api.spotify.com/v1/shows/5aKHRdBlylb2wj5Ac8Kqpj/episodes?offset=150&limit=50&market=BR&locale=pt-BR,pt;q%3D0.9,en-US;q%3D0.8,en;q%3D0.7,es;q%3D0.6",
+    "total": 225
+}
