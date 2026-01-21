@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { Container } from "@/components/layout/container";
 import { EpisodeCard } from "@/components/episode/episode-card";
 import { SubscriptionCta } from "@/components/episode/subscription-cta";
@@ -5,6 +7,14 @@ import { FeaturedEpisodeHero } from "@/components/home/featured-episode-hero";
 import { getEpisodes, getLatestEpisode } from "@/lib/datastore/episodes";
 
 import type { Episode } from "@/types";
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: baseUrl,
+  },
+};
 
 // SSG with ISR - revalidate every hour
 export const revalidate = 3600;

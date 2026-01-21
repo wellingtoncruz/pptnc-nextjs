@@ -15,10 +15,15 @@ import {
 import type { Metadata } from "next";
 import type { Episode } from "@/types";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
+
 export const metadata: Metadata = {
   title: "Episódios",
   description:
     "Explore todos os episódios do podcast PPT Não Compila - tecnologia e transformação digital",
+  alternates: {
+    canonical: `${baseUrl}/episodios`,
+  },
   openGraph: {
     title: "Episódios | PPT Não Compila",
     description:
@@ -115,7 +120,10 @@ export default async function EpisodesPage({ searchParams }: EpisodesPageProps) 
 
       {episodes.length > 0 ? (
         <>
-          <section className="mt-6">
+          <section className="mt-6" aria-labelledby="episodes-list-title">
+            <h2 id="episodes-list-title" className="sr-only">
+              Lista de episódios
+            </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {episodes.map((episode) => (
                 <article key={episode.id}>

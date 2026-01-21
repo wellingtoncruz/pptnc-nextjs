@@ -2,8 +2,8 @@
 node_modules
 npm-debug.log*
 
-# Next.js
-.next
+# Next.js (exclude build cache, keep standalone output)
+.next/cache
 out
 
 # Testing

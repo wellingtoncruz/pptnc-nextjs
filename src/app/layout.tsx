@@ -101,8 +101,10 @@ export default function RootLayout({
                   window.dataLayer = window.dataLayer || [];
                   function gtag(){dataLayer.push(arguments);}
                   gtag('js', new Date());
+                  var debugMode = new URLSearchParams(window.location.search).get('debug_mode') === '1';
                   gtag('config', '${GA_MEASUREMENT_ID}', {
                     page_path: window.location.pathname,
+                    debug_mode: debugMode,
                   });
                 `,
               }}
@@ -116,7 +118,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 overflow-x-hidden">{children}</main>
           <Footer />
           <Toaster />
         </ThemeProvider>

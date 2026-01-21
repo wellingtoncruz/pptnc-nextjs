@@ -30,6 +30,7 @@ substitutions:
   _SERVICE_NAME: pptnc
   _REGION: us-east1
   _REPOSITORY: pptnc
+  _SERVICE_ACCOUNT: iara-service-account-820@pptnc-stage.iam.gserviceaccount.com
 
 steps:
   # Step 1: Build Docker image
@@ -77,6 +78,8 @@ steps:
       - '3000'
       - '--set-env-vars'
       - 'NODE_ENV=production'
+      - '--service-account'
+      - '${_SERVICE_ACCOUNT}'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'

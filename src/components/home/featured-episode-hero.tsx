@@ -31,10 +31,10 @@ export function FeaturedEpisodeHero({
   const episodeUrl = `/episodios/${episode.slug}`;
 
   return (
-    <Card className={cn("overflow-hidden shadow-lg", className)}>
-      <div className="grid gap-6 p-6 lg:grid-cols-2 lg:gap-8 lg:p-8">
+    <Card className={cn("overflow-hidden shadow-lg !py-0 max-w-full", className)}>
+      <div className="grid gap-4 p-4 sm:gap-6 sm:p-6 lg:grid-cols-2 lg:gap-8 lg:p-8 max-w-full overflow-hidden">
         {/* Video Player Section + CTAs */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-w-0">
           <div className="relative aspect-video overflow-hidden rounded-lg">
             <YouTubeEmbed
               youtubeId={episode.youtubeId}
@@ -44,15 +44,15 @@ export function FeaturedEpisodeHero({
           </div>
 
           {/* CTAs - Below player */}
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button asChild>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center min-w-0">
+            <Button asChild className="w-full sm:w-auto">
               <Link href={episodeUrl}>
                 <Play className="mr-2 h-4 w-4" />
                 Ver episódio completo
               </Link>
             </Button>
             {episode.spotifyUrl && (
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="w-full sm:w-auto">
                 <a
                   href={episode.spotifyUrl}
                   target="_blank"
@@ -68,7 +68,7 @@ export function FeaturedEpisodeHero({
         </div>
 
         {/* Info Section */}
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col justify-center min-w-0 overflow-hidden">
           {/* Title */}
           <Link href={episodeUrl} className="group">
             <h2 className="text-2xl font-bold leading-tight tracking-tight transition-colors group-hover:text-primary sm:text-3xl">
@@ -107,7 +107,7 @@ export function FeaturedEpisodeHero({
 
           {/* Guests - Compact display */}
           {episode.guests.length > 0 && (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3 sm:justify-center">
                 {episode.guests.map((guest, index) => (
                   <div
                     key={`${guest.name}-${index}`}
