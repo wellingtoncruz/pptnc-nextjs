@@ -26,11 +26,11 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "PPTNC - PPT Não Compila",
-    template: "%s | PPTNC",
+    default: "PPT Não Compila - Podcast de Tecnologia e Transformação Digital",
+    template: "%s | PPT Não Compila - Podcast de Tecnologia",
   },
   description:
-    "Podcast sobre tecnologia e transformação digital. Busca semântica em 200+ episódios.",
+    "PPT Não Compila é o podcast de tecnologia brasileiro com +200 episódios sobre transformação digital, carreira tech, IA e inovação. Ouça agora!",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },
@@ -47,21 +47,21 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     url: "/",
     siteName: "PPT Não Compila",
-    title: "PPTNC - PPT Não Compila",
-    description: "Podcast sobre tecnologia e transformação digital",
+    title: "PPT Não Compila - Podcast de Tecnologia e Transformação Digital",
+    description: "O podcast de tecnologia brasileiro com +200 episódios sobre transformação digital, carreira tech, IA e inovação.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "PPT Não Compila",
+        alt: "Podcast PPT Não Compila",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PPTNC - PPT Não Compila",
-    description: "Podcast sobre tecnologia e transformação digital",
+    title: "PPT Não Compila - Podcast de Tecnologia",
+    description: "O podcast de tecnologia brasileiro com +200 episódios sobre transformação digital, carreira tech, IA e inovação.",
     images: ["/og-image.png"],
   },
   robots: {

@@ -21,16 +21,16 @@ import { getMetrics, formatMetricNumber } from "@/lib/datastore/metrics";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
 
 export const metadata: Metadata = {
-  title: "Midiakit",
+  title: "Midiakit - Anuncie no Podcast de Tecnologia",
   description:
-    "Conheça as métricas e alcance do podcast PPT Não Compila. Baixe nosso midiakit para parcerias e patrocínios.",
+    "Conheça as métricas e alcance do podcast de tecnologia PPT Não Compila. Baixe nosso midiakit para parcerias e patrocínios.",
   alternates: {
     canonical: `${baseUrl}/midiakit`,
   },
   openGraph: {
-    title: "Midiakit | PPT Não Compila",
+    title: "Midiakit | PPT Não Compila - Podcast de Tecnologia",
     description:
-      "Conheça as métricas e alcance do podcast PPT Não Compila. Baixe nosso midiakit para parcerias e patrocínios.",
+      "Conheça as métricas e alcance do podcast de tecnologia PPT Não Compila. Baixe nosso midiakit para parcerias e patrocínios.",
   },
 };
 

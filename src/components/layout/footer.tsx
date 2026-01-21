@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Youtube } from "lucide-react";
 
@@ -47,8 +48,14 @@ export function Footer() {
         <div className="py-8 md:py-12">
           {/* Brand Section */}
           <div className="mb-8 flex flex-col items-center text-center">
-            <h3 className="text-lg font-semibold">{SITE_CONFIG.name}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <Image
+              src="/pptnc_logo.png"
+              alt={SITE_CONFIG.name}
+              width={120}
+              height={73}
+              className="h-7 w-auto opacity-70"
+            />
+            <p className="mt-3 text-sm text-muted-foreground">
               {SITE_CONFIG.description}
             </p>
           </div>

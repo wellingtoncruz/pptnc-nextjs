@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Youtube } from "lucide-react";
 
@@ -9,17 +10,19 @@ import { SpotifyIcon } from "@/components/icons/social-icons";
 import { EXTERNAL_LINKS, NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
 
 /**
- * Logo placeholder component
- * TODO: Replace with actual logo image when available
+ * Logo component with podcast branding
  */
 function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label={SITE_CONFIG.name}>
-      {/* Placeholder: Logo PPTNC - Microfone estilizado com as cores da marca (laranja #e85d04 sobre fundo escuro) */}
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/20 text-primary">
-        <span className="text-xs font-bold">🎙️</span>
-      </div>
-      <span className="hidden font-bold sm:inline-block">{SITE_CONFIG.shortName}</span>
+    <Link href="/" aria-label={SITE_CONFIG.name}>
+      <Image
+        src="/pptnc_logo.png"
+        alt="PPTNC Logo"
+        width={147}
+        height={90}
+        className="h-9 w-auto"
+        priority
+      />
     </Link>
   );
 }

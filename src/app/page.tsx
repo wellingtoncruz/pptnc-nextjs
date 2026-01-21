@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 import { Container } from "@/components/layout/container";
 import { EpisodeCard } from "@/components/episode/episode-card";
@@ -43,12 +44,22 @@ export default async function HomePage() {
     <Container className="py-8 lg:py-12">
       {/* Hero Section with Podcast Description */}
       <header className="mb-10 text-center lg:mb-12">
-        <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-          PPT Não Compila
+        <h1>
+          <span className="sr-only">PPT Não Compila: Podcast de Tecnologia</span>
+          <Image
+            src="/pptnc_logo.png"
+            alt=""
+            width={588}
+            height={360}
+            className="mx-auto h-32 w-auto sm:h-40"
+            priority
+            aria-hidden="true"
+          />
         </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">
-          O podcast onde a tecnologia encontra histórias reais. Conversas com especialistas
-          sobre transformação digital, carreira em tech e as tendências que moldam o futuro.
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+          O principal podcast de tecnologia do Brasil. Toda semana, conversas com
+          especialistas sobre inteligência artificial, transformação digital, carreira
+          tech e as tendências que moldam o futuro da tecnologia.
         </p>
       </header>
 

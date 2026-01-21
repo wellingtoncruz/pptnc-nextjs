@@ -10,16 +10,16 @@ import { ContactForm } from "./contact-form";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
 
 export const metadata: Metadata = {
-  title: "Contato",
+  title: "Contato - Fale com o Podcast de Tecnologia",
   description:
-    "Entre em contato com a equipe do podcast PPT Não Compila. Siga-nos nas redes sociais.",
+    "Entre em contato com a equipe do podcast de tecnologia PPT Não Compila. Parcerias, patrocínios ou para trocar uma ideia sobre tech.",
   alternates: {
     canonical: `${baseUrl}/contato`,
   },
   openGraph: {
-    title: "Contato | PPT Não Compila",
+    title: "Contato | PPT Não Compila - Podcast de Tecnologia",
     description:
-      "Entre em contato com a equipe do podcast PPT Não Compila. Siga-nos nas redes sociais.",
+      "Entre em contato com a equipe do podcast de tecnologia PPT Não Compila. Parcerias, patrocínios ou para trocar uma ideia sobre tech.",
   },
 };
 
@@ -63,8 +63,8 @@ export default function ContatoPage() {
           Contato
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-          Tem alguma dúvida, sugestão ou quer falar com a gente? Use o
-          formulário abaixo ou nos siga nas redes sociais.
+          Quer falar sobre tecnologia, propor uma parceria ou tirar dúvidas sobre
+          o podcast? Use o formulário abaixo ou nos siga nas redes sociais.
         </p>
       </header>
 

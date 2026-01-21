@@ -18,22 +18,22 @@ import type { Episode } from "@/types";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
 
 export const metadata: Metadata = {
-  title: "Episódios",
+  title: "Todos os Episódios do Podcast de Tecnologia",
   description:
-    "Explore todos os episódios do podcast PPT Não Compila - tecnologia e transformação digital",
+    "Explore +200 episódios do podcast de tecnologia PPT Não Compila. Entrevistas com especialistas sobre IA, cloud, carreira tech e transformação digital.",
   alternates: {
     canonical: `${baseUrl}/episodios`,
   },
   openGraph: {
-    title: "Episódios | PPT Não Compila",
+    title: "Episódios | PPT Não Compila - Podcast de Tecnologia",
     description:
-      "Explore todos os episódios do podcast PPT Não Compila - tecnologia e transformação digital",
+      "Explore +200 episódios do podcast de tecnologia PPT Não Compila. Entrevistas com especialistas sobre IA, cloud, carreira tech e transformação digital.",
     url: "/episodios",
   },
   twitter: {
-    title: "Episódios | PPT Não Compila",
+    title: "Episódios | PPT Não Compila - Podcast de Tecnologia",
     description:
-      "Explore todos os episódios do podcast PPT Não Compila - tecnologia e transformação digital",
+      "Explore +200 episódios do podcast de tecnologia PPT Não Compila. Entrevistas com especialistas sobre IA, cloud, carreira tech e transformação digital.",
   },
 };
 

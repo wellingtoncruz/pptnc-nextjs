@@ -1,5 +1,6 @@
 "use client";
 
+import { FileText, List, MessageSquareText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
@@ -82,16 +83,37 @@ export function ContentTabs({
       className={cn("space-y-4", className)}
       aria-label="Conteúdo do episódio"
     >
+      <h2 className="text-lg font-semibold text-primary">
+        Explore o episódio
+      </h2>
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList>
+        <TabsList className="h-auto gap-1 bg-primary/10 p-1.5 border border-primary/20">
           {hasDescription && (
-            <TabsTrigger value="descricao">Descrição</TabsTrigger>
+            <TabsTrigger
+              value="descricao"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <FileText className="mr-1.5 h-4 w-4" />
+              Descrição
+            </TabsTrigger>
           )}
           {hasChapters && (
-            <TabsTrigger value="capitulos">Capítulos</TabsTrigger>
+            <TabsTrigger
+              value="capitulos"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <List className="mr-1.5 h-4 w-4" />
+              Capítulos
+            </TabsTrigger>
           )}
           {hasTranscript && (
-            <TabsTrigger value="transcricao">Transcrição</TabsTrigger>
+            <TabsTrigger
+              value="transcricao"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <MessageSquareText className="mr-1.5 h-4 w-4" />
+              Transcrição
+            </TabsTrigger>
           )}
         </TabsList>
 
