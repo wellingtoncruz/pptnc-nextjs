@@ -12,6 +12,10 @@ export interface Guest {
   bio?: string;
   /** URL to the guest's photo */
   photoUrl?: string;
+  /** Photo filename (stored in public/guests/) */
+  photo?: string;
+  /** LinkedIn profile URL */
+  linkedin?: string;
   /** Social media and website links */
   socialLinks?: GuestSocialLinks;
 }
@@ -26,6 +30,10 @@ export interface GuestEntity {
   role?: string;
   /** Company or organization */
   company?: string;
+  /** Photo filename (stored in public/guests/) */
+  photo?: string;
+  /** LinkedIn profile URL */
+  linkedin?: string;
 }
 
 /**

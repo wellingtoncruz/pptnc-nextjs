@@ -1,12 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Play, Headphones } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { YouTubeEmbed } from "@/components/episode/youtube-embed";
 import { formatDate, formatDuration } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
@@ -108,34 +109,72 @@ export function FeaturedEpisodeHero({
           {/* Guests - Compact display */}
           {episode.guests.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center gap-3 sm:justify-center">
-                {episode.guests.map((guest, index) => (
-                  <div
-                    key={`${guest.name}-${index}`}
-                    className="flex items-center gap-2"
-                  >
+                {episode.guests.map((guest, index) => {
+                  const guestPhotoUrl = guest.photo ? `/guests/${guest.photo}` : guest.photoUrl;
+                  const hasLinkedIn = Boolean(guest.linkedin);
+
+                  const avatarContent = (
                     <Avatar className="h-8 w-8">
-                      {guest.photoUrl ? (
-                        <AvatarImage src={guest.photoUrl} alt={guest.name} />
-                      ) : null}
-                      <AvatarFallback className="text-xs">
-                        {guest.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </AvatarFallback>
+                      {guestPhotoUrl ? (
+                        <Image
+                          src={guestPhotoUrl}
+                          alt={guest.name}
+                          width={32}
+                          height={32}
+                          className="h-full w-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <AvatarFallback className="text-xs">
+                          {guest.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
+                  );
+
+                  const nameContent = (
                     <div className="text-sm">
                       <p className="font-medium leading-none">{guest.name}</p>
-                      {guest.role && (
+                      {(guest.role || guest.company) && (
                         <p className="text-xs text-muted-foreground">
                           {guest.role}
+                          {guest.role && guest.company && " @ "}
+                          {guest.company}
                         </p>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+
+                  if (hasLinkedIn) {
+                    return (
+                      <a
+                        key={`${guest.name}-${index}`}
+                        href={guest.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 transition-opacity hover:opacity-80"
+                        aria-label={`Ver perfil de ${guest.name} no LinkedIn`}
+                      >
+                        {avatarContent}
+                        {nameContent}
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={`${guest.name}-${index}`}
+                      className="flex items-center gap-2"
+                    >
+                      {avatarContent}
+                      {nameContent}
+                    </div>
+                  );
+                })}
             </div>
           )}
         </div>

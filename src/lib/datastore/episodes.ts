@@ -451,6 +451,8 @@ function mapDocumentToEpisode(
         name: g.name || "",
         role: g.role,
         company: g.company,
+        photo: g.photo,
+        linkedin: g.linkedin,
       }))
     : [];
 
