@@ -56,7 +56,7 @@ function EpisodeContent({
       <GuestSection guests={episode.guests} />
 
       {/* 3. CTA - Social Actions */}
-      <SocialActions episodeUrl={episodeUrl} />
+      <SocialActions episodeUrl={episodeUrl} episodeTitle={episode.title} />
 
       {/* 4. Descrição + Capítulos + Transcrição em Abas */}
       <ContentTabs
@@ -64,6 +64,7 @@ function EpisodeContent({
         transcriptSrt={episode.transcriptSrt}
         chapters={chapters}
         episodeId={episode.youtubeId}
+        episodeTitle={episode.title}
         episodeUrl={episodeUrl}
         initialTab={initialTab}
         highlightedTimestamp={initialTimestamp}

@@ -13,7 +13,9 @@ vi.mock("sonner", () => ({
 
 describe("SocialActions", () => {
   const mockWriteText = vi.fn();
+  const mockWindowOpen = vi.fn();
   const originalClipboard = navigator.clipboard;
+  const originalWindowOpen = window.open;
 
   beforeEach(() => {
     // Mock clipboard API
@@ -24,6 +26,8 @@ describe("SocialActions", () => {
       writable: true,
       configurable: true,
     });
+    // Mock window.open
+    window.open = mockWindowOpen;
   });
 
   afterEach(() => {
@@ -34,6 +38,8 @@ describe("SocialActions", () => {
       writable: true,
       configurable: true,
     });
+    // Restore original window.open
+    window.open = originalWindowOpen;
   });
 
   describe("External links", () => {
@@ -163,6 +169,141 @@ describe("SocialActions", () => {
         <SocialActions episodeUrl="https://example.com/ep1" />
       );
       expect(container.firstChild).toHaveClass("flex");
+    });
+  });
+
+  describe("Share buttons", () => {
+    describe("WhatsApp button", () => {
+      it("renders WhatsApp button", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        expect(
+          screen.getByRole("button", { name: /whatsapp/i })
+        ).toBeInTheDocument();
+      });
+
+      it("renders WhatsApp button text", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        expect(screen.getByText("WhatsApp")).toBeInTheDocument();
+      });
+
+      it("opens WhatsApp share URL on click", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        fireEvent.click(screen.getByRole("button", { name: /whatsapp/i }));
+        expect(mockWindowOpen).toHaveBeenCalledWith(
+          expect.stringContaining("wa.me/?text="),
+          "_blank"
+        );
+      });
+
+      it("includes episode URL in WhatsApp share", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        fireEvent.click(screen.getByRole("button", { name: /whatsapp/i }));
+        expect(mockWindowOpen).toHaveBeenCalledWith(
+          expect.stringContaining(encodeURIComponent("https://example.com/ep1")),
+          "_blank"
+        );
+      });
+
+      it("includes episode title in WhatsApp share when provided", () => {
+        render(
+          <SocialActions
+            episodeUrl="https://example.com/ep1"
+            episodeTitle="My Test Episode"
+          />
+        );
+        fireEvent.click(screen.getByRole("button", { name: /whatsapp/i }));
+        expect(mockWindowOpen).toHaveBeenCalledWith(
+          expect.stringContaining(encodeURIComponent("My Test Episode")),
+          "_blank"
+        );
+      });
+    });
+
+    describe("X (Twitter) button", () => {
+      it("renders X button", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        expect(
+          screen.getByRole("button", { name: /compartilhar no x/i })
+        ).toBeInTheDocument();
+      });
+
+      it("renders X button text", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        expect(screen.getByText("X")).toBeInTheDocument();
+      });
+
+      it("opens Twitter share URL on click", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        fireEvent.click(screen.getByRole("button", { name: /compartilhar no x/i }));
+        expect(mockWindowOpen).toHaveBeenCalledWith(
+          expect.stringContaining("twitter.com/intent/tweet"),
+          "_blank"
+        );
+      });
+
+      it("includes episode URL in Twitter share", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        fireEvent.click(screen.getByRole("button", { name: /compartilhar no x/i }));
+        expect(mockWindowOpen).toHaveBeenCalledWith(
+          expect.stringContaining(encodeURIComponent("https://example.com/ep1")),
+          "_blank"
+        );
+      });
+    });
+
+    describe("LinkedIn button", () => {
+      it("renders LinkedIn button", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        expect(
+          screen.getByRole("button", { name: /linkedin/i })
+        ).toBeInTheDocument();
+      });
+
+      it("renders LinkedIn button text", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        expect(screen.getByText("LinkedIn")).toBeInTheDocument();
+      });
+
+      it("opens LinkedIn share URL on click", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        fireEvent.click(screen.getByRole("button", { name: /linkedin/i }));
+        expect(mockWindowOpen).toHaveBeenCalledWith(
+          expect.stringContaining("linkedin.com/sharing/share-offsite"),
+          "_blank"
+        );
+      });
+
+      it("includes episode URL in LinkedIn share", () => {
+        render(<SocialActions episodeUrl="https://example.com/ep1" />);
+        fireEvent.click(screen.getByRole("button", { name: /linkedin/i }));
+        expect(mockWindowOpen).toHaveBeenCalledWith(
+          expect.stringContaining(encodeURIComponent("https://example.com/ep1")),
+          "_blank"
+        );
+      });
+    });
+  });
+
+  describe("Share accessibility", () => {
+    it("has proper aria-label on WhatsApp button", () => {
+      render(<SocialActions episodeUrl="https://example.com/ep1" />);
+      expect(
+        screen.getByLabelText(/compartilhar no whatsapp/i)
+      ).toBeInTheDocument();
+    });
+
+    it("has proper aria-label on X button", () => {
+      render(<SocialActions episodeUrl="https://example.com/ep1" />);
+      expect(
+        screen.getByLabelText(/compartilhar no x/i)
+      ).toBeInTheDocument();
+    });
+
+    it("has proper aria-label on LinkedIn button", () => {
+      render(<SocialActions episodeUrl="https://example.com/ep1" />);
+      expect(
+        screen.getByLabelText(/compartilhar no linkedin/i)
+      ).toBeInTheDocument();
     });
   });
 });

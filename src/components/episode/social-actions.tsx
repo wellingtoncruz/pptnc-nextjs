@@ -2,21 +2,30 @@
 
 import { useState } from "react";
 
-import { Youtube, Copy, Check } from "lucide-react";
+import { Youtube, Copy, Check, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { SpotifyIcon } from "@/components/icons/social-icons";
+import { SpotifyIcon, XIcon, LinkedInIcon } from "@/components/icons/social-icons";
 import { cn } from "@/lib/utils";
 import { EXTERNAL_LINKS } from "@/lib/constants";
 
 export interface SocialActionsProps {
   episodeUrl: string;
+  episodeTitle?: string;
   className?: string;
 }
 
-export function SocialActions({ episodeUrl, className }: SocialActionsProps) {
+export function SocialActions({
+  episodeUrl,
+  episodeTitle,
+  className,
+}: SocialActionsProps) {
   const [copied, setCopied] = useState(false);
+
+  const shareText = episodeTitle
+    ? `${episodeTitle} | PPT Nao Compila`
+    : "Confira esse episódio do PPT Nao Compila";
 
   const handleCopyLink = async () => {
     try {
@@ -28,6 +37,28 @@ export function SocialActions({ episodeUrl, className }: SocialActionsProps) {
     } catch {
       toast.error("Erro ao copiar o link");
     }
+  };
+
+  const handleWhatsApp = () => {
+    const whatsappText = encodeURIComponent(`${shareText}\n\n${episodeUrl}`);
+    window.open(`https://wa.me/?text=${whatsappText}`, "_blank");
+  };
+
+  const handleTwitter = () => {
+    const twitterText = encodeURIComponent(shareText);
+    const twitterUrl = encodeURIComponent(episodeUrl);
+    window.open(
+      `https://twitter.com/intent/tweet?text=${twitterText}&url=${twitterUrl}`,
+      "_blank"
+    );
+  };
+
+  const handleLinkedIn = () => {
+    const linkedInUrl = encodeURIComponent(episodeUrl);
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${linkedInUrl}`,
+      "_blank"
+    );
   };
 
   return (
@@ -56,6 +87,37 @@ export function SocialActions({ episodeUrl, className }: SocialActionsProps) {
           <SpotifyIcon className="mr-2 h-4 w-4" />
           Seguir no Spotify
         </a>
+      </Button>
+
+      {/* Share buttons */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleWhatsApp}
+        aria-label="Compartilhar no WhatsApp (abre em nova aba)"
+      >
+        <MessageCircle className="mr-2 h-4 w-4" />
+        WhatsApp
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleTwitter}
+        aria-label="Compartilhar no X (abre em nova aba)"
+      >
+        <XIcon className="mr-2 h-4 w-4" />
+        X
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleLinkedIn}
+        aria-label="Compartilhar no LinkedIn (abre em nova aba)"
+      >
+        <LinkedInIcon className="mr-2 h-4 w-4" />
+        LinkedIn
       </Button>
 
       {/* Copy Link Button */}

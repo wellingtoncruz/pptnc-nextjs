@@ -1,15 +1,14 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn, buildChapterDeepLink } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   parseSrt,
   groupSegmentsIntoParagraphsWithTimestamps,
 } from "@/lib/transcript";
 import { useMemo } from "react";
-import { Share2 } from "lucide-react";
-import { toast } from "sonner";
 import { TimestampLink } from "./timestamp-link";
+import { ChapterShareButton } from "./chapter-share-button";
 
 import type { Chapter } from "@/types";
 
@@ -22,6 +21,8 @@ export interface ContentTabsProps {
   chapters?: Chapter[];
   /** Episode ID for analytics tracking */
   episodeId?: string;
+  /** Episode title for share text */
+  episodeTitle?: string;
   /** Full episode URL for building share links */
   episodeUrl?: string;
   /** Initial tab to show (from deep link) */
@@ -42,26 +43,12 @@ export function ContentTabs({
   transcriptSrt,
   chapters = [],
   episodeId,
+  episodeTitle,
   episodeUrl,
   initialTab,
   highlightedTimestamp,
   className,
 }: ContentTabsProps) {
-  const handleShareChapter = async (seconds: number) => {
-    if (!episodeUrl) {
-      toast.error("Não foi possível gerar o link");
-      return;
-    }
-
-    try {
-      const deepLink = buildChapterDeepLink(episodeUrl, seconds);
-      await navigator.clipboard.writeText(deepLink);
-      toast.success("Link do capítulo copiado!");
-    } catch (error) {
-      console.error("Failed to copy chapter link:", error);
-      toast.error("Erro ao copiar o link");
-    }
-  };
   const transcriptParagraphs = useMemo(() => {
     if (!transcriptSrt) return [];
     const segments = parseSrt(transcriptSrt);
@@ -153,14 +140,12 @@ export function ContentTabs({
                         {chapter.topic}
                       </span>
                       {episodeUrl && (
-                        <button
-                          type="button"
-                          onClick={() => handleShareChapter(chapter.startTime)}
-                          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted"
-                          aria-label={`Compartilhar capítulo: ${chapter.topic}`}
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </button>
+                        <ChapterShareButton
+                          episodeUrl={episodeUrl}
+                          startTime={chapter.startTime}
+                          topic={chapter.topic}
+                          episodeTitle={episodeTitle}
+                        />
                       )}
                     </li>
                   );

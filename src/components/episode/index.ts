@@ -1,3 +1,4 @@
+export { ChapterShareButton } from "./chapter-share-button";
 export { ContentTabs, type ContentTabsProps } from "./content-tabs";
 export { EpisodeCard } from "./episode-card";
 export { EpisodeHeader } from "./episode-header";
