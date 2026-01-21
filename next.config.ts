@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Standalone output for Docker deployment
+  output: "standalone",
   // Exclude @google-cloud packages from bundling to fix proto file resolution
   serverExternalPackages: [
     "@google-cloud/datastore",
