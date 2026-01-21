@@ -4,6 +4,7 @@ import Script from "next/script";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/header";
+import { Sponsors } from "@/components/layout/sponsors";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { GA_MEASUREMENT_ID } from "@/lib/analytics/gtag";
@@ -119,6 +120,7 @@ export default function RootLayout({
         >
           <Header />
           <main className="flex-1 overflow-x-hidden">{children}</main>
+          <Sponsors />
           <Footer />
           <Toaster />
         </ThemeProvider>
