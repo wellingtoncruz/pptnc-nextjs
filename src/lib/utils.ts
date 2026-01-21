@@ -21,3 +21,17 @@ export function buildChapterDeepLink(baseUrl: string, seconds: number): string {
   url.searchParams.set("tab", "capitulos");
   return url.toString();
 }
+
+/**
+ * Escapes HTML special characters to prevent XSS attacks
+ * @param text - The text to escape
+ * @returns Escaped text safe for HTML insertion
+ */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}

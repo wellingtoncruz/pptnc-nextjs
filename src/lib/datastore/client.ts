@@ -61,6 +61,9 @@ export const COLLECTION_EMPTY_SEARCHES = "empty_searches";
 /** Collection for search logs */
 export const COLLECTION_SEARCH_LOGS = "search_logs";
 
+/** Collection for site metrics (midiakit) */
+export const COLLECTION_METRICS = "metrics";
+
 // Legacy aliases for backwards compatibility
 export const KIND_EPISODES = COLLECTION_EPISODES;
 export const KIND_TOPICS = COLLECTION_TOPICS;

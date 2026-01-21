@@ -15,6 +15,9 @@ export const EXTERNAL_LINKS = {
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/episodios", label: "Episódios" },
+  { href: "/midiakit", label: "Midiakit" },
+  { href: "/sugerir-pauta", label: "Sugerir Pauta" },
+  { href: "/contato", label: "Contato" },
 ] as const;
 
 /**

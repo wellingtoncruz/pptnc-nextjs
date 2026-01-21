@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn, buildChapterDeepLink } from "./utils";
+import { cn, buildChapterDeepLink, escapeHtml } from "./utils";
 
 describe("cn", () => {
   it("merges class names correctly", () => {
@@ -51,5 +51,41 @@ describe("buildChapterDeepLink", () => {
 
   it("throws error when baseUrl is invalid", () => {
     expect(() => buildChapterDeepLink("not-a-url", 100)).toThrow();
+  });
+});
+
+describe("escapeHtml", () => {
+  it("escapes ampersand", () => {
+    expect(escapeHtml("foo & bar")).toBe("foo &amp; bar");
+  });
+
+  it("escapes less than sign", () => {
+    expect(escapeHtml("<script>")).toBe("&lt;script&gt;");
+  });
+
+  it("escapes greater than sign", () => {
+    expect(escapeHtml("a > b")).toBe("a &gt; b");
+  });
+
+  it("escapes double quotes", () => {
+    expect(escapeHtml('say "hello"')).toBe("say &quot;hello&quot;");
+  });
+
+  it("escapes single quotes", () => {
+    expect(escapeHtml("it's")).toBe("it&#039;s");
+  });
+
+  it("escapes multiple special characters", () => {
+    expect(escapeHtml('<script>alert("xss")</script>')).toBe(
+      "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;"
+    );
+  });
+
+  it("returns empty string for empty input", () => {
+    expect(escapeHtml("")).toBe("");
+  });
+
+  it("returns unchanged text when no special characters", () => {
+    expect(escapeHtml("Hello World")).toBe("Hello World");
   });
 });
