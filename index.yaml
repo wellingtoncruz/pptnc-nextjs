@@ -1,0 +1,39 @@
+# Datastore Composite Indexes
+# Deploy with: gcloud datastore indexes create index.yaml
+#
+# Using isFullEpisode boolean field for equality filters, enabling:
+# - Direct ordering by publishedAt
+# - Database-level pagination with limit/offset
+# - Optimal query performance
+
+indexes:
+  # Index for getEpisodes(), getLatestEpisode()
+  # Supports: filter isFullEpisode + order by publishedAt desc
+  - kind: videos
+    properties:
+      - name: isFullEpisode
+      - name: publishedAt
+        direction: desc
+
+  # Index for getEpisodesByTopic()
+  # Supports: filter topics + isFullEpisode + order by publishedAt desc
+  - kind: videos
+    properties:
+      - name: topics
+      - name: isFullEpisode
+      - name: publishedAt
+        direction: desc
+
+  # Index for getEpisodesCountByTopic()
+  # Supports: filter topics + isFullEpisode (count query)
+  - kind: videos
+    properties:
+      - name: topics
+      - name: isFullEpisode
+
+  # Index for getAllTopics() projection query
+  # Supports: filter isFullEpisode + select topics
+  - kind: videos
+    properties:
+      - name: isFullEpisode
+      - name: topics
