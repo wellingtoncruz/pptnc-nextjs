@@ -96,6 +96,12 @@ fi
 # Step 0: Pre-flight checks
 log_step "Pre-flight checks"
 
+if ! command -v pnpm &> /dev/null; then
+  log_error "pnpm is not installed. Run: corepack enable && corepack prepare pnpm@latest --activate"
+  exit 1
+fi
+log_success "pnpm is available"
+
 if ! command -v docker &> /dev/null; then
   log_error "Docker is not installed or not in PATH"
   exit 1
@@ -125,7 +131,7 @@ log_success "Authenticated as: $GCLOUD_ACCOUNT"
 # Step 1: Run tests (optional)
 if [ "$SKIP_TESTS" = false ]; then
   log_step "Running tests"
-  run_cmd npm test -- --run
+  run_cmd pnpm test
   log_success "Tests passed"
 else
   log_warning "Skipping tests (--skip-tests flag)"
@@ -133,12 +139,12 @@ fi
 
 # Step 2: Build Next.js
 log_step "Building Next.js application"
-run_cmd npm run build
+run_cmd pnpm --filter @pptnc/web build
 log_success "Next.js build completed"
 
-# Step 3: Build Docker image
+# Step 3: Build Docker image (context = monorepo root)
 log_step "Building Docker image"
-run_cmd docker build -f Dockerfile.stage -t ${SERVICE_NAME}:${IMAGE_TAG} .
+run_cmd docker build -f apps/web/Dockerfile.stage -t ${SERVICE_NAME}:${IMAGE_TAG} .
 log_success "Docker image built: ${SERVICE_NAME}:${IMAGE_TAG}"
 
 # Step 4: Tag for Artifact Registry

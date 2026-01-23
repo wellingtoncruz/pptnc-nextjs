@@ -1,29 +1,28 @@
-# Dependencies
-node_modules
+# Dependencies (installed during Docker build)
+**/node_modules
 npm-debug.log*
 
-# Next.js (exclude build cache, keep standalone output)
-.next/cache
-out
+# Next.js build cache (keep standalone output for stage/local builds)
+apps/web/.next/cache
+apps/web/out
 
 # Testing
-coverage
-*.test.ts
-*.test.tsx
-__tests__
-vitest.config.ts
+**/*.test.ts
+**/*.test.tsx
+**/__tests__
+**/coverage
 
 # IDE
 .vscode
 .idea
-*.swp
-*.swo
+**/*.swp
+**/*.swo
 
 # Git
 .git
 .gitignore
 
-# Environment (secrets should be injected at runtime)
+# Environment (secrets injected at runtime)
 .env
 .env.*
 !.env.example
@@ -31,12 +30,20 @@ vitest.config.ts
 # Documentation
 *.md
 LICENSE
+docs/
 
-# Build artifacts
-Dockerfile
+# Build/CI artifacts
+**/Dockerfile
+**/Dockerfile.*
 .dockerignore
 cloudbuild.yaml
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# Scripts (not needed in container)
+scripts/
+
+# Turbo cache
+.turbo

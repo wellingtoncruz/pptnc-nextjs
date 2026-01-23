@@ -1,0 +1,15 @@
+export {
+  getFirestoreClient,
+  resetFirestoreClient,
+  getDatastoreClient,
+  resetDatastoreClient,
+  COLLECTION_EPISODES,
+  COLLECTION_TOPICS,
+  COLLECTION_EMPTY_SEARCHES,
+  COLLECTION_SEARCH_LOGS,
+  COLLECTION_METRICS,
+  KIND_EPISODES,
+  KIND_TOPICS,
+  KIND_EMPTY_SEARCHES,
+  KIND_SEARCH_LOGS,
+} from "./client";
