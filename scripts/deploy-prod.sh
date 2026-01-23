@@ -16,6 +16,8 @@ REGION="us-east1"
 SERVICE_NAME="pptnc-prod"
 REGISTRY="us-east1-docker.pkg.dev/${PROJECT_ID}/pptnc/pptnc"
 IMAGE_TAG="stable"
+# NEXT_PUBLIC_* vars are inlined at build time by Next.js
+NEXT_PUBLIC_BASE_URL="https://pptnaocompila.com.br"
 
 # Colors for output
 RED='\033[0;31m'
@@ -137,8 +139,10 @@ else
   log_warning "Skipping tests (--skip-tests flag)"
 fi
 
-# Step 2: Build Next.js
+# Step 2: Build Next.js (NEXT_PUBLIC_* vars are inlined at build time)
 log_step "Building Next.js application"
+log_success "NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}"
+export NEXT_PUBLIC_BASE_URL
 run_cmd pnpm --filter @pptnc/web build
 log_success "Next.js build completed"
 
