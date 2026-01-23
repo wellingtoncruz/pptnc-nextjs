@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getFirestoreClient, COLLECTION_EPISODES, COLLECTION_TOPICS } from "./client";
+import { logger } from "@/lib/logger";
 
 import type {
   Episode,
@@ -66,7 +67,10 @@ async function fetchAllEpisodesFromFirestore(): Promise<Episode[]> {
     // Map WITHOUT transcripts - they're excluded at query level now
     return snapshot.docs.map((doc) => mapDocumentToEpisode(doc.id, doc.data(), db, false));
   } catch (error) {
-    console.warn("Firestore not available, returning empty episodes:", error);
+    logger.warn("Firestore not available, returning empty episodes", {
+      service: "episodes",
+      error: error instanceof Error ? error.message : String(error),
+    });
     return [];
   }
 }
@@ -173,7 +177,11 @@ export async function getEpisodeBySlugWithTranscript(slug: string): Promise<Epis
     const doc = snapshot.docs[0];
     return mapDocumentToEpisode(doc.id, doc.data(), db, true);
   } catch (error) {
-    console.warn("Failed to fetch episode with transcript, using cached:", error);
+    logger.warn("Failed to fetch episode with transcript, using cached", {
+      service: "episodes",
+      slug,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return cachedEpisode; // Fallback to cached version
   }
 }
@@ -232,7 +240,10 @@ async function fetchAllTopicsFromFirestore(): Promise<string[]> {
       .filter((name): name is string => name !== null)
       .sort();
   } catch (error) {
-    console.warn("Firestore not available:", error);
+    logger.warn("Firestore not available for topics", {
+      service: "episodes",
+      error: error instanceof Error ? error.message : String(error),
+    });
     return [];
   }
 }

@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 /**
  * Form validation schema for contact submissions
@@ -105,7 +106,10 @@ Enviado através do formulário de contato do site PPTNC.
   });
 
   if (!emailResult.success) {
-    console.error("[Contact] Failed to send email:", emailResult.error);
+    logger.error("Failed to send contact email", {
+      action: "contact",
+      error: emailResult.error,
+    });
     return {
       success: false,
       message:

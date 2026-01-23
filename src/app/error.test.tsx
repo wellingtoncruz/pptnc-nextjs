@@ -50,7 +50,11 @@ describe("Error (500 page)", () => {
   it("logs the error to console", () => {
     const consoleSpy = vi.spyOn(console, "error");
     render(<ErrorPage error={mockError} reset={mockReset} />);
-    expect(consoleSpy).toHaveBeenCalledWith("Application error:", mockError);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Application error:",
+      mockError.message,
+      mockError.digest
+    );
   });
 
   it("renders the alert icon", () => {

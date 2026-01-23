@@ -12,6 +12,8 @@ import {
   getAllTopics,
 } from "@/lib/datastore/episodes";
 
+import { logger } from "@/lib/logger";
+
 import type { Metadata } from "next";
 import type { Episode } from "@/types";
 
@@ -75,7 +77,11 @@ export default async function EpisodesPage({ searchParams }: EpisodesPageProps) 
       ]);
     }
   } catch (error) {
-    console.error("Failed to fetch episodes:", error);
+    logger.error("Failed to fetch episodes", {
+      page,
+      activeTopic,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   const totalPages = Math.ceil(totalCount / EPISODES_PER_PAGE) || 1;

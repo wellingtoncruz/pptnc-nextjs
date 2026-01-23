@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { logger } from "@/lib/logger";
 
 /**
  * Resend client instance
@@ -68,7 +69,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 
   // Validate API key is configured
   if (!process.env.RESEND_API_KEY) {
-    console.error("[Email] RESEND_API_KEY is not configured");
+    logger.error("RESEND_API_KEY is not configured", { service: "email" });
     return {
       success: false,
       error: "Email service is not configured",
@@ -86,21 +87,21 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     });
 
     if (error) {
-      console.error("[Email] Resend API error:", error);
+      logger.error("Resend API error", { service: "email", error: error.message });
       return {
         success: false,
         error: error.message || "Failed to send email",
       };
     }
 
-    console.log("[Email] Sent successfully:", data?.id);
+    logger.info("Email sent successfully", { service: "email", messageId: data?.id });
     return {
       success: true,
       messageId: data?.id,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Email] Exception:", message);
+    logger.error("Email exception", { service: "email", error: message });
     return {
       success: false,
       error: message,

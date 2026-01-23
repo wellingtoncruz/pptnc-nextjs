@@ -159,11 +159,11 @@ describe("FeaturedEpisodeHero", () => {
       expect(screen.getByText("Maria Santos")).toBeInTheDocument();
     });
 
-    it("renders guest roles", () => {
+    it("renders guest roles with company", () => {
       render(<FeaturedEpisodeHero episode={mockEpisode} />);
 
-      expect(screen.getByText("Product Manager")).toBeInTheDocument();
-      expect(screen.getByText("CTO")).toBeInTheDocument();
+      expect(screen.getByText(/Product Manager.*Tech Co/)).toBeInTheDocument();
+      expect(screen.getByText(/CTO.*Startup Inc/)).toBeInTheDocument();
     });
 
     it("renders guest avatars with initials fallback", () => {

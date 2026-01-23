@@ -5,6 +5,7 @@
 
 import { getFirestoreClient, COLLECTION_EPISODES } from "./client";
 import { parseSrtTimestamp } from "@/lib/transcript";
+import { logger } from "@/lib/logger";
 
 import type { Chunk, Chapter } from "@/types";
 
@@ -46,7 +47,10 @@ export async function getChaptersByVideoId(videoId: string): Promise<Chapter[]> 
 
         // Skip chunks without required metadata
         if (!metadata?.start_time || !metadata?.topic) {
-          console.warn(`Chunk ${doc.id} missing required metadata, skipping`);
+          logger.warn("Chunk missing required metadata, skipping", {
+            service: "chunks",
+            chunkId: doc.id,
+          });
           return null;
         }
 
@@ -57,7 +61,11 @@ export async function getChaptersByVideoId(videoId: string): Promise<Chapter[]> 
       })
       .filter((chapter): chapter is Chapter => chapter !== null);
   } catch (error) {
-    console.warn(`Failed to fetch chunks for video ${videoId}:`, error);
+    logger.warn("Failed to fetch chunks for video", {
+      service: "chunks",
+      videoId,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return [];
   }
 }

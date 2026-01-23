@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getEpisodes } from "@/lib/datastore/episodes";
+import { logger } from "@/lib/logger";
 
 // Helper to add timeout to promises
 function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
@@ -18,7 +19,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     episodes = await withTimeout(getEpisodes(), 10000, []);
   } catch (error) {
-    console.warn("Failed to fetch episodes for sitemap:", error);
+    logger.warn("Failed to fetch episodes for sitemap", {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   // Static pages

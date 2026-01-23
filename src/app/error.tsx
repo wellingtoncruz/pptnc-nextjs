@@ -17,8 +17,10 @@ interface ErrorProps {
  */
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log error to console (in production, send to monitoring service)
-    console.error("Application error:", error);
+    // Error boundaries are client-side only - console.error is appropriate here
+    // In production, integrate with monitoring service (Sentry, etc.)
+    // eslint-disable-next-line no-console
+    console.error("Application error:", error.message, error.digest);
   }, [error]);
 
   return (

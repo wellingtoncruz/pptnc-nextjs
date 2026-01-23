@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { getFirestoreClient, COLLECTION_METRICS } from "./client";
+import { logger } from "@/lib/logger";
 
 /**
  * Podcast metrics for the Midiakit page
@@ -56,7 +57,7 @@ async function fetchMetricsFromFirestore(): Promise<PodcastMetrics> {
     const doc = await docRef.get();
 
     if (!doc.exists) {
-      console.warn("[Metrics] No metrics document found, using defaults");
+      logger.warn("No metrics document found, using defaults", { service: "metrics" });
       return DEFAULT_METRICS;
     }
 
@@ -77,7 +78,10 @@ async function fetchMetricsFromFirestore(): Promise<PodcastMetrics> {
       updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
     };
   } catch (error) {
-    console.error("[Metrics] Failed to fetch from Firestore:", error);
+    logger.error("Failed to fetch metrics from Firestore", {
+      service: "metrics",
+      error: error instanceof Error ? error.message : String(error),
+    });
     return DEFAULT_METRICS;
   }
 }

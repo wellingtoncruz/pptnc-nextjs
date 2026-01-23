@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 /**
  * Form validation schema for suggestion submissions
@@ -147,7 +148,11 @@ Enviado através do formulário de sugestões do site PPTNC.
   });
 
   if (!emailResult.success) {
-    console.error("[Suggestion] Failed to send email:", emailResult.error);
+    logger.error("Failed to send suggestion email", {
+      action: "suggestion",
+      type: data.type,
+      error: emailResult.error,
+    });
     return {
       success: false,
       message:

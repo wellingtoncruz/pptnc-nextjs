@@ -10,10 +10,10 @@ describe("Footer", () => {
     expect(footer).toBeInTheDocument();
   });
 
-  it("displays podcast name as heading", () => {
+  it("displays podcast logo with alt text", () => {
     render(<Footer />);
-    const heading = screen.getByRole("heading", { name: /ppt não compila/i });
-    expect(heading).toBeInTheDocument();
+    const logo = screen.getByRole("img", { name: /ppt não compila/i });
+    expect(logo).toBeInTheDocument();
   });
 
   it("displays podcast description/tagline", () => {

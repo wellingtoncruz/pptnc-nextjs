@@ -6,6 +6,7 @@ import { EpisodeCard } from "@/components/episode/episode-card";
 import { SubscriptionCta } from "@/components/episode/subscription-cta";
 import { FeaturedEpisodeHero } from "@/components/home/featured-episode-hero";
 import { getEpisodes, getLatestEpisode } from "@/lib/datastore/episodes";
+import { logger } from "@/lib/logger";
 
 import type { Episode } from "@/types";
 
@@ -37,7 +38,9 @@ export default async function HomePage() {
       .slice(0, 8);
   } catch (error) {
     // Datastore not available - show empty state
-    console.error("Failed to fetch episodes:", error);
+    logger.error("Failed to fetch episodes for home page", {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   return (

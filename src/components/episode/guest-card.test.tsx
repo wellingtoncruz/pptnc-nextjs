@@ -54,7 +54,8 @@ describe("GuestCard", () => {
 
     it("renders LinkedIn link with aria-label", () => {
       render(<GuestCard guest={fullGuest} />);
-      const link = screen.getByLabelText(/linkedin/i);
+      // Use more specific selector - the icon link in social section
+      const link = screen.getByLabelText(`${fullGuest.name} no LinkedIn`);
       expect(link).toHaveAttribute("href", fullGuest.socialLinks!.linkedin);
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noopener noreferrer");
