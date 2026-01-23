@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 /**
- * Rate limiting middleware using Upstash Redis
+ * Middleware: HTTPS enforcement + Rate limiting
  *
- * Configuration:
+ * HTTPS: Cloud Run terminates TLS and forwards HTTP to the container.
+ * We trust the X-Forwarded-Proto header to determine if the original
+ * request was HTTPS, preventing ERR_TOO_MANY_REDIRECTS loops.
+ *
+ * Rate limiting (Upstash Redis):
  * - UPSTASH_REDIS_REST_URL: Redis endpoint
  * - UPSTASH_REDIS_REST_TOKEN: Redis token
- *
  * If not configured, rate limiting is disabled (allows all requests)
  */
 
@@ -40,7 +43,38 @@ function getRatelimiter() {
   return ratelimit;
 }
 
+// Routes that have rate limiting applied
+const RATE_LIMITED_PATHS = ["/contato", "/sugerir-pauta", "/api"];
+
+function isRateLimitedPath(pathname: string): boolean {
+  return RATE_LIMITED_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  // Trust X-Forwarded-Proto from Cloud Run's reverse proxy.
+  // Cloud Run terminates TLS and forwards requests as HTTP with this header.
+  // Without this check, any Next.js internal redirect (trailing slash, etc.)
+  // uses http:// in Location header, causing infinite redirect loops with
+  // the load balancer's HTTP→HTTPS redirect.
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  if (
+    process.env.NODE_ENV === "production" &&
+    forwardedProto &&
+    forwardedProto !== "https"
+  ) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.port = "";
+    return NextResponse.redirect(url, 308);
+  }
+
+  // Rate limiting only applies to specific paths
+  if (!isRateLimitedPath(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const limiter = getRatelimiter();
 
   // If rate limiting is not configured, allow all requests
@@ -84,13 +118,10 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-// Apply rate limiting to form submission routes
+// Run middleware on all routes (HTTPS enforcement is global)
+// Excludes static assets and Next.js internals for performance
 export const config = {
   matcher: [
-    // Form actions
-    "/contato/:path*",
-    "/sugerir-pauta/:path*",
-    // Future API routes
-    "/api/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|pdf)$).*)",
   ],
 };
