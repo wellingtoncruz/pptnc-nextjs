@@ -12,7 +12,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
 
   // Fetch episodes with 10s timeout to prevent build hang
   let episodes: { slug: string; publishedAt: Date }[] = [];

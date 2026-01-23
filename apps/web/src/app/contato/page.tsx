@@ -7,7 +7,7 @@ import { SpotifyIcon } from "@/components/icons/social-icons";
 import { EXTERNAL_LINKS } from "@/lib/constants";
 import { ContactForm } from "./contact-form";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
 
 export const metadata: Metadata = {
   title: "Contato - Fale com o Podcast de Tecnologia",

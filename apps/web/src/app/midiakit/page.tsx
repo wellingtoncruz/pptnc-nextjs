@@ -18,7 +18,7 @@ import { Card } from "@/components/ui/card";
 import { SpotifyIcon } from "@/components/icons/social-icons";
 import { getMetrics, formatMetricNumber } from "@/lib/datastore/metrics";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
 
 export const metadata: Metadata = {
   title: "Midiakit - Anuncie no Podcast de Tecnologia",

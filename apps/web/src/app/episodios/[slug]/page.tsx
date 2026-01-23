@@ -51,7 +51,7 @@ export async function generateMetadata({
     return { title: "Episodio nao encontrado" };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
   const canonicalUrl = `${baseUrl}/episodios/${episode.slug}`;
 
   // Truncate description at word boundary for better SEO
@@ -112,7 +112,7 @@ export default async function EpisodePage({
     notFound();
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnc.com.br";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
   const episodeUrl = `${baseUrl}/episodios/${episode.slug}`;
 
   // Parse and validate query params for deep linking

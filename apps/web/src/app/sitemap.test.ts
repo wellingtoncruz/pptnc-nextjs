@@ -20,7 +20,7 @@ describe("sitemap", () => {
     expect(result).toHaveLength(2);
     expect(result[0]).toEqual(
       expect.objectContaining({
-        url: expect.stringMatching(/pptnc\.com\.br$/),
+        url: expect.stringMatching(/pptnaocompila\.com\.br$/),
         priority: 1.0,
         changeFrequency: "daily",
       })
@@ -66,7 +66,7 @@ describe("sitemap", () => {
 
     const result = await sitemap();
 
-    const homePage = result.find((item) => item.url?.endsWith("pptnc.com.br"));
+    const homePage = result.find((item) => item.url?.endsWith("pptnaocompila.com.br"));
     const episodesPage = result.find(
       (item) => item.url?.endsWith("/episodios")
     );
@@ -100,6 +100,6 @@ describe("sitemap", () => {
 
     // Should still return static pages
     expect(result).toHaveLength(2);
-    expect(result[0].url).toContain("pptnc.com.br");
+    expect(result[0].url).toContain("pptnaocompila.com.br");
   });
 });
