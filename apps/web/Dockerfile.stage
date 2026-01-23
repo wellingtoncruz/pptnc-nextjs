@@ -32,10 +32,10 @@ RUN chown -R nextjs:nodejs /app
 # Switch to non-root user
 USER nextjs
 
-# Expose port (Cloud Run uses PORT env variable)
-EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+# Cloud Run provides PORT env var (default 8080)
+EXPOSE 8080
 
 # Start the server
-CMD ["node", "apps/web/server.js"]
+# HOSTNAME must be explicitly set to 0.0.0.0 because Cloud Run/K8s
+# overrides the HOSTNAME env var with the pod instance name
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node apps/web/server.js"]

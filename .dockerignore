@@ -2,6 +2,9 @@
 **/node_modules
 npm-debug.log*
 
+# Re-include node_modules inside standalone output (required for runtime)
+!apps/web/.next/standalone/**/node_modules
+
 # Next.js build cache (keep standalone output for stage/local builds)
 apps/web/.next/cache
 apps/web/out

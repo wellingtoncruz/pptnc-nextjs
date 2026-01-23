@@ -23,9 +23,9 @@ COPY --chown=nextjs:nodejs apps/web/.next/static ./apps/web/.next/static
 
 USER nextjs
 
-EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+EXPOSE 8080
 ENV NODE_ENV=production
 
-CMD ["node", "apps/web/server.js"]
+# HOSTNAME must be explicitly set to 0.0.0.0 because Cloud Run/K8s
+# overrides the HOSTNAME env var with the pod instance name
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node apps/web/server.js"]
