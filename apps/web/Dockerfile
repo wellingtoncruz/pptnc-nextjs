@@ -35,13 +35,10 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules 2>/dev/null || true
-COPY --from=deps /app/packages/datastore/node_modules ./packages/datastore/node_modules 2>/dev/null || true
+# Copy entire workspace with dependencies from deps stage
+COPY --from=deps /app ./
 
-# Copy source
+# Copy source (overwrites package.json files with full source)
 COPY . .
 
 # Build the application
