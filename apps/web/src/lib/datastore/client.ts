@@ -26,7 +26,7 @@ export async function getFirestoreClient(): Promise<Firestore> {
     // Dynamic import to prevent loading during SSG
     const { Firestore } = await import("@google-cloud/firestore");
     firestoreClient = new Firestore({
-      projectId: process.env.GOOGLE_PROJECT_ID,
+      projectId: process.env.GOOGLE_PROJECT_ID || "pptnc-stage",
       databaseId: "pptnc", // Firestore Native database
       // ADC handles credentials automatically via:
       // - GOOGLE_APPLICATION_CREDENTIALS env var
