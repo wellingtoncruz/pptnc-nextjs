@@ -34,13 +34,7 @@ substitutions:
   _TAG: ${TAG_NAME}
 
 steps:
-  # Step 1: Checkout specific tag
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - 'checkout'
-      - '${_TAG}'
-
-  # Step 2: Build Docker image (context = monorepo root)
+  # Step 1: Build Docker image (context = monorepo root)
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -52,14 +46,14 @@ steps:
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
       - '.'
 
-  # Step 3: Push to Artifact Registry
+  # Step 2: Push to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - '--all-tags'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}'
 
-  # Step 4: Deploy to Cloud Run
+  # Step 3: Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
