@@ -1,40 +1,29 @@
-# Cloud Build configuration for PPTNC (Monorepo)
-# Deploys to Cloud Run in us-east1 region
-#
-# Prerequisites:
-# 1. Enable Cloud Build API: gcloud services enable cloudbuild.googleapis.com
-# 2. Enable Cloud Run API: gcloud services enable run.googleapis.com
-# 3. Enable Artifact Registry: gcloud services enable artifactregistry.googleapis.com
-# 4. Create Artifact Registry repository:
-#    gcloud artifacts repositories create pptnc --repository-format=docker --location=us-east1
-# 5. Grant Cloud Build permission to deploy to Cloud Run:
-#    gcloud projects add-iam-policy-binding PROJECT_ID \
-#      --member="serviceAccount:PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
-#      --role="roles/run.admin"
-#    gcloud iam service-accounts add-iam-policy-binding \
-#      PROJECT_NUMBER-compute@developer.gserviceaccount.com \
-#      --member="serviceAccount:PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
-#      --role="roles/iam.serviceAccountUser"
-#
-# To trigger manually with a specific tag:
-#   gcloud builds submit --config=apps/web/cloudbuild.yaml --substitutions=_TAG=v1.0.0
-#
-# To set up automatic trigger on tag push:
-#   gcloud builds triggers create github \
-#     --repo-name=pptnc-nextjs \
-#     --repo-owner=wellingtoncruz \
-#     --tag-pattern="^web-v.*" \
-#     --build-config=apps/web/cloudbuild.yaml
-
 substitutions:
   _SERVICE_NAME: pptnc
   _REGION: us-east1
   _REPOSITORY: pptnc
-  _SERVICE_ACCOUNT: iara-service-account-820@pptnc-stage.iam.gserviceaccount.com
+  _SERVICE_ACCOUNT: pptnc-build@pptnc-stage.iam.gserviceaccount.com
   _TAG: ${TAG_NAME}
 
 steps:
-  # Step 1: Build Docker image (context = monorepo root)
+  # Step 1: Install Dependencies with pnpm
+  - name: 'node:20-alpine'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - 'corepack enable && pnpm install --frozen-lockfile'
+
+  # Step 2: Build Next.js (SSG happens here with Firestore access)
+  - name: 'node:20-alpine'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - 'corepack enable && pnpm --filter @pptnc/web build'
+    env:
+      - 'GOOGLE_PROJECT_ID=$PROJECT_ID'
+      - 'NEXT_PUBLIC_PROJECT_ID=$PROJECT_ID'
+
+  # Step 3: Build Docker image (copies pre-built artifacts)
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -46,14 +35,14 @@ steps:
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
       - '.'
 
-  # Step 2: Push to Artifact Registry
+  # Step 4: Push to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - '--all-tags'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}'
 
-  # Step 3: Deploy to Cloud Run
+  # Step 5: Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -67,26 +56,9 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
-      - '--memory'
-      - '512Mi'
-      - '--cpu'
-      - '1'
-      - '--min-instances'
-      - '0'
-      - '--max-instances'
-      - '10'
-      - '--concurrency'
-      - '80'
-      - '--port'
-      - '8080'
-      - '--set-env-vars'
-      - 'NODE_ENV=production'
       - '--service-account'
       - '${_SERVICE_ACCOUNT}'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
