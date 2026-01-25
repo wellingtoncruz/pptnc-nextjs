@@ -1,4 +1,4 @@
-# Cloud Build configuration for PPTNC
+# Cloud Build configuration for PPTNC (Monorepo)
 # Deploys to Cloud Run in us-east1 region
 #
 # Prerequisites:
@@ -16,41 +16,50 @@
 #      --member="serviceAccount:PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
 #      --role="roles/iam.serviceAccountUser"
 #
-# To trigger manually:
-#   gcloud builds submit --config=cloudbuild.yaml
+# To trigger manually with a specific tag:
+#   gcloud builds submit --config=apps/web/cloudbuild.yaml --substitutions=_TAG=v1.0.0
 #
-# To set up automatic trigger on git push:
+# To set up automatic trigger on tag push:
 #   gcloud builds triggers create github \
-#     --repo-name=pptnc \
-#     --repo-owner=YOUR_GITHUB_USERNAME \
-#     --branch-pattern="^main$" \
-#     --build-config=cloudbuild.yaml
+#     --repo-name=pptnc-nextjs \
+#     --repo-owner=wellingtoncruz \
+#     --tag-pattern="^web-v.*" \
+#     --build-config=apps/web/cloudbuild.yaml
 
 substitutions:
   _SERVICE_NAME: pptnc
   _REGION: us-east1
   _REPOSITORY: pptnc
   _SERVICE_ACCOUNT: iara-service-account-820@pptnc-stage.iam.gserviceaccount.com
+  _TAG: ${TAG_NAME}
 
 steps:
-  # Step 1: Build Docker image
+  # Step 1: Checkout specific tag
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - 'checkout'
+      - '${_TAG}'
+
+  # Step 2: Build Docker image (context = monorepo root)
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
+      - '-f'
+      - 'apps/web/Dockerfile'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
       - '.'
 
-  # Step 2: Push to Artifact Registry
+  # Step 3: Push to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - '--all-tags'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}'
 
-  # Step 3: Deploy to Cloud Run
+  # Step 4: Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -58,7 +67,7 @@ steps:
       - 'deploy'
       - '${_SERVICE_NAME}'
       - '--image'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
       - '--region'
       - '${_REGION}'
       - '--platform'
@@ -75,15 +84,15 @@ steps:
       - '--concurrency'
       - '80'
       - '--port'
-      - '3000'
+      - '8080'
       - '--set-env-vars'
       - 'NODE_ENV=production'
       - '--service-account'
       - '${_SERVICE_ACCOUNT}'
 
 images:
-  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'
-  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
 
 options:
   logging: CLOUD_LOGGING_ONLY
