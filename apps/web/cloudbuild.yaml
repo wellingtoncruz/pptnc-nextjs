@@ -62,3 +62,6 @@ steps:
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
