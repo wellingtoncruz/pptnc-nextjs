@@ -1,0 +1,91 @@
+# Cloud Build configuration for IAra (Monorepo)
+# Deploys to Cloud Run in us-east1 region
+#
+# Prerequisites:
+# 1. Enable Cloud Build API: gcloud services enable cloudbuild.googleapis.com
+# 2. Enable Cloud Run API: gcloud services enable run.googleapis.com
+# 3. Enable Artifact Registry: gcloud services enable artifactregistry.googleapis.com
+# 4. Create Artifact Registry repository:
+#    gcloud artifacts repositories create iara --repository-format=docker --location=us-east1
+# 5. Grant Cloud Build permission to deploy to Cloud Run:
+#    gcloud projects add-iam-policy-binding PROJECT_ID \
+#      --member="serviceAccount:PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
+#      --role="roles/run.admin"
+#    gcloud iam service-accounts add-iam-policy-binding \
+#      PROJECT_NUMBER-compute@developer.gserviceaccount.com \
+#      --member="serviceAccount:PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
+#      --role="roles/iam.serviceAccountUser"
+#
+# To trigger manually:
+#   gcloud builds submit --config=apps/iara/cloudbuild.yaml
+#
+# To set up automatic trigger on git push:
+#   gcloud builds triggers create github \
+#     --repo-name=pptnc \
+#     --repo-owner=YOUR_GITHUB_USERNAME \
+#     --branch-pattern="^main$" \
+#     --build-config=apps/iara/cloudbuild.yaml
+
+substitutions:
+  _SERVICE_NAME: iara
+  _REGION: us-east1
+  _REPOSITORY: iara
+  _SERVICE_ACCOUNT: iara-service-account-820@pptnc-stage.iam.gserviceaccount.com
+
+steps:
+  # Step 1: Build Docker image (context = monorepo root)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/iara/Dockerfile'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+      - '.'
+
+  # Step 2: Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}'
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--concurrency'
+      - '80'
+      - '--port'
+      - '8080'
+      - '--set-env-vars'
+      - 'NODE_ENV=production'
+      - '--service-account'
+      - '${_SERVICE_ACCOUNT}'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

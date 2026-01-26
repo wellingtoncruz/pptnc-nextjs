@@ -1,0 +1,82 @@
+import type { z } from 'zod'
+
+import type {
+  PodcastSchema,
+  PodcastCreateSchema,
+  PodcastUpdateSchema,
+  PromptsSchema,
+  PromptFieldSchema,
+  EpisodePromptsSchema,
+  CutPromptsSchema,
+  ReelPromptsSchema,
+  PersonaSchema,
+  PersonasSchema,
+  VideoTypesConfigSchema,
+  TimestampSchema,
+} from '@/lib/schemas/podcast'
+import type { VideoTypeConfigSchema } from '@/lib/schemas/video-type-config'
+
+/**
+ * Full podcast document type.
+ */
+export type Podcast = z.infer<typeof PodcastSchema>
+
+/**
+ * Input for creating a new podcast.
+ */
+export type PodcastCreate = z.infer<typeof PodcastCreateSchema>
+
+/**
+ * Input for updating podcast fields.
+ */
+export type PodcastUpdate = z.infer<typeof PodcastUpdateSchema>
+
+/**
+ * All prompts organized by video type.
+ */
+export type Prompts = z.infer<typeof PromptsSchema>
+
+/**
+ * Individual prompt field with description and expectedOutput.
+ */
+export type PromptField = z.infer<typeof PromptFieldSchema>
+
+/**
+ * Episode-specific prompts.
+ */
+export type EpisodePrompts = z.infer<typeof EpisodePromptsSchema>
+
+/**
+ * Cut-specific prompts.
+ */
+export type CutPrompts = z.infer<typeof CutPromptsSchema>
+
+/**
+ * Reel-specific prompts.
+ */
+export type ReelPrompts = z.infer<typeof ReelPromptsSchema>
+
+/**
+ * LLM persona configuration.
+ */
+export type Persona = z.infer<typeof PersonaSchema>
+
+/**
+ * All personas (critic, writer).
+ */
+export type Personas = z.infer<typeof PersonasSchema>
+
+/**
+ * Video type duration configuration.
+ */
+export type VideoTypesConfig = z.infer<typeof VideoTypesConfigSchema>
+
+/**
+ * Single video type config (minDuration, maxDuration).
+ */
+export type VideoTypeConfig = z.infer<typeof VideoTypeConfigSchema>
+
+/**
+ * Firestore Timestamp type.
+ */
+export type FirestoreTimestamp = z.infer<typeof TimestampSchema>

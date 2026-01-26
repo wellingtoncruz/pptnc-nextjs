@@ -1,0 +1,63 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { ZodError } from 'zod'
+
+import { auth } from '@/lib/auth'
+import { updatePodcastAdmin } from '@/lib/firebase/podcasts-admin'
+import { PODCAST_ID } from '@/lib/firebase/config'
+import { PodcastUpdateSchema } from '@/lib/schemas'
+import { log } from '@/lib/logger'
+
+export const runtime = 'nodejs'
+
+/**
+ * PATCH /api/podcast - Update podcast settings
+ *
+ * Requires authentication. Updates the current tenant's podcast.
+ */
+export async function PATCH(request: NextRequest) {
+  const session = await auth()
+
+  // Check for no session or session errors (e.g., UserNotFoundError)
+  if (!session || session.error) {
+    return NextResponse.json(
+      { error: { code: 'AUTH_EXPIRED', message: 'Sessão expirada' } },
+      { status: 401 }
+    )
+  }
+
+  try {
+    const body = await request.json()
+
+    // Validate with Zod
+    const validated = PodcastUpdateSchema.parse(body)
+
+    // Update using Admin SDK
+    await updatePodcastAdmin(PODCAST_ID, validated)
+
+    log('INFO', 'Podcast updated via API', {
+      userId: session.user.id,
+      podcastId: PODCAST_ID,
+      fields: Object.keys(validated),
+    })
+
+    return NextResponse.json({ data: { success: true } })
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: { code: 'VALIDATION_ERROR', message: 'Dados inválidos' } },
+        { status: 400 }
+      )
+    }
+
+    log('ERROR', 'Failed to update podcast via API', {
+      userId: session.user.id,
+      podcastId: PODCAST_ID,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    return NextResponse.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Erro ao atualizar podcast' } },
+      { status: 500 }
+    )
+  }
+}
