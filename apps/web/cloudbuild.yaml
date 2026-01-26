@@ -1,5 +1,5 @@
 substitutions:
-  _SERVICE_NAME: pptnc
+  _SERVICE_NAME: pptnc-prod
   _REGION: us-east1
   _REPOSITORY: pptnc
   _SERVICE_ACCOUNT: pptnc-build@pptnc-stage.iam.gserviceaccount.com
