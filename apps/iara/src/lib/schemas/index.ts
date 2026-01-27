@@ -32,3 +32,31 @@ export {
   UserRoleSchema,
   SaveUserInputSchema,
 } from './user'
+
+export {
+  VideoSchema,
+  VideoCreateSchema,
+  VideoUpdateSchema,
+  VideoStatusSchema,
+  VideoTypeSchema,
+  YouTubeDataSchema,
+  GeneratedDataSchema,
+  ChapterSchema,
+  ComplianceSchema,
+  ComplianceItemSchema,
+  VideoSummarySchema,
+} from './video'
+
+export {
+  YouTubeVideoItemSchema,
+  YouTubeVideosResponseSchema,
+  YouTubePlaylistItemSchema,
+  YouTubePlaylistItemsResponseSchema,
+  YouTubeChannelItemSchema,
+  YouTubeChannelsResponseSchema,
+  YouTubeThumbnailSchema,
+  YouTubeThumbnailsSchema,
+  YouTubeSnippetSchema,
+  YouTubeContentDetailsSchema,
+  YouTubeChannelContentDetailsSchema,
+} from './youtube-api'
