@@ -28,15 +28,19 @@ export default async function VideosPage() {
 
 /**
  * Loading skeleton for the videos page.
+ * Matches the actual MasterDetailLayout structure:
+ * - Fixed sidebar (w-48)
+ * - Resizable list panel (~40%)
+ * - Resizable detail panel (~60%)
  */
 function VideosPageSkeleton() {
   return (
     <div className="flex h-screen">
-      {/* Sidebar skeleton */}
-      <div className="w-48 border-r border-border bg-background" />
-      {/* List skeleton */}
-      <div className="flex-1 border-r border-border bg-background" />
-      {/* Detail skeleton */}
+      {/* Sidebar skeleton - fixed width matching Sidebar component */}
+      <div className="w-48 shrink-0 border-r border-border bg-background" />
+      {/* List panel skeleton - approximately 40% of remaining space */}
+      <div className="w-[40%] border-r border-border bg-background" />
+      {/* Detail panel skeleton - approximately 60% of remaining space */}
       <div className="flex-1 bg-background" />
     </div>
   )

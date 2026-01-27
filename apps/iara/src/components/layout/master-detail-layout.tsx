@@ -23,7 +23,11 @@ export function MasterDetailLayout({ sidebar, list, detail }: MasterDetailLayout
       </div>
 
       {/* Resizable List and Detail Panels */}
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
+      <ResizablePanelGroup
+        direction="horizontal"
+        autoSaveId="video-layout"
+        className="flex-1"
+      >
         {/* Video List Panel */}
         <ResizablePanel
           defaultSize={40}
