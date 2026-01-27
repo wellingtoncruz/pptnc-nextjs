@@ -259,12 +259,91 @@ describe('YouTubeClient', () => {
         }),
       })
 
-      const result = await client.listVideos()
+      const result = await client.listVideos({})
 
       expect(result.videos).toHaveLength(1)
       expect(result.videos[0].title).toBe('Video 1')
       expect(result.videos[0].duration).toBe(600) // 10 minutes
       expect(mockFetch).toHaveBeenCalledTimes(3)
+    })
+
+    it('uses channelId directly when provided (skips channels.list call)', async () => {
+      // Mock playlistItems.list (no channels.list needed)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'PLitem1',
+              snippet: {
+                resourceId: { kind: 'youtube#video', videoId: 'vid1' },
+                title: 'V1',
+                description: '',
+                thumbnails: {},
+                publishedAt: '2024-01-01T00:00:00Z',
+                channelId: 'UC1',
+                playlistId: 'PL1',
+                position: 0,
+              },
+            },
+          ],
+        }),
+      })
+
+      // Mock videos.list
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'vid1',
+              snippet: {
+                title: 'Video 1',
+                description: 'Desc',
+                publishedAt: '2024-01-01T10:00:00Z',
+                channelId: 'UC1',
+                thumbnails: {
+                  medium: { url: 'https://example.com/thumb.jpg' },
+                },
+              },
+              contentDetails: { duration: 'PT10M' },
+            },
+          ],
+        }),
+      })
+
+      const result = await client.listVideos({ channelId: 'UCOvTsuQyJq-fpydse7BY2PQ' })
+
+      expect(result.videos).toHaveLength(1)
+      expect(result.videos[0].title).toBe('Video 1')
+      // Only 2 calls: playlistItems + videos (no channels.list)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+      // First call should use the converted uploads playlist ID
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('playlistId=UUOvTsuQyJq-fpydse7BY2PQ'),
+        expect.any(Object)
+      )
+    })
+  })
+
+  describe('channelIdToUploadsPlaylist', () => {
+    it('converts UC channel ID to UU uploads playlist ID', () => {
+      const result = YouTubeClient.channelIdToUploadsPlaylist('UCOvTsuQyJq-fpydse7BY2PQ')
+      expect(result).toBe('UUOvTsuQyJq-fpydse7BY2PQ')
+    })
+
+    it('throws error for invalid channel ID format', () => {
+      expect(() => YouTubeClient.channelIdToUploadsPlaylist('invalid-id')).toThrow(YouTubeAPIError)
+      expect(() => YouTubeClient.channelIdToUploadsPlaylist('invalid-id')).toThrow(
+        'Invalid channel ID format: invalid-id. Expected to start with "UC"'
+      )
+    })
+
+    it('throws error for UU playlist ID (already converted)', () => {
+      expect(() => YouTubeClient.channelIdToUploadsPlaylist('UUOvTsuQyJq-fpydse7BY2PQ')).toThrow(
+        'Invalid channel ID format'
+      )
     })
   })
 

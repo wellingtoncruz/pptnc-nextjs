@@ -17,4 +17,4 @@
  */
 
 export { YouTubeAPIError, YouTubeClient } from './client'
-export type { ListVideosResult, YouTubeErrorCode, YouTubeVideoDataFromAPI } from './client'
+export type { ListVideosOptions, ListVideosResult, YouTubeErrorCode, YouTubeVideoDataFromAPI } from './client'

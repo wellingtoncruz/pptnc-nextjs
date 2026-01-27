@@ -39,12 +39,11 @@ vi.mock('@/lib/logger', () => ({
 // Mock video-utils
 vi.mock('@/lib/video-utils', () => ({
   classifyVideoType: vi.fn(),
-  needsIaraFields: vi.fn((data) => !('status' in data) || !('videoType' in data)),
 }))
 
 import { getAllVideosRaw, batchWriteVideos } from '@/lib/firebase/videos-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
-import { classifyVideoType, needsIaraFields } from '@/lib/video-utils'
+import { classifyVideoType } from '@/lib/video-utils'
 
 import { syncVideos } from './sync-videos'
 
@@ -52,9 +51,8 @@ const mockGetAllVideosRaw = vi.mocked(getAllVideosRaw)
 const mockBatchWriteVideos = vi.mocked(batchWriteVideos)
 const mockGetPodcastAdmin = vi.mocked(getPodcastAdmin)
 const mockClassifyVideoType = vi.mocked(classifyVideoType)
-const mockNeedsIaraFields = vi.mocked(needsIaraFields)
 
-describe('sync-videos.ts - Video synchronization', () => {
+describe('sync-videos.ts - Video import (create only)', () => {
   const mockTimestamp = { toDate: () => new Date('2024-01-15') }
   const mockVideoTypes = {
     episode: { minDuration: 1200, maxDuration: null },
@@ -84,11 +82,12 @@ describe('sync-videos.ts - Video synchronization', () => {
     it('returns zero counts when YouTube has no videos', async () => {
       mockListVideos.mockResolvedValue({ videos: [], nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue([])
-      mockBatchWriteVideos.mockResolvedValue(undefined)
 
       const result = await syncVideos('pptnc', 'access-token')
 
-      expect(result).toEqual({ added: 0, updated: 0, deleted: 0 })
+      expect(result).toEqual({ added: 0, skipped: 0 })
+      // batchWriteVideos should NOT be called when there are no new videos
+      expect(mockBatchWriteVideos).not.toHaveBeenCalled()
     })
 
     it('creates new videos not in Firestore', async () => {
@@ -110,21 +109,24 @@ describe('sync-videos.ts - Video synchronization', () => {
       const result = await syncVideos('pptnc', 'access-token')
 
       expect(result.added).toBe(1)
+      expect(result.skipped).toBe(0)
       expect(mockBatchWriteVideos).toHaveBeenCalledWith(
         'pptnc',
         expect.objectContaining({
           creates: expect.arrayContaining([
             expect.objectContaining({ id: 'new-video-1' }),
           ]),
+          updates: [],
+          deletes: [],
         })
       )
     })
 
-    it('updates existing videos with YouTube data changes', async () => {
+    it('skips existing videos without modification', async () => {
       const youtubeVideos = [
         {
           id: 'existing-video',
-          title: 'Updated Title',
+          title: 'Updated Title', // Title changed on YouTube
           description: 'Updated description',
           thumbnail: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg',
           duration: 3600,
@@ -132,12 +134,11 @@ describe('sync-videos.ts - Video synchronization', () => {
         },
       ]
 
-      // Raw format with flat fields and IAra fields (status, videoType)
       const firestoreVideosRaw = [
         {
           id: 'existing-video',
           podcastId: 'pptnc',
-          title: 'Old Title',
+          title: 'Old Title', // Different from YouTube
           description: 'Old description',
           thumbnails: { high: { url: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg' } },
           duration: 3600,
@@ -152,49 +153,28 @@ describe('sync-videos.ts - Video synchronization', () => {
 
       mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
-      mockBatchWriteVideos.mockResolvedValue(undefined)
 
       const result = await syncVideos('pptnc', 'access-token')
 
-      expect(result.updated).toBe(1)
-      expect(mockBatchWriteVideos).toHaveBeenCalledWith(
-        'pptnc',
-        expect.objectContaining({
-          updates: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'existing-video',
-              data: expect.objectContaining({
-                title: 'Updated Title',
-              }),
-            }),
-          ]),
-        })
-      )
+      expect(result.added).toBe(0)
+      expect(result.skipped).toBe(1)
+      // batchWriteVideos should NOT be called when there are no new videos
+      expect(mockBatchWriteVideos).not.toHaveBeenCalled()
     })
 
-    it('preserves status when updating existing videos with IAra fields (AC #2)', async () => {
-      const youtubeVideos = [
-        {
-          id: 'existing-video',
-          title: 'Updated Title',
-          description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg',
-          duration: 3600,
-          publishedAt: '2024-01-15T00:00:00Z',
-        },
-      ]
+    it('never deletes videos even if removed from YouTube', async () => {
+      const youtubeVideos: never[] = [] // Video was removed from YouTube
 
-      // Video with IAra fields (status, videoType) already present
       const firestoreVideosRaw = [
         {
-          id: 'existing-video',
+          id: 'removed-from-youtube',
           podcastId: 'pptnc',
-          title: 'Old Title',
+          title: 'Video removed from YouTube',
           description: 'Description',
-          thumbnails: { high: { url: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg' } },
+          thumbnails: { high: { url: 'https://i.ytimg.com/vi/removed/hqdefault.jpg' } },
           duration: 3600,
           publishedAt: mockTimestamp,
-          status: 'ready', // Should NOT change
+          status: 'draft',
           videoType: 'episode',
           deleted: false,
           createdAt: mockTimestamp,
@@ -204,91 +184,13 @@ describe('sync-videos.ts - Video synchronization', () => {
 
       mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
-      mockBatchWriteVideos.mockResolvedValue(undefined)
-
-      await syncVideos('pptnc', 'access-token')
-
-      // Status should NOT be in the update data for videos that already have IAra fields
-      expect(mockBatchWriteVideos).toHaveBeenCalledWith(
-        'pptnc',
-        expect.objectContaining({
-          updates: expect.arrayContaining([
-            expect.objectContaining({
-              data: expect.not.objectContaining({ status: expect.anything() }),
-            }),
-          ]),
-        })
-      )
-    })
-
-    it('soft deletes videos not in YouTube anymore (AC #3)', async () => {
-      const youtubeVideos: never[] = [] // Video was removed from YouTube
-
-      const firestoreVideosRaw = [
-        {
-          id: 'deleted-video',
-          podcastId: 'pptnc',
-          title: 'Deleted Video',
-          description: 'Description',
-          thumbnails: { high: { url: 'https://i.ytimg.com/vi/deleted-video/hqdefault.jpg' } },
-          duration: 3600,
-          publishedAt: mockTimestamp,
-          status: 'draft',
-          videoType: 'episode',
-          deleted: false, // Not deleted yet
-          createdAt: mockTimestamp,
-          updatedAt: mockTimestamp,
-        },
-      ]
-
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
-      mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
-      mockBatchWriteVideos.mockResolvedValue(undefined)
 
       const result = await syncVideos('pptnc', 'access-token')
 
-      expect(result.deleted).toBe(1)
-      expect(mockBatchWriteVideos).toHaveBeenCalledWith(
-        'pptnc',
-        expect.objectContaining({
-          deletes: ['deleted-video'],
-        })
-      )
-    })
-
-    it('does not re-delete already deleted videos', async () => {
-      const youtubeVideos: never[] = []
-
-      const firestoreVideosRaw = [
-        {
-          id: 'already-deleted',
-          podcastId: 'pptnc',
-          title: 'Already Deleted Video',
-          description: 'Description',
-          thumbnails: { high: { url: 'https://i.ytimg.com/vi/already-deleted/hqdefault.jpg' } },
-          duration: 3600,
-          publishedAt: mockTimestamp,
-          status: 'draft',
-          videoType: 'episode',
-          deleted: true, // Already deleted
-          createdAt: mockTimestamp,
-          updatedAt: mockTimestamp,
-        },
-      ]
-
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
-      mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
-      mockBatchWriteVideos.mockResolvedValue(undefined)
-
-      const result = await syncVideos('pptnc', 'access-token')
-
-      expect(result.deleted).toBe(0)
-      expect(mockBatchWriteVideos).toHaveBeenCalledWith(
-        'pptnc',
-        expect.objectContaining({
-          deletes: [],
-        })
-      )
+      expect(result.added).toBe(0)
+      expect(result.skipped).toBe(0) // No YouTube videos to skip
+      // batchWriteVideos should NOT be called - no deletes happen
+      expect(mockBatchWriteVideos).not.toHaveBeenCalled()
     })
 
     it('handles pagination from YouTube API', async () => {
@@ -356,7 +258,7 @@ describe('sync-videos.ts - Video synchronization', () => {
       )
     })
 
-    it('sets new videos with status "new" (AC #1)', async () => {
+    it('sets new videos with status "new"', async () => {
       const youtubeVideos = [
         {
           id: 'new-video',
@@ -379,56 +281,6 @@ describe('sync-videos.ts - Video synchronization', () => {
         expect.objectContaining({
           creates: expect.arrayContaining([
             expect.objectContaining({ status: 'new' }),
-          ]),
-        })
-      )
-    })
-
-    it('enriches videos without IAra fields on update', async () => {
-      const youtubeVideos = [
-        {
-          id: 'legacy-video',
-          title: 'Legacy Video',
-          description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/legacy-video/hqdefault.jpg',
-          duration: 600,
-          publishedAt: '2024-01-15T00:00:00Z',
-        },
-      ]
-
-      // Video without IAra fields (no status or videoType)
-      const firestoreVideosRaw = [
-        {
-          id: 'legacy-video',
-          title: 'Legacy Video',
-          description: 'Description',
-          thumbnails: { high: { url: 'https://i.ytimg.com/vi/legacy-video/hqdefault.jpg' } },
-          duration: 600,
-          publishedAt: mockTimestamp,
-          // No status or videoType - needs IAra enrichment
-        },
-      ]
-
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
-      mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
-      mockBatchWriteVideos.mockResolvedValue(undefined)
-      mockClassifyVideoType.mockReturnValue('cut')
-
-      await syncVideos('pptnc', 'access-token')
-
-      // Should update with IAra fields (status, videoType) added
-      expect(mockBatchWriteVideos).toHaveBeenCalledWith(
-        'pptnc',
-        expect.objectContaining({
-          updates: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'legacy-video',
-              data: expect.objectContaining({
-                status: 'new',
-                videoType: 'cut',
-                title: 'Legacy Video',
-              }),
-            }),
           ]),
         })
       )

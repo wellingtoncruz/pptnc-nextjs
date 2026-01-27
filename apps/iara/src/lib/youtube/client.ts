@@ -68,6 +68,22 @@ export interface ListVideosResult {
 }
 
 /**
+ * Options for listVideos() method.
+ */
+export interface ListVideosOptions {
+  /** Maximum videos to return per page (default: 50, max: 50) */
+  maxResults?: number
+  /** Page token for pagination (from previous response) */
+  pageToken?: string
+  /**
+   * YouTube channel ID to fetch videos from.
+   * If provided, fetches from this channel's uploads playlist.
+   * If not provided, uses mine=true (authenticated user's channel).
+   */
+  channelId?: string
+}
+
+/**
  * YouTube Data API v3 client.
  *
  * Provides methods for fetching channel info, playlist items, and video details.
@@ -75,10 +91,24 @@ export interface ListVideosResult {
  *
  * @example
  * const client = new YouTubeClient(accessToken)
- * const { videos, nextPageToken } = await client.listVideos(50)
+ * const { videos, nextPageToken } = await client.listVideos({ channelId: 'UC...' })
  */
 export class YouTubeClient {
   constructor(private readonly accessToken: string) {}
+
+  /**
+   * Converts a YouTube channel ID to its uploads playlist ID.
+   * Channel IDs start with "UC", uploads playlists start with "UU".
+   *
+   * @param channelId - YouTube channel ID (e.g., "UCOvTsuQyJq-fpydse7BY2PQ")
+   * @returns Uploads playlist ID (e.g., "UUOvTsuQyJq-fpydse7BY2PQ")
+   */
+  static channelIdToUploadsPlaylist(channelId: string): string {
+    if (!channelId.startsWith('UC')) {
+      throw new YouTubeAPIError('YOUTUBE_ERROR', `Invalid channel ID format: ${channelId}. Expected to start with "UC"`)
+    }
+    return 'UU' + channelId.substring(2)
+  }
 
   /**
    * Makes a request to YouTube API with retry and error handling.
@@ -116,7 +146,7 @@ export class YouTubeClient {
         if (!result.success) {
           log('ERROR', 'YouTube API response validation failed', {
             endpoint,
-            errors: result.error.errors,
+            errors: result.error.issues,
           })
           throw new YouTubeAPIError('YOUTUBE_INVALID_RESPONSE', 'Invalid response format from YouTube API')
         }
@@ -270,28 +300,38 @@ export class YouTubeClient {
   }
 
   /**
-   * Lists videos from the authenticated user's channel.
+   * Lists videos from a YouTube channel.
    *
    * Orchestrates the YouTube API flow:
-   * 1. channels.list → get uploads playlist ID
+   * 1. Get uploads playlist ID (from channelId or mine=true)
    * 2. playlistItems.list → get video IDs
    * 3. videos.list → get video details
    *
-   * @param maxResults - Maximum videos to return (default: 50, max: 50)
-   * @param pageToken - Page token for pagination (from previous response)
+   * @param options - Options including maxResults, pageToken, and channelId
    * @returns Object with videos array and optional nextPageToken
    *
    * @example
    * const client = new YouTubeClient(accessToken)
-   * const { videos, nextPageToken } = await client.listVideos(50)
    *
-   * // For next page:
-   * const page2 = await client.listVideos(50, nextPageToken)
+   * // Using specific channel (recommended for multi-tenant):
+   * const { videos } = await client.listVideos({ channelId: 'UCOvTsuQyJq-fpydse7BY2PQ' })
+   *
+   * // Using authenticated user's channel (legacy):
+   * const { videos } = await client.listVideos({})
+   *
+   * // With pagination:
+   * const page2 = await client.listVideos({ channelId, pageToken: nextPageToken })
    */
-  async listVideos(maxResults = 50, pageToken?: string): Promise<ListVideosResult> {
-    log('INFO', 'Listing YouTube videos', { maxResults, pageToken })
+  async listVideos(options: ListVideosOptions = {}): Promise<ListVideosResult> {
+    const { maxResults = 50, pageToken, channelId } = options
 
-    const uploadsPlaylistId = await this.getUploadsPlaylistId()
+    log('INFO', 'Listing YouTube videos', { maxResults, pageToken, channelId: channelId || 'mine' })
+
+    // Get uploads playlist ID - either from channelId or mine=true
+    const uploadsPlaylistId = channelId
+      ? YouTubeClient.channelIdToUploadsPlaylist(channelId)
+      : await this.getUploadsPlaylistId()
+
     const { videoIds, nextPageToken } = await this.listPlaylistItems(
       uploadsPlaylistId,
       maxResults,
@@ -303,6 +343,7 @@ export class YouTubeClient {
     log('INFO', 'YouTube videos listed successfully', {
       count: videos.length,
       hasMore: !!nextPageToken,
+      channelId: channelId || 'mine',
     })
 
     return { videos, nextPageToken }
