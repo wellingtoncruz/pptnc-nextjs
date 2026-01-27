@@ -155,7 +155,7 @@ export async function getVideosForDisplay(
       // Create summary with default values for missing fields
       const summary: VideoSummary = {
         id: docSnap.id,
-        title: rawData.title ?? rawData.generatedTitle ?? 'Sem título',
+        title: rawData.title ?? 'Sem título',
         thumbnails: rawData.thumbnails,
         duration: rawData.duration ?? 0,
         status: rawData.status ?? 'new',
