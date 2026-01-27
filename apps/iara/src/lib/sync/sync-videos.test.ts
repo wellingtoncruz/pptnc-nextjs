@@ -99,6 +99,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           thumbnail: 'https://i.ytimg.com/vi/new-video-1/hqdefault.jpg',
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
+          privacyStatus: 'public' as const,
         },
       ]
 
@@ -131,6 +132,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           thumbnail: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg',
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
+          privacyStatus: 'public' as const,
         },
       ]
 
@@ -202,6 +204,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           thumbnail: 'https://i.ytimg.com/vi/video-1/hqdefault.jpg',
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
+          privacyStatus: 'public' as const,
         },
       ]
       const page2Videos = [
@@ -212,6 +215,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           thumbnail: 'https://i.ytimg.com/vi/video-2/hqdefault.jpg',
           duration: 600,
           publishedAt: '2024-01-15T00:00:00Z',
+          privacyStatus: 'public' as const,
         },
       ]
 
@@ -237,6 +241,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           thumbnail: 'https://i.ytimg.com/vi/new-video/hqdefault.jpg',
           duration: 600, // 10 minutes = cut
           publishedAt: '2024-01-15T00:00:00Z',
+          privacyStatus: 'public' as const,
         },
       ]
 
@@ -267,6 +272,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           thumbnail: 'https://i.ytimg.com/vi/new-video/hqdefault.jpg',
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
+          privacyStatus: 'public' as const,
         },
       ]
 

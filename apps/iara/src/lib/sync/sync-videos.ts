@@ -78,7 +78,7 @@ function youtubeToVideoCreate(
     // IAra-specific fields
     status: 'new', // All new videos start with 'new' status
     videoType,
-    deleted: false,
+    youtubePrivacyStatus: youtubeVideo.privacyStatus,
   }
 }
 

@@ -6,6 +6,7 @@ import type {
   VideoUpdateSchema,
   VideoTypeSchema,
   VideoStatusSchema,
+  YouTubePrivacyStatusSchema,
   ChapterSchema,
   ComplianceSchema,
   ComplianceItemSchema,
@@ -51,6 +52,11 @@ export type VideoType = z.infer<typeof VideoTypeSchema>
  * Video status in the lifecycle.
  */
 export type VideoStatus = z.infer<typeof VideoStatusSchema>
+
+/**
+ * YouTube privacy status.
+ */
+export type YouTubePrivacyStatus = z.infer<typeof YouTubePrivacyStatusSchema>
 
 /**
  * Chapter marker in video.

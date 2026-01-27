@@ -25,6 +25,15 @@ export const VideoStatusSchema = z.enum([
  */
 export const VideoTypeSchema = z.enum(['episode', 'cut', 'reel'])
 
+/**
+ * YouTube Privacy Status schema - video visibility on YouTube.
+ *
+ * - public: Visible to everyone
+ * - unlisted: Accessible via link but not searchable
+ * - private: Only visible to owner
+ */
+export const YouTubePrivacyStatusSchema = z.enum(['public', 'unlisted', 'private'])
+
 // ============================================================================
 // YOUTUBE DATA SCHEMAS
 // ============================================================================
@@ -142,17 +151,16 @@ export const VideoSchema = z.object({
   topics: z.array(z.string()).optional(),
 
   // === Campos IAra (adicionados ao schema existente) ===
-  podcastId: z.string().min(1, 'Podcast ID is required'),
-  status: VideoStatusSchema,
-  videoType: VideoTypeSchema,
+  // Opcional para vídeos legados - serão enriquecidos no sync
+  podcastId: z.string().optional(),
+  status: VideoStatusSchema.optional(),
+  videoType: VideoTypeSchema.optional(),
+  youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
 
   // Campos gerados por IA
   tags: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
   compliance: ComplianceSchema.optional(),
-
-  // Soft delete flag
-  deleted: z.boolean().default(false),
 
   // Timestamps
   createdAt: TimestampSchema.optional(), // Optional for legacy docs
@@ -179,7 +187,7 @@ export const VideoCreateSchema = z.object({
   // IAra-specific fields
   status: VideoStatusSchema,
   videoType: VideoTypeSchema,
-  deleted: z.boolean().default(false),
+  youtubePrivacyStatus: YouTubePrivacyStatusSchema,
 })
 
 /**
@@ -199,23 +207,24 @@ export const VideoUpdateSchema = z.object({
   // IAra fields updates
   status: VideoStatusSchema.optional(),
   videoType: VideoTypeSchema.optional(),
+  youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
   tags: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
   compliance: ComplianceSchema.optional(),
-  deleted: z.boolean().optional(),
 })
 
 /**
  * Video Summary Schema - minimal fields for list display.
  *
  * Used in VideoListItem component.
+ * Campos IAra são opcionais para suportar vídeos legados.
  */
 export const VideoSummarySchema = z.object({
   id: z.string().min(1),
   title: z.string(),
   thumbnails: ThumbnailsSchema.optional(),
-  duration: z.number().nonnegative(),
-  status: VideoStatusSchema,
-  videoType: VideoTypeSchema,
-  deleted: z.boolean(),
+  duration: z.number().nonnegative().default(0),
+  status: VideoStatusSchema.optional().default('new'),
+  videoType: VideoTypeSchema.optional().default('episode'),
+  youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
 })

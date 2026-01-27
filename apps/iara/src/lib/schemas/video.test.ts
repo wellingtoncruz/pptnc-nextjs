@@ -265,7 +265,7 @@ describe('VideoCreateSchema', () => {
     publishedAt: createMockTimestamp(),
     status: 'new',
     videoType: 'cut',
-    deleted: false,
+    youtubePrivacyStatus: 'public',
   }
 
   it('accepts valid video create input', () => {
@@ -273,13 +273,15 @@ describe('VideoCreateSchema', () => {
     expect(result.id).toBe('abc123')
     expect(result.title).toBe('Test Video')
     expect(result.status).toBe('new')
+    expect(result.youtubePrivacyStatus).toBe('public')
   })
 
-  it('defaults deleted to false', () => {
-    const withoutDeleted = { ...validVideoCreate }
-    delete (withoutDeleted as Record<string, unknown>).deleted
-    const result = VideoCreateSchema.parse(withoutDeleted)
-    expect(result.deleted).toBe(false)
+  it('accepts all privacy status values', () => {
+    const statuses = ['public', 'unlisted', 'private'] as const
+    for (const privacyStatus of statuses) {
+      const result = VideoCreateSchema.parse({ ...validVideoCreate, youtubePrivacyStatus: privacyStatus })
+      expect(result.youtubePrivacyStatus).toBe(privacyStatus)
+    }
   })
 })
 
@@ -330,7 +332,6 @@ describe('VideoSummarySchema', () => {
     duration: 600,
     status: 'new',
     videoType: 'cut',
-    deleted: false,
   }
 
   it('accepts valid video summary', () => {

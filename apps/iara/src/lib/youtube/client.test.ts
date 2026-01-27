@@ -142,7 +142,7 @@ describe('YouTubeClient', () => {
   })
 
   describe('getVideoDetails', () => {
-    it('returns video details with parsed duration', async () => {
+    it('returns video details with parsed duration and privacy status', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -159,6 +159,7 @@ describe('YouTubeClient', () => {
                 },
               },
               contentDetails: { duration: 'PT1H30M' },
+              status: { privacyStatus: 'public' },
             },
           ],
         }),
@@ -174,6 +175,7 @@ describe('YouTubeClient', () => {
         thumbnail: 'https://i.ytimg.com/vi/vid1/mqdefault.jpg',
         duration: 5400, // 1h30m in seconds
         publishedAt: '2024-01-01T10:00:00Z',
+        privacyStatus: 'public',
       })
     })
 
@@ -254,6 +256,7 @@ describe('YouTubeClient', () => {
                 },
               },
               contentDetails: { duration: 'PT10M' },
+              status: { privacyStatus: 'public' },
             },
           ],
         }),
@@ -264,6 +267,7 @@ describe('YouTubeClient', () => {
       expect(result.videos).toHaveLength(1)
       expect(result.videos[0].title).toBe('Video 1')
       expect(result.videos[0].duration).toBe(600) // 10 minutes
+      expect(result.videos[0].privacyStatus).toBe('public')
       expect(mockFetch).toHaveBeenCalledTimes(3)
     })
 
@@ -307,6 +311,7 @@ describe('YouTubeClient', () => {
                 },
               },
               contentDetails: { duration: 'PT10M' },
+              status: { privacyStatus: 'unlisted' },
             },
           ],
         }),
@@ -316,6 +321,7 @@ describe('YouTubeClient', () => {
 
       expect(result.videos).toHaveLength(1)
       expect(result.videos[0].title).toBe('Video 1')
+      expect(result.videos[0].privacyStatus).toBe('unlisted')
       // Only 2 calls: playlistItems + videos (no channels.list)
       expect(mockFetch).toHaveBeenCalledTimes(2)
       // First call should use the converted uploads playlist ID

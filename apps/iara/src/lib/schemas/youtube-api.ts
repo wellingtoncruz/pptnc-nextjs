@@ -48,6 +48,20 @@ export const YouTubeContentDetailsSchema = z.object({
 })
 
 /**
+ * YouTube API Status schema - video status including privacy.
+ *
+ * @see https://developers.google.com/youtube/v3/docs/videos#status
+ */
+export const YouTubeStatusSchema = z.object({
+  uploadStatus: z.string().optional(),
+  privacyStatus: z.enum(['public', 'unlisted', 'private']),
+  license: z.string().optional(),
+  embeddable: z.boolean().optional(),
+  publicStatsViewable: z.boolean().optional(),
+  madeForKids: z.boolean().optional(),
+})
+
+/**
  * YouTube Video Item schema - single video from YouTube API response.
  *
  * Represents a single item from the videos.list endpoint.
@@ -59,6 +73,7 @@ export const YouTubeVideoItemSchema = z.object({
   id: z.string(),
   snippet: YouTubeSnippetSchema,
   contentDetails: YouTubeContentDetailsSchema,
+  status: YouTubeStatusSchema.optional(),
 })
 
 /**

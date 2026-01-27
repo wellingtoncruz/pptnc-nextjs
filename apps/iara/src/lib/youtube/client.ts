@@ -57,6 +57,7 @@ export interface YouTubeVideoDataFromAPI {
   thumbnail: string
   duration: number // seconds (converted from ISO 8601)
   publishedAt: string // ISO 8601 datetime
+  privacyStatus: 'public' | 'unlisted' | 'private'
 }
 
 /**
@@ -272,7 +273,7 @@ export class YouTubeClient {
    * Gets detailed video information.
    *
    * @param videoIds - Array of video IDs
-   * @returns Array of video data with parsed duration
+   * @returns Array of video data with parsed duration and privacy status
    */
   async getVideoDetails(videoIds: string[]): Promise<YouTubeVideoDataFromAPI[]> {
     if (videoIds.length === 0) {
@@ -281,7 +282,7 @@ export class YouTubeClient {
 
     const ids = videoIds.join(',')
     const data = await this.fetch(
-      `/videos?id=${ids}&part=snippet,contentDetails`,
+      `/videos?id=${ids}&part=snippet,contentDetails,status`,
       YouTubeVideosResponseSchema
     )
 
@@ -296,6 +297,7 @@ export class YouTubeClient {
         '',
       duration: parseYouTubeDuration(item.contentDetails.duration),
       publishedAt: item.snippet.publishedAt,
+      privacyStatus: item.status?.privacyStatus ?? 'public',
     }))
   }
 
