@@ -49,6 +49,12 @@ export type VideoUpdate = z.infer<typeof VideoUpdateSchema>
 export type VideoType = z.infer<typeof VideoTypeSchema>
 
 /**
+ * Filter type for video list queries.
+ * Includes all video types plus 'all' for no filtering.
+ */
+export type VideoTypeFilter = VideoType | 'all'
+
+/**
  * Video status in the lifecycle.
  */
 export type VideoStatus = z.infer<typeof VideoStatusSchema>

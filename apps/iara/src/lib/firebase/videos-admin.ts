@@ -14,7 +14,7 @@
  */
 
 import { FieldValue } from 'firebase-admin/firestore'
-import type { DocumentData } from 'firebase-admin/firestore'
+import type { DocumentData, Query } from 'firebase-admin/firestore'
 import { ZodError } from 'zod'
 
 import { VideoSchema, VideoCreateSchema, VideoUpdateSchema } from '@/lib/schemas/video'
@@ -30,19 +30,41 @@ import { getAdminDb } from './admin'
 const MAX_BATCH_SIZE = 500
 
 /**
+ * Parses a date value that can be either a Firestore Timestamp or ISO 8601 string.
+ *
+ * @param value - The date value to parse (Timestamp, string, or undefined)
+ * @returns A valid Date object, or Date(0) if parsing fails
+ */
+function parsePublishedAt(value: unknown): Date {
+  // Handle Firestore Timestamp
+  if (value && typeof value === 'object' && 'toDate' in value && typeof (value as { toDate: () => Date }).toDate === 'function') {
+    return (value as { toDate: () => Date }).toDate()
+  }
+
+  // Handle ISO 8601 string
+  if (typeof value === 'string') {
+    const date = new Date(value)
+    // Check for Invalid Date
+    if (!Number.isNaN(date.getTime())) {
+      return date
+    }
+  }
+
+  // Fallback for missing or invalid dates
+  return new Date(0)
+}
+
+/**
  * Options for listing videos.
  */
 export interface GetVideosByPodcastAdminOptions {
-  /** Include soft-deleted videos (default: true for sync comparison) */
-  includeDeleted?: boolean
+  // Reserved for future options
 }
 
 /**
  * Options for paginated video listing.
  */
 export interface GetVideosForDisplayOptions {
-  /** Include soft-deleted videos (default: false) */
-  includeDeleted?: boolean
   /** Page number (1-indexed, default: 1) */
   page?: number
   /** Number of videos per page (default: 20) */
@@ -85,18 +107,16 @@ export interface BatchWriteOperations {
  * Does NOT use orderBy('createdAt') to support documents without this field.
  * Sorts in memory using publishedAt.
  *
- * Note: Includes deleted videos by default for sync comparison.
  * Path: podcasts/{podcastId}/videos
  *
  * @param podcastId - The podcast document ID (enforcement rule #8)
- * @param options - Optional query options
+ * @param _options - Reserved for future options
  * @returns Array of validated video documents
  */
 export async function getVideosByPodcastAdmin(
   podcastId: string,
-  options: GetVideosByPodcastAdminOptions = {}
+  _options: GetVideosByPodcastAdminOptions = {}
 ): Promise<Video[]> {
-  const { includeDeleted = true } = options
   const db = getAdminDb()
   const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
 
@@ -105,7 +125,7 @@ export async function getVideosByPodcastAdmin(
     const snapshot = await videosRef.get()
 
     if (snapshot.empty) {
-      log('INFO', 'No videos found for podcast (admin)', { podcastId, includeDeleted })
+      log('INFO', 'No videos found for podcast (admin)', { podcastId })
       return []
     }
 
@@ -115,11 +135,6 @@ export async function getVideosByPodcastAdmin(
     for (const docSnap of snapshot.docs) {
       const rawData = docSnap.data()
       const data = { id: docSnap.id, ...rawData } as Record<string, unknown>
-
-      // Filter deleted if needed
-      if (!includeDeleted && data.deleted === true) {
-        continue
-      }
 
       // Validate with flat schema
       const parsed = VideoSchema.safeParse(data)
@@ -135,10 +150,10 @@ export async function getVideosByPodcastAdmin(
       }
     }
 
-    // Sort by publishedAt descending (flat field)
+    // Sort by publishedAt descending using helper for consistent parsing
     videos.sort((a, b) => {
-      const aDate = a.publishedAt?.toDate?.() ?? new Date(0)
-      const bDate = b.publishedAt?.toDate?.() ?? new Date(0)
+      const aDate = parsePublishedAt(a.publishedAt)
+      const bDate = parsePublishedAt(b.publishedAt)
       return bDate.getTime() - aDate.getTime()
     })
 
@@ -146,7 +161,6 @@ export async function getVideosByPodcastAdmin(
       podcastId,
       count: videos.length,
       skipped: skippedCount,
-      includeDeleted,
     })
     return videos
   } catch (error) {
@@ -170,15 +184,24 @@ export async function getVideosForDisplayAdmin(
   podcastId: string,
   options: GetVideosForDisplayOptions = {}
 ): Promise<PaginatedVideosResult> {
-  const { includeDeleted = false, page = 1, limit = 20, videoType } = options
+  const { page = 1, limit = 20, videoType } = options
   const db = getAdminDb()
   const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
 
+  // Build query with Firestore-level filters
+  // Note: Requires index on videoType field for efficient queries
+  let query: Query<DocumentData> = videosRef
+
+  // Filter by videoType at Firestore level if specified
+  if (videoType) {
+    query = query.where('videoType', '==', videoType)
+  }
+
   try {
-    const snapshot = await videosRef.get()
+    const snapshot = await query.get()
 
     if (snapshot.empty) {
-      log('INFO', 'No videos found for display (admin)', { podcastId, includeDeleted })
+      log('INFO', 'No videos found for display (admin)', { podcastId, videoType })
       return {
         data: [],
         pagination: { page, limit, totalCount: 0, totalPages: 0 },
@@ -189,31 +212,15 @@ export async function getVideosForDisplayAdmin(
 
     for (const docSnap of snapshot.docs) {
       const rawData = docSnap.data()
-
-      // Filter deleted if needed
-      const isDeleted = rawData.deleted === true
-      if (!includeDeleted && isDeleted) {
-        continue
-      }
-
       const docVideoType = rawData.videoType ?? 'cut'
 
-      // Filter by video type if specified
+      // Double-check videoType for documents without the field
       if (videoType && docVideoType !== videoType) {
         continue
       }
 
-      // Parse publishedAt - handle both Firestore Timestamp and ISO 8601 string
-      let publishedAtDate: Date
-      if (rawData.publishedAt?.toDate) {
-        // Firestore Timestamp
-        publishedAtDate = rawData.publishedAt.toDate()
-      } else if (rawData.publishedAt) {
-        // ISO 8601 string
-        publishedAtDate = new Date(rawData.publishedAt)
-      } else {
-        publishedAtDate = new Date(0)
-      }
+      // Parse publishedAt using helper for consistent handling
+      const publishedAtDate = parsePublishedAt(rawData.publishedAt)
 
       // Create summary with default values for missing fields
       const summary = {
@@ -247,7 +254,6 @@ export async function getVideosForDisplayAdmin(
       videoType: videoType ?? 'all',
       totalCount,
       returnedCount: paginatedVideos.length,
-      includeDeleted,
     })
 
     return {
@@ -465,10 +471,7 @@ export async function batchWriteVideos(
   const totalOps = creates.length + updates.length + deletes.length
 
   if (totalOps === 0) {
-    log('INFO', 'Batch write with no operations', { podcastId })
-    // Commit empty batch for consistency
-    const batch = db.batch()
-    await batch.commit()
+    log('INFO', 'Batch write with no operations, skipping', { podcastId })
     return
   }
 

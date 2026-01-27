@@ -36,10 +36,20 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  // TODO: Add authorization check to verify user has access to PODCAST_ID
+  // Currently any authenticated user can access any podcast's videos
+
   try {
     const searchParams = request.nextUrl.searchParams
-    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '20', 10)))
+
+    // Parse page with NaN protection
+    const parsedPage = parseInt(searchParams.get('page') ?? '1', 10)
+    const page = Number.isNaN(parsedPage) ? 1 : Math.max(1, parsedPage)
+
+    // Parse limit with NaN protection
+    const parsedLimit = parseInt(searchParams.get('limit') ?? '20', 10)
+    const limit = Number.isNaN(parsedLimit) ? 20 : Math.min(100, Math.max(1, parsedLimit))
+
     const typeParam = searchParams.get('type')
     const videoType = typeParam && ['episode', 'cut', 'reel'].includes(typeParam)
       ? (typeParam as 'episode' | 'cut' | 'reel')
@@ -53,14 +63,25 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result)
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+
     log('ERROR', 'Failed to get videos via API', {
       userId: session.user.id,
       podcastId: PODCAST_ID,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
+      stack: errorStack,
     })
 
+    // Include error details in development for easier debugging
+    const isDev = process.env.NODE_ENV === 'development'
     return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: 'Erro ao carregar vídeos' } },
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: isDev ? errorMessage : 'Erro ao carregar vídeos',
+        },
+      },
       { status: 500 }
     )
   }

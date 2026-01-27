@@ -1,11 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 import { log } from '@/lib/logger'
-import type { VideoSummary, VideoType } from '@/types/video'
-
-export type VideoTypeFilter = VideoType | 'all'
+import type { VideoSummary, VideoTypeFilter } from '@/types/video'
 
 const PAGE_SIZE = 20
 
@@ -45,7 +43,18 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
   const [totalCount, setTotalCount] = useState(0)
   const [typeFilter, setTypeFilter] = useState<VideoTypeFilter>(options.typeFilter ?? 'all')
 
+  // AbortController ref for cancelling in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null)
+
   const fetchVideos = useCallback(async () => {
+    // Cancel any in-flight request to prevent race conditions
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setIsLoading(true)
     setError(null)
 
@@ -59,7 +68,9 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
         params.set('type', typeFilter)
       }
 
-      const response = await fetch(`/api/videos?${params}`)
+      const response = await fetch(`/api/videos?${params}`, {
+        signal: controller.signal,
+      })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
@@ -67,21 +78,40 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
       }
 
       const { data, pagination } = await response.json()
-      setVideos(data || [])
-      setTotalPages(pagination?.totalPages ?? 1)
-      setTotalCount(pagination?.totalCount ?? 0)
+
+      // Only update state if this request wasn't aborted
+      if (!controller.signal.aborted) {
+        setVideos(data || [])
+        setTotalPages(pagination?.totalPages ?? 1)
+        setTotalCount(pagination?.totalCount ?? 0)
+      }
     } catch (err) {
+      // Ignore abort errors - they're expected when cancelling requests
+      if (err instanceof Error && err.name === 'AbortError') {
+        return
+      }
       log('ERROR', 'Failed to fetch videos', { error: err })
-      setError(err instanceof Error ? err.message : 'Falha ao carregar vídeos')
-      setVideos([])
+      if (!controller.signal.aborted) {
+        setError(err instanceof Error ? err.message : 'Falha ao carregar vídeos')
+        setVideos([])
+      }
     } finally {
-      setIsLoading(false)
+      if (!controller.signal.aborted) {
+        setIsLoading(false)
+      }
     }
   }, [page, typeFilter])
 
   // Fetch on mount and when page/filter changes
   useEffect(() => {
     fetchVideos()
+
+    // Cleanup: abort request on unmount or when dependencies change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
   }, [fetchVideos])
 
   // Reset page when filter changes

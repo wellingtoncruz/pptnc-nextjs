@@ -6,11 +6,9 @@ import { RefreshCw, Inbox, AlertCircle, ChevronLeft, ChevronRight } from 'lucide
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { VideoSummary, VideoType } from '@/types/video'
+import type { VideoSummary, VideoTypeFilter } from '@/types/video'
 
 import { VideoListItem } from './video-list-item'
-
-export type VideoTypeFilter = VideoType | 'all'
 
 interface VideoListPanelProps {
   videos?: VideoSummary[]
