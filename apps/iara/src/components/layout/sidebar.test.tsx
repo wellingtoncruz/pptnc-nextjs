@@ -1,0 +1,139 @@
+import { render, screen, waitFor } from '@/test-utils'
+import userEvent from '@testing-library/user-event'
+
+import { Sidebar } from './sidebar'
+
+// Mock next-auth/react
+vi.mock('next-auth/react', () => ({
+  signOut: vi.fn(),
+}))
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  usePathname: vi.fn(() => '/videos'),
+  useSearchParams: vi.fn(() => ({
+    get: vi.fn((key: string) => null),
+  })),
+}))
+
+describe('Sidebar', () => {
+  // Create fresh localStorage mock for each test
+  let localStorageStore: Record<string, string> = {}
+  const localStorageMock = {
+    getItem: vi.fn((key: string) => localStorageStore[key] ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      localStorageStore[key] = value
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete localStorageStore[key]
+    }),
+    clear: vi.fn(() => {
+      localStorageStore = {}
+    }),
+  }
+
+  beforeEach(() => {
+    localStorageStore = {}
+    vi.clearAllMocks()
+    Object.defineProperty(window, 'localStorage', { value: localStorageMock, writable: true })
+  })
+
+  it('renderiza a sidebar com logo e navegação', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Vídeos')).toBeInTheDocument()
+    expect(screen.getByText('Configurações')).toBeInTheDocument()
+  })
+
+  it('mostra o nome do usuário quando fornecido', async () => {
+    render(<Sidebar userName="John Doe" />)
+
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument()
+    })
+  })
+
+  it('colapsa quando botão toggle é clicado', async () => {
+    const user = userEvent.setup()
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    const toggleBtn = screen.getByRole('button', { name: /colapsar/i })
+    await user.click(toggleBtn)
+
+    expect(screen.getByTestId('sidebar')).toHaveClass('collapsed')
+  })
+
+  it('expande quando botão toggle é clicado novamente', async () => {
+    const user = userEvent.setup()
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    const toggleBtn = screen.getByRole('button', { name: /colapsar/i })
+    await user.click(toggleBtn)
+
+    expect(screen.getByTestId('sidebar')).toHaveClass('collapsed')
+
+    const expandBtn = screen.getByRole('button', { name: /expandir/i })
+    await user.click(expandBtn)
+
+    expect(screen.getByTestId('sidebar')).not.toHaveClass('collapsed')
+  })
+
+  it('persiste estado collapsed no localStorage', async () => {
+    const user = userEvent.setup()
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    const toggleBtn = screen.getByRole('button', { name: /colapsar/i })
+    await user.click(toggleBtn)
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('sidebar-collapsed', 'true')
+  })
+
+  it('carrega estado collapsed do localStorage', async () => {
+    // Set collapsed state before render
+    localStorageStore['sidebar-collapsed'] = 'true'
+
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sidebar')).toHaveClass('collapsed')
+    })
+  })
+
+  it('destaca link ativo baseado no pathname', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    // Find the Videos navigation link (not the logo link)
+    const videosLink = screen.getByText('Vídeos').closest('a')
+    expect(videosLink).toHaveClass('bg-accent')
+  })
+
+  it('mostra botão de logout quando expandido', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    // In expanded state, logout text should be visible
+    expect(screen.getByText('Sair')).toBeInTheDocument()
+  })
+})

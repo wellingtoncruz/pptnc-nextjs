@@ -1,10 +1,13 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 
 import { auth } from '@/lib/auth'
-import { UserMenu } from '@/components/auth/user-menu'
-import { LogoutNavButton } from '@/components/layout/logout-nav-button'
-import { SettingsNavLink } from '@/components/layout/settings-nav-link'
+import { VideosLayout } from './videos-layout'
 
+/**
+ * Videos page - Server Component for authentication.
+ * Delegates rendering to VideosLayout client component.
+ */
 export default async function VideosPage() {
   const session = await auth()
 
@@ -15,26 +18,26 @@ export default async function VideosPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="flex items-center justify-between border-b border-border px-6 py-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">IAra</h1>
-          <nav className="flex items-center gap-2">
-            <SettingsNavLink />
-            <LogoutNavButton />
-          </nav>
-        </div>
-        <UserMenu />
-      </header>
-      <div
-        className="flex flex-col items-center justify-center p-6"
-        style={{ minHeight: 'calc(100vh - 73px)' }}
-      >
-        <h2 className="text-2xl font-semibold">Video Pipeline</h2>
-        <p className="mt-2 text-muted-foreground">
-          Bem-vindo, {session.user.name}! A lista de vídeos será implementada em breve.
-        </p>
-      </div>
+    <main className="h-screen overflow-hidden bg-background">
+      <Suspense fallback={<VideosPageSkeleton />}>
+        <VideosLayout userName={session.user.name ?? undefined} />
+      </Suspense>
     </main>
+  )
+}
+
+/**
+ * Loading skeleton for the videos page.
+ */
+function VideosPageSkeleton() {
+  return (
+    <div className="flex h-screen">
+      {/* Sidebar skeleton */}
+      <div className="w-48 border-r border-border bg-background" />
+      {/* List skeleton */}
+      <div className="flex-1 border-r border-border bg-background" />
+      {/* Detail skeleton */}
+      <div className="flex-1 bg-background" />
+    </div>
   )
 }
