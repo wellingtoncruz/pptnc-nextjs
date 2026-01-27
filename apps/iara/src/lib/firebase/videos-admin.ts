@@ -20,7 +20,7 @@ import { ZodError } from 'zod'
 import { VideoSchema, VideoCreateSchema, VideoUpdateSchema } from '@/lib/schemas/video'
 import { log } from '@/lib/logger'
 import { needsIaraFields } from '@/lib/video-utils'
-import type { Video, VideoCreate, VideoUpdate } from '@/types/video'
+import type { Video, VideoCreate, VideoUpdate, VideoSummary } from '@/types/video'
 
 import { getAdminDb } from './admin'
 
@@ -35,6 +35,35 @@ const MAX_BATCH_SIZE = 500
 export interface GetVideosByPodcastAdminOptions {
   /** Include soft-deleted videos (default: true for sync comparison) */
   includeDeleted?: boolean
+}
+
+/**
+ * Options for paginated video listing.
+ */
+export interface GetVideosForDisplayOptions {
+  /** Include soft-deleted videos (default: false) */
+  includeDeleted?: boolean
+  /** Page number (1-indexed, default: 1) */
+  page?: number
+  /** Number of videos per page (default: 20) */
+  limit?: number
+  /** Filter by video type (undefined means all) */
+  videoType?: 'episode' | 'cut' | 'reel'
+}
+
+/**
+ * Result of paginated video listing.
+ */
+export interface PaginatedVideosResult {
+  /** Videos for the current page */
+  data: VideoSummary[]
+  /** Pagination metadata */
+  pagination: {
+    page: number
+    limit: number
+    totalCount: number
+    totalPages: number
+  }
 }
 
 /**
@@ -85,7 +114,7 @@ export async function getVideosByPodcastAdmin(
 
     for (const docSnap of snapshot.docs) {
       const rawData = docSnap.data()
-      const data = { id: docSnap.id, ...rawData }
+      const data = { id: docSnap.id, ...rawData } as Record<string, unknown>
 
       // Filter deleted if needed
       if (!includeDeleted && data.deleted === true) {
@@ -122,6 +151,111 @@ export async function getVideosByPodcastAdmin(
     return videos
   } catch (error) {
     log('ERROR', 'Failed to get videos for podcast (admin)', { podcastId, error })
+    throw error
+  }
+}
+
+/**
+ * Gets videos for display with pagination and filtering.
+ *
+ * Returns VideoSummary objects suitable for list display.
+ * Documents without IAra fields get default values.
+ * Supports pagination and filtering by video type.
+ *
+ * @param podcastId - The podcast document ID
+ * @param options - Optional query options including pagination and filtering
+ * @returns Paginated result with videos and metadata
+ */
+export async function getVideosForDisplayAdmin(
+  podcastId: string,
+  options: GetVideosForDisplayOptions = {}
+): Promise<PaginatedVideosResult> {
+  const { includeDeleted = false, page = 1, limit = 20, videoType } = options
+  const db = getAdminDb()
+  const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
+
+  try {
+    const snapshot = await videosRef.get()
+
+    if (snapshot.empty) {
+      log('INFO', 'No videos found for display (admin)', { podcastId, includeDeleted })
+      return {
+        data: [],
+        pagination: { page, limit, totalCount: 0, totalPages: 0 },
+      }
+    }
+
+    const videos: Array<VideoSummary & { _publishedAt: Date }> = []
+
+    for (const docSnap of snapshot.docs) {
+      const rawData = docSnap.data()
+
+      // Filter deleted if needed
+      const isDeleted = rawData.deleted === true
+      if (!includeDeleted && isDeleted) {
+        continue
+      }
+
+      const docVideoType = rawData.videoType ?? 'cut'
+
+      // Filter by video type if specified
+      if (videoType && docVideoType !== videoType) {
+        continue
+      }
+
+      // Parse publishedAt - handle both Firestore Timestamp and ISO 8601 string
+      let publishedAtDate: Date
+      if (rawData.publishedAt?.toDate) {
+        // Firestore Timestamp
+        publishedAtDate = rawData.publishedAt.toDate()
+      } else if (rawData.publishedAt) {
+        // ISO 8601 string
+        publishedAtDate = new Date(rawData.publishedAt)
+      } else {
+        publishedAtDate = new Date(0)
+      }
+
+      // Create summary with default values for missing fields
+      const summary = {
+        id: docSnap.id,
+        title: rawData.title ?? 'Sem título',
+        thumbnails: rawData.thumbnails,
+        duration: rawData.duration ?? 0,
+        status: rawData.status ?? 'new',
+        videoType: docVideoType,
+        _publishedAt: publishedAtDate,
+      }
+      videos.push(summary)
+    }
+
+    // Sort by publishedAt descending
+    videos.sort((a, b) => b._publishedAt.getTime() - a._publishedAt.getTime())
+
+    // Calculate pagination
+    const totalCount = videos.length
+    const totalPages = Math.ceil(totalCount / limit)
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+
+    // Slice for current page and remove internal _publishedAt field
+    const paginatedVideos: VideoSummary[] = videos.slice(startIndex, endIndex).map(({ _publishedAt, ...v }) => v)
+
+    log('INFO', 'Videos fetched for display (admin)', {
+      podcastId,
+      page,
+      limit,
+      videoType: videoType ?? 'all',
+      totalCount,
+      returnedCount: paginatedVideos.length,
+      includeDeleted,
+    })
+
+    return {
+      data: paginatedVideos,
+      pagination: { page, limit, totalCount, totalPages },
+    }
+  } catch (error) {
+    log('ERROR', 'Failed to get videos for display (admin)', { podcastId, error })
     throw error
   }
 }

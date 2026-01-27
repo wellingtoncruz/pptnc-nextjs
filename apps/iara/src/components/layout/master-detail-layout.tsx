@@ -23,15 +23,15 @@ export function MasterDetailLayout({ sidebar, list, detail }: MasterDetailLayout
       </div>
 
       {/* Resizable List and Detail Panels */}
+      {/* Note: autoSaveId removed - react-resizable-panels v4.x uses different API for persistence */}
       <ResizablePanelGroup
-        direction="horizontal"
-        autoSaveId="video-layout"
+        orientation="horizontal"
         className="flex-1"
       >
         {/* Video List Panel */}
         <ResizablePanel
-          defaultSize={40}
-          minSize={25}
+          defaultSize={35}
+          minSize={15}
           data-testid="video-list-panel"
         >
           {list}
@@ -41,8 +41,8 @@ export function MasterDetailLayout({ sidebar, list, detail }: MasterDetailLayout
 
         {/* Video Detail Panel */}
         <ResizablePanel
-          defaultSize={60}
-          minSize={30}
+          defaultSize={65}
+          minSize={35}
           data-testid="video-detail-panel"
         >
           {detail}

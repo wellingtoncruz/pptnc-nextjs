@@ -70,7 +70,7 @@ export function VideoListItem({ video, isSelected, onSelect }: VideoListItemProp
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        'flex cursor-pointer gap-3 rounded-lg p-2 transition-colors',
+        'flex cursor-pointer gap-3 rounded-lg p-2 transition-colors overflow-hidden',
         'hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isSelected && 'ring-2 ring-blue-400 bg-accent'
       )}
@@ -101,7 +101,7 @@ export function VideoListItem({ video, isSelected, onSelect }: VideoListItemProp
         <span className="truncate text-sm font-medium">{video.title}</span>
 
         {/* Badges */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 overflow-hidden">
           <Badge variant="outline" className={cn('text-xs', statusColors[video.status])}>
             {video.status === 'sent' && (
               <Check data-testid="check-icon" className="mr-1 h-3 w-3" />

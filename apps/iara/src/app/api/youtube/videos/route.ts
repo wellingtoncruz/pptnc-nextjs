@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 
     // Call YouTube API
     const client = new YouTubeClient(tokens.accessToken)
-    const result = await client.listVideos(maxResults, pageToken)
+    const result = await client.listVideos({ maxResults, pageToken })
 
     log('INFO', 'YouTube videos listed via API', {
       userId,

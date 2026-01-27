@@ -74,7 +74,7 @@ export async function getVideosByPodcast(
 
     for (const docSnap of querySnapshot.docs) {
       const rawData = docSnap.data()
-      const data = { id: docSnap.id, ...rawData }
+      const data = { id: docSnap.id, ...rawData } as Record<string, unknown>
 
       // Filter deleted if needed
       if (!includeDeleted && data.deleted === true) {
@@ -160,19 +160,17 @@ export async function getVideosForDisplay(
         duration: rawData.duration ?? 0,
         status: rawData.status ?? 'new',
         videoType: rawData.videoType ?? 'cut',
-        deleted: isDeleted,
       }
       videos.push(summary)
     }
 
-    // Sort by publishedAt descending
+    // Sort by publishedAt descending (ISO 8601 string format)
     videos.sort((a, b) => {
-      // Get publishedAt from raw data for sorting
       const queryDocs = querySnapshot.docs
       const aDoc = queryDocs.find((d) => d.id === a.id)
       const bDoc = queryDocs.find((d) => d.id === b.id)
-      const aDate = aDoc?.data().publishedAt?.toDate?.() ?? new Date(0)
-      const bDate = bDoc?.data().publishedAt?.toDate?.() ?? new Date(0)
+      const aDate = aDoc?.data().publishedAt ? new Date(aDoc.data().publishedAt) : new Date(0)
+      const bDate = bDoc?.data().publishedAt ? new Date(bDoc.data().publishedAt) : new Date(0)
       return bDate.getTime() - aDate.getTime()
     })
 
