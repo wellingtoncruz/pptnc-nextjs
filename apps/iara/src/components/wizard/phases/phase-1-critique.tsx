@@ -82,9 +82,6 @@ export function Phase1Critique({
   critique,
   className,
 }: Phase1CritiqueProps) {
-  const phaseState = wizard.state.phases[1]
-  const hasError = phaseState.status === 'error'
-
   // Extract co-host from guests array (first guest if they have "host" in role)
   const existingCoHost = useMemo(() => {
     const firstGuest = video.guests?.[0]
@@ -186,17 +183,6 @@ export function Phase1Critique({
   return (
     <div className={cn('h-full', className)}>
       <div className="space-y-6 p-4">
-        {/* Error message */}
-        {hasError && phaseState.error && (
-          <Card className="border-destructive">
-            <CardContent className="pt-4">
-              <p className="text-sm text-destructive text-center">
-                {phaseState.error}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Context inputs form (always visible, auto-saves) */}
         <Card>
           <CardHeader className="pb-3">

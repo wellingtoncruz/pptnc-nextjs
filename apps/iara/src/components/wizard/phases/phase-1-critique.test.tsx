@@ -193,33 +193,6 @@ describe('Phase1Critique', () => {
     })
   })
 
-  describe('Error handling', () => {
-    it('shows error message when phase has error', () => {
-      const wizard = createMockWizard({
-        state: {
-          videoId: 'test-video-123',
-          currentPhase: 1,
-          phases: {
-            1: { status: 'error', data: null, error: 'Erro ao processar crítica' },
-            2: { status: 'pending', data: null, error: null },
-            3: { status: 'pending', data: null, error: null },
-            4: { status: 'pending', data: null, error: null },
-            5: { status: 'pending', data: null, error: null },
-            6: { status: 'pending', data: null, error: null },
-            7: { status: 'pending', data: null, error: null },
-            8: { status: 'pending', data: null, error: null },
-          },
-        },
-      })
-
-      render(
-        <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
-      )
-
-      expect(screen.getByText('Erro ao processar crítica')).toBeInTheDocument()
-    })
-  })
-
   describe('Critique display', () => {
     it('does not render critique display when critique is null', () => {
       const wizard = createMockWizard()
