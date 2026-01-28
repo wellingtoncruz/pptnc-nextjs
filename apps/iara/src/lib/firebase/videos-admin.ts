@@ -230,6 +230,11 @@ export async function getVideosForDisplayAdmin(
         duration: rawData.duration ?? 0,
         status: rawData.status ?? 'new',
         videoType: docVideoType,
+        transcriptionSRT: rawData.transcriptionSRT,
+        transcriptionTXT: rawData.transcriptionTXT,
+        // Context fields (flat, not nested)
+        theme: rawData.theme,
+        guests: rawData.guests,
         _publishedAt: publishedAtDate,
       }
       videos.push(summary)
@@ -550,4 +555,75 @@ export async function batchWriteVideos(
   }
 
   log('INFO', 'Batch write completed', { podcastId, totalOps })
+}
+
+/**
+ * Gets episodes with context defined for cut/reel parent selection.
+ *
+ * Only returns episodes (videoType = 'episode') that have theme set
+ * (context is defined when theme is populated).
+ * Used in EpisodeOriginSelector for cut/reel processing.
+ *
+ * @param podcastId - The podcast document ID (enforcement rule #8)
+ * @returns Array of video summaries for episodes with context
+ */
+export async function getEpisodesWithContext(
+  podcastId: string
+): Promise<VideoSummary[]> {
+  const db = getAdminDb()
+  const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
+
+  try {
+    // Query episodes with theme defined (context is set when theme exists)
+    // Note: Firestore can't query "field exists", so we query by videoType
+    // and filter in-memory for theme
+    const snapshot = await videosRef
+      .where('videoType', '==', 'episode')
+      .get()
+
+    if (snapshot.empty) {
+      return []
+    }
+
+    const episodes: VideoSummary[] = []
+
+    for (const docSnap of snapshot.docs) {
+      const rawData = docSnap.data()
+
+      // Filter only episodes with theme defined (context is set)
+      if (!rawData.theme) {
+        continue
+      }
+
+      // Parse publishedAt safely
+      const publishedAtDate = parsePublishedAt(rawData.publishedAt)
+
+      episodes.push({
+        id: docSnap.id,
+        title: rawData.title ?? 'Sem título',
+        thumbnails: rawData.thumbnails,
+        duration: rawData.duration ?? 0,
+        status: rawData.status ?? 'new',
+        videoType: 'episode',
+        transcriptionSRT: rawData.transcriptionSRT,
+        transcriptionTXT: rawData.transcriptionTXT,
+        // Include context fields for preview
+        theme: rawData.theme,
+        guests: rawData.guests,
+      })
+    }
+
+    // Sort by title for consistent display
+    episodes.sort((a, b) => a.title.localeCompare(b.title))
+
+    log('INFO', 'Episodes with context fetched', {
+      podcastId,
+      count: episodes.length,
+    })
+
+    return episodes
+  } catch (error) {
+    log('ERROR', 'Failed to get episodes with context', { podcastId, error })
+    throw error
+  }
 }

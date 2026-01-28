@@ -2,38 +2,55 @@
 
 import { FileVideo } from 'lucide-react'
 
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { WizardOrchestrator } from '@/components/wizard'
+import type { VideoDetail, VideoSummary, Video } from '@/types/video'
 
 interface VideoDetailPanelProps {
   videoId?: string | null
+  /** Video data for display (from selected video) */
+  video?: VideoDetail | VideoSummary | null
 }
 
 /**
- * Video detail panel showing selected video information.
- * Shows empty state when no video is selected.
+ * Video detail panel.
+ *
+ * When a video is selected, shows the WizardLayout directly with:
+ * - Breadcrumb for phase navigation
+ * - Video preview (left) + Interactive panel (right)
+ * - Console area (bottom)
+ *
+ * The wizard opens automatically at Phase 1 when a video is selected.
+ * This follows the processamento_video.md specification.
  */
-export function VideoDetailPanel({ videoId }: VideoDetailPanelProps) {
+export function VideoDetailPanel({
+  videoId,
+  video,
+}: VideoDetailPanelProps) {
   if (!videoId) {
     return <VideoDetailEmptyState />
   }
 
-  // Placeholder for video details - will be implemented in Story 5.2
+  // If no video data yet, show loading state
+  if (!video) {
+    return (
+      <div
+        data-testid="video-detail-panel"
+        className="flex h-full flex-col items-center justify-center bg-background text-center"
+      >
+        <p className="text-sm text-muted-foreground">Carregando vídeo...</p>
+      </div>
+    )
+  }
+
+  // Show wizard directly when video is selected
+  // Phase 1 opens automatically per processamento_video.md:
+  // "A primeira fase do Wizard é a fase que já vem aberta no Wizard"
   return (
     <div data-testid="video-detail-panel" className="flex h-full flex-col bg-background">
-      {/* Header */}
-      <div className="flex h-14 items-center border-b border-border px-4">
-        <h2 className="text-lg font-semibold">Detalhes do Vídeo</h2>
-      </div>
-
-      {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          <p className="text-sm text-muted-foreground">
-            Vídeo selecionado: {videoId}
-          </p>
-          {/* Video details will be implemented in Story 5.2 */}
-        </div>
-      </ScrollArea>
+      <WizardOrchestrator
+        video={video as Video}
+        className="flex flex-col h-full"
+      />
     </div>
   )
 }

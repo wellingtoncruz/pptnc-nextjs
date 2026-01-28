@@ -42,7 +42,7 @@ describe('MasterDetailLayout', () => {
     render(<MasterDetailLayout {...defaultProps} />)
 
     const group = screen.getByTestId('resizable-group')
-    expect(group).toHaveAttribute('direction', 'horizontal')
+    expect(group).toHaveAttribute('orientation', 'horizontal')
   })
 
   it('renderiza handle entre lista e detalhes', () => {

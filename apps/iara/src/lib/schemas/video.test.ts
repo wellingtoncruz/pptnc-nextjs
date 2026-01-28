@@ -12,6 +12,8 @@ import {
   VideoSummarySchema,
   ThumbnailsSchema,
   StatisticsSchema,
+  GuestSchema,
+  EpisodeContextFormSchema,
 } from './video'
 
 // Helper to create a valid Firestore-like Timestamp
@@ -194,20 +196,21 @@ describe('VideoSchema (flat structure)', () => {
       ...validVideo,
       transcriptionSRT: '1\n00:00:00,000 --> 00:00:05,000\nHello',
       transcriptionTXT: 'Hello world',
-      guests: ['Guest 1'],
+      guests: [{ name: 'Guest 1', role: 'CEO', company: 'TechCorp', linkedin: 'https://linkedin.com/in/guest1' }],
       topics: ['Topic A'],
       statistics: { viewCount: 1000 },
     }
     const result = VideoSchema.parse(videoWithPortalFields)
     expect(result.transcriptionTXT).toBe('Hello world')
-    expect(result.guests).toEqual(['Guest 1'])
+    expect(result.guests?.[0]?.name).toBe('Guest 1')
   })
 
-  it('defaults deleted to false', () => {
+  it('accepts video without deleted field (legacy compat)', () => {
     const videoWithoutDeleted = { ...validVideo }
     delete (videoWithoutDeleted as Record<string, unknown>).deleted
     const result = VideoSchema.parse(videoWithoutDeleted)
-    expect(result.deleted).toBe(false)
+    // deleted field removed from schema for legacy compatibility
+    expect(result).not.toHaveProperty('deleted')
   })
 
   it('accepts video without timestamps (legacy docs)', () => {
@@ -222,9 +225,11 @@ describe('VideoSchema (flat structure)', () => {
     expect(() => VideoSchema.parse(videoWithoutId)).toThrow()
   })
 
-  it('rejects video without podcastId', () => {
+  it('accepts video without podcastId (legacy compat)', () => {
     const { podcastId: _podcastId, ...videoWithoutPodcastId } = validVideo
-    expect(() => VideoSchema.parse(videoWithoutPodcastId)).toThrow()
+    // podcastId is optional for legacy videos from portal-web
+    const result = VideoSchema.parse(videoWithoutPodcastId)
+    expect(result.podcastId).toBeUndefined()
   })
 
   it('rejects video without title', () => {
@@ -350,5 +355,147 @@ describe('VideoSummarySchema', () => {
   it('rejects summary with missing required fields', () => {
     const { title: _title, ...withoutTitle } = validSummary
     expect(() => VideoSummarySchema.parse(withoutTitle)).toThrow()
+  })
+})
+
+describe('GuestSchema (legacy compatible)', () => {
+  const validGuest = {
+    name: 'João Silva',
+    role: 'CEO',
+    company: 'TechCorp',
+    linkedin: 'https://linkedin.com/in/joaosilva',
+  }
+
+  it('accepts valid guest with all fields', () => {
+    const result = GuestSchema.parse(validGuest)
+    expect(result.name).toBe('João Silva')
+    expect(result.role).toBe('CEO')
+    expect(result.company).toBe('TechCorp')
+    expect(result.linkedin).toBe('https://linkedin.com/in/joaosilva')
+  })
+
+  it('accepts guest with optional photo field', () => {
+    const guestWithPhoto = { ...validGuest, photo: 'joao-silva.jpg' }
+    const result = GuestSchema.parse(guestWithPhoto)
+    expect(result.photo).toBe('joao-silva.jpg')
+  })
+
+  it('rejects guest with empty name', () => {
+    expect(() => GuestSchema.parse({ ...validGuest, name: '' })).toThrow()
+  })
+
+  it('rejects guest with empty role', () => {
+    expect(() => GuestSchema.parse({ ...validGuest, role: '' })).toThrow()
+  })
+
+  it('rejects guest with empty company', () => {
+    expect(() => GuestSchema.parse({ ...validGuest, company: '' })).toThrow()
+  })
+
+  it('rejects guest with invalid URL', () => {
+    expect(() => GuestSchema.parse({ ...validGuest, linkedin: 'not-a-url' })).toThrow()
+  })
+
+  it('accepts guest with any valid URL (not just LinkedIn)', () => {
+    const result = GuestSchema.parse({ ...validGuest, linkedin: 'https://example.com/profile' })
+    expect(result.linkedin).toBe('https://example.com/profile')
+  })
+})
+
+describe('EpisodeContextFormSchema (UI form validation)', () => {
+  const validGuest = {
+    name: 'Guest Name',
+    role: 'CTO',
+    company: 'StartupX',
+    linkedin: 'https://linkedin.com/in/guest',
+  }
+
+  const validCoHost = {
+    name: 'Co-Host Name',
+    role: 'Host',
+    company: 'Podcast Inc',
+    linkedin: 'https://linkedin.com/in/cohost',
+  }
+
+  it('accepts form context with theme and one guest', () => {
+    const result = EpisodeContextFormSchema.parse({
+      theme: 'Inovação em Tecnologia',
+      hasCoHost: false,
+      guests: [validGuest],
+    })
+    expect(result.theme).toBe('Inovação em Tecnologia')
+    expect(result.guests).toHaveLength(1)
+    expect(result.hasCoHost).toBe(false)
+  })
+
+  it('accepts form context with theme, co-host and guests', () => {
+    const result = EpisodeContextFormSchema.parse({
+      theme: 'Empreendedorismo',
+      hasCoHost: true,
+      coHost: validCoHost,
+      guests: [validGuest],
+    })
+    expect(result.coHost?.name).toBe('Co-Host Name')
+    expect(result.guests).toHaveLength(1)
+    expect(result.hasCoHost).toBe(true)
+  })
+
+  it('accepts form context with up to 3 guests', () => {
+    const guests = [
+      { ...validGuest, name: 'Guest 1' },
+      { ...validGuest, name: 'Guest 2' },
+      { ...validGuest, name: 'Guest 3' },
+    ]
+    const result = EpisodeContextFormSchema.parse({
+      theme: 'Panel Discussion',
+      hasCoHost: false,
+      guests,
+    })
+    expect(result.guests).toHaveLength(3)
+  })
+
+  it('rejects form context with more than 3 guests', () => {
+    const guests = [
+      { ...validGuest, name: 'Guest 1' },
+      { ...validGuest, name: 'Guest 2' },
+      { ...validGuest, name: 'Guest 3' },
+      { ...validGuest, name: 'Guest 4' },
+    ]
+    expect(() =>
+      EpisodeContextFormSchema.parse({
+        theme: 'Too many guests',
+        hasCoHost: false,
+        guests,
+      })
+    ).toThrow()
+  })
+
+  it('rejects form context with no guests', () => {
+    expect(() =>
+      EpisodeContextFormSchema.parse({
+        theme: 'No guests',
+        hasCoHost: false,
+        guests: [],
+      })
+    ).toThrow()
+  })
+
+  it('rejects form context with empty theme', () => {
+    expect(() =>
+      EpisodeContextFormSchema.parse({
+        theme: '',
+        hasCoHost: false,
+        guests: [validGuest],
+      })
+    ).toThrow()
+  })
+
+  it('rejects form context without theme', () => {
+    expect(() =>
+      EpisodeContextFormSchema.parse({
+        hasCoHost: false,
+        guests: [validGuest],
+      })
+    ).toThrow()
   })
 })

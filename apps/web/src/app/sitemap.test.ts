@@ -17,7 +17,7 @@ describe("sitemap", () => {
 
     const result = await sitemap();
 
-    expect(result).toHaveLength(2);
+    expect(result).toHaveLength(5); // homepage, episodios, contato, sugerir-pauta, midiakit
     expect(result[0]).toEqual(
       expect.objectContaining({
         url: expect.stringMatching(/pptnaocompila\.com\.br$/),
@@ -32,6 +32,27 @@ describe("sitemap", () => {
         changeFrequency: "daily",
       })
     );
+    expect(result[2]).toEqual(
+      expect.objectContaining({
+        url: expect.stringContaining("/contato"),
+        priority: 0.5,
+        changeFrequency: "monthly",
+      })
+    );
+    expect(result[3]).toEqual(
+      expect.objectContaining({
+        url: expect.stringContaining("/sugerir-pauta"),
+        priority: 0.5,
+        changeFrequency: "monthly",
+      })
+    );
+    expect(result[4]).toEqual(
+      expect.objectContaining({
+        url: expect.stringContaining("/midiakit"),
+        priority: 0.6,
+        changeFrequency: "monthly",
+      })
+    );
   });
 
   it("includes all episodes in sitemap", async () => {
@@ -42,15 +63,15 @@ describe("sitemap", () => {
 
     const result = await sitemap();
 
-    expect(result).toHaveLength(4); // 2 static + 2 episodes
-    expect(result[2]).toEqual(
+    expect(result).toHaveLength(7); // 5 static + 2 episodes
+    expect(result[5]).toEqual(
       expect.objectContaining({
         url: expect.stringContaining("/episodios/ep-1"),
         priority: 0.8,
         changeFrequency: "monthly",
       })
     );
-    expect(result[3]).toEqual(
+    expect(result[6]).toEqual(
       expect.objectContaining({
         url: expect.stringContaining("/episodios/ep-2"),
         priority: 0.8,
@@ -99,7 +120,7 @@ describe("sitemap", () => {
     const result = await sitemap();
 
     // Should still return static pages
-    expect(result).toHaveLength(2);
+    expect(result).toHaveLength(5);
     expect(result[0].url).toContain("pptnaocompila.com.br");
   });
 });

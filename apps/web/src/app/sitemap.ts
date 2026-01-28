@@ -3,21 +3,13 @@ import type { MetadataRoute } from "next";
 import { getEpisodes } from "@/lib/datastore/episodes";
 import { logger } from "@/lib/logger";
 
-// Helper to add timeout to promises
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
-  ]);
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
 
-  // Fetch episodes with 10s timeout to prevent build hang
+  // Fetch episodes (same as generateStaticParams - no timeout needed)
   let episodes: { slug: string; publishedAt: Date }[] = [];
   try {
-    episodes = await withTimeout(getEpisodes(), 10000, []);
+    episodes = await getEpisodes();
   } catch (error) {
     logger.warn("Failed to fetch episodes for sitemap", {
       error: error instanceof Error ? error.message : String(error),
@@ -37,6 +29,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/contato`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/sugerir-pauta`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/midiakit`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
   ];
 

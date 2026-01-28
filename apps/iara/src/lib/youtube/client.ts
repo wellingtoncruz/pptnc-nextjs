@@ -11,6 +11,7 @@ import type { z } from 'zod'
 
 import { log } from '@/lib/logger'
 import {
+  YouTubeCaptionsResponseSchema,
   YouTubeChannelsResponseSchema,
   YouTubePlaylistItemsResponseSchema,
   YouTubeVideosResponseSchema,
@@ -58,6 +59,8 @@ export interface YouTubeVideoDataFromAPI {
   duration: number // seconds (converted from ISO 8601)
   publishedAt: string // ISO 8601 datetime
   privacyStatus: 'public' | 'unlisted' | 'private'
+  /** Live broadcast status: 'live', 'upcoming', or 'none' */
+  liveBroadcastContent: 'live' | 'upcoming' | 'none'
 }
 
 /**
@@ -82,6 +85,16 @@ export interface ListVideosOptions {
    * If not provided, uses mine=true (authenticated user's channel).
    */
   channelId?: string
+}
+
+/**
+ * Caption data returned from YouTube API.
+ */
+export interface YouTubeCaptionData {
+  id: string
+  language: string
+  trackKind: string // 'standard', 'ASR', 'forced', or other values
+  name?: string
 }
 
 /**
@@ -298,6 +311,7 @@ export class YouTubeClient {
       duration: parseYouTubeDuration(item.contentDetails.duration),
       publishedAt: item.snippet.publishedAt,
       privacyStatus: item.status?.privacyStatus ?? 'public',
+      liveBroadcastContent: (item.snippet.liveBroadcastContent as 'live' | 'upcoming' | 'none') ?? 'none',
     }))
   }
 
@@ -349,5 +363,125 @@ export class YouTubeClient {
     })
 
     return { videos, nextPageToken }
+  }
+
+  /**
+   * Lists caption tracks for a video.
+   *
+   * @param videoId - YouTube video ID
+   * @returns Array of caption tracks
+   *
+   * @example
+   * const client = new YouTubeClient(accessToken)
+   * const captions = await client.listCaptions('dQw4w9WgXcQ')
+   * const ptCaptions = captions.filter(c => c.language.startsWith('pt'))
+   */
+  async listCaptions(videoId: string): Promise<YouTubeCaptionData[]> {
+    log('INFO', 'Listing captions for video', { videoId })
+
+    const data = await this.fetch(
+      `/captions?part=snippet&videoId=${videoId}`,
+      YouTubeCaptionsResponseSchema
+    )
+
+    const captions = data.items.map((item) => ({
+      id: item.id,
+      language: item.snippet.language,
+      trackKind: item.snippet.trackKind,
+      name: item.snippet.name,
+    }))
+
+    log('INFO', 'Captions listed successfully', {
+      videoId,
+      count: captions.length,
+      languages: captions.map((c) => c.language),
+    })
+
+    return captions
+  }
+
+  /**
+   * Downloads caption track content in SRT format.
+   *
+   * @param captionId - Caption track ID (from listCaptions)
+   * @returns SRT content as string
+   *
+   * @example
+   * const client = new YouTubeClient(accessToken)
+   * const srt = await client.downloadCaption('caption-id-here')
+   */
+  async downloadCaption(captionId: string): Promise<string> {
+    log('INFO', 'Downloading caption', { captionId })
+
+    const url = `${YOUTUBE_API_BASE}/captions/${captionId}?tfmt=srt`
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      await this.handleErrorResponse(response)
+    }
+
+    const srtContent = await response.text()
+
+    log('INFO', 'Caption downloaded successfully', {
+      captionId,
+      contentLength: srtContent.length,
+    })
+
+    return srtContent
+  }
+
+  /**
+   * Finds and downloads Portuguese (PT/PT-BR) auto-generated captions.
+   *
+   * Prioritizes:
+   * 1. PT-BR ASR (auto-generated)
+   * 2. PT ASR (auto-generated)
+   *
+   * @param videoId - YouTube video ID
+   * @returns SRT content if found, null if no PT captions available
+   *
+   * @example
+   * const client = new YouTubeClient(accessToken)
+   * const srt = await client.downloadPortugueseCaptions('video-id')
+   * if (srt) {
+   *   // Process SRT content
+   * }
+   */
+  async downloadPortugueseCaptions(videoId: string): Promise<string | null> {
+    const captions = await this.listCaptions(videoId)
+
+    // Helper to check if trackKind is ASR (case-insensitive)
+    const isASR = (trackKind: string) => trackKind.toUpperCase() === 'ASR'
+
+    // Find PT-BR or PT auto-generated captions
+    const ptBrAsr = captions.find(
+      (c) => c.language === 'pt-BR' && isASR(c.trackKind)
+    )
+    const ptAsr = captions.find(
+      (c) => c.language === 'pt' && isASR(c.trackKind)
+    )
+
+    const targetCaption = ptBrAsr || ptAsr
+
+    if (!targetCaption) {
+      log('INFO', 'No Portuguese ASR captions found', {
+        videoId,
+        availableLanguages: captions.map((c) => `${c.language}:${c.trackKind}`),
+      })
+      return null
+    }
+
+    log('INFO', 'Found Portuguese caption', {
+      videoId,
+      language: targetCaption.language,
+      trackKind: targetCaption.trackKind,
+    })
+
+    return this.downloadCaption(targetCaption.id)
   }
 }

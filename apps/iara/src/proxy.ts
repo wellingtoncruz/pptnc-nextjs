@@ -54,8 +54,8 @@ export const proxy = auth((req) => {
     return NextResponse.next()
   }
 
-  // Protected API routes (except /api/auth which is handled by matcher exclusion)
-  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
+  // Protected API routes (except /api/auth and /api/admin which bypass auth)
+  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/admin')) {
     if (!isAuthenticated) {
       log('INFO', 'API route auth failed', { pathname, reason: 'unauthenticated' })
       return createUnauthorizedResponse()

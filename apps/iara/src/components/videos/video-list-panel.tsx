@@ -35,6 +35,23 @@ const typeLabels: Record<VideoTypeFilter, string> = {
 }
 
 /**
+ * Checks if a video is disabled (cannot be selected).
+ * A video is disabled if:
+ * - It has status 'sent'
+ * - It has status 'new' or 'draft' and is pending transcription (no transcriptionSRT/TXT)
+ */
+function isVideoDisabled(video: VideoSummary): boolean {
+  if (video.status === 'sent') return true
+
+  // Check for pending transcription (only for new/draft videos)
+  if (video.status === 'new' || video.status === 'draft') {
+    return !video.transcriptionSRT && !video.transcriptionTXT
+  }
+
+  return false
+}
+
+/**
  * Video list panel with header, tabs, and paginated list.
  * Displays VideoListItem for each video with selection state.
  * Supports keyboard navigation with ArrowUp/ArrowDown.
@@ -56,10 +73,22 @@ export function VideoListPanel({
   const hasVideos = videos && videos.length > 0
   const listRef = useRef<HTMLDivElement>(null)
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation (skips disabled videos: sent or pending transcription)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!videos || videos.length === 0 || !onVideoSelect) return
+
+      // Helper to find next selectable (non-disabled) video
+      const findNextSelectable = (startIndex: number, direction: 1 | -1): number => {
+        let index = startIndex + direction
+        while (index >= 0 && index < videos.length) {
+          if (!isVideoDisabled(videos[index])) {
+            return index
+          }
+          index += direction
+        }
+        return -1 // No selectable video found
+      }
 
       if (e.key === 'ArrowDown') {
         e.preventDefault()
@@ -68,9 +97,16 @@ export function VideoListPanel({
           : -1
 
         if (currentIndex === -1) {
-          onVideoSelect(videos[0].id)
-        } else if (currentIndex < videos.length - 1) {
-          onVideoSelect(videos[currentIndex + 1].id)
+          // Find first non-disabled video
+          const firstSelectable = videos.findIndex((v) => !isVideoDisabled(v))
+          if (firstSelectable !== -1) {
+            onVideoSelect(videos[firstSelectable].id)
+          }
+        } else {
+          const nextIndex = findNextSelectable(currentIndex, 1)
+          if (nextIndex !== -1) {
+            onVideoSelect(videos[nextIndex].id)
+          }
         }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
@@ -79,7 +115,10 @@ export function VideoListPanel({
           : -1
 
         if (currentIndex > 0) {
-          onVideoSelect(videos[currentIndex - 1].id)
+          const prevIndex = findNextSelectable(currentIndex, -1)
+          if (prevIndex !== -1) {
+            onVideoSelect(videos[prevIndex].id)
+          }
         }
       }
     },

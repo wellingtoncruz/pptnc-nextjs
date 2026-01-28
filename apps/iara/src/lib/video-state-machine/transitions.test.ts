@@ -26,6 +26,9 @@ describe('video state machine', () => {
       // sending state transitions
       ['sending', 'success', 'sent'],
       ['sending', 'error', 'ready'],
+
+      // sent state transitions (reopen when visibility changes)
+      ['sent', 'reopen', 'draft'],
     ])('transition(%s, %s) returns %s', (from, action, expected) => {
       expect(transition(from, action)).toBe(expected)
     })
@@ -39,6 +42,7 @@ describe('video state machine', () => {
       ['finalize'],
       ['send'],
       ['success'],
+      ['reopen'],
     ])('transition(new, %s) throws InvalidTransitionError', (action) => {
       expect(() => transition('new', action)).toThrow(InvalidTransitionError)
     })
@@ -52,18 +56,23 @@ describe('video state machine', () => {
       ['finalize'],
       ['send'],
       ['success'],
+      ['reopen'],
     ])('transition(processing, %s) throws InvalidTransitionError', (action) => {
       expect(() => transition('processing', action)).toThrow(InvalidTransitionError)
     })
   })
 
   describe('invalid transitions from draft', () => {
-    test.each<[VideoAction]>([['classify'], ['complete'], ['error'], ['send'], ['success']])(
-      'transition(draft, %s) throws InvalidTransitionError',
-      (action) => {
-        expect(() => transition('draft', action)).toThrow(InvalidTransitionError)
-      }
-    )
+    test.each<[VideoAction]>([
+      ['classify'],
+      ['complete'],
+      ['error'],
+      ['send'],
+      ['success'],
+      ['reopen'],
+    ])('transition(draft, %s) throws InvalidTransitionError', (action) => {
+      expect(() => transition('draft', action)).toThrow(InvalidTransitionError)
+    })
   })
 
   describe('invalid transitions from ready', () => {
@@ -74,6 +83,7 @@ describe('video state machine', () => {
       ['error'],
       ['finalize'],
       ['success'],
+      ['reopen'],
     ])('transition(ready, %s) throws InvalidTransitionError', (action) => {
       expect(() => transition('ready', action)).toThrow(InvalidTransitionError)
     })
@@ -87,12 +97,17 @@ describe('video state machine', () => {
       ['edit'],
       ['finalize'],
       ['send'],
+      ['reopen'],
     ])('transition(sending, %s) throws InvalidTransitionError', (action) => {
       expect(() => transition('sending', action)).toThrow(InvalidTransitionError)
     })
   })
 
-  describe('terminal state sent rejects all actions', () => {
+  describe('sent state transitions', () => {
+    it('allows reopen to return to draft', () => {
+      expect(transition('sent', 'reopen')).toBe('draft')
+    })
+
     test.each<[VideoAction]>([
       ['classify'],
       ['process'],
@@ -229,6 +244,24 @@ describe('video state machine', () => {
       status = transition(status, 'process')
       expect(status).toBe('processing')
     })
+
+    it('handles reopen flow: sent -> draft when visibility changes', () => {
+      // Video was published (sent), then user changed YouTube visibility to private
+      let status: VideoStatus = 'sent'
+      status = transition(status, 'reopen')
+      expect(status).toBe('draft')
+
+      // Can now edit and re-finalize
+      status = transition(status, 'finalize')
+      expect(status).toBe('ready')
+
+      // And send again
+      status = transition(status, 'send')
+      expect(status).toBe('sending')
+
+      status = transition(status, 'success')
+      expect(status).toBe('sent')
+    })
   })
 
   describe('canTransition helper', () => {
@@ -245,8 +278,12 @@ describe('video state machine', () => {
       expect(canTransition('sent', 'process')).toBe(false)
     })
 
-    it('returns false for all actions on terminal state', () => {
-      const allActions: VideoAction[] = [
+    it('returns true for reopen on sent state', () => {
+      expect(canTransition('sent', 'reopen')).toBe(true)
+    })
+
+    it('returns false for most actions on sent state', () => {
+      const invalidActions: VideoAction[] = [
         'classify',
         'process',
         'complete',
@@ -256,7 +293,7 @@ describe('video state machine', () => {
         'send',
         'success',
       ]
-      allActions.forEach((action) => {
+      invalidActions.forEach((action) => {
         expect(canTransition('sent', action)).toBe(false)
       })
     })
@@ -299,9 +336,10 @@ describe('video state machine', () => {
       expect(actions).toHaveLength(2)
     })
 
-    it('returns empty array for terminal sent state', () => {
+    it('returns reopen action for sent state', () => {
       const actions = getValidActions('sent')
-      expect(actions).toHaveLength(0)
+      expect(actions).toContain('reopen')
+      expect(actions).toHaveLength(1)
     })
   })
 })

@@ -483,6 +483,246 @@ describe('YouTubeClient', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
   })
+
+  describe('listCaptions', () => {
+    it('returns caption tracks for a video', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'caption-1',
+              snippet: {
+                videoId: 'vid1',
+                language: 'pt-BR',
+                trackKind: 'ASR',
+                name: '',
+              },
+            },
+            {
+              id: 'caption-2',
+              snippet: {
+                videoId: 'vid1',
+                language: 'en',
+                trackKind: 'standard',
+                name: 'English',
+              },
+            },
+          ],
+        }),
+      })
+
+      const result = await client.listCaptions('vid1')
+
+      expect(result).toHaveLength(2)
+      expect(result[0]).toMatchObject({
+        id: 'caption-1',
+        language: 'pt-BR',
+        trackKind: 'ASR',
+      })
+      expect(result[1]).toMatchObject({
+        id: 'caption-2',
+        language: 'en',
+        trackKind: 'standard',
+      })
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/captions?part=snippet&videoId=vid1'),
+        expect.any(Object)
+      )
+    })
+
+    it('returns empty array when video has no captions', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [] }),
+      })
+
+      const result = await client.listCaptions('vid1')
+
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('downloadCaption', () => {
+    it('downloads SRT content by caption ID', async () => {
+      const srtContent = `1
+00:00:00,000 --> 00:00:02,500
+Hello world`
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => srtContent,
+      })
+
+      const result = await client.downloadCaption('caption-1')
+
+      expect(result).toBe(srtContent)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.googleapis.com/youtube/v3/captions/caption-1?tfmt=srt',
+        expect.objectContaining({
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+      )
+    })
+
+    it('throws error on download failure', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: async () => ({
+          error: { errors: [{ reason: 'forbidden' }] },
+        }),
+      })
+
+      await expect(client.downloadCaption('caption-1')).rejects.toMatchObject({
+        code: 'YOUTUBE_FORBIDDEN',
+      })
+    })
+  })
+
+  describe('downloadPortugueseCaptions', () => {
+    it('prioritizes pt-BR ASR captions over pt', async () => {
+      // Mock listCaptions
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'caption-pt',
+              snippet: {
+                videoId: 'vid1',
+                language: 'pt',
+                trackKind: 'ASR',
+              },
+            },
+            {
+              id: 'caption-pt-br',
+              snippet: {
+                videoId: 'vid1',
+                language: 'pt-BR',
+                trackKind: 'ASR',
+              },
+            },
+          ],
+        }),
+      })
+
+      // Mock downloadCaption
+      const srtContent = `1
+00:00:00,000 --> 00:00:02,500
+Olá mundo`
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => srtContent,
+      })
+
+      const result = await client.downloadPortugueseCaptions('vid1')
+
+      expect(result).toBe(srtContent)
+      // Should download pt-BR, not pt
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining('captions/caption-pt-br'),
+        expect.any(Object)
+      )
+    })
+
+    it('falls back to pt when pt-BR not available', async () => {
+      // Mock listCaptions - only pt available
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'caption-pt',
+              snippet: {
+                videoId: 'vid1',
+                language: 'pt',
+                trackKind: 'ASR',
+              },
+            },
+          ],
+        }),
+      })
+
+      // Mock downloadCaption
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => 'SRT content',
+      })
+
+      const result = await client.downloadPortugueseCaptions('vid1')
+
+      expect(result).toBe('SRT content')
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining('captions/caption-pt'),
+        expect.any(Object)
+      )
+    })
+
+    it('returns null when no Portuguese ASR captions available', async () => {
+      // Mock listCaptions - only English available
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'caption-en',
+              snippet: {
+                videoId: 'vid1',
+                language: 'en',
+                trackKind: 'ASR',
+              },
+            },
+          ],
+        }),
+      })
+
+      const result = await client.downloadPortugueseCaptions('vid1')
+
+      expect(result).toBeNull()
+      // Should only call listCaptions, not downloadCaption
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('ignores non-ASR Portuguese captions', async () => {
+      // Mock listCaptions - Portuguese but not ASR
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [
+            {
+              id: 'caption-pt',
+              snippet: {
+                videoId: 'vid1',
+                language: 'pt-BR',
+                trackKind: 'standard', // Not ASR
+              },
+            },
+          ],
+        }),
+      })
+
+      const result = await client.downloadPortugueseCaptions('vid1')
+
+      expect(result).toBeNull()
+    })
+
+    it('returns null when video has no captions', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [] }),
+      })
+
+      const result = await client.downloadPortugueseCaptions('vid1')
+
+      expect(result).toBeNull()
+    })
+  })
 })
 
 describe('YouTubeAPIError', () => {

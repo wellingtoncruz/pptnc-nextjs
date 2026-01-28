@@ -166,7 +166,7 @@ describe('videos-admin.ts - Admin SDK operations', () => {
       publishedAt: mockTimestamp,
       status: 'new' as const,
       videoType: 'episode' as const,
-      deleted: false,
+      youtubePrivacyStatus: 'private' as const,
     }
 
     it('creates video with validated data', async () => {
@@ -231,7 +231,7 @@ describe('videos-admin.ts - Admin SDK operations', () => {
         publishedAt: mockTimestamp,
         status: 'new' as const,
         videoType: 'cut' as const,
-        deleted: false,
+        youtubePrivacyStatus: 'private' as const,
       }
 
       await batchWriteVideos('pptnc', {
@@ -252,8 +252,8 @@ describe('videos-admin.ts - Admin SDK operations', () => {
         deletes: [],
       })
 
-      // Should still commit (even if empty batch)
-      expect(mockCommit).toHaveBeenCalled()
+      // Should NOT commit when there are no operations
+      expect(mockCommit).not.toHaveBeenCalled()
     })
 
     it('splits operations into batches of 500', async () => {
@@ -272,7 +272,7 @@ describe('videos-admin.ts - Admin SDK operations', () => {
         publishedAt: mockTimestamp,
         status: 'new' as const,
         videoType: 'cut' as const,
-        deleted: false,
+        youtubePrivacyStatus: 'private' as const,
       }))
 
       await batchWriteVideos('pptnc', {

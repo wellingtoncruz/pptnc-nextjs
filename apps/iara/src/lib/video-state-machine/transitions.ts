@@ -10,7 +10,7 @@ import { InvalidTransitionError } from './types'
  *   draft -> processing (via process) | ready (via finalize) | draft (via edit)
  *   ready -> sending (via send) | draft (via edit)
  *   sending -> sent (via success) | ready (via error)
- *   sent -> (terminal - no valid transitions)
+ *   sent -> draft (via reopen, when YouTube visibility changes to non-public)
  */
 const transitions: Record<VideoStatus, Partial<Record<VideoAction, VideoStatus>>> = {
   new: { process: 'processing', classify: 'new' },
@@ -18,7 +18,7 @@ const transitions: Record<VideoStatus, Partial<Record<VideoAction, VideoStatus>>
   draft: { process: 'processing', finalize: 'ready', edit: 'draft' },
   ready: { send: 'sending', edit: 'draft' },
   sending: { success: 'sent', error: 'ready' },
-  sent: {}, // terminal state - no transitions allowed
+  sent: { reopen: 'draft' }, // reopen when YouTube visibility changes from public to private/unlisted
 }
 
 /**

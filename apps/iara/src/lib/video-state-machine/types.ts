@@ -2,7 +2,10 @@
  * Video Status - Represents the lifecycle states of a video in the IAra system.
  *
  * State flow:
- * new -> processing -> draft -> ready -> sending -> sent (terminal)
+ * new -> processing -> draft -> ready -> sending -> sent
+ *
+ * Special transition:
+ * sent -> draft (via 'reopen' when YouTube visibility changes from public to private/unlisted)
  *
  * @see architecture-iara.md#State Machine
  */
@@ -22,6 +25,7 @@ export type VideoAction =
   | 'finalize'
   | 'send'
   | 'success'
+  | 'reopen' // Allows sent videos to return to draft when visibility changes
 
 /**
  * InvalidTransitionError - Thrown when an invalid state transition is attempted.

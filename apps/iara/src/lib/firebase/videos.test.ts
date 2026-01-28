@@ -295,7 +295,7 @@ describe('videos.ts - Client SDK operations', () => {
       publishedAt: mockTimestamp,
       status: 'new' as const,
       videoType: 'episode' as const,
-      deleted: false,
+      youtubePrivacyStatus: 'private' as const,
     }
 
     it('creates video with validated data', async () => {

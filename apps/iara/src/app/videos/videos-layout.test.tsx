@@ -1,13 +1,21 @@
 import { render, screen } from '@/test-utils'
+import userEvent from '@testing-library/user-event'
 
 import { VideosLayout } from './videos-layout'
 
 // Mock next/navigation
 const mockGet = vi.fn()
+const mockPush = vi.fn()
+const mockReplace = vi.fn()
 vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(() => ({
     get: mockGet,
   })),
+  useRouter: vi.fn(() => ({
+    push: mockPush,
+    replace: mockReplace,
+  })),
+  usePathname: vi.fn(() => '/videos'),
 }))
 
 // Mock child components to isolate testing
@@ -36,7 +44,20 @@ vi.mock('@/components/layout/master-detail-layout', () => ({
 }))
 
 vi.mock('@/components/videos/video-list-panel', () => ({
-  VideoListPanel: () => <div data-testid="video-list-panel">VideoListPanel</div>,
+  VideoListPanel: ({
+    videos,
+    selectedVideoId,
+    onVideoSelect,
+  }: {
+    videos?: unknown[]
+    selectedVideoId?: string | null
+    onVideoSelect?: (id: string) => void
+  }) => (
+    <div data-testid="video-list-panel">
+      VideoListPanel videos={videos?.length ?? 0} selected={selectedVideoId}
+      <button onClick={() => onVideoSelect?.('test-video')}>Select Video</button>
+    </div>
+  ),
 }))
 
 vi.mock('@/components/videos/video-detail-panel', () => ({
@@ -49,10 +70,21 @@ vi.mock('@/components/settings/settings-panel', () => ({
   SettingsPanel: () => <div data-testid="settings-panel">SettingsPanel</div>,
 }))
 
+// Mock useVideos hook
+vi.mock('@/hooks/use-videos', () => ({
+  useVideos: vi.fn(() => ({
+    videos: [],
+    isLoading: false,
+    error: null,
+    refresh: vi.fn(),
+  })),
+}))
+
 describe('VideosLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGet.mockReturnValue(null)
+    mockReplace.mockClear()
   })
 
   it('renderiza MasterDetailLayout por padrão', () => {
@@ -70,7 +102,7 @@ describe('VideosLayout', () => {
     expect(screen.getByText(/John Doe/)).toBeInTheDocument()
   })
 
-  it('passa selectedVideoId do URL para VideoDetailPanel', () => {
+  it('redireciona para /videos se acessado diretamente com ?selected', () => {
     mockGet.mockImplementation((key: string) => {
       if (key === 'selected') return 'video-123'
       return null
@@ -78,7 +110,20 @@ describe('VideosLayout', () => {
 
     render(<VideosLayout />)
 
-    expect(screen.getByText(/video-123/)).toBeInTheDocument()
+    // Should redirect to /videos without the selected param
+    expect(mockReplace).toHaveBeenCalledWith('/videos')
+
+    // On initial render, selectedVideoId should be null (before redirect completes)
+    expect(screen.getByTestId('video-detail-panel')).toHaveTextContent('VideoDetailPanel')
+    expect(screen.getByTestId('video-detail-panel')).not.toHaveTextContent('video-123')
+  })
+
+  it('não redireciona quando não há ?selected na URL inicial', () => {
+    mockGet.mockReturnValue(null)
+
+    render(<VideosLayout />)
+
+    expect(mockReplace).not.toHaveBeenCalled()
   })
 
   it('renderiza SettingsPanel quando view=settings', () => {
@@ -104,5 +149,14 @@ describe('VideosLayout', () => {
 
     expect(screen.getByTestId('sidebar')).toBeInTheDocument()
     expect(screen.getByText(/Test User/)).toBeInTheDocument()
+  })
+
+  it('atualiza URL quando vídeo é selecionado', async () => {
+    const user = userEvent.setup()
+    render(<VideosLayout />)
+
+    await user.click(screen.getByRole('button', { name: /select video/i }))
+
+    expect(mockPush).toHaveBeenCalledWith('/videos?selected=test-video')
   })
 })

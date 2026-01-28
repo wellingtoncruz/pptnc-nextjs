@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import type { Timestamp } from 'firebase/firestore'
 
 import { VideoTypeConfigSchema } from './video-type-config'
 
@@ -23,10 +22,22 @@ export const DEFAULT_VIDEO_TYPES: {
 }
 
 /**
+ * Generic Firestore Timestamp type that works with both Admin and Client SDKs.
+ * Both have toDate() method which is the common interface.
+ */
+interface FirestoreTimestamp {
+  toDate(): Date
+  toMillis(): number
+  seconds: number
+  nanoseconds: number
+}
+
+/**
  * Firestore Timestamp schema - validates Timestamp objects from Firestore.
+ * Works with both Admin SDK and Client SDK Timestamps.
  * Exported for reuse in other schemas (Video, User, etc).
  */
-export const TimestampSchema = z.custom<Timestamp>(
+export const TimestampSchema = z.custom<FirestoreTimestamp>(
   (val) => val !== null && typeof val === 'object' && 'toDate' in val,
   'Invalid Firestore Timestamp'
 )

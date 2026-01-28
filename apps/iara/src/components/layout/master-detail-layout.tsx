@@ -30,7 +30,7 @@ export function MasterDetailLayout({ sidebar, list, detail }: MasterDetailLayout
       >
         {/* Video List Panel */}
         <ResizablePanel
-          defaultSize={35}
+          defaultSize={23}
           minSize={15}
           data-testid="video-list-panel"
         >
@@ -41,7 +41,7 @@ export function MasterDetailLayout({ sidebar, list, detail }: MasterDetailLayout
 
         {/* Video Detail Panel */}
         <ResizablePanel
-          defaultSize={65}
+          defaultSize={77}
           minSize={35}
           data-testid="video-detail-panel"
         >

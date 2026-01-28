@@ -14,6 +14,8 @@ import type {
   ThumbnailsSchema,
   ThumbnailItemSchema,
   StatisticsSchema,
+  GuestSchema,
+  EpisodeContextFormSchema,
 } from '@/lib/schemas/video'
 
 import type {
@@ -107,6 +109,19 @@ export type ThumbnailItem = z.infer<typeof ThumbnailItemSchema>
  * Statistics object.
  */
 export type Statistics = z.infer<typeof StatisticsSchema>
+
+/**
+ * Guest - represents a guest or co-host.
+ * Legacy structure compatible with portal-web.
+ * Co-host (when present) is stored as guests[0].
+ */
+export type Guest = z.infer<typeof GuestSchema>
+
+/**
+ * Episode context form data - for UI form only.
+ * On save, coHost is inserted as guests[0] if present.
+ */
+export type EpisodeContextFormData = z.infer<typeof EpisodeContextFormSchema>
 
 // YouTube API Response Types
 

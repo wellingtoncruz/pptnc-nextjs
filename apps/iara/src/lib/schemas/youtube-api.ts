@@ -187,3 +187,55 @@ export const YouTubeChannelsResponseSchema = z.object({
     })
     .optional(),
 })
+
+/**
+ * YouTube Caption Snippet schema - caption track metadata.
+ *
+ * trackKind values:
+ * - 'standard': Regular caption track
+ * - 'ASR': Auto-generated using speech recognition
+ * - 'forced': Plays when no other track is selected
+ *
+ * Note: Using z.string() instead of strict enum because YouTube API
+ * may return unexpected values (e.g., lowercase 'asr').
+ *
+ * @see https://developers.google.com/youtube/v3/docs/captions#snippet
+ */
+export const YouTubeCaptionSnippetSchema = z.object({
+  videoId: z.string(),
+  lastUpdated: z.string().optional(),
+  trackKind: z.string(), // 'standard', 'ASR', 'forced', or other values
+  language: z.string(), // e.g., 'pt', 'pt-BR', 'en'
+  name: z.string().optional(),
+  audioTrackType: z.string().optional(),
+  isCC: z.boolean().optional(),
+  isLarge: z.boolean().optional(),
+  isEasyReader: z.boolean().optional(),
+  isDraft: z.boolean().optional(),
+  isAutoSynced: z.boolean().optional(),
+  status: z.string().optional(), // 'serving', 'syncing', 'failed', or other
+})
+
+/**
+ * YouTube Caption Item schema - single caption track from API response.
+ *
+ * @see https://developers.google.com/youtube/v3/docs/captions
+ */
+export const YouTubeCaptionItemSchema = z.object({
+  kind: z.literal('youtube#caption').optional(),
+  etag: z.string().optional(),
+  id: z.string(),
+  snippet: YouTubeCaptionSnippetSchema,
+})
+
+/**
+ * YouTube Captions List Response schema - list of caption tracks.
+ *
+ * Response from captions.list endpoint.
+ * @see https://developers.google.com/youtube/v3/docs/captions/list
+ */
+export const YouTubeCaptionsResponseSchema = z.object({
+  kind: z.literal('youtube#captionListResponse').optional(),
+  etag: z.string().optional(),
+  items: z.array(YouTubeCaptionItemSchema),
+})

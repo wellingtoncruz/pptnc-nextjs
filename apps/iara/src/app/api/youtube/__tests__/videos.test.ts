@@ -195,7 +195,7 @@ describe('GET /api/youtube/videos', () => {
       expect(response.status).toBe(200)
       expect(data.data.videos).toEqual(mockVideos)
       expect(data.data.nextPageToken).toBe('next123')
-      expect(mockListVideos).toHaveBeenCalledWith(50, undefined)
+      expect(mockListVideos).toHaveBeenCalledWith({ maxResults: 50, pageToken: undefined })
     })
 
     it('respects maxResults query param', async () => {
@@ -203,7 +203,7 @@ describe('GET /api/youtube/videos', () => {
 
       await GET(createRequest({ maxResults: '25' }) as never)
 
-      expect(mockListVideos).toHaveBeenCalledWith(25, undefined)
+      expect(mockListVideos).toHaveBeenCalledWith({ maxResults: 25, pageToken: undefined })
     })
 
     it('caps maxResults at 50', async () => {
@@ -211,7 +211,7 @@ describe('GET /api/youtube/videos', () => {
 
       await GET(createRequest({ maxResults: '100' }) as never)
 
-      expect(mockListVideos).toHaveBeenCalledWith(50, undefined)
+      expect(mockListVideos).toHaveBeenCalledWith({ maxResults: 50, pageToken: undefined })
     })
 
     it('passes pageToken to YouTube client', async () => {
@@ -219,7 +219,7 @@ describe('GET /api/youtube/videos', () => {
 
       await GET(createRequest({ pageToken: 'myPageToken' }) as never)
 
-      expect(mockListVideos).toHaveBeenCalledWith(50, 'myPageToken')
+      expect(mockListVideos).toHaveBeenCalledWith({ maxResults: 50, pageToken: 'myPageToken' })
     })
   })
 

@@ -21,12 +21,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { auth } from '@/lib/auth'
-import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
+import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import type { Phase1Response } from '@/lib/llm'
 import { callLLM, type PhaseResponse } from '@/lib/llm'
-import { WizardPhaseSchema } from '@/lib/wizard'
 import { log } from '@/lib/logger'
+import { WizardPhaseSchema } from '@/lib/wizard'
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin and Vertex AI
 
@@ -114,16 +115,21 @@ export async function POST(
       )
     }
 
+    // Load podcast with personas and prompts configuration (per llm.md spec)
+    const podcast = await getPodcastAdmin(PODCAST_ID)
+
     log('INFO', 'Processing wizard phase', {
       videoId,
       phase,
       hasPromptOverride: !!promptOverride,
       hasAdditionalContext: !!additionalContext,
       hasPreviousPhaseData: !!previousPhaseData,
+      hasPodcastConfig: !!(podcast?.personas && podcast?.prompts),
     })
 
-    // Call LLM for this phase
-    const result = await callLLM(phase, video, undefined, {
+    // Call LLM for this phase with podcast configuration
+    // Per llm.md: uses podcast.personas and podcast.prompts for dynamic prompt building
+    const result = await callLLM(phase, video, podcast ?? undefined, {
       promptOverride,
       additionalContext,
       previousPhaseData,

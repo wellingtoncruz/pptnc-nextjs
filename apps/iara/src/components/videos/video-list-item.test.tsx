@@ -14,6 +14,9 @@ const createMockVideo = (overrides: Partial<VideoSummary> = {}): VideoSummary =>
   duration: 600,
   status: 'new',
   videoType: 'cut',
+  // Default to having transcription so video is not blocked
+  transcriptionSRT: 'mock-srt',
+  transcriptionTXT: 'mock-txt',
   ...overrides,
 })
 
@@ -187,6 +190,163 @@ describe('VideoListItem', () => {
       await user.keyboard(' ')
 
       expect(onSelect).toHaveBeenCalledWith(video.id)
+    })
+  })
+
+  describe('sent videos behavior', () => {
+    it('renderiza vídeo sent com opacidade reduzida', () => {
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveClass('opacity-50')
+    })
+
+    it('renderiza vídeo sent com cursor-not-allowed', () => {
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveClass('cursor-not-allowed')
+    })
+
+    it('não chama onSelect ao clicar em vídeo sent', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
+
+      await user.click(screen.getByRole('option'))
+
+      expect(onSelect).not.toHaveBeenCalled()
+    })
+
+    it('não chama onSelect ao pressionar Enter em vídeo sent', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
+
+      const item = screen.getByRole('option')
+      item.focus()
+      await user.keyboard('{Enter}')
+
+      expect(onSelect).not.toHaveBeenCalled()
+    })
+
+    it('tem aria-disabled="true" para vídeo sent', () => {
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveAttribute('aria-disabled', 'true')
+    })
+
+    it('tem tabIndex=-1 para vídeo sent', () => {
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveAttribute('tabIndex', '-1')
+    })
+
+    it('não aplica ring de seleção em vídeo sent mesmo se isSelected=true', () => {
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={true} onSelect={vi.fn()} />)
+
+      const item = screen.getByRole('option')
+      expect(item).not.toHaveClass('ring-2')
+      expect(item).not.toHaveClass('ring-blue-400')
+    })
+
+    it('exibe overlay ao passar mouse sobre vídeo sent', async () => {
+      const user = userEvent.setup()
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      // Overlay is shown on group hover
+      const item = screen.getByRole('option')
+      await user.hover(item)
+
+      // Overlay shows title
+      const overlay = screen.getByTestId('blocked-overlay')
+      expect(overlay).toBeInTheDocument()
+      expect(overlay).toHaveTextContent('Vídeo já publicado')
+    })
+  })
+
+  describe('pending transcription behavior', () => {
+    it('renderiza vídeo sem transcrição com opacidade reduzida', () => {
+      const video = createMockVideo({
+        status: 'new',
+        transcriptionSRT: undefined,
+        transcriptionTXT: undefined,
+      })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveClass('opacity-50')
+    })
+
+    it('renderiza vídeo sem transcrição com cursor-not-allowed', () => {
+      const video = createMockVideo({
+        status: 'draft',
+        transcriptionSRT: undefined,
+        transcriptionTXT: undefined,
+      })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveClass('cursor-not-allowed')
+    })
+
+    it('não bloqueia vídeo com transcrição preenchida', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({
+        status: 'new',
+        transcriptionSRT: 'has content',
+        transcriptionTXT: 'has content',
+      })
+      render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
+
+      await user.click(screen.getByRole('option'))
+
+      expect(onSelect).toHaveBeenCalledWith(video.id)
+    })
+
+    it('não bloqueia vídeo ready sem transcrição', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({
+        status: 'ready',
+        transcriptionSRT: undefined,
+        transcriptionTXT: undefined,
+      })
+      render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
+
+      await user.click(screen.getByRole('option'))
+
+      expect(onSelect).toHaveBeenCalledWith(video.id)
+    })
+
+    it('exibe overlay específico para transcrição pendente', async () => {
+      const user = userEvent.setup()
+      const video = createMockVideo({
+        status: 'new',
+        transcriptionSRT: undefined,
+        transcriptionTXT: undefined,
+      })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+
+      // Overlay is shown on group hover
+      const item = screen.getByRole('option')
+      await user.hover(item)
+
+      // Overlay shows title
+      const overlay = screen.getByTestId('blocked-overlay')
+      expect(overlay).toBeInTheDocument()
+      expect(overlay).toHaveTextContent('Aguardando transcrição')
     })
   })
 })
