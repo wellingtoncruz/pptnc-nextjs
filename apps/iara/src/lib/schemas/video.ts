@@ -111,6 +111,52 @@ export const ComplianceSchema = z.object({
 })
 
 // ============================================================================
+// GUEST SCHEMA (legacy compatible with portal-web)
+// ============================================================================
+//
+// REGRA IMUTÁVEL: guests array structure matches portal-web/EpisodeEntity
+// Structure: { name, role, company, linkedin, photo }
+// Co-host (when present) is always guests[0]
+// ============================================================================
+
+/**
+ * Guest schema - represents a guest or co-host in the video.
+ *
+ * This structure is compatible with the legacy portal-web EpisodeEntity.
+ * Co-host (when present) is stored as guests[0].
+ * Photo field is optional (can be added later via UI).
+ */
+export const GuestSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  role: z.string().min(1, 'Cargo é obrigatório'),
+  company: z.string().optional(),
+  linkedin: z.string().url('URL inválida'),
+  photo: z.string().optional(),
+})
+
+/**
+ * Episode context form schema - for validating episode context form inputs.
+ *
+ * This schema is used by the UI form only, not for persistence.
+ * The form collects:
+ * - theme: General topic (required)
+ * - hasCoHost: Whether a co-host exists
+ * - coHost: Co-host data (when hasCoHost is true)
+ * - guests: 1-3 guests (required)
+ *
+ * On save, coHost is inserted as guests[0] if present.
+ */
+export const EpisodeContextFormSchema = z.object({
+  theme: z.string().min(1, 'Tema é obrigatório'),
+  hasCoHost: z.boolean().default(false),
+  coHost: GuestSchema.optional(),
+  guests: z
+    .array(GuestSchema)
+    .min(1, 'Pelo menos 1 convidado é obrigatório')
+    .max(3, 'Máximo de 3 convidados'),
+})
+
+// ============================================================================
 // VIDEO SCHEMA
 // ============================================================================
 //
@@ -147,7 +193,7 @@ export const VideoSchema = z.object({
   // === Portal-web fields ===
   transcriptionSRT: z.string().optional(),
   transcriptionTXT: z.string().optional(),
-  guests: z.array(z.string()).optional(),
+  guests: z.array(GuestSchema).optional(), // Legacy structure: {name, role, company, linkedin, photo}. Co-host when present is guests[0]
   topics: z.array(z.string()).optional(),
 
   // === Campos IAra (adicionados ao schema existente) ===
@@ -156,11 +202,17 @@ export const VideoSchema = z.object({
   status: VideoStatusSchema.optional(),
   videoType: VideoTypeSchema.optional(),
   youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
+  visibilityUpdatedAt: TimestampSchema.optional(), // Last time visibility was checked during sync
 
   // Campos gerados por IA
+  critique: z.string().optional(), // Crítica do especialista (Phase 1)
   tags: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
   compliance: ComplianceSchema.optional(),
+
+  // Context fields for AI processing (flat, not nested)
+  theme: z.string().optional(), // Tema do episódio
+  parentEpisodeId: z.string().optional(), // Para cuts/reels - referência ao episode de origem
 
   // Timestamps
   createdAt: TimestampSchema.optional(), // Optional for legacy docs
@@ -188,6 +240,7 @@ export const VideoCreateSchema = z.object({
   status: VideoStatusSchema,
   videoType: VideoTypeSchema,
   youtubePrivacyStatus: YouTubePrivacyStatusSchema,
+  visibilityUpdatedAt: TimestampSchema.optional(),
 })
 
 /**
@@ -204,13 +257,24 @@ export const VideoUpdateSchema = z.object({
   publishedAt: TimestampSchema.optional(),
   statistics: StatisticsSchema.optional(),
 
+  // Portal-web fields updates
+  transcriptionSRT: z.string().optional(),
+  transcriptionTXT: z.string().optional(),
+
   // IAra fields updates
   status: VideoStatusSchema.optional(),
   videoType: VideoTypeSchema.optional(),
   youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
+  visibilityUpdatedAt: TimestampSchema.optional(),
+  critique: z.string().optional(),
   tags: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
   compliance: ComplianceSchema.optional(),
+
+  // Context fields for AI processing (flat, not nested)
+  theme: z.string().optional(),
+  parentEpisodeId: z.string().optional(),
+  guests: z.array(GuestSchema).optional(),
 })
 
 /**
@@ -222,9 +286,19 @@ export const VideoUpdateSchema = z.object({
 export const VideoSummarySchema = z.object({
   id: z.string().min(1),
   title: z.string(),
+  description: z.string().optional(),
   thumbnails: ThumbnailsSchema.optional(),
   duration: z.number().nonnegative().default(0),
   status: VideoStatusSchema.optional().default('new'),
   videoType: VideoTypeSchema.optional().default('episode'),
   youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
+  // Transcription fields - needed to determine if video is pending transcription
+  transcriptionSRT: z.string().optional(),
+  transcriptionTXT: z.string().optional(),
+  // Context fields - needed to check if episode has context defined
+  theme: z.string().optional(),
+  guests: z.array(GuestSchema).optional(),
+  parentEpisodeId: z.string().optional(),
+  // AI-generated fields - needed to check processing status
+  critique: z.string().optional(),
 })
