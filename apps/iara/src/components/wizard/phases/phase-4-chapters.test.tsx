@@ -329,7 +329,7 @@ describe('Phase4Chapters', () => {
       const confirmButton = screen.getByRole('button', { name: /sim, aprovar/i })
       fireEvent.click(confirmButton)
 
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(4)
+      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(4, mockChaptersWithData)
     })
 
     it('closes dialog when cancel is clicked', () => {

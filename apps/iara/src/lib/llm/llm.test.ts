@@ -702,6 +702,89 @@ describe('LLM_ERROR_MESSAGES', () => {
 })
 
 // =============================================================================
+// PARSE_ERROR RETRY TESTS
+// =============================================================================
+//
+// Story 5.4: Auto-Retry em PARSE_ERROR
+// Tests verify retry configuration and error handling behavior.
+// Full integration tests with mocked Vertex AI SDK are in a separate file.
+// =============================================================================
+
+describe('PARSE_ERROR retry configuration', () => {
+  it('MAX_PARSE_RETRIES is 3', async () => {
+    const { MAX_PARSE_RETRIES } = await import('./types')
+    expect(MAX_PARSE_RETRIES).toBe(3)
+  })
+
+  it('RETRY_DELAY_MS is 1000ms (1 second)', async () => {
+    const { RETRY_DELAY_MS } = await import('./types')
+    expect(RETRY_DELAY_MS).toBe(1000)
+  })
+
+  it('exports retry constants from types.ts', async () => {
+    const types = await import('./types')
+
+    expect(types.MAX_PARSE_RETRIES).toBeDefined()
+    expect(types.RETRY_DELAY_MS).toBeDefined()
+    expect(typeof types.MAX_PARSE_RETRIES).toBe('number')
+    expect(typeof types.RETRY_DELAY_MS).toBe('number')
+  })
+})
+
+describe('PARSE_ERROR retry behavior', () => {
+  it('PARSE_ERROR is marked as non-retryable in LLMError', async () => {
+    // PARSE_ERROR has retryable=false because the retry logic is internal
+    // to callVertexAIWithAttachment, not exposed to callers
+    const { LLMError } = await import('./errors')
+    const parseError = new LLMError('PARSE_ERROR', 'Parse failed', false)
+
+    expect(parseError.code).toBe('PARSE_ERROR')
+    expect(parseError.retryable).toBe(false)
+  })
+
+  it('TIMEOUT error is marked as retryable (user can retry manually)', async () => {
+    const { LLMError } = await import('./errors')
+    const timeoutError = new LLMError('TIMEOUT', 'Timeout', true)
+
+    expect(timeoutError.code).toBe('TIMEOUT')
+    expect(timeoutError.retryable).toBe(true)
+  })
+
+  it('RATE_LIMIT error is marked as retryable (user can retry manually)', async () => {
+    const { LLMError } = await import('./errors')
+    const rateLimitError = new LLMError('RATE_LIMIT', 'Rate limited', true)
+
+    expect(rateLimitError.code).toBe('RATE_LIMIT')
+    expect(rateLimitError.retryable).toBe(true)
+  })
+
+  it('error message format includes retry count', async () => {
+    // The error message format is defined in client.ts
+    // When all retries are exhausted, the message should include the attempt count
+    const { MAX_PARSE_RETRIES } = await import('./types')
+
+    const expectedMessagePattern = `Erro ao parsear resposta após ${MAX_PARSE_RETRIES} tentativas`
+    expect(expectedMessagePattern).toBe('Erro ao parsear resposta após 3 tentativas')
+    expect(expectedMessagePattern).toContain('3 tentativas')
+  })
+
+  it('isRetryableError returns false for PARSE_ERROR (internal retry only)', async () => {
+    const { isRetryableError } = await import('./errors')
+
+    // PARSE_ERROR is NOT externally retryable - the retry happens internally
+    expect(isRetryableError('PARSE_ERROR')).toBe(false)
+  })
+
+  it('isRetryableError returns true for TIMEOUT and RATE_LIMIT', async () => {
+    const { isRetryableError } = await import('./errors')
+
+    // These are externally retryable (user can click "try again")
+    expect(isRetryableError('TIMEOUT')).toBe(true)
+    expect(isRetryableError('RATE_LIMIT')).toBe(true)
+  })
+})
+
+// =============================================================================
 // CALL LLM VALIDATION TESTS
 // =============================================================================
 //

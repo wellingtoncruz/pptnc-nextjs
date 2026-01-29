@@ -16,7 +16,7 @@ import { extractVariables, interpolatePrompt, validateVideoForPhase } from './in
 import { parseJSONFromLLM } from './parse-json'
 import { buildPhasePrompt, getSystemPrompt, getUserPromptTemplate, PHASE_CONFIG } from './prompts'
 import { llmQueue } from './queue'
-import { PHASE_TIMEOUTS } from './types'
+import { MAX_PARSE_RETRIES, PHASE_TIMEOUTS, RETRY_DELAY_MS } from './types'
 import type {
   LLMCallOptions,
   LLMResult,
@@ -168,10 +168,15 @@ async function callVertexAI<T>(
  * - Transcription MUST be saved as temporary file and passed as attachment
  * - NOT sent inline in the prompt
  *
+ * Features automatic retry for PARSE_ERROR (up to MAX_PARSE_RETRIES attempts).
+ * Other errors (TIMEOUT, RATE_LIMIT, etc.) fail immediately without retry.
+ *
  * @param systemPrompt - System instruction for the model
  * @param userPrompt - User prompt with context (without transcription)
  * @param timeout - Timeout in milliseconds
  * @param attachmentPath - Optional path to transcription file to attach
+ *
+ * @see Story 5.4 - Auto-Retry em PARSE_ERROR
  */
 async function callVertexAIWithAttachment<T>(
   systemPrompt: string,
@@ -181,75 +186,112 @@ async function callVertexAIWithAttachment<T>(
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   const model = getModel()
 
-  // Create timeout promise for race condition
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(new LLMError('TIMEOUT', 'A requisição demorou demais. Tente novamente.', true))
-    }, timeout)
-  })
+  // Build parts array once - reused across retry attempts
+  const parts: Part[] = [{ text: userPrompt }]
 
-  try {
-    // Build parts array - text prompt first, then attachment if provided
-    const parts: Part[] = [{ text: userPrompt }]
-
-    if (attachmentPath) {
-      const base64Content = await readFileAsBase64(attachmentPath)
-      parts.push({
-        inlineData: {
-          mimeType: 'text/plain',
-          data: base64Content,
-        },
-      })
-      log('INFO', 'Added transcription attachment to request', {
-        attachmentPath,
-        base64Length: base64Content.length,
-      })
-    }
-
-    // Race between the API call and timeout
-    const result = await Promise.race([
-      model.generateContent({
-        contents: [{ role: 'user', parts }],
-        systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
-      }),
-      timeoutPromise,
-    ])
-
-    const response = result.response
-    const text = response.candidates?.[0]?.content?.parts?.[0]?.text
-
-    if (!text) {
-      throw new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
-    }
-
-    // Parse JSON with robust extraction (handles markdown code blocks, extra text, etc.)
-    const data = parseJSONFromLLM<T>(text)
-    if (data === null) {
-      // Log raw response for debugging
-      log('ERROR', 'Failed to parse JSON from LLM response', {
-        rawResponseLength: text.length,
-        rawResponsePreview: text.substring(0, 500),
-        rawResponseEnd: text.length > 500 ? text.substring(text.length - 200) : undefined,
-      })
-      throw new LLMError('PARSE_ERROR', 'Erro ao parsear JSON da resposta', false)
-    }
-
-    // Extract usage metadata
-    const usageMetadata = response.usageMetadata
-    const usage = {
-      promptTokens: usageMetadata?.promptTokenCount || 0,
-      completionTokens: usageMetadata?.candidatesTokenCount || 0,
-      totalTokens: usageMetadata?.totalTokenCount || 0,
-    }
-
-    return { data, usage }
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw error
-    }
-
-    throw createLLMError(error)
+  if (attachmentPath) {
+    const base64Content = await readFileAsBase64(attachmentPath)
+    parts.push({
+      inlineData: {
+        mimeType: 'text/plain',
+        data: base64Content,
+      },
+    })
+    log('INFO', 'Added transcription attachment to request', {
+      attachmentPath,
+      base64Length: base64Content.length,
+    })
   }
+
+  // Retry loop for PARSE_ERROR only
+  for (let attempt = 1; attempt <= MAX_PARSE_RETRIES; attempt++) {
+    // Track timeout timer for cleanup
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+    try {
+      // Create timeout promise for race condition (fresh for each attempt)
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new LLMError('TIMEOUT', 'A requisição demorou demais. Tente novamente.', true))
+        }, timeout)
+      })
+
+      // Race between the API call and timeout
+      const result = await Promise.race([
+        model.generateContent({
+          contents: [{ role: 'user', parts }],
+          systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
+        }),
+        timeoutPromise,
+      ])
+
+      // Clear timeout since we got a response
+      if (timeoutId) clearTimeout(timeoutId)
+
+      const response = result.response
+      const text = response.candidates?.[0]?.content?.parts?.[0]?.text
+
+      if (!text) {
+        throw new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
+      }
+
+      // Parse JSON with robust extraction (handles markdown code blocks, extra text, etc.)
+      const data = parseJSONFromLLM<T>(text)
+      if (data === null) {
+        // Log parse failure with attempt info
+        log('WARN', `PARSE_ERROR on attempt ${attempt}/${MAX_PARSE_RETRIES}`, {
+          rawResponseLength: text.length,
+          rawResponsePreview: text.substring(0, 300),
+        })
+
+        // Check if we should retry
+        if (attempt < MAX_PARSE_RETRIES) {
+          log('INFO', `Retrying LLM call (attempt ${attempt + 1}/${MAX_PARSE_RETRIES})`)
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
+          continue // Try again
+        }
+
+        // All retries exhausted
+        log('ERROR', 'Failed to parse JSON after all retries', {
+          attempts: MAX_PARSE_RETRIES,
+          rawResponseEnd: text.length > 500 ? text.substring(text.length - 200) : text,
+        })
+        throw new LLMError(
+          'PARSE_ERROR',
+          `Erro ao parsear resposta após ${MAX_PARSE_RETRIES} tentativas. O LLM retornou dados em formato inválido.`,
+          false
+        )
+      }
+
+      // Success - log if this was a retry
+      if (attempt > 1) {
+        log('INFO', `LLM call succeeded on attempt ${attempt}/${MAX_PARSE_RETRIES}`)
+      }
+
+      // Extract usage metadata
+      const usageMetadata = response.usageMetadata
+      const usage = {
+        promptTokens: usageMetadata?.promptTokenCount || 0,
+        completionTokens: usageMetadata?.candidatesTokenCount || 0,
+        totalTokens: usageMetadata?.totalTokenCount || 0,
+      }
+
+      return { data, usage }
+    } catch (error) {
+      // Always clear timeout on error to prevent memory leaks
+      if (timeoutId) clearTimeout(timeoutId)
+
+      // All errors except internal PARSE_ERROR (from null parse) are thrown immediately
+      // Note: PARSE_ERROR from null parse is handled via 'continue' above, not here
+      if (error instanceof LLMError) {
+        throw error
+      }
+      throw createLLMError(error)
+    }
+  }
+
+  // Should not reach here, but TypeScript needs this
+  throw new LLMError('PARSE_ERROR', 'Erro inesperado no loop de retry', false)
 }
 
 /**

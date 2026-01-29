@@ -234,6 +234,22 @@ export interface VertexAIConfig {
 }
 
 /**
+ * Maximum number of retry attempts for PARSE_ERROR.
+ * Only PARSE_ERROR triggers retry - other errors (TIMEOUT, RATE_LIMIT, etc.) fail immediately.
+ *
+ * @see Story 5.4 - Auto-Retry em PARSE_ERROR
+ */
+export const MAX_PARSE_RETRIES = 3
+
+/**
+ * Delay between retry attempts in milliseconds.
+ * Gives the LLM a brief moment to "stabilize" before retrying.
+ *
+ * @see Story 5.4 - Auto-Retry em PARSE_ERROR
+ */
+export const RETRY_DELAY_MS = 1000
+
+/**
  * Timeout per phase (in ms).
  * Standardized to 120s (2 min) for all phases to handle larger transcriptions.
  */
