@@ -9,6 +9,8 @@ import {
   ChapterSchema,
   ComplianceSchema,
   ComplianceItemSchema,
+  EditingIssueSchema,
+  RiskAndComplianceItemSchema,
   VideoSummarySchema,
   ThumbnailsSchema,
   StatisticsSchema,
@@ -53,17 +55,22 @@ describe('VideoTypeSchema', () => {
 })
 
 describe('ChapterSchema', () => {
-  it('accepts valid chapter', () => {
-    const chapter = { title: 'Introduction', timestamp: 0 }
+  it('accepts valid chapter with MM:SS timestamp', () => {
+    const chapter = { timestamp: '00:00', title: 'Introduction' }
+    expect(ChapterSchema.parse(chapter)).toEqual(chapter)
+  })
+
+  it('accepts valid chapter with HH:MM:SS timestamp', () => {
+    const chapter = { timestamp: '01:30:00', title: 'Second Hour' }
     expect(ChapterSchema.parse(chapter)).toEqual(chapter)
   })
 
   it('rejects chapter with empty title', () => {
-    expect(() => ChapterSchema.parse({ title: '', timestamp: 0 })).toThrow()
+    expect(() => ChapterSchema.parse({ timestamp: '00:00', title: '' })).toThrow()
   })
 
-  it('rejects chapter with negative timestamp', () => {
-    expect(() => ChapterSchema.parse({ title: 'Test', timestamp: -1 })).toThrow()
+  it('rejects chapter with empty timestamp', () => {
+    expect(() => ChapterSchema.parse({ timestamp: '', title: 'Test' })).toThrow()
   })
 })
 
@@ -99,6 +106,63 @@ describe('ComplianceSchema', () => {
 
   it('rejects invalid status', () => {
     expect(() => ComplianceSchema.parse({ status: 'error', items: [] })).toThrow()
+  })
+})
+
+describe('EditingIssueSchema', () => {
+  it('accepts valid editing issue', () => {
+    const issue = {
+      timestamp: '00:05:30',
+      description: 'Corte abrupto na fala do entrevistado',
+    }
+    expect(EditingIssueSchema.parse(issue)).toEqual(issue)
+  })
+
+  it('rejects issue with empty timestamp', () => {
+    expect(() => EditingIssueSchema.parse({ timestamp: '', description: 'Test' })).toThrow()
+  })
+
+  it('rejects issue with empty description', () => {
+    expect(() => EditingIssueSchema.parse({ timestamp: '00:01:00', description: '' })).toThrow()
+  })
+
+  it('rejects issue with missing fields', () => {
+    expect(() => EditingIssueSchema.parse({ timestamp: '00:01:00' })).toThrow()
+    expect(() => EditingIssueSchema.parse({ description: 'Test' })).toThrow()
+  })
+})
+
+describe('RiskAndComplianceItemSchema', () => {
+  it('accepts valid risk item', () => {
+    const item = {
+      timestamp: '00:12:45',
+      risk: 'Menção de marca',
+      description: 'Menção positiva da marca XYZ sem divulgação de patrocínio',
+    }
+    expect(RiskAndComplianceItemSchema.parse(item)).toEqual(item)
+  })
+
+  it('rejects item with empty timestamp', () => {
+    expect(() =>
+      RiskAndComplianceItemSchema.parse({ timestamp: '', risk: 'Test', description: 'Test' })
+    ).toThrow()
+  })
+
+  it('rejects item with empty risk', () => {
+    expect(() =>
+      RiskAndComplianceItemSchema.parse({ timestamp: '00:01:00', risk: '', description: 'Test' })
+    ).toThrow()
+  })
+
+  it('rejects item with empty description', () => {
+    expect(() =>
+      RiskAndComplianceItemSchema.parse({ timestamp: '00:01:00', risk: 'Test', description: '' })
+    ).toThrow()
+  })
+
+  it('rejects item with missing fields', () => {
+    expect(() => RiskAndComplianceItemSchema.parse({ timestamp: '00:01:00' })).toThrow()
+    expect(() => RiskAndComplianceItemSchema.parse({ risk: 'Test' })).toThrow()
   })
 })
 
@@ -183,12 +247,31 @@ describe('VideoSchema (flat structure)', () => {
     const videoWithAIFields = {
       ...validVideo,
       tags: ['tag1', 'tag2'],
-      chapters: [{ title: 'Intro', timestamp: 0 }],
+      chapters: [{ timestamp: '00:00', title: 'Intro' }],
       compliance: { status: 'ok', items: [] },
     }
     const result = VideoSchema.parse(videoWithAIFields)
     expect(result.tags).toEqual(['tag1', 'tag2'])
     expect(result.chapters).toHaveLength(1)
+  })
+
+  it('accepts video with Phase 2 and Phase 3 fields (editingIssues, riskAndCompliance)', () => {
+    const videoWithPhase2And3 = {
+      ...validVideo,
+      critique: 'Excelente episódio com discussão profunda sobre tecnologia.',
+      editingIssues: [
+        { timestamp: '00:05:30', description: 'Corte abrupto na fala' },
+        { timestamp: '00:12:00', description: 'Silêncio prolongado' },
+      ],
+      riskAndCompliance: [
+        { timestamp: '00:20:00', risk: 'Menção de marca', description: 'Menção positiva da marca XYZ' },
+      ],
+    }
+    const result = VideoSchema.parse(videoWithPhase2And3)
+    expect(result.critique).toBe('Excelente episódio com discussão profunda sobre tecnologia.')
+    expect(result.editingIssues).toHaveLength(2)
+    expect(result.riskAndCompliance).toHaveLength(1)
+    expect(result.riskAndCompliance?.[0]?.risk).toBe('Menção de marca')
   })
 
   it('accepts video with portal-web specific fields', () => {
@@ -304,10 +387,54 @@ describe('VideoUpdateSchema', () => {
   it('accepts partial update with AI-generated fields', () => {
     const result = VideoUpdateSchema.parse({
       tags: ['tag1', 'tag2'],
-      chapters: [{ title: 'Intro', timestamp: 0 }],
+      chapters: [{ timestamp: '00:00', title: 'Intro' }],
     })
     expect(result.tags).toEqual(['tag1', 'tag2'])
     expect(result.chapters).toHaveLength(1)
+  })
+
+  it('accepts partial update with Phase 2 and Phase 3 fields', () => {
+    const result = VideoUpdateSchema.parse({
+      editingIssues: [{ timestamp: '00:05:30', description: 'Corte abrupto' }],
+      riskAndCompliance: [{ timestamp: '00:20:00', risk: 'Linguagem', description: 'Linguagem informal' }],
+    })
+    expect(result.editingIssues).toHaveLength(1)
+    expect(result.riskAndCompliance).toHaveLength(1)
+  })
+
+  it('accepts empty arrays for editingIssues and riskAndCompliance', () => {
+    const result = VideoUpdateSchema.parse({
+      editingIssues: [],
+      riskAndCompliance: [],
+    })
+    expect(result.editingIssues).toEqual([])
+    expect(result.riskAndCompliance).toEqual([])
+  })
+
+  it('rejects invalid editingIssues items', () => {
+    expect(() =>
+      VideoUpdateSchema.parse({
+        editingIssues: [{ timestamp: '', description: 'Test' }],
+      })
+    ).toThrow()
+    expect(() =>
+      VideoUpdateSchema.parse({
+        editingIssues: [{ timestamp: '00:01:00', description: '' }],
+      })
+    ).toThrow()
+  })
+
+  it('rejects invalid riskAndCompliance items', () => {
+    expect(() =>
+      VideoUpdateSchema.parse({
+        riskAndCompliance: [{ timestamp: '', risk: 'Test', description: 'Test' }],
+      })
+    ).toThrow()
+    expect(() =>
+      VideoUpdateSchema.parse({
+        riskAndCompliance: [{ timestamp: '00:01:00', risk: '', description: 'Test' }],
+      })
+    ).toThrow()
   })
 
   it('accepts empty update', () => {
@@ -388,8 +515,16 @@ describe('GuestSchema (legacy compatible)', () => {
     expect(() => GuestSchema.parse({ ...validGuest, role: '' })).toThrow()
   })
 
-  it('rejects guest with empty company', () => {
-    expect(() => GuestSchema.parse({ ...validGuest, company: '' })).toThrow()
+  it('accepts guest with empty company (optional field)', () => {
+    // company is optional, so empty string is valid
+    const result = GuestSchema.parse({ ...validGuest, company: '' })
+    expect(result.company).toBe('')
+  })
+
+  it('accepts guest without company field', () => {
+    const { company: _company, ...guestWithoutCompany } = validGuest
+    const result = GuestSchema.parse(guestWithoutCompany)
+    expect(result.company).toBeUndefined()
   })
 
   it('rejects guest with invalid URL', () => {

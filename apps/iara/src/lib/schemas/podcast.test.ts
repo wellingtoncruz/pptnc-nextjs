@@ -40,6 +40,7 @@ const validPrompts = {
     critique: { ...validPromptField },
     editing: { ...validPromptField },
     compliance: { ...validPromptField },
+    chapters: { ...validPromptField },
     titles: { ...validPromptField },
     description: { ...validPromptField },
     tags: { ...validPromptField },
@@ -180,6 +181,7 @@ describe('EpisodePromptsSchema', () => {
     expect(result.critique).toEqual(validPromptField)
     expect(result.editing).toEqual(validPromptField)
     expect(result.compliance).toEqual(validPromptField)
+    expect(result.chapters).toEqual(validPromptField)
     expect(result.titles).toEqual(validPromptField)
     expect(result.description).toEqual(validPromptField)
     expect(result.tags).toEqual(validPromptField)
@@ -493,6 +495,7 @@ describe('DEFAULT_PROMPTS', () => {
     expect(DEFAULT_PROMPTS.episode.critique).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.editing).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.compliance).toBeDefined()
+    expect(DEFAULT_PROMPTS.episode.chapters).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.titles).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.description).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.tags).toBeDefined()

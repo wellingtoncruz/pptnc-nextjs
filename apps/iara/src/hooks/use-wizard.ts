@@ -12,6 +12,7 @@ import {
   isWizardComplete,
   PHASE_METADATA,
   PhaseStatus,
+  VideoDataForSync,
   WizardPhase,
   WizardState,
   wizardReducer,
@@ -75,19 +76,44 @@ function clearWizardState(videoId: string): void {
 }
 
 /**
- * Initialize wizard state - load from storage or create new.
+ * Initialization parameters for useWizard.
  */
-function initializeWizardState(videoId: string): WizardState {
+interface InitParams {
+  videoId: string
+  videoData?: VideoDataForSync
+}
+
+/**
+ * Initialize wizard state - load from storage, create new, and hydrate from video data.
+ *
+ * This performs hydration SYNCHRONOUSLY during initialization to ensure
+ * the initial state is correct from the first render. This avoids timing
+ * issues with effects where localStorage state would be stale until
+ * hydration effect runs.
+ */
+function initializeWizardState({ videoId, videoData }: InitParams): WizardState {
   const stored = loadWizardState(videoId)
-  return stored ?? createInitialWizardState(videoId)
+  const initial = stored ?? createInitialWizardState(videoId)
+
+  // If video data is provided, hydrate synchronously
+  // This ensures the state is correct from the first render
+  if (videoData) {
+    return wizardReducer(initial, { type: 'HYDRATE_FROM_VIDEO_DATA', videoData })
+  }
+
+  return initial
 }
 
 /**
  * Hook for managing the wizard state and console messages.
  *
+ * IMPORTANT: Pass video data to ensure correct initial state hydration.
+ * This synchronously hydrates wizard state from video data during
+ * initialization, avoiding timing issues with effects.
+ *
  * Usage:
  * ```tsx
- * const wizard = useWizard('video-123')
+ * const wizard = useWizard(video.id, video)
  *
  * // Navigate
  * wizard.goToPhase(3)
@@ -101,10 +127,10 @@ function initializeWizardState(videoId: string): WizardState {
  * wizard.addAlert(1, 'Success', 'Phase completed', 'success')
  * ```
  */
-export function useWizard(videoId: string) {
+export function useWizard(videoId: string, videoData?: VideoDataForSync) {
   const [state, dispatch] = useReducer(
     wizardReducer,
-    videoId,
+    { videoId, videoData },
     initializeWizardState
   )
 
@@ -118,6 +144,18 @@ export function useWizard(videoId: string) {
   useEffect(() => {
     saveWizardState(state)
   }, [state])
+
+  // Re-hydrate when video data changes
+  // This handles cases where:
+  // 1. Video prop updates after initial mount (e.g., Firestore realtime updates)
+  // 2. Initial mount had partial data that gets completed
+  //
+  // The HYDRATE_FROM_VIDEO_DATA action is idempotent - if no changes are needed,
+  // it returns the same state, so calling it multiple times is safe.
+  useEffect(() => {
+    if (!videoData) return
+    dispatch({ type: 'HYDRATE_FROM_VIDEO_DATA', videoData })
+  }, [videoData])
 
   // Navigation
   const goToPhase = useCallback(
@@ -157,11 +195,38 @@ export function useWizard(videoId: string) {
     dispatch({ type: 'INVALIDATE_FROM_PHASE', phase })
   }, [])
 
+  /**
+   * Complete the current phase and advance to the next one.
+   * This is a combined action that avoids stale state issues
+   * when calling setPhaseData + goToNextPhase separately.
+   */
+  const completePhaseAndAdvance = useCallback((phase: WizardPhase, data: unknown) => {
+    dispatch({ type: 'COMPLETE_PHASE_AND_ADVANCE', phase, data })
+  }, [])
+
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' })
     setConsoleMessages([])
     clearWizardState(videoId)
   }, [videoId])
+
+  /**
+   * Sync wizard state with actual video data from Firestore.
+   * Resets phases that are marked as completed in localStorage
+   * but don't have corresponding data in Firestore.
+   */
+  const syncWithVideoData = useCallback((videoData: VideoDataForSync) => {
+    dispatch({ type: 'SYNC_WITH_VIDEO_DATA', videoData })
+  }, [])
+
+  /**
+   * Hydrate wizard state from video data on initial mount.
+   * Marks phases as completed if video has data for them.
+   * Used when localStorage is empty/stale but Firestore has data.
+   */
+  const hydrateFromVideoData = useCallback((videoData: VideoDataForSync) => {
+    dispatch({ type: 'HYDRATE_FROM_VIDEO_DATA', videoData })
+  }, [])
 
   // Console message management
   const addSpinner = useCallback((phase: WizardPhase, text?: string) => {
@@ -252,7 +317,10 @@ export function useWizard(videoId: string) {
     setPhaseData,
     setPhaseError,
     invalidateFromPhase,
+    completePhaseAndAdvance,
     reset,
+    syncWithVideoData,
+    hydrateFromVideoData,
 
     // Console
     consoleMessages,

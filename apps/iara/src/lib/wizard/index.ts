@@ -11,6 +11,7 @@ export type {
   PhaseState,
   PhaseStatus,
   PhaseType,
+  VideoDataForSync,
   WizardAction,
   WizardPhase,
   WizardState,
@@ -40,3 +41,15 @@ export {
   isWizardComplete,
   wizardReducer,
 } from './machine'
+
+// Phase names
+export { getNextPhaseName, PHASE_NAMES } from './phase-names'
+
+// Phase validation (smart loading)
+export {
+  getAllPhaseValidations,
+  getFirstIncompletePhase as getFirstIncompletePhaseFromVideo,
+  phaseNeedsReviewConfirmation,
+  validatePhaseCompletion,
+  type PhaseValidation,
+} from './phase-validation'

@@ -31,51 +31,59 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
   "hasIssues": true/false,
   "issues": [
     {
-      "timestamp": 00:00,
-      "issue": "Descrição do problema",
-      "severity": "minor" | "major"
+      "timestamp": "00:05:30",
+      "description": "Descrição do problema"
     }
   ]
-}`,
+}
 
-  3: `Você é um especialista em compliance e análise de risco para conteúdo de vídeo.
-Analise a transcrição buscando potenciais riscos de conformidade.
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
+
+  3: `Você é um especialista em compliance de conteúdo de mídia.
+Analise a transcrição (SRT) procurando por possíveis riscos de compliance.
 
 Procure por:
-- Menções a marcas ou produtos que podem gerar problemas de direitos autorais
-- Afirmações que podem ser consideradas difamatórias
-- Informações médicas ou financeiras sem disclaimers
+- Menções de marcas ou empresas que podem requerer autorização
+- Linguagem sensível ou potencialmente ofensiva
+- Claims médicos, financeiros ou legais não verificados
+- Menções de concorrentes
+- Conteúdo que pode gerar processos ou reclamações
 - Conteúdo que pode violar políticas do YouTube
 
 Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
-  "status": "ok" | "warning",
-  "items": [
+  "hasRisks": true/false,
+  "risks": [
     {
-      "risk": "Tipo de risco identificado",
-      "argument": "Contexto e argumentação sobre o risco",
-      "timestamp": 00:00
+      "timestamp": "00:05:30",
+      "risk": "tipo_do_risco",
+      "description": "Descrição do risco identificado"
     }
   ]
-}`,
+}
+
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".
+Os tipos de risco válidos são: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.`,
 
   4: `Você é um especialista em estruturação de conteúdo de vídeo.
 Analise a transcrição e sugira capítulos que dividam o conteúdo por assuntos.
 
 Regras:
-- Primeiro capítulo deve começar em 00:00
+- Primeiro capítulo DEVE começar em "00:00"
 - Mínimo de 3 capítulos, máximo de 12
 - Cada capítulo deve ter título curto e descritivo (máx 50 caracteres)
-- Timestamps devem estar em formato 00:00
+- Timestamps DEVEM ser STRINGS no formato "MM:SS" ou "HH:MM:SS"
 
 Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "chapters": [
-    { "title": "Introdução", "timestamp": 00:00 },
-    { "title": "Tema principal", "timestamp": 00:00 },
+    { "timestamp": "00:00", "title": "Introdução" },
+    { "timestamp": "05:30", "title": "Tema principal" },
     ...
   ]
-}`,
+}
+
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS", NÃO um número.`,
 
   5: `Você é um especialista em SEO para YouTube e criação de títulos virais.
 Gere 5 sugestões de título para o vídeo baseado na transcrição e contexto.
@@ -116,8 +124,9 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
   7: `Você é um especialista em SEO para YouTube e análise de palavras-chave.
 Gere uma lista de tags relevantes para o vídeo baseado na transcrição e contexto.
 
-Regras:
-- Entre 10-20 tags
+Regras OBRIGATÓRIAS:
+- MÍNIMO 10 tags, MÁXIMO 20 tags (NUNCA mais que 20!)
+- Total de caracteres de todas as tags NÃO pode exceder 500 caracteres
 - Mix de tags específicas e gerais
 - Inclua variações de palavras-chave
 - Considere termos de busca populares
@@ -126,7 +135,9 @@ Regras:
 Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "tags": ["tag1", "tag2", "tag3", ...]
-}`,
+}
+
+IMPORTANTE: Gere entre 10 e 20 tags. Se você gerar mais de 20, o sistema irá rejeitá-las.`,
 
   8: '', // No LLM call for phase 8
 }
@@ -247,6 +258,9 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 /**
  * Get the combined system prompt for a phase.
  * Merges base prompt with user-configured prompt from podcast settings.
+ *
+ * @deprecated Use buildPhasePrompt() instead, which follows the processamento_video.md template.
+ * This function is kept for backwards compatibility but will be removed in a future version.
  */
 export function getSystemPrompt(
   phase: WizardPhase,
@@ -279,7 +293,7 @@ export function getUserPromptTemplate(phase: WizardPhase): string {
 }
 
 // =============================================================================
-// PHASE CONFIG (per llm.md specification)
+// PHASE CONFIG (per processamento_video.md specification)
 // =============================================================================
 
 /**
@@ -301,33 +315,39 @@ IMPORTANTE: O campo "critique" DEVE ser uma STRING única com parágrafos separa
   "hasIssues": true/false,
   "issues": [
     {
-      "timestamp": 123,
-      "issue": "Descrição do problema",
-      "severity": "minor" | "major"
+      "timestamp": "00:05:30",
+      "description": "Descrição do problema"
     }
   ]
-}`,
+}
+
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
 
   3: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
-  "status": "ok" | "warning",
-  "items": [
+  "hasRisks": true/false,
+  "risks": [
     {
-      "risk": "Tipo de risco identificado",
-      "argument": "Contexto e argumentação sobre o risco",
-      "timestamp": 123
+      "timestamp": "00:12:45",
+      "risk": "tipo_do_risco",
+      "description": "Descrição detalhada do risco identificado"
     }
   ]
-}`,
+}
+
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".
+Os tipos de risco válidos são: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.`,
 
   4: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "chapters": [
-    { "title": "Introdução", "timestamp": 0 },
-    { "title": "Tema principal", "timestamp": 120 },
+    { "timestamp": "00:00", "title": "Introdução" },
+    { "timestamp": "05:30", "title": "Tema principal" },
     ...
   ]
-}`,
+}
+
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS", NÃO um número.`,
 
   5: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
@@ -357,7 +377,7 @@ IMPORTANTE: O campo "critique" DEVE ser uma STRING única com parágrafos separa
  * Phase configuration type.
  * Defines which persona and prompt key to use for each phase.
  *
- * @see llm.md for specification
+ * @see processamento_video.md for specification
  */
 export interface PhaseConfig {
   /** Persona name to use from podcast.personas */
@@ -372,25 +392,32 @@ export interface PhaseConfig {
  * Phase configuration mapping.
  * Maps each wizard phase to its persona and prompt configuration.
  *
- * Per llm.md:
- * - Phase 1: critic persona, TXT attachment, critique prompts
- * - Other phases: TBD, using defaults until llm.md is updated
+ * Per processamento_video.md:
+ * - Phase 1 (Crítica): critic persona, TXT attachment, critique prompts - Tipo 2 Imutável
+ * - Phase 2 (Edição): critic persona, SRT attachment, editing prompts - Tipo 2 Imutável
+ * - Phase 3 (Compliance): critic persona, SRT attachment, compliance prompts - Tipo 2 Imutável
+ * - Phase 4 (Capítulos): critic persona, SRT attachment, chapters prompts - Tipo 2 Imutável
+ * - Phase 5 (Título): writer persona, TXT attachment, titles prompts - Tipo 1 Reprocessável
+ * - Phase 6 (Descrição): writer persona, TXT attachment, description prompts - Tipo 1 Reprocessável
+ * - Phase 7 (Tags): writer persona, TXT attachment, tags prompts - Tipo 1 Reprocessável
+ * - Phase 8 (YouTube): No LLM call - apenas envio para YouTube
  *
- * @see llm.md for full specification
+ * @see processamento_video.md for full specification
  */
 export const PHASE_CONFIG: Record<WizardPhase, PhaseConfig> = {
   1: { personaName: 'critic', attachmentType: 'TXT', promptKey: 'critique' },
   2: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'editing' },
-  3: { personaName: 'critic', attachmentType: 'TXT', promptKey: 'compliance' },
-  4: { personaName: 'writer', attachmentType: 'SRT', promptKey: 'chapters' },
+  3: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'compliance' },
+  4: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'chapters' },
   5: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'titles' },
   6: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'description' },
   7: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'tags' },
-  8: { personaName: 'writer', attachmentType: 'TXT', promptKey: '' }, // No LLM call
+  // Phase 8 has no LLM call - these values are never used, kept for type completeness
+  8: { personaName: 'critic', attachmentType: 'TXT', promptKey: '' },
 }
 
 /**
- * Build phase prompt following llm.md template.
+ * Build phase prompt following processamento_video.md template.
  *
  * Template:
  * ```
@@ -399,6 +426,11 @@ export const PHASE_CONFIG: Record<WizardPhase, PhaseConfig> = {
  * Seu contexto: {persona.resume}
  * Sua tarefa: {prompts.{videoType}.{phase}.description}
  * Seu retorno deve ser estritamente: {prompts.{videoType}.{phase}.expectedOutput}
+ * ```
+ *
+ * For Type 1 (Reprocessable) phases (5, 6, 7), additionalContext can be appended:
+ * ```
+ * Dê uma atenção especial a essa instrução: {additionalContext}
  * ```
  *
  * Falls back to BASE_SYSTEM_PROMPTS when:
@@ -445,7 +477,7 @@ export function buildPhasePrompt(
     return BASE_SYSTEM_PROMPTS[phase]
   }
 
-  // Build prompt following llm.md template
+  // Build prompt following processamento_video.md template
   // Always append JSON schema to ensure correct response format
   const jsonSchema = PHASE_JSON_SCHEMAS[phase]
 

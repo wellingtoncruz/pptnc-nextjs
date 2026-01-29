@@ -69,12 +69,13 @@ export const PromptFieldSchema = z.object({
 /**
  * Episode prompts - prompts specific to full episodes.
  *
- * Includes: critique, editing, compliance, titles, description, tags
+ * Includes: critique, editing, compliance, chapters, titles, description, tags
  */
 export const EpisodePromptsSchema = z.object({
   critique: PromptFieldSchema,
   editing: PromptFieldSchema,
   compliance: PromptFieldSchema,
+  chapters: PromptFieldSchema,
   titles: PromptFieldSchema,
   description: PromptFieldSchema,
   tags: PromptFieldSchema,
@@ -168,6 +169,7 @@ export const DEFAULT_EPISODE_PROMPTS = {
   critique: { ...DEFAULT_PROMPT_FIELD },
   editing: { ...DEFAULT_PROMPT_FIELD },
   compliance: { ...DEFAULT_PROMPT_FIELD },
+  chapters: { ...DEFAULT_PROMPT_FIELD },
   titles: { ...DEFAULT_PROMPT_FIELD },
   description: { ...DEFAULT_PROMPT_FIELD },
   tags: { ...DEFAULT_PROMPT_FIELD },

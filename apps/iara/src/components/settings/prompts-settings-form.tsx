@@ -34,6 +34,7 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
   critique: 'Crítica',
   editing: 'Edição',
   compliance: 'Conformidade',
+  chapters: 'Capítulos',
   titles: 'Títulos',
   description: 'Descrição',
   tags: 'Tags',
@@ -44,7 +45,7 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
 /**
  * Ordered field keys for each video type to ensure consistent rendering.
  */
-const EPISODE_FIELDS: EpisodeFieldKey[] = ['critique', 'editing', 'compliance', 'titles', 'description', 'tags']
+const EPISODE_FIELDS: EpisodeFieldKey[] = ['critique', 'editing', 'compliance', 'chapters', 'titles', 'description', 'tags']
 const CUT_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags']
 const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags']
 

@@ -239,3 +239,16 @@ export const YouTubeCaptionsResponseSchema = z.object({
   etag: z.string().optional(),
   items: z.array(YouTubeCaptionItemSchema),
 })
+
+/**
+ * YouTube Video Update Response schema - response from videos.update endpoint.
+ *
+ * Returns the updated video resource.
+ * @see https://developers.google.com/youtube/v3/docs/videos/update
+ */
+export const YouTubeVideoUpdateResponseSchema = z.object({
+  kind: z.literal('youtube#video').optional(),
+  etag: z.string().optional(),
+  id: z.string(),
+  snippet: YouTubeSnippetSchema.optional(),
+})

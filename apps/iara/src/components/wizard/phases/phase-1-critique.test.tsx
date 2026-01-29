@@ -91,6 +91,7 @@ function createMockWizard(overrides: Partial<UseWizardReturn> = {}): UseWizardRe
     setPhaseData: vi.fn(),
     setPhaseError: vi.fn(),
     invalidateFromPhase: vi.fn(),
+    completePhaseAndAdvance: vi.fn(),
     reset: vi.fn(),
     consoleMessages: [],
     addSpinner: vi.fn().mockReturnValue('spinner-1'),
@@ -214,6 +215,66 @@ describe('Phase1Critique', () => {
 
       // Form should still be visible
       expect(screen.getByLabelText(/tema do episódio/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Advancement criteria and button', () => {
+    it('renders "Avançar" button', () => {
+      const wizard = createMockWizard()
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      expect(screen.getByRole('button', { name: /avançar para an.?lise/i })).toBeInTheDocument()
+    })
+
+    it('disables button when critique is null', () => {
+      const wizard = createMockWizard()
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
+      )
+
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      expect(button).toBeDisabled()
+      expect(screen.getByText(/aguardando processamento da crítica/i)).toBeInTheDocument()
+    })
+
+    it('disables button when theme is empty', () => {
+      const wizard = createMockWizard()
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideoNoContext} critique={mockPhase1Response} />
+      )
+
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      expect(button).toBeDisabled()
+    })
+
+    it('enables button when all criteria are met', () => {
+      const wizard = createMockWizard()
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      expect(button).toBeEnabled()
+    })
+
+    it('calls completePhaseAndAdvance when button is clicked', () => {
+      const wizard = createMockWizard()
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      fireEvent.click(button)
+
+      // Should complete phase 1 and advance to phase 2 in one action
+      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
     })
   })
 })

@@ -24,8 +24,8 @@ import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
-import type { Phase1Response } from '@/lib/llm'
-import { callLLM, type PhaseResponse } from '@/lib/llm'
+import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase7Response } from '@/lib/llm'
+import { callLLMQueued, type PhaseResponse } from '@/lib/llm'
 import { log } from '@/lib/logger'
 import { WizardPhaseSchema } from '@/lib/wizard'
 
@@ -127,9 +127,10 @@ export async function POST(
       hasPodcastConfig: !!(podcast?.personas && podcast?.prompts),
     })
 
-    // Call LLM for this phase with podcast configuration
+    // Call LLM for this phase with podcast configuration (using queue)
     // Per llm.md: uses podcast.personas and podcast.prompts for dynamic prompt building
-    const result = await callLLM(phase, video, podcast ?? undefined, {
+    // Queue ensures sequential processing to prevent rate-limit issues
+    const result = await callLLMQueued(phase, video, podcast ?? undefined, {
       promptOverride,
       additionalContext,
       previousPhaseData,
@@ -161,13 +162,91 @@ export async function POST(
       tokensUsed: result.usage.totalTokens,
     })
 
-    // Persist critique for Phase 1 (immutable, one-time only)
+    // Persist phase data (immutable phases 1-4)
     if (phase === 1) {
       const phase1Data = result.data as Phase1Response
       await updateVideoAdmin(PODCAST_ID, videoId, {
         critique: phase1Data.critique,
       })
       log('INFO', 'Phase 1 critique persisted to video', { videoId })
+    }
+
+    if (phase === 2) {
+      const phase2Data = result.data as Phase2Response
+      await updateVideoAdmin(PODCAST_ID, videoId, {
+        editingIssues: phase2Data.issues,
+      })
+      log('INFO', 'Phase 2 editing issues persisted to video', {
+        videoId,
+        hasIssues: phase2Data.hasIssues,
+        issueCount: phase2Data.issues.length,
+      })
+    }
+
+    if (phase === 3) {
+      const phase3Data = result.data as Phase3Response
+      await updateVideoAdmin(PODCAST_ID, videoId, {
+        riskAndCompliance: phase3Data.risks,
+      })
+      log('INFO', 'Phase 3 compliance risks persisted to video', {
+        videoId,
+        hasRisks: phase3Data.hasRisks,
+        riskCount: phase3Data.risks.length,
+      })
+    }
+
+    if (phase === 4) {
+      const phase4Data = result.data as Phase4Response
+      await updateVideoAdmin(PODCAST_ID, videoId, {
+        chapters: phase4Data.chapters,
+      })
+      log('INFO', 'Phase 4 chapters persisted to video', {
+        videoId,
+        chapterCount: phase4Data.chapters.length,
+      })
+    }
+
+    if (phase === 5) {
+      const phase5Data = result.data as Phase5Response
+      await updateVideoAdmin(PODCAST_ID, videoId, {
+        suggestedTitles: phase5Data.titles,
+      })
+      log('INFO', 'Phase 5 suggested titles persisted to video', {
+        videoId,
+        titleCount: phase5Data.titles.length,
+      })
+    }
+
+    // For Phase 7, normalize tags to respect YouTube limits
+    // Max 30 tags, max 500 characters total
+    if (phase === 7) {
+      const phase7Data = result.data as Phase7Response
+      let normalizedTags = phase7Data.tags
+
+      // Limit to 30 tags
+      if (normalizedTags.length > 30) {
+        log('WARN', 'LLM generated too many tags, truncating', {
+          videoId,
+          originalCount: normalizedTags.length,
+        })
+        normalizedTags = normalizedTags.slice(0, 30)
+      }
+
+      // Ensure total characters don't exceed 500
+      let totalChars = normalizedTags.join(',').length
+      while (totalChars > 500 && normalizedTags.length > 1) {
+        normalizedTags.pop()
+        totalChars = normalizedTags.join(',').length
+      }
+
+      // Update result data with normalized tags
+      phase7Data.tags = normalizedTags
+
+      log('INFO', 'Phase 7 tags normalized', {
+        videoId,
+        tagCount: normalizedTags.length,
+        totalChars,
+      })
     }
 
     return NextResponse.json({

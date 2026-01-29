@@ -1,30 +1,45 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { YouTubeEmbed } from './youtube-embed'
+import { useYouTube } from './youtube-context'
 
 interface VideoPreviewProps {
   videoId: string
+  title?: string
+  thumbnailUrl?: string
   className?: string
 }
 
 /**
  * YouTube video preview component with embedded player.
  *
- * Uses the YouTube iframe embed API for responsive video playback.
+ * Integrates with YouTubeContext to allow:
+ * - ClickableTimestamp components to seek the video
+ * - In-page control instead of opening new tabs
+ *
+ * @pattern TIMESTAMP_SEEK_IN_PAGE - Timestamps control in-page player
+ * @see youtube-context.tsx - Context provider for player state
+ * @see youtube-embed.tsx - Embed component with 800ms seekTo fix
  */
-export function VideoPreview({ videoId, className }: VideoPreviewProps) {
+export function VideoPreview({
+  videoId,
+  title = 'YouTube video player',
+  thumbnailUrl,
+  className,
+}: VideoPreviewProps) {
+  const youtube = useYouTube()
+
   return (
     <div className={cn('relative w-full', className)}>
-      {/* Aspect ratio container for 16:9 */}
-      <div className="relative w-full pt-[56.25%]">
-        <iframe
-          className="absolute inset-0 w-full h-full rounded-lg"
-          src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
-          title="YouTube video player"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
+      <YouTubeEmbed
+        youtubeId={videoId}
+        title={title}
+        thumbnailUrl={thumbnailUrl}
+        onPlayerReady={youtube.setPlayer}
+        registerStartPlayback={youtube.registerStartPlayback}
+        className="w-full"
+      />
     </div>
   )
 }

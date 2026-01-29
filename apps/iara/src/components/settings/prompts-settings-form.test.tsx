@@ -55,10 +55,11 @@ describe('PromptsSettingsForm', () => {
     await user.click(screen.getByText('Episódios'))
 
     await waitFor(() => {
-      // Episode has 6 fields: critique, editing, compliance, titles, description, tags
+      // Episode has 7 fields: critique, editing, compliance, chapters, titles, description, tags
       expect(screen.getByText('Crítica')).toBeInTheDocument()
       expect(screen.getByText('Edição')).toBeInTheDocument()
       expect(screen.getByText('Conformidade')).toBeInTheDocument()
+      expect(screen.getByText('Capítulos')).toBeInTheDocument()
       expect(screen.getByText('Títulos')).toBeInTheDocument()
       expect(screen.getByText('Descrição')).toBeInTheDocument()
       expect(screen.getByText('Tags')).toBeInTheDocument()
@@ -143,6 +144,7 @@ describe('PromptsSettingsForm', () => {
       expect(screen.getByText('Crítica')).toBeInTheDocument()
       expect(screen.getByText('Edição')).toBeInTheDocument()
       expect(screen.getByText('Conformidade')).toBeInTheDocument()
+      expect(screen.getByText('Capítulos')).toBeInTheDocument()
     })
 
     // Check cut fields

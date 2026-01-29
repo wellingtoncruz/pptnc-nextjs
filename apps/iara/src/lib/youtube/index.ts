@@ -18,3 +18,5 @@
 
 export { YouTubeAPIError, YouTubeClient } from './client'
 export type { ListVideosOptions, ListVideosResult, YouTubeCaptionData, YouTubeErrorCode, YouTubeVideoDataFromAPI } from './client'
+export { formatChaptersForYouTube, buildDescriptionWithChapters } from './format-chapters'
+export type { Chapter } from './format-chapters'

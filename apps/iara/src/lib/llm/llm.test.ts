@@ -400,17 +400,17 @@ describe('PHASE_CONFIG', () => {
     expect(PHASE_CONFIG[1].promptKey).toBe('critique')
   })
 
-  it('uses SRT for editing phases (2, 4)', () => {
-    expect(PHASE_CONFIG[2].attachmentType).toBe('SRT')
-    expect(PHASE_CONFIG[4].attachmentType).toBe('SRT')
+  it('uses SRT for analysis phases (2, 3, 4) per processamento_video.md', () => {
+    expect(PHASE_CONFIG[2].attachmentType).toBe('SRT') // Edição
+    expect(PHASE_CONFIG[3].attachmentType).toBe('SRT') // Compliance
+    expect(PHASE_CONFIG[4].attachmentType).toBe('SRT') // Capítulos
   })
 
-  it('uses TXT for text-heavy phases (1, 3, 5, 6, 7)', () => {
-    expect(PHASE_CONFIG[1].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[3].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[5].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[6].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[7].attachmentType).toBe('TXT')
+  it('uses TXT for content generation phases (1, 5, 6, 7)', () => {
+    expect(PHASE_CONFIG[1].attachmentType).toBe('TXT') // Crítica
+    expect(PHASE_CONFIG[5].attachmentType).toBe('TXT') // Títulos
+    expect(PHASE_CONFIG[6].attachmentType).toBe('TXT') // Descrição
+    expect(PHASE_CONFIG[7].attachmentType).toBe('TXT') // Tags
   })
 
   it('has empty promptKey for phase 8 (no LLM)', () => {

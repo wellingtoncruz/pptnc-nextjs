@@ -10,10 +10,17 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/firebase/videos-admin', () => ({
   getVideoAdmin: vi.fn(),
+  updateVideoAdmin: vi.fn().mockResolvedValue(undefined),
+}))
+
+import { updateVideoAdmin } from '@/lib/firebase/videos-admin'
+
+vi.mock('@/lib/firebase/podcasts-admin', () => ({
+  getPodcastAdmin: vi.fn().mockResolvedValue(null),
 }))
 
 vi.mock('@/lib/llm', () => ({
-  callLLM: vi.fn(),
+  callLLMQueued: vi.fn(),
 }))
 
 vi.mock('@/lib/logger', () => ({
@@ -23,7 +30,7 @@ vi.mock('@/lib/logger', () => ({
 // Import mocked modules
 import { auth } from '@/lib/auth'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
-import { callLLM } from '@/lib/llm'
+import { callLLMQueued } from '@/lib/llm'
 
 const mockSession = { user: { id: 'user-123', email: 'test@example.com' } }
 
@@ -50,6 +57,35 @@ const mockPhase1Response = {
   suggestions: ['Add more examples'],
 }
 
+const mockPhase2Response = {
+  hasIssues: true,
+  issues: [{ timestamp: '00:05:30', description: 'Corte abrupto' }],
+}
+
+const mockPhase3Response = {
+  hasRisks: true,
+  risks: [{ timestamp: '00:12:45', risk: 'brand_mention', description: 'Menção de marca XYZ' }],
+}
+
+const mockPhase4Response = {
+  chapters: [
+    { timestamp: '00:00', title: 'Introdução' },
+    { timestamp: '05:30', title: 'Tema Principal' },
+    { timestamp: '15:00', title: 'Conclusão' },
+  ],
+}
+
+// Generic mock responses per phase for the "all phases" test
+const mockPhaseResponses: Record<number, object> = {
+  1: mockPhase1Response,
+  2: mockPhase2Response,
+  3: mockPhase3Response,
+  4: mockPhase4Response,
+  5: { titles: ['Title 1', 'Title 2', 'Title 3', 'Title 4', 'Title 5'] },
+  6: { description: 'Video description' },
+  7: { tags: ['tag1', 'tag2'] },
+}
+
 function createRequest(phase: string, body: object): NextRequest {
   return new NextRequest(`http://localhost:3000/api/wizard/phase/${phase}`, {
     method: 'POST',
@@ -63,7 +99,7 @@ describe('POST /api/wizard/phase/[phase]', () => {
     vi.clearAllMocks()
     vi.mocked(auth).mockResolvedValue(mockSession as ReturnType<typeof auth>)
     vi.mocked(getVideoAdmin).mockResolvedValue(mockVideo as Awaited<ReturnType<typeof getVideoAdmin>>)
-    vi.mocked(callLLM).mockResolvedValue({
+    vi.mocked(callLLMQueued).mockResolvedValue({
       success: true,
       data: mockPhase1Response,
       usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
@@ -130,7 +166,7 @@ describe('POST /api/wizard/phase/[phase]', () => {
       const request = createRequest('1', { videoId: 'video-123' })
       await POST(request, { params: Promise.resolve({ phase: '1' }) })
 
-      expect(callLLM).toHaveBeenCalledWith(
+      expect(callLLMQueued).toHaveBeenCalledWith(
         1,
         mockVideo,
         undefined,
@@ -149,7 +185,7 @@ describe('POST /api/wizard/phase/[phase]', () => {
       })
       await POST(request, { params: Promise.resolve({ phase: '5' }) })
 
-      expect(callLLM).toHaveBeenCalledWith(
+      expect(callLLMQueued).toHaveBeenCalledWith(
         5,
         mockVideo,
         undefined,
@@ -166,7 +202,7 @@ describe('POST /api/wizard/phase/[phase]', () => {
       })
       await POST(request, { params: Promise.resolve({ phase: '5' }) })
 
-      expect(callLLM).toHaveBeenCalledWith(
+      expect(callLLMQueued).toHaveBeenCalledWith(
         5,
         mockVideo,
         undefined,
@@ -203,7 +239,7 @@ describe('POST /api/wizard/phase/[phase]', () => {
 
   describe('Error Handling', () => {
     it('returns LLM error with correct status code', async () => {
-      vi.mocked(callLLM).mockResolvedValue({
+      vi.mocked(callLLMQueued).mockResolvedValue({
         success: false,
         error: {
           code: 'TIMEOUT',
@@ -222,7 +258,7 @@ describe('POST /api/wizard/phase/[phase]', () => {
     })
 
     it('returns 429 for rate limit errors', async () => {
-      vi.mocked(callLLM).mockResolvedValue({
+      vi.mocked(callLLMQueued).mockResolvedValue({
         success: false,
         error: {
           code: 'RATE_LIMIT',
@@ -238,7 +274,7 @@ describe('POST /api/wizard/phase/[phase]', () => {
     })
 
     it('returns 500 for unexpected errors', async () => {
-      vi.mocked(callLLM).mockRejectedValue(new Error('Unexpected error'))
+      vi.mocked(callLLMQueued).mockRejectedValue(new Error('Unexpected error'))
 
       const request = createRequest('1', { videoId: 'video-123' })
       const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
@@ -251,16 +287,129 @@ describe('POST /api/wizard/phase/[phase]', () => {
 
   describe('All valid phases', () => {
     it.each([1, 2, 3, 4, 5, 6, 7])('processes phase %i successfully', async (phase) => {
+      // Use phase-specific mock response to avoid destructuring errors in persistence logic
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: mockPhaseResponses[phase],
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
       const request = createRequest(String(phase), { videoId: 'video-123' })
       const response = await POST(request, { params: Promise.resolve({ phase: String(phase) }) })
 
       expect(response.status).toBe(200)
-      expect(callLLM).toHaveBeenCalledWith(
+      expect(callLLMQueued).toHaveBeenCalledWith(
         phase,
         expect.anything(),
         undefined,
         expect.anything()
       )
+    })
+  })
+
+  describe('Phase data persistence', () => {
+    it('persists critique for Phase 1', async () => {
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: mockPhase1Response,
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('1', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: '1' }) })
+
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { critique: mockPhase1Response.critique }
+      )
+    })
+
+    it('persists editingIssues for Phase 2', async () => {
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: mockPhase2Response,
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('2', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: '2' }) })
+
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { editingIssues: mockPhase2Response.issues }
+      )
+    })
+
+    it('persists riskAndCompliance for Phase 3', async () => {
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: mockPhase3Response,
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('3', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: '3' }) })
+
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { riskAndCompliance: mockPhase3Response.risks }
+      )
+    })
+
+    it('persists chapters for Phase 4', async () => {
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: mockPhase4Response,
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('4', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: '4' }) })
+
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { chapters: mockPhase4Response.chapters }
+      )
+    })
+
+    it('persists suggestedTitles for Phase 5', async () => {
+      const mockPhase5Response = { titles: ['Title 1', 'Title 2', 'Title 3', 'Title 4', 'Title 5'] }
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: mockPhase5Response,
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('5', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: '5' }) })
+
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { suggestedTitles: mockPhase5Response.titles }
+      )
+    })
+
+    it('does not persist data for reprocessable phases (6-7)', async () => {
+      for (const phase of [6, 7]) {
+        vi.clearAllMocks()
+        vi.mocked(auth).mockResolvedValue(mockSession as ReturnType<typeof auth>)
+        vi.mocked(getVideoAdmin).mockResolvedValue(mockVideo as Awaited<ReturnType<typeof getVideoAdmin>>)
+        vi.mocked(callLLMQueued).mockResolvedValue({
+          success: true,
+          data: mockPhaseResponses[phase],
+          usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+        })
+
+        const request = createRequest(String(phase), { videoId: 'video-123' })
+        await POST(request, { params: Promise.resolve({ phase: String(phase) }) })
+
+        expect(updateVideoAdmin).not.toHaveBeenCalled()
+      }
     })
   })
 })

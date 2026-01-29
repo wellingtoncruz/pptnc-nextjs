@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PlusIcon } from 'lucide-react'
+import { ArrowRightIcon, PlusIcon, Loader2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils'
 import { log } from '@/lib/logger'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { EpisodeContextFormSchema } from '@/lib/schemas/video'
+import { getNextPhaseName } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video, Guest, EpisodeContextFormData } from '@/types/video'
 import type { Phase1Response } from '@/lib/llm'
@@ -30,6 +31,8 @@ interface Phase1CritiqueProps {
   video: Video
   /** Critique result from orchestrator (may be null while processing) */
   critique: Phase1Response | null
+  /** Callback when context (theme, guests) changes - used to sync parent state */
+  onContextChange?: (context: { theme?: string; guests?: Guest[] }) => void
   className?: string
 }
 
@@ -80,6 +83,7 @@ export function Phase1Critique({
   wizard,
   video,
   critique,
+  onContextChange,
   className,
 }: Phase1CritiqueProps) {
   // Extract co-host from guests array (first guest if they have "host" in role)
@@ -158,8 +162,11 @@ export function Phase1Critique({
       throw new Error(errorData.error?.message || 'Falha ao salvar contexto')
     }
 
+    // Notify parent of context change so video data stays in sync
+    onContextChange?.({ theme: formData.theme, guests })
+
     log('INFO', 'Context auto-saved', { videoId: video.id })
-  }, [video.id])
+  }, [video.id, onContextChange])
 
   // Auto-save context fields
   const { saveStatus, error: saveError } = useAutoSave(
@@ -177,6 +184,31 @@ export function Phase1Critique({
   const handleRemoveGuest = (index: number) => {
     if (guestFields.length > 1) {
       remove(index)
+    }
+  }
+
+  /**
+   * Check if advancement criteria are met per processamento_video.md:
+   * 1. Retorno do LLM com sucesso (critique !== null)
+   * 2. Campo critique persistido (implied by critique !== null)
+   * 3. Inputs preenchidos: tema do episódio e convidados
+   */
+  const hasTheme = Boolean(formValues.theme?.trim())
+  const hasCompleteGuest = formValues.guests?.some(g => isGuestComplete(g)) ?? false
+  const hasCritique = critique !== null
+
+  // State for advancing to next phase (prevents double clicks)
+  const [isAdvancing, setIsAdvancing] = useState(false)
+
+  const canAdvance = hasCritique && hasTheme && hasCompleteGuest && !isAdvancing
+
+  const handleAdvance = () => {
+    if (canAdvance && critique) {
+      setIsAdvancing(true)
+      // Use combined action to avoid stale state issues
+      // This marks phase 1 as completed AND navigates to phase 2 in one dispatch
+      wizard.completePhaseAndAdvance(1, critique)
+      log('INFO', 'Advancing from Phase 1 to Phase 2', { videoId: video.id })
     }
   }
 
@@ -279,6 +311,35 @@ export function Phase1Critique({
             </div>
           </CardContent>
         </Card>
+
+        {/* Advancement button per processamento_video.md */}
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={handleAdvance}
+            disabled={!canAdvance}
+            className="w-full"
+            size="lg"
+          >
+            {isAdvancing ? (
+              <>
+                Avançando...
+                <Loader2Icon className="size-4 ml-2 animate-spin" />
+              </>
+            ) : (
+              <>
+                Avançar para {getNextPhaseName(1)}
+                <ArrowRightIcon className="size-4 ml-2" />
+              </>
+            )}
+          </Button>
+          {!canAdvance && !isAdvancing && (
+            <p className="text-xs text-muted-foreground text-center">
+              {!hasCritique && 'Aguardando processamento da crítica...'}
+              {hasCritique && !hasTheme && 'Preencha o tema do episódio para avançar.'}
+              {hasCritique && hasTheme && !hasCompleteGuest && 'Preencha pelo menos um convidado completo para avançar.'}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )

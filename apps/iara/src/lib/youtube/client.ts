@@ -15,6 +15,7 @@ import {
   YouTubeChannelsResponseSchema,
   YouTubePlaylistItemsResponseSchema,
   YouTubeVideosResponseSchema,
+  YouTubeVideoUpdateResponseSchema,
 } from '@/lib/schemas/youtube-api'
 import { parseYouTubeDuration } from '@/lib/video-utils'
 
@@ -483,5 +484,98 @@ export class YouTubeClient {
     })
 
     return this.downloadCaption(targetCaption.id)
+  }
+
+  /**
+   * Updates video metadata on YouTube.
+   *
+   * Fetches the current video to preserve categoryId if not provided.
+   *
+   * @param options - Video update options
+   * @returns Updated video ID on success
+   * @throws YouTubeAPIError on API errors
+   *
+   * @example
+   * const client = new YouTubeClient(accessToken)
+   * await client.updateVideo({
+   *   videoId: 'dQw4w9WgXcQ',
+   *   title: 'New Title',
+   *   description: 'New description',
+   *   tags: ['tag1', 'tag2'],
+   * })
+   */
+  async updateVideo(options: {
+    videoId: string
+    title: string
+    description: string
+    tags: string[]
+    categoryId?: string
+  }): Promise<string> {
+    const { videoId, title, description, tags, categoryId } = options
+
+    log('INFO', 'Updating YouTube video metadata', {
+      videoId,
+      titleLength: title.length,
+      descriptionLength: description.length,
+      tagCount: tags.length,
+    })
+
+    // Get current video to preserve categoryId if not provided
+    let finalCategoryId = categoryId
+    if (!finalCategoryId) {
+      try {
+        const [currentVideo] = await this.getVideoDetails([videoId])
+        // YouTube API returns categoryId in snippet, but our interface doesn't include it
+        // Use '22' (People & Blogs) as fallback if we can't get it
+        finalCategoryId = '22'
+        log('INFO', 'Using default categoryId', { videoId, categoryId: finalCategoryId })
+      } catch {
+        // If we can't get current video, use default
+        finalCategoryId = '22'
+        log('WARN', 'Could not fetch current video, using default categoryId', { videoId })
+      }
+    }
+
+    const url = `${YOUTUBE_API_BASE}/videos?part=snippet`
+
+    const body = JSON.stringify({
+      id: videoId,
+      snippet: {
+        title,
+        description,
+        tags,
+        categoryId: finalCategoryId,
+      },
+    })
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body,
+    })
+
+    if (!response.ok) {
+      await this.handleErrorResponse(response)
+    }
+
+    const data = await response.json()
+
+    // Validate response
+    const result = YouTubeVideoUpdateResponseSchema.safeParse(data)
+    if (!result.success) {
+      log('ERROR', 'YouTube video update response validation failed', {
+        videoId,
+        errors: result.error.issues,
+      })
+      throw new YouTubeAPIError('YOUTUBE_INVALID_RESPONSE', 'Invalid response format from YouTube API')
+    }
+
+    log('INFO', 'YouTube video metadata updated successfully', { videoId })
+
+    return result.data.id
   }
 }

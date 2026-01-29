@@ -13,7 +13,9 @@ import type { Video } from '@/types/video'
 
 import { createLLMError, LLMError } from './errors'
 import { extractVariables, interpolatePrompt, validateVideoForPhase } from './interpolation'
+import { parseJSONFromLLM } from './parse-json'
 import { buildPhasePrompt, getSystemPrompt, getUserPromptTemplate, PHASE_CONFIG } from './prompts'
+import { llmQueue } from './queue'
 import { PHASE_TIMEOUTS } from './types'
 import type {
   LLMCallOptions,
@@ -220,10 +222,15 @@ async function callVertexAIWithAttachment<T>(
       throw new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
     }
 
-    let data: T
-    try {
-      data = JSON.parse(text) as T
-    } catch {
+    // Parse JSON with robust extraction (handles markdown code blocks, extra text, etc.)
+    const data = parseJSONFromLLM<T>(text)
+    if (data === null) {
+      // Log raw response for debugging
+      log('ERROR', 'Failed to parse JSON from LLM response', {
+        rawResponseLength: text.length,
+        rawResponsePreview: text.substring(0, 500),
+        rawResponseEnd: text.length > 500 ? text.substring(text.length - 200) : undefined,
+      })
       throw new LLMError('PARSE_ERROR', 'Erro ao parsear JSON da resposta', false)
     }
 
@@ -336,6 +343,17 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       log('INFO', 'Using fallback prompts (no podcast config)', { phase })
     }
 
+    // For Type 1 (Reprocessable) phases (5, 6, 7), append additionalContext to system prompt
+    // This ensures the model pays attention to the user's specific instructions
+    // Per processamento_video.md: "Dê uma atenção especial a essa instrução: {additionalContext}"
+    if (options?.additionalContext && [5, 6, 7].includes(phase)) {
+      systemPrompt += `\n\n**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**\nDê uma atenção especial a essa instrução: ${options.additionalContext}`
+      log('INFO', 'Added additional context to system prompt', {
+        phase,
+        additionalContextLength: options.additionalContext.length,
+      })
+    }
+
     // Build user prompt (without transcription - it goes as attachment)
     const userTemplate = getUserPromptTemplate(phase)
     const variables = extractVariables(video, options?.previousPhaseData)
@@ -399,4 +417,26 @@ function getPhaseTimeout(phase: WizardPhase): number {
  */
 export function isLLMConfigured(): boolean {
   return true
+}
+
+/**
+ * Call LLM for a specific wizard phase using the queue.
+ *
+ * This is the recommended way to call LLM as it ensures calls are
+ * processed sequentially, preventing rate-limit issues and
+ * performance degradation from concurrent calls.
+ *
+ * @param phase - The wizard phase (1-7, phase 8 has no LLM call)
+ * @param video - The video being processed
+ * @param podcast - Optional podcast with personas and prompts configuration
+ * @param options - Call options (promptOverride, additionalContext, timeout)
+ * @returns LLMResult with success/failure and data/error
+ */
+export async function callLLMQueued<P extends Exclude<WizardPhase, 8>>(
+  phase: P,
+  video: Video,
+  podcast?: Podcast,
+  options?: LLMCallOptions
+): Promise<LLMResult<PhaseResponseMap[P]>> {
+  return llmQueue.enqueue(() => callLLM(phase, video, podcast, options))
 }

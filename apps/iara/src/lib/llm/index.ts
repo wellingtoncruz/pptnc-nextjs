@@ -7,11 +7,18 @@
 // Client
 export {
   callLLM,
+  callLLMQueued,
   cleanupTranscriptionFile,
   createTranscriptionFile,
   isLLMConfigured,
   resetVertexAIClient,
 } from './client'
+
+// Queue
+export { llmQueue, LLMQueue } from './queue'
+
+// JSON Parsing
+export { parseJSONFromLLM, parseJSONFromLLMOrThrow } from './parse-json'
 
 // Errors
 export { createLLMError, isRetryableError, LLMError, LLM_ERROR_MESSAGES } from './errors'
@@ -39,6 +46,9 @@ export type { PhaseConfig } from './prompts'
 
 // Types
 export type {
+  Chapter,
+  ComplianceRisk,
+  EditingIssue,
   LLMCallOptions,
   LLMContext,
   LLMErrorCode,

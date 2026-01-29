@@ -20,29 +20,85 @@ export interface Phase1Response {
   suggestions: string[]
 }
 
+/**
+ * Editing Issue type for Phase 2.
+ *
+ * @see processamento_video.md - Fase 2
+ */
+export interface EditingIssue {
+  /** Timestamp in format "HH:MM:SS" or "MM:SS" */
+  timestamp: string
+  /** Description of the editing issue */
+  description: string
+}
+
+/**
+ * Phase 2 response - Editing check.
+ *
+ * Identifies potential editing issues in the video.
+ * Array is empty if no issues found (success case).
+ *
+ * @see processamento_video.md - Fase 2
+ */
 export interface Phase2Response {
+  /** Whether issues were found */
   hasIssues: boolean
-  issues: Array<{
-    timestamp: number
-    issue: string
-    severity: 'minor' | 'major'
-  }>
+  /** List of editing issues with timestamps */
+  issues: EditingIssue[]
 }
 
+/**
+ * Compliance Risk type for Phase 3.
+ *
+ * @see processamento_video.md - Fase 3
+ */
+export interface ComplianceRisk {
+  /** Timestamp in format "HH:MM:SS" or "MM:SS" */
+  timestamp: string
+  /** Type of risk: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other */
+  risk: string
+  /** Detailed description of the risk */
+  description: string
+}
+
+/**
+ * Phase 3 response - Risk and Compliance check.
+ *
+ * Identifies potential compliance risks in the video.
+ * Array is empty if no risks found (success case).
+ *
+ * @see processamento_video.md - Fase 3
+ */
 export interface Phase3Response {
-  status: 'ok' | 'warning'
-  items: Array<{
-    risk: string
-    argument: string
-    timestamp: number
-  }>
+  /** Whether risks were found */
+  hasRisks: boolean
+  /** List of compliance risks with timestamps */
+  risks: ComplianceRisk[]
 }
 
+/**
+ * Chapter type for Phase 4.
+ *
+ * @see processamento_video.md - Fase 4
+ */
+export interface Chapter {
+  /** Timestamp in format "HH:MM:SS" or "MM:SS" - first chapter always starts at "00:00" */
+  timestamp: string
+  /** Chapter title (max 50 characters) */
+  title: string
+}
+
+/**
+ * Phase 4 response - Chapters generation.
+ *
+ * Suggests chapter divisions by topic.
+ * First chapter must always start at "00:00".
+ *
+ * @see processamento_video.md - Fase 4
+ */
 export interface Phase4Response {
-  chapters: Array<{
-    title: string
-    timestamp: number
-  }>
+  /** List of chapters ordered by timestamp */
+  chapters: Chapter[]
 }
 
 export interface Phase5Response {
@@ -179,15 +235,15 @@ export interface VertexAIConfig {
 
 /**
  * Timeout per phase (in ms).
- * Longer timeouts for phases with more complex processing.
+ * Standardized to 120s (2 min) for all phases to handle larger transcriptions.
  */
 export const PHASE_TIMEOUTS: Record<WizardPhase, number> = {
-  1: 60000, // Critique - full video analysis
-  2: 45000, // Editing check - SRT analysis
-  3: 45000, // Compliance - risk analysis
-  4: 30000, // Chapters - timestamp extraction
-  5: 30000, // Titles - 5 suggestions
-  6: 45000, // Description - SEO optimized
-  7: 30000, // Tags - keyword extraction
-  8: 0,     // No LLM call
+  1: 120000, // Critique (2 min)
+  2: 120000, // Editing check (2 min)
+  3: 120000, // Compliance (2 min)
+  4: 120000, // Chapters (2 min)
+  5: 120000, // Titles (2 min)
+  6: 120000, // Description (2 min)
+  7: 120000, // Tags (2 min)
+  8: 0,      // No LLM call
 }

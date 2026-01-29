@@ -235,6 +235,19 @@ export async function getVideosForDisplayAdmin(
         // Context fields (flat, not nested)
         theme: rawData.theme,
         guests: rawData.guests,
+        // AI-generated fields - needed for wizard phase detection
+        critique: rawData.critique,
+        editingIssues: rawData.editingIssues,
+        riskAndCompliance: rawData.riskAndCompliance,
+        chapters: rawData.chapters,
+        suggestedTitles: rawData.suggestedTitles,
+        description: rawData.description,
+        tags: rawData.tags,
+        reviewedPhases: rawData.reviewedPhases,
+        // Timestamp fields for VideoMetadata display (fix.md item 1.b)
+        publishedAt: rawData.publishedAt,
+        createdAt: rawData.createdAt,
+        updatedAt: rawData.updatedAt,
         _publishedAt: publishedAtDate,
       }
       videos.push(summary)

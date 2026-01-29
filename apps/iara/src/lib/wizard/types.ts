@@ -86,6 +86,8 @@ export interface ConsoleMessage {
   alertTitle?: string
   alertText?: string
   alertSeverity?: AlertSeverity
+  // For collapsible alerts (AC5)
+  collapsed?: boolean
 }
 
 /**
@@ -100,6 +102,37 @@ export interface PhaseMetadata {
 }
 
 /**
+ * Mapping of phase number to the corresponding video field that holds the data.
+ * Used for syncing localStorage state with Firestore data.
+ */
+export interface PhaseDataFields {
+  1: 'critique'
+  2: 'editingIssues'
+  3: 'riskAndCompliance'
+  4: 'chapters'
+  5: 'title'
+  6: 'description'
+  7: 'tags'
+  8: 'status' // Phase 8 checks if status === 'sent'
+}
+
+/**
+ * Video data subset needed for syncing wizard state.
+ * Contains only the fields that indicate phase completion.
+ */
+export interface VideoDataForSync {
+  critique?: string
+  editingIssues?: unknown[]
+  riskAndCompliance?: unknown[]
+  chapters?: unknown[]
+  suggestedTitles?: string[] // Phase 5 uses LLM suggestions, not user-selected title
+  description?: string
+  tags?: string[]
+  status?: string
+  reviewedPhases?: number[]
+}
+
+/**
  * Actions for the wizard reducer.
  */
 export type WizardAction =
@@ -108,4 +141,7 @@ export type WizardAction =
   | { type: 'SET_PHASE_DATA'; phase: WizardPhase; data: unknown }
   | { type: 'SET_PHASE_ERROR'; phase: WizardPhase; error: string }
   | { type: 'INVALIDATE_FROM_PHASE'; phase: WizardPhase }
+  | { type: 'COMPLETE_PHASE_AND_ADVANCE'; phase: WizardPhase; data: unknown }
+  | { type: 'SYNC_WITH_VIDEO_DATA'; videoData: VideoDataForSync }
+  | { type: 'HYDRATE_FROM_VIDEO_DATA'; videoData: VideoDataForSync }
   | { type: 'RESET' }
