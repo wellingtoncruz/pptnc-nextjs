@@ -1,7 +1,7 @@
 # ============================================
-# Stage 1: Dependencies
+# Stage 1: Builder (deps + build combined for pnpm)
 # ============================================
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -15,30 +15,15 @@ COPY apps/iara/package.json ./apps/iara/
 # Install dependencies
 RUN pnpm install --frozen-lockfile --filter iara...
 
-# ============================================
-# Stage 2: Builder
-# ============================================
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Enable corepack for pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/iara/node_modules ./apps/iara/node_modules
-
 # Copy source code
 COPY apps/iara ./apps/iara
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Build the application
 ENV NODE_ENV=production
 RUN pnpm --filter iara build
 
 # ============================================
-# Stage 3: Runner
+# Stage 2: Runner
 # ============================================
 FROM node:20-alpine AS runner
 
