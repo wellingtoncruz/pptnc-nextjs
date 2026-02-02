@@ -1,15 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, Settings, LogOut } from 'lucide-react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { PanelLeftClose, PanelLeftOpen, Video, Users, Settings, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useCurrentUser } from '@/hooks/use-current-user'
 
 const STORAGE_KEY = 'sidebar-collapsed'
 
@@ -22,10 +23,11 @@ interface SidebarProps {
  * Collapsed state is persisted to localStorage.
  */
 export function Sidebar({ userName }: SidebarProps) {
+  const pathname = usePathname()
   const searchParams = useSearchParams()
-  const currentView = searchParams.get('view')
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const { isAdmin } = useCurrentUser()
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
@@ -43,20 +45,44 @@ export function Sidebar({ userName }: SidebarProps) {
     localStorage.setItem(STORAGE_KEY, String(newState))
   }
 
-  const navItems = [
-    {
-      href: '/videos',
-      label: 'Vídeos',
-      icon: Video,
-      isActive: currentView !== 'settings',
-    },
-    {
-      href: '/videos?view=settings',
-      label: 'Configurações',
-      icon: Settings,
-      isActive: currentView === 'settings',
-    },
-  ]
+  // Filter nav items based on user role
+  // Settings is only visible to admins
+  const navItems = useMemo(() => {
+    // Check if settings view is active via URL param
+    const isSettingsView = searchParams.get('view') === 'settings'
+
+    // Check if users view is active via URL param
+    const isUsersView = searchParams.get('view') === 'users'
+
+    const items = [
+      {
+        href: '/videos',
+        label: 'Vídeos',
+        icon: Video,
+        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView,
+        adminOnly: false,
+      },
+      {
+        // Use ?view=users to show users management
+        href: '/videos?view=users',
+        label: 'Usuários',
+        icon: Users,
+        isActive: isUsersView,
+        adminOnly: true,
+      },
+      {
+        // Use ?view=settings to keep sidebar visible
+        href: '/videos?view=settings',
+        label: 'Configurações',
+        icon: Settings,
+        isActive: isSettingsView,
+        adminOnly: true,
+      },
+    ]
+
+    // Filter out admin-only items for non-admin users
+    return items.filter((item) => !item.adminOnly || isAdmin)
+  }, [pathname, searchParams, isAdmin])
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {

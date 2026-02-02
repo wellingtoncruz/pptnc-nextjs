@@ -46,10 +46,13 @@ function getUserRef(userId: string) {
  * Saves or updates a user document in Firestore.
  *
  * Implements upsert logic with transaction to prevent race conditions:
- * - If user does NOT exist: creates new document with default role 'viewer'
- * - If user exists: updates only name and picture (preserves role, email)
+ * - If user does NOT exist: creates new document with default role 'user'
+ * - If user exists: updates name, picture, and lastAccessAt (preserves role, email)
  *
  * CRITICAL: Uses transaction to prevent duplicate users on concurrent logins.
+ *
+ * @deprecated Use createOrUpdateUserOnLogin from users-admin.ts for new code.
+ * This function is kept for backwards compatibility.
  *
  * @param userId - The user's unique identifier (from Auth.js token.sub)
  * @param input - User data from Google OAuth profile
@@ -66,11 +69,12 @@ export async function saveOrUpdateUser(userId: string, input: SaveUserInput): Pr
     const existingDoc = await transaction.get(userRef)
 
     if (existingDoc.exists) {
-      // UPDATE: User exists - only update name and picture
+      // UPDATE: User exists - only update name, picture, and lastAccessAt
       // CRITICAL: Do NOT overwrite email or role
       transaction.update(userRef, {
         name: validated.name,
         picture: validated.picture ?? null,
+        lastAccessAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       })
 
@@ -87,9 +91,11 @@ export async function saveOrUpdateUser(userId: string, input: SaveUserInput): Pr
         email: validated.email,
         name: validated.name,
         picture: validated.picture ?? null,
-        role: 'viewer', // Default role for new users
+        role: 'user', // Default role for new users
+        lastAccessAt: FieldValue.serverTimestamp(),
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
+        deleted: false,
       })
 
       log('INFO', 'User document created', {
@@ -97,7 +103,7 @@ export async function saveOrUpdateUser(userId: string, input: SaveUserInput): Pr
         podcastId: PODCAST_ID,
         email: validated.email,
         name: validated.name,
-        role: 'viewer',
+        role: 'user',
       })
     }
   })
@@ -106,8 +112,10 @@ export async function saveOrUpdateUser(userId: string, input: SaveUserInput): Pr
 /**
  * Retrieves a user document from Firestore.
  *
+ * Returns null for soft-deleted users (deleted: true).
+ *
  * @param userId - The user's unique identifier
- * @returns The user document or null if not found
+ * @returns The user document or null if not found or deleted
  */
 export async function getUser(userId: string): Promise<User | null> {
   const userRef = getUserRef(userId)
@@ -119,5 +127,12 @@ export async function getUser(userId: string): Promise<User | null> {
   }
 
   const data = doc.data()
+
+  // Check for soft-deleted users
+  if (data?.deleted === true) {
+    log('INFO', 'User is soft-deleted', { userId, podcastId: PODCAST_ID })
+    return null
+  }
+
   return UserSchema.parse(data)
 }

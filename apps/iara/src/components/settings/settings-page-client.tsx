@@ -2,13 +2,41 @@
 
 import { useCallback, useRef, useEffect } from 'react'
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { PodcastSettingsForm } from './podcast-settings-form'
 import { PromptsSettingsForm } from './prompts-settings-form'
 import { PersonasSettingsForm } from './personas-settings-form'
 import { DurationSettingsForm } from './duration-settings-form'
+import { ResyncSection } from './resync-section'
+import { useAccordionState } from '@/hooks/use-accordion-state'
 import { log } from '@/lib/logger'
-import type { SerializedPodcast } from '@/app/settings/page'
-import type { PromptField, Persona, Prompts, Personas } from '@/types/podcast'
+import type { SerializedPodcast, PromptField, Persona, Prompts, Personas } from '@/types/podcast'
+
+/**
+ * Section IDs for accordion persistence.
+ */
+const SECTION_IDS = {
+  PODCAST: 'podcast',
+  DURATION: 'duration',
+  PERSONAS: 'personas',
+  PROMPTS: 'prompts',
+  SYNC: 'sync',
+} as const
+
+/**
+ * Default: all sections collapsed on first visit.
+ */
+const DEFAULT_SECTIONS: string[] = []
+
+/**
+ * localStorage key for persisting accordion state.
+ */
+const STORAGE_KEY = 'settings-accordion-state'
 
 interface SettingsPageClientProps {
   podcast: SerializedPodcast
@@ -17,16 +45,18 @@ interface SettingsPageClientProps {
 /**
  * Client component wrapper for all settings forms.
  *
- * Handles API calls for:
- * - Podcast basic settings (name, channelId)
- * - Prompts by video type and field
- * - Personas (critic, writer)
- * - Duration thresholds by video type
+ * Features:
+ * - Collapsible accordion sections with localStorage persistence
+ * - All sections collapsed by default on first visit
+ * - API calls for podcast settings, prompts, personas, and durations
+ * - Uses refs to track latest state and prevent stale closure issues
  *
- * Uses refs to track latest state and prevent stale closure issues
- * when multiple fields are edited in rapid succession.
+ * @see docs/stories/8-2-secoes-colapsaveis.md
  */
 export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
+  // Accordion state with localStorage persistence
+  const [openSections, setOpenSections] = useAccordionState(STORAGE_KEY, DEFAULT_SECTIONS)
+
   // Use refs to always have access to latest state in callbacks
   // This prevents stale closure issues when multiple saves happen quickly
   const promptsRef = useRef<Prompts>(podcast.prompts)
@@ -124,11 +154,61 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
   )
 
   return (
-    <div className="space-y-6">
-      <PodcastSettingsForm podcast={podcast} />
-      <DurationSettingsForm videoTypes={podcast.videoTypes} onSave={handleSaveVideoTypes} />
-      <PersonasSettingsForm personas={podcast.personas} onSavePersona={handleSavePersona} />
-      <PromptsSettingsForm prompts={podcast.prompts} onSavePromptField={handleSavePromptField} />
-    </div>
+    <Accordion
+      type="multiple"
+      value={openSections}
+      onValueChange={setOpenSections}
+      className="space-y-4"
+    >
+      {/* Podcast Settings */}
+      <AccordionItem value={SECTION_IDS.PODCAST} className="border rounded-lg">
+        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+          Informações do Podcast
+        </AccordionTrigger>
+        <AccordionContent className="px-6 pb-6">
+          <PodcastSettingsForm podcast={podcast} />
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Duration Settings */}
+      <AccordionItem value={SECTION_IDS.DURATION} className="border rounded-lg">
+        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+          Duração por Tipo de Vídeo
+        </AccordionTrigger>
+        <AccordionContent className="px-6 pb-6">
+          <DurationSettingsForm videoTypes={podcast.videoTypes} onSave={handleSaveVideoTypes} />
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Personas Settings */}
+      <AccordionItem value={SECTION_IDS.PERSONAS} className="border rounded-lg">
+        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+          Personas do LLM
+        </AccordionTrigger>
+        <AccordionContent forceOverflow className="px-6 pb-6">
+          <PersonasSettingsForm personas={podcast.personas} onSavePersona={handleSavePersona} />
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Prompts Settings */}
+      <AccordionItem value={SECTION_IDS.PROMPTS} className="border rounded-lg">
+        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+          Prompts por Tipo de Vídeo
+        </AccordionTrigger>
+        <AccordionContent forceOverflow className="px-6 pb-6">
+          <PromptsSettingsForm prompts={podcast.prompts} onSavePromptField={handleSavePromptField} />
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Sync Settings */}
+      <AccordionItem value={SECTION_IDS.SYNC} className="border rounded-lg">
+        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+          Sincronização
+        </AccordionTrigger>
+        <AccordionContent className="px-6 pb-6">
+          <ResyncSection />
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   )
 }

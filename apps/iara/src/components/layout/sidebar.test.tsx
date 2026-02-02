@@ -6,6 +6,13 @@ import { Sidebar } from './sidebar'
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
   signOut: vi.fn(),
+  useSession: vi.fn(() => ({
+    data: {
+      user: { id: 'user1', name: 'Test User', email: 'test@example.com', role: 'admin' },
+      expires: '2026-12-31',
+    },
+    status: 'authenticated',
+  })),
 }))
 
 // Mock next/navigation
