@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Next.js (exclude build cache, keep standalone output)
+.next/cache
+out
+
+# Testing
+coverage
+*.test.ts
+*.test.tsx
+__tests__
+vitest.config.ts
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Environment (secrets should be injected at runtime)
+.env
+.env.*
+!.env.example
+
+# Documentation
+*.md
+LICENSE
+docs/
+
+# Build artifacts
+Dockerfile
+.dockerignore
+cloudbuild.yaml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Scripts (not needed in container)
+scripts/
