@@ -55,37 +55,39 @@ describe('Phase8Publish', () => {
       expect(screen.getByText('Meu Video Completo')).toBeInTheDocument()
     })
 
-    it('displays description preview (truncated)', () => {
+    it('displays full description (not truncated)', () => {
       const longDescription = 'a'.repeat(250)
       const videoWithLongDesc = { ...mockVideoComplete, description: longDescription }
       render(<Phase8Publish video={videoWithLongDesc} />)
-      // Should show truncated with ...
-      expect(screen.getByText(/\.\.\.$/)).toBeInTheDocument()
+      // Should show full description
+      expect(screen.getByText(longDescription)).toBeInTheDocument()
     })
 
-    it('displays tags count', () => {
+    it('displays tags section with count', () => {
       render(<Phase8Publish video={mockVideoComplete} />)
-      expect(screen.getByText('3 tags')).toBeInTheDocument()
+      expect(screen.getByText('Tags (3)')).toBeInTheDocument()
     })
 
-    it('displays chapters count', () => {
+    it('displays all tag badges', () => {
       render(<Phase8Publish video={mockVideoComplete} />)
-      expect(screen.getByText('3 capitulos')).toBeInTheDocument()
+      expect(screen.getByText('podcast')).toBeInTheDocument()
+      expect(screen.getByText('tecnologia')).toBeInTheDocument()
+      expect(screen.getByText('inovacao')).toBeInTheDocument()
     })
 
-    it('displays singular form for 1 tag', () => {
+    it('displays chapters with timestamps', () => {
+      render(<Phase8Publish video={mockVideoComplete} />)
+      expect(screen.getByText('00:00')).toBeInTheDocument()
+      expect(screen.getByText('Introducao')).toBeInTheDocument()
+      expect(screen.getByText('05:30')).toBeInTheDocument()
+      expect(screen.getByText('Topico Principal')).toBeInTheDocument()
+    })
+
+    it('displays single tag correctly', () => {
       const videoWith1Tag = { ...mockVideoComplete, tags: ['unica'] }
       render(<Phase8Publish video={videoWith1Tag} />)
-      expect(screen.getByText('1 tag')).toBeInTheDocument()
-    })
-
-    it('displays singular form for 1 chapter', () => {
-      const videoWith1Chapter = {
-        ...mockVideoComplete,
-        chapters: [{ timestamp: '00:00', title: 'Unico' }],
-      }
-      render(<Phase8Publish video={videoWith1Chapter} />)
-      expect(screen.getByText('1 capitulo')).toBeInTheDocument()
+      expect(screen.getByText('Tags (1)')).toBeInTheDocument()
+      expect(screen.getByText('unica')).toBeInTheDocument()
     })
   })
 
@@ -123,7 +125,7 @@ describe('Phase8Publish', () => {
 
     it('shows validation warning when fields are missing', () => {
       render(<Phase8Publish video={mockVideoIncomplete} />)
-      expect(screen.getByText(/preencha titulo, descricao e pelo menos 1 tag/i)).toBeInTheDocument()
+      expect(screen.getByText(/preencha título, descrição e pelo menos 1 tag/i)).toBeInTheDocument()
     })
 
     it('calls onSend when button is clicked', () => {

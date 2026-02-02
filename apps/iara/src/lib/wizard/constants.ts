@@ -2,7 +2,7 @@
  * Constants and metadata for the wizard phases.
  */
 
-import type { PhaseMetadata, WizardPhase } from './types'
+import type { ExtendedWizardPhase, PhaseMetadata, VideoTypeForWizard, WizardPhase } from './types'
 
 /**
  * All wizard phases in order.
@@ -102,4 +102,69 @@ export function isReprocessablePhase(phase: WizardPhase): boolean {
  */
 export function getPhasesToInvalidate(fromPhase: WizardPhase): WizardPhase[] {
   return WIZARD_PHASES.filter((phase) => phase > fromPhase)
+}
+
+// ============================================================================
+// CUT/REEL SUPPORT - Phase mapping by video type
+// ============================================================================
+
+/**
+ * Phases available for each video type.
+ *
+ * - episode: Full flow (phases 1-8)
+ * - cut: Parent selection → Title → Short Title → Description → Tags → Publish
+ * - reel: Parent selection → Title → Description → Tags → Publish
+ *
+ * Phase 0: Parent video selection (cut/reel only)
+ * Phase 5B: Short title for thumbnails (cut only)
+ */
+export const PHASES_BY_VIDEO_TYPE: Record<VideoTypeForWizard, ExtendedWizardPhase[]> = {
+  episode: [1, 2, 3, 4, 5, 6, 7, 8],
+  cut: [0, 5, '5B', 6, 7, 8],
+  reel: [0, 5, 6, 7, 8],
+}
+
+/**
+ * Returns the valid phases for a given video type.
+ * Defaults to episode phases if video type is unknown.
+ */
+export function getPhasesForVideoType(videoType: VideoTypeForWizard): ExtendedWizardPhase[] {
+  return PHASES_BY_VIDEO_TYPE[videoType] ?? PHASES_BY_VIDEO_TYPE.episode
+}
+
+/**
+ * Checks if a phase is valid for a given video type.
+ */
+export function isPhaseValidForVideoType(
+  phase: ExtendedWizardPhase,
+  videoType: VideoTypeForWizard
+): boolean {
+  const validPhases = PHASES_BY_VIDEO_TYPE[videoType]
+  if (!validPhases) return false
+  return validPhases.includes(phase)
+}
+
+/**
+ * Extended phase metadata including phase 0 and 5B.
+ * Used for cut and reel video types.
+ *
+ * Note: Phase 0 is numeric (consistent with other phases).
+ * Phase '5B' is a string to differentiate from phase 5 (full title).
+ */
+export const EXTENDED_PHASE_METADATA: Record<ExtendedWizardPhase, PhaseMetadata> = {
+  ...PHASE_METADATA,
+  0: {
+    phase: 0, // Phase 0 for parent selection (cut/reel only)
+    label: 'Vídeo Pai',
+    type: 'immutable',
+    spinnerText: 'Carregando episódios disponíveis...',
+    alertTitle: 'Seleção de Vídeo Pai',
+  },
+  '5B': {
+    phase: 5, // Uses phase 5 as base for compatibility with existing code
+    label: 'Título Curto',
+    type: 'reprocessable',
+    spinnerText: 'Gerando sugestões de título curto para thumbnail...',
+    alertTitle: 'Títulos Curtos',
+  },
 }

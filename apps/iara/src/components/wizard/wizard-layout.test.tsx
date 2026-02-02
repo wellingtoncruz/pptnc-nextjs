@@ -257,6 +257,117 @@ describe('WizardLayout Integration Tests', () => {
     })
   })
 
+  describe('Story 4.3: VideoShortTitle integration', () => {
+    it('shows short title badge for cut videos with shortTitle', () => {
+      const wizard = createMockWizard()
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: 'IMPACTANTE!',
+      }
+      render(
+        <WizardLayout
+          wizard={wizard}
+          video={cutVideo}
+          interactivePanel={<div>Test Panel</div>}
+        />
+      )
+
+      expect(screen.getByText('Thumb')).toBeInTheDocument()
+      expect(screen.getByText('IMPACTANTE!')).toBeInTheDocument()
+    })
+
+    it('does NOT show short title for cut videos without shortTitle', () => {
+      const wizard = createMockWizard()
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: undefined,
+      }
+      render(
+        <WizardLayout
+          wizard={wizard}
+          video={cutVideo}
+          interactivePanel={<div>Test Panel</div>}
+        />
+      )
+
+      expect(screen.queryByText('Thumb')).not.toBeInTheDocument()
+    })
+
+    it('does NOT show short title for episode videos', () => {
+      const wizard = createMockWizard()
+      const episodeVideo = {
+        ...mockVideo,
+        videoType: 'episode' as const,
+        shortTitle: 'Should not appear',
+      }
+      render(
+        <WizardLayout
+          wizard={wizard}
+          video={episodeVideo}
+          interactivePanel={<div>Test Panel</div>}
+        />
+      )
+
+      expect(screen.queryByText('Thumb')).not.toBeInTheDocument()
+    })
+
+    it('does NOT show short title for reel videos', () => {
+      const wizard = createMockWizard()
+      const reelVideo = {
+        ...mockVideo,
+        videoType: 'reel' as const,
+        shortTitle: 'Should not appear',
+      }
+      render(
+        <WizardLayout
+          wizard={wizard}
+          video={reelVideo}
+          interactivePanel={<div>Test Panel</div>}
+        />
+      )
+
+      expect(screen.queryByText('Thumb')).not.toBeInTheDocument()
+    })
+
+    it('updates short title when video prop changes (AC3 - real-time update)', () => {
+      const wizard = createMockWizard()
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: 'TÍTULO ORIGINAL',
+      }
+
+      const { rerender } = render(
+        <WizardLayout
+          wizard={wizard}
+          video={cutVideo}
+          interactivePanel={<div>Test Panel</div>}
+        />
+      )
+
+      expect(screen.getByText('TÍTULO ORIGINAL')).toBeInTheDocument()
+
+      // Simulate video update (as would happen via optimistic update)
+      const updatedVideo = {
+        ...cutVideo,
+        shortTitle: 'NOVO TÍTULO',
+      }
+
+      rerender(
+        <WizardLayout
+          wizard={wizard}
+          video={updatedVideo}
+          interactivePanel={<div>Test Panel</div>}
+        />
+      )
+
+      expect(screen.queryByText('TÍTULO ORIGINAL')).not.toBeInTheDocument()
+      expect(screen.getByText('NOVO TÍTULO')).toBeInTheDocument()
+    })
+  })
+
   describe('Layout structure', () => {
     it('renders breadcrumb navigation', () => {
       const wizard = createMockWizard()

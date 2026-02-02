@@ -29,15 +29,9 @@ describe('DurationSettingsForm', () => {
     vi.useRealTimers()
   })
 
-  it('renders card with title', () => {
-    render(
-      <DurationSettingsForm videoTypes={defaultVideoTypes} onSave={mockOnSave} />
-    )
-
-    expect(screen.getByText('Duração por Tipo de Vídeo')).toBeInTheDocument()
-  })
-
   it('renders all three video type sections', () => {
+    // Note: Title "Duração por Tipo de Vídeo" is now rendered by parent AccordionTrigger
+    // in settings-page-client.tsx (Story 8.2 refactor)
     render(
       <DurationSettingsForm videoTypes={defaultVideoTypes} onSave={mockOnSave} />
     )

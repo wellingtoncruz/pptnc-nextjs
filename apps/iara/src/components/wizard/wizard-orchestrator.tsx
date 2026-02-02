@@ -1,20 +1,24 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
+import { useLLMProcessing } from '@/contexts'
 import { useWizard } from '@/hooks/use-wizard'
 import { log } from '@/lib/logger'
-import { phaseNeedsReviewConfirmation } from '@/lib/wizard'
-import { buildDescriptionWithChapters } from '@/lib/youtube'
+import { buildCompleteYouTubeDescription } from '@/lib/youtube'
 import type { Video, Guest } from '@/types/video'
-import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase6Response, Phase7Response } from '@/lib/llm'
+import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase5BResponse, Phase6Response, Phase7Response } from '@/lib/llm'
 
+import { TranscriptionLoader, type TranscriptionData } from './transcription-loader'
 import { WizardLayout } from './wizard-layout'
+import { Phase0ParentSelection } from './phases/phase-0-parent-selection'
 import { Phase1Critique } from './phases/phase-1-critique'
 import { Phase2EditCheck } from './phases/phase-2-edit-check'
 import { Phase3Compliance } from './phases/phase-3-compliance'
 import { Phase4Chapters } from './phases/phase-4-chapters'
 import { Phase5Title } from './phases/phase-5-title'
+import { Phase5BShortTitle } from './phases/phase-5b-short-title'
 import { Phase6Description } from './phases/phase-6-description'
 import { Phase7Tags } from './phases/phase-7-tags'
 import { Phase8Publish } from './phases/phase-8-publish'
@@ -42,6 +46,9 @@ export function WizardOrchestrator({
   video,
   className,
 }: WizardOrchestratorProps) {
+  const router = useRouter()
+  const { startProcessing, stopProcessing } = useLLMProcessing()
+
   // Pass video data to useWizard for synchronous hydration on initialization
   // This ensures wizard state is correct from the first render
   const wizard = useWizard(video.id, video)
@@ -55,6 +62,8 @@ export function WizardOrchestrator({
   const [chaptersError, setChaptersError] = useState<string | null>(null)
   const [titlesResult, setTitlesResult] = useState<Phase5Response | null>(null)
   const [titlesError, setTitlesError] = useState<string | null>(null)
+  const [shortTitlesResult, setShortTitlesResult] = useState<Phase5BResponse | null>(null)
+  const [shortTitlesError, setShortTitlesError] = useState<string | null>(null)
   const [descriptionResult, setDescriptionResult] = useState<Phase6Response | null>(null)
   const [descriptionError, setDescriptionError] = useState<string | null>(null)
   const [tagsResult, setTagsResult] = useState<Phase7Response | null>(null)
@@ -69,6 +78,7 @@ export function WizardOrchestrator({
   const phase3ProcessingRef = useRef<string | null>(null)
   const phase4ProcessingRef = useRef<string | null>(null)
   const phase5ProcessingRef = useRef<string | null>(null)
+  const phase5BProcessingRef = useRef<string | null>(null)
   const phase6ProcessingRef = useRef<string | null>(null)
   const phase7ProcessingRef = useRef<string | null>(null)
 
@@ -76,16 +86,24 @@ export function WizardOrchestrator({
   // These refs are set BEFORE any state changes to prevent race conditions
   // where the auto-processing effect might trigger during revalidation
   const isRevalidatingPhase5Ref = useRef(false)
+  const isRevalidatingPhase5BRef = useRef(false)
   const isRevalidatingPhase6Ref = useRef(false)
   const isRevalidatingPhase7Ref = useRef(false)
 
   // Track if initial navigation has been done for this video
   const initialNavigationRef = useRef<string | null>(null)
 
-  // Track if phases 2/3 were loaded from cache (need review confirmation)
+  // Track if phases 2/3/4 were loaded from cache (need review confirmation)
   const [phase2FromCache, setPhase2FromCache] = useState(false)
   const [phase3FromCache, setPhase3FromCache] = useState(false)
+  const [phase4FromCache, setPhase4FromCache] = useState(false)
   const [isConfirmingReview, setIsConfirmingReview] = useState(false)
+
+  // CRITICAL: Track which video ID has ready data for phase auto-processing.
+  // This prevents race conditions where effects run with stale data from a previous video.
+  // Effects should NOT run until videoDataReadyFor === video.id.
+  // Using video ID instead of boolean ensures we don't use stale "ready" state from previous video.
+  const [videoDataReadyFor, setVideoDataReadyFor] = useState<string | null>(null)
 
   // Frontend LLM queue - ensures only one LLM call at a time
   // This prevents concurrent calls when multiple phases try to process simultaneously
@@ -94,23 +112,242 @@ export function WizardOrchestrator({
   /**
    * Enqueue an LLM processing function to run sequentially.
    * Returns a promise that resolves when the function completes.
+   *
+   * Bloqueia a troca de vídeo enquanto a chamada está em andamento
+   * via LLMProcessingContext.
    */
   const enqueueLLMCall = useCallback(<T,>(fn: () => Promise<T>): Promise<T> => {
     return new Promise((resolve, reject) => {
+      // Use .catch() to ensure the queue always continues, even if previous task failed
       llmQueueRef.current = llmQueueRef.current
-        .then(() => fn())
-        .then(resolve)
-        .catch(reject)
+        .catch(() => {
+          // Ignore errors from previous tasks - we want the queue to continue
+        })
+        .then(() => {
+          startProcessing()
+          return fn()
+        })
+        .then((result) => {
+          stopProcessing()
+          resolve(result)
+        })
+        .catch((error) => {
+          stopProcessing()
+          reject(error)
+        })
     })
-  }, [])
+  }, [startProcessing, stopProcessing])
 
-  // Keep video data in sync with prop and reset cache flags when video changes
+  // Track previous video ID to detect video changes
+  const previousVideoIdRef = useRef<string | null>(null)
+
+  // CRITICAL: Flag to indicate video is transitioning - blocks all auto-processing effects
+  // This prevents race conditions where effects fire with stale state during video switch
+  const isTransitioningRef = useRef(false)
+
+  // Track the CURRENT video ID that effects should operate on
+  // This is updated SYNCHRONOUSLY before any effects run
+  const activeVideoIdRef = useRef<string>(video.id)
+
+  // Keep video data in sync with prop and RESET ALL STATE when video changes
   useEffect(() => {
-    setVideoData(video)
-    // Reset cache flags when switching videos to avoid stale state
-    setPhase2FromCache(false)
-    setPhase3FromCache(false)
+    const videoChanged = previousVideoIdRef.current !== null && previousVideoIdRef.current !== video.id
+
+    if (videoChanged) {
+      log('INFO', 'Video changed, resetting all wizard state', {
+        previousVideoId: previousVideoIdRef.current,
+        newVideoId: video.id,
+      })
+
+      // CRITICAL: Set transitioning flag FIRST to block other effects
+      isTransitioningRef.current = true
+
+      // Update active video ID synchronously
+      activeVideoIdRef.current = video.id
+
+      // Reset ALL phase results
+      setCritiqueResult(null)
+      setEditCheckResult(null)
+      setEditCheckError(null)
+      setComplianceResult(null)
+      setComplianceError(null)
+      setChaptersResult(null)
+      setChaptersError(null)
+      setTitlesResult(null)
+      setTitlesError(null)
+      setShortTitlesResult(null)
+      setShortTitlesError(null)
+      setDescriptionResult(null)
+      setDescriptionError(null)
+      setTagsResult(null)
+      setTagsError(null)
+      setIsSending(false)
+      setIsSent(false)
+      setPhase8Error(null)
+
+      // Reset cache flags
+      setPhase2FromCache(false)
+      setPhase3FromCache(false)
+      setPhase4FromCache(false)
+      setIsConfirmingReview(false)
+
+      // CRITICAL: Mark video data as NOT ready until fresh fetch completes
+      // This prevents auto-processing effects from running with stale data
+      // Setting to null ensures effects won't run with stale "ready" state from previous video
+      setVideoDataReadyFor(null)
+
+      // Reset processing refs so new video can trigger LLM calls
+      processingVideoIdRef.current = null
+      phase2ProcessingRef.current = null
+      phase3ProcessingRef.current = null
+      phase4ProcessingRef.current = null
+      phase5ProcessingRef.current = null
+      phase5BProcessingRef.current = null
+      phase6ProcessingRef.current = null
+      phase7ProcessingRef.current = null
+
+      // Reset other refs
+      initialNavigationRef.current = null
+      cachedDataLoadedRef.current = null
+      freshDataFetchedRef.current = null
+
+      // Reset revalidation flags
+      isRevalidatingPhase5Ref.current = false
+      isRevalidatingPhase5BRef.current = false
+      isRevalidatingPhase6Ref.current = false
+      isRevalidatingPhase7Ref.current = false
+
+      // Note: wizard console is cleared automatically in useWizard when video changes
+
+      // Sync video data with new video
+      setVideoData(video)
+
+      // CRITICAL: Clear transitioning flag after a microtask to allow React to batch updates
+      // This ensures all state is reset before any auto-processing effects run
+      queueMicrotask(() => {
+        isTransitioningRef.current = false
+      })
+    } else if (previousVideoIdRef.current === null) {
+      // First mount - set active video ID and sync video data
+      activeVideoIdRef.current = video.id
+      setVideoData(video)
+    }
+    // NOTE: We do NOT sync videoData when video prop changes but ID stays the same.
+    // This preserves local optimistic updates (e.g., title selection in Phase 5)
+    // while the API persists the change. The prop will eventually update with
+    // the persisted value from Firestore.
+
+    // Update tracking ref
+    previousVideoIdRef.current = video.id
   }, [video])
+
+  // Track if we've fetched fresh video data for this video
+  const freshDataFetchedRef = useRef<string | null>(null)
+
+  /**
+   * Fetch fresh video data from Firestore on mount.
+   *
+   * This ensures we have the latest generated data (description, tags, etc.)
+   * even if the video prop is stale from the cached list.
+   *
+   * Only runs once per video to avoid unnecessary API calls.
+   */
+  useEffect(() => {
+    // Skip if we've already fetched for this video
+    // NOTE: We intentionally do NOT check isTransitioningRef here because:
+    // 1. freshDataFetchedRef already prevents duplicate fetches
+    // 2. The transitioning flag is cleared via queueMicrotask which doesn't trigger re-render
+    // 3. If we skip here, the fetch would never run when returning to a video
+    if (freshDataFetchedRef.current === video.id) {
+      return
+    }
+
+    freshDataFetchedRef.current = video.id
+
+    const fetchFreshVideoData = async () => {
+      try {
+        const response = await fetch(`/api/videos/${video.id}`)
+        if (!response.ok) {
+          log('WARN', 'Failed to fetch fresh video data, using prop data', { videoId: video.id, status: response.status })
+          // Only mark as ready if prop data has transcription
+          const hasTranscription = video.transcriptionSRT && video.transcriptionTXT
+          if (hasTranscription) {
+            setVideoDataReadyFor(video.id)
+          }
+          return
+        }
+
+        const result = await response.json()
+        const freshVideo = result.data
+
+        if (!freshVideo) {
+          log('WARN', 'No video data returned from API, using prop data', { videoId: video.id })
+          // Only mark as ready if prop data has transcription
+          const hasTranscription = video.transcriptionSRT && video.transcriptionTXT
+          if (hasTranscription) {
+            setVideoDataReadyFor(video.id)
+          }
+          return
+        }
+
+        // FONTE DE VERDADE: Firestore
+        // Quando buscamos dados frescos, usamos diretamente como fonte de verdade.
+        // Isso garante que o Smart Loading funcione corretamente para TODAS as fases.
+        log('INFO', 'Updating videoData with fresh Firestore data', {
+          videoId: video.id,
+          hasData: {
+            critique: !!freshVideo.critique,
+            editingIssues: freshVideo.editingIssues !== undefined,
+            riskAndCompliance: freshVideo.riskAndCompliance !== undefined,
+            chapters: freshVideo.chapters?.length > 0,
+            suggestedTitles: freshVideo.suggestedTitles?.length > 0,
+            description: !!freshVideo.description,
+            tags: freshVideo.tags?.length > 0,
+            reviewedPhases: freshVideo.reviewedPhases?.length > 0,
+          },
+        })
+
+        // Update videoData with fresh data from Firestore
+        setVideoData(freshVideo)
+
+        // Reset fromCache flags for phases that are already reviewed
+        const reviewed = freshVideo.reviewedPhases || []
+        if (reviewed.includes(2)) setPhase2FromCache(false)
+        if (reviewed.includes(3)) setPhase3FromCache(false)
+        if (reviewed.includes(4)) setPhase4FromCache(false)
+
+        // Re-hydrate wizard with fresh data to update phase statuses
+        // This ensures Smart Loading works correctly for all phases
+        queueMicrotask(() => {
+          wizard.hydrateFromVideoData(freshVideo)
+        })
+
+        // CRITICAL: Mark video data as ready AFTER fetch completes and state is updated
+        // This allows auto-processing effects to run with fresh data
+        // Using video.id ensures effects only run when ready for THIS specific video
+        // BUT: Only set ready if transcription exists - otherwise TranscriptionLoader will set it after loading
+        const hasTranscription = freshVideo.transcriptionSRT && freshVideo.transcriptionTXT
+        if (hasTranscription) {
+          setVideoDataReadyFor(video.id)
+          log('INFO', 'Video data is now ready for auto-processing', { videoId: video.id })
+        } else {
+          log('INFO', 'Video missing transcription, deferring ready state until transcription loads', { videoId: video.id })
+        }
+      } catch (error) {
+        log('ERROR', 'Error fetching fresh video data, using prop data', {
+          videoId: video.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        // Only mark as ready if prop data has transcription
+        const hasTranscription = video.transcriptionSRT && video.transcriptionTXT
+        if (hasTranscription) {
+          setVideoDataReadyFor(video.id)
+        }
+      }
+    }
+
+    fetchFreshVideoData()
+  }, [video.id, wizard])
 
   /**
    * Handle review confirmation navigation on mount.
@@ -118,18 +355,55 @@ export function WizardOrchestrator({
    *
    * Per Story 5.3 - Smart Loading:
    * - Navigation to first incomplete phase is handled by useWizard hydration
-   * - This effect only handles the special case of review confirmation for phases 2 and 3
+   * - This effect only handles the special case of review confirmation for phases 2, 3, and 4
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before navigating
+    // This ensures we're using fresh data from Firestore, not stale data from the prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Skip if we've already navigated for this video
     if (initialNavigationRef.current === video.id) {
       return
     }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping initial navigation - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+      })
+      return
+    }
+
     initialNavigationRef.current = video.id
 
-    // Check if phases 2 and 3 have data but need review
-    const phase2NeedsReview = phaseNeedsReviewConfirmation(video, 2)
-    const phase3NeedsReview = phaseNeedsReviewConfirmation(video, 3)
+    // Check if phases 2, 3, and 4 have data but need review (using fresh videoData)
+    const phase2CompletedInWizard = wizard.state.phases[2].status === 'completed'
+    const phase2IsReviewed = (videoData.reviewedPhases?.includes(2) ?? false) || phase2CompletedInWizard
+    const phase2HasData = videoData.editingIssues !== undefined
+    const phase2NeedsReview = phase2HasData && !phase2IsReviewed
+
+    const phase3CompletedInWizard = wizard.state.phases[3].status === 'completed'
+    const phase3IsReviewed = (videoData.reviewedPhases?.includes(3) ?? false) || phase3CompletedInWizard
+    const phase3HasData = videoData.riskAndCompliance !== undefined
+    const phase3NeedsReview = phase3HasData && !phase3IsReviewed
+
+    const phase4CompletedInWizard = wizard.state.phases[4].status === 'completed'
+    const phase4IsReviewed = (videoData.reviewedPhases?.includes(4) ?? false) || phase4CompletedInWizard
+    const phase4HasData = videoData.chapters !== undefined && videoData.chapters.length > 0
+    const phase4NeedsReview = phase4HasData && !phase4IsReviewed
 
     // If phase 2 needs review and we're past it, go back to phase 2
     if (phase2NeedsReview && wizard.currentPhase > 2) {
@@ -138,6 +412,7 @@ export function WizardOrchestrator({
         currentPhase: wizard.currentPhase,
       })
       setPhase2FromCache(true)
+      wizard.setPhaseStatus(2, 'needs_review')
       wizard.goToPhase(2)
       return
     }
@@ -149,10 +424,35 @@ export function WizardOrchestrator({
         currentPhase: wizard.currentPhase,
       })
       setPhase3FromCache(true)
+      wizard.setPhaseStatus(3, 'needs_review')
       wizard.goToPhase(3)
       return
     }
-  }, [video, wizard])
+
+    // If phase 4 needs review and we're past it, go back to phase 4
+    if (phase4NeedsReview && wizard.currentPhase > 4) {
+      log('INFO', 'Auto-navigating to Phase 4 for review confirmation', {
+        videoId: video.id,
+        currentPhase: wizard.currentPhase,
+      })
+      setPhase4FromCache(true)
+      wizard.setPhaseStatus(4, 'needs_review')
+      wizard.goToPhase(4)
+      return
+    }
+
+    // Mark phases as needs_review even if we're not past them yet
+    // This ensures the breadcrumb shows the correct status
+    if (phase2NeedsReview) {
+      wizard.setPhaseStatus(2, 'needs_review')
+    }
+    if (phase3NeedsReview) {
+      wizard.setPhaseStatus(3, 'needs_review')
+    }
+    if (phase4NeedsReview) {
+      wizard.setPhaseStatus(4, 'needs_review')
+    }
+  }, [video.id, videoDataReadyFor, videoData, wizard])
 
   // Track if we've loaded cached data for this video
   const cachedDataLoadedRef = useRef<string | null>(null)
@@ -165,49 +465,74 @@ export function WizardOrchestrator({
    * IMPORTANT: All alerts are added in phase order (1-7) to ensure
    * consistent display in the console. Individual phase effects should NOT
    * add alerts for cached data - only for newly processed data.
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before loading cached data
+    // This ensures we're using fresh data from Firestore, not stale data from the prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Skip if we've already loaded for this video
     if (cachedDataLoadedRef.current === video.id) {
       return
     }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping cached data load - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+      })
+      return
+    }
+
     cachedDataLoadedRef.current = video.id
 
-    log('INFO', 'Loading cached data for all completed phases', { videoId: video.id })
+    log('INFO', 'Loading cached data for all completed phases (from fresh videoData)', { videoId: video.id })
 
-    // Phase 1: Critique - add alert and set state
-    if (video.critique) {
+    // Phase 1: Critique - add alert and set state (using fresh videoData)
+    if (videoData.critique) {
       const existingCritique: Phase1Response = {
-        critique: video.critique,
+        critique: videoData.critique,
         highlights: [],
         suggestions: [],
       }
       setCritiqueResult(existingCritique)
-      wizard.addAlert(1, 'Crítica do Especialista', video.critique, 'success')
+      wizard.addAlert(1, 'Crítica do Especialista', videoData.critique, 'success')
     }
 
-    // Phase 2: Editing Issues
-    if (video.editingIssues !== undefined) {
+    // Phase 2: Editing Issues (using fresh videoData)
+    if (videoData.editingIssues !== undefined) {
       const existingEditCheck: Phase2Response = {
-        hasIssues: video.editingIssues.length > 0,
-        issues: video.editingIssues,
+        hasIssues: videoData.editingIssues.length > 0,
+        issues: videoData.editingIssues,
       }
       setEditCheckResult(existingEditCheck)
       wizard.addAlert(
         2,
         'Checagem de Edição',
-        video.editingIssues.length > 0
-          ? `${video.editingIssues.length} ponto(s) de atenção identificado(s)`
+        videoData.editingIssues.length > 0
+          ? `${videoData.editingIssues.length} ponto(s) de atenção identificado(s)`
           : 'Nenhum problema de edição identificado',
         'success'
       )
     }
 
-    // Phase 3: Compliance
-    if (video.riskAndCompliance !== undefined) {
+    // Phase 3: Compliance (using fresh videoData)
+    if (videoData.riskAndCompliance !== undefined) {
       const existingCompliance: Phase3Response = {
-        hasRisks: video.riskAndCompliance.length > 0,
-        risks: video.riskAndCompliance.map(item => ({
+        hasRisks: videoData.riskAndCompliance.length > 0,
+        risks: videoData.riskAndCompliance.map(item => ({
           timestamp: item.timestamp,
           risk: item.risk,
           description: item.description,
@@ -217,17 +542,17 @@ export function WizardOrchestrator({
       wizard.addAlert(
         3,
         'Riscos e Conformidade',
-        video.riskAndCompliance.length > 0
-          ? `${video.riskAndCompliance.length} risco(s) identificado(s)`
+        videoData.riskAndCompliance.length > 0
+          ? `${videoData.riskAndCompliance.length} risco(s) identificado(s)`
           : 'Nenhum risco de conformidade identificado',
         'success'
       )
     }
 
-    // Phase 4: Chapters
-    if (video.chapters && video.chapters.length > 0) {
+    // Phase 4: Chapters (using fresh videoData)
+    if (videoData.chapters && videoData.chapters.length > 0) {
       const existingChapters: Phase4Response = {
-        chapters: video.chapters.map(item => ({
+        chapters: videoData.chapters.map(item => ({
           timestamp: item.timestamp,
           title: item.title,
         })),
@@ -239,37 +564,109 @@ export function WizardOrchestrator({
       wizard.addAlert(4, 'Capítulos', chaptersText, 'success')
     }
 
-    // Phase 5: Titles
-    if (video.suggestedTitles && video.suggestedTitles.length > 0) {
+    // Phase 5: Titles (using fresh videoData)
+    if (videoData.suggestedTitles && videoData.suggestedTitles.length > 0) {
       const existingTitles: Phase5Response = {
-        titles: video.suggestedTitles,
+        titles: videoData.suggestedTitles,
       }
       setTitlesResult(existingTitles)
-      wizard.addAlert(5, 'Títulos', `${video.suggestedTitles.length} sugestão(ões) de título`, 'success')
+      wizard.addAlert(5, 'Títulos', `${videoData.suggestedTitles.length} sugestão(ões) de título`, 'success')
     }
 
-    // Phase 6: Description
-    if (video.description && video.description.trim().length > 0) {
+    // Phase 5B: Short Titles (using fresh videoData) - cut only
+    if (videoData.videoType === 'cut' && videoData.suggestedShortTitles && videoData.suggestedShortTitles.length > 0) {
+      const existingShortTitles: Phase5BResponse = {
+        shortTitles: videoData.suggestedShortTitles,
+      }
+      setShortTitlesResult(existingShortTitles)
+      wizard.addAlert(5, 'Títulos Curtos', `${videoData.suggestedShortTitles.length} sugestão(ões) de título curto`, 'success')
+    }
+
+    // Phase 6: Description (using fresh videoData)
+    if (videoData.description && videoData.description.trim().length > 0) {
       const existingDescription: Phase6Response = {
-        description: video.description,
+        description: videoData.description,
       }
       setDescriptionResult(existingDescription)
       // Show a truncated preview of the description
-      const preview = video.description.length > 100
-        ? video.description.substring(0, 100) + '...'
-        : video.description
+      const preview = videoData.description.length > 100
+        ? videoData.description.substring(0, 100) + '...'
+        : videoData.description
       wizard.addAlert(6, 'Descrição', preview, 'success')
     }
 
-    // Phase 7: Tags
-    if (video.tags && video.tags.length > 0) {
+    // Phase 7: Tags (using fresh videoData)
+    if (videoData.tags && videoData.tags.length > 0) {
       const existingTags: Phase7Response = {
-        tags: video.tags,
+        tags: videoData.tags,
       }
       setTagsResult(existingTags)
-      wizard.addAlert(7, 'Tags', `${video.tags.length} tag(s): ${video.tags.slice(0, 5).join(', ')}${video.tags.length > 5 ? '...' : ''}`, 'success')
+      wizard.addAlert(7, 'Tags', `${videoData.tags.length} tag(s): ${videoData.tags.slice(0, 5).join(', ')}${videoData.tags.length > 5 ? '...' : ''}`, 'success')
     }
-  }, [video, wizard])
+  }, [video.id, videoDataReadyFor, videoData, wizard])
+
+  // Track if we've already transitioned to ready for this video
+  const readyTransitionRef = useRef<string | null>(null)
+
+  /**
+   * AUTO-READY: When the wizard reaches Phase 8, automatically transition
+   * the video status from 'draft' to 'ready' if not already ready/sending/sent.
+   *
+   * This runs when:
+   * - Current phase is 8
+   * - Video data is ready
+   * - Status is 'draft' (meaning phases have been processed)
+   * - We haven't already transitioned this video
+   */
+  useEffect(() => {
+    // Only run when on Phase 8
+    if (wizard.currentPhase !== 8) {
+      return
+    }
+
+    // Wait for fresh video data
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
+    // Skip if already transitioned for this video
+    if (readyTransitionRef.current === video.id) {
+      return
+    }
+
+    // Only transition if status is 'draft'
+    // Don't transition if already 'ready', 'sending', 'sent', or still 'new'
+    if (videoData.status !== 'draft') {
+      return
+    }
+
+    readyTransitionRef.current = video.id
+
+    log('INFO', 'Auto-transitioning video status from draft to ready (Phase 8 reached)', {
+      videoId: video.id,
+    })
+
+    // Update status to 'ready' via API
+    fetch(`/api/videos/${video.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'ready' }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          setVideoData((prev) => ({ ...prev, status: 'ready' }))
+          log('INFO', 'Video status updated to ready', { videoId: video.id })
+        } else {
+          log('WARN', 'Failed to update video status to ready', { videoId: video.id })
+        }
+      })
+      .catch((error) => {
+        log('ERROR', 'Error updating video status to ready', {
+          videoId: video.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      })
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.status])
 
   /**
    * Handle context changes from Phase1Critique.
@@ -337,16 +734,36 @@ export function WizardOrchestrator({
    *
    * NOTE: Cached data alerts are handled by the cachedDataLoadedRef effect
    * to ensure proper ordering in the console.
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    // This prevents effects from running with stale data from the video prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      return
+    }
+
     // Skip if we've already processed this video
     if (processingVideoIdRef.current === video.id) {
       return
     }
 
-    // Check if critique already exists on the video
-    if (video.critique) {
-      log('INFO', 'Phase 1 critique already exists, skipping (handled by cached data effect)', { videoId: video.id })
+    // CAMINHO 1 - SMART LOAD: Check if critique already exists (using fresh videoData, not stale video prop)
+    if (videoData.critique) {
+      log('INFO', 'Phase 1: Smart load - critique exists', { videoId: video.id })
 
       // Mark as processed for this video
       processingVideoIdRef.current = video.id
@@ -366,11 +783,11 @@ export function WizardOrchestrator({
       return
     }
 
-    // No critique exists and we're on Phase 1 - process via LLM (enqueued to prevent concurrent calls)
-    log('INFO', 'No critique found, initiating LLM processing', { videoId: video.id })
+    // CAMINHO 2 - LLM CALL: No critique exists and we're on Phase 1 - process via LLM
+    log('INFO', 'Phase 1: LLM call - no critique found', { videoId: video.id })
     processingVideoIdRef.current = video.id
     enqueueLLMCall(processPhase1Critique)
-  }, [video.id, video.critique, wizard, wizard.currentPhase, processPhase1Critique, enqueueLLMCall])
+  }, [video.id, videoDataReadyFor, videoData.critique, wizard, wizard.currentPhase, processPhase1Critique, enqueueLLMCall])
 
   /**
    * Process Phase 2 editing check via API.
@@ -402,8 +819,10 @@ export function WizardOrchestrator({
       const phase2Data = result.data as Phase2Response
 
       wizard.removeSpinner(spinnerId)
-      // Don't mark as completed yet - phase completes when user clicks "Avançar"
-      wizard.setPhaseStatus(2, 'pending')
+      // Phase 2 requires user confirmation before being marked as completed
+      // Set to 'needs_review' (yellow in breadcrumb) to indicate it needs confirmation
+      wizard.setPhaseStatus(2, 'needs_review')
+      setPhase2FromCache(true) // Indicate that confirmation is needed
       wizard.addAlert(
         2,
         'Checagem de Edição',
@@ -432,10 +851,35 @@ export function WizardOrchestrator({
    *
    * Per processamento_video.md, Phase 2 processes automatically.
    * Only triggers once per video (tracked via phase2ProcessingRef).
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    // This prevents effects from running with stale data from the video prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Only process when on phase 2
     if (wizard.currentPhase !== 2) {
+      return
+    }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping Phase 2 auto-processing - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+        currentPhase: wizard.currentPhase,
+      })
       return
     }
 
@@ -444,24 +888,28 @@ export function WizardOrchestrator({
       return
     }
 
-    // Skip if editingIssues already exist on the video (previously processed)
-    if (video.editingIssues !== undefined) {
-      log('INFO', 'Phase 2 editing issues already exist, skipping (handled by cached data effect)', { videoId: video.id })
+    // CAMINHO 1 - SMART LOAD: Check if editingIssues already exist (using fresh videoData, not stale video prop)
+    if (videoData.editingIssues !== undefined) {
+      log('INFO', 'Phase 2: Smart load - editingIssues exist', { videoId: video.id })
       phase2ProcessingRef.current = video.id
 
       // Mark as loaded from cache (needs review confirmation if not already reviewed)
-      const needsReview = !video.reviewedPhases?.includes(2)
+      const isReviewed = videoData.reviewedPhases?.includes(2) ?? false
+      const needsReview = !isReviewed
       setPhase2FromCache(needsReview)
+      if (needsReview) {
+        wizard.setPhaseStatus(2, 'needs_review')
+      }
 
       // State and alert already handled by cached data effect
       return
     }
 
-    // Process via LLM (enqueued to prevent concurrent calls)
-    log('INFO', 'No edit check found, initiating LLM processing for Phase 2', { videoId: video.id })
+    // CAMINHO 2 - LLM CALL: No editingIssues exist - process via LLM
+    log('INFO', 'Phase 2: LLM call - no editingIssues found', { videoId: video.id })
     phase2ProcessingRef.current = video.id
     enqueueLLMCall(processPhase2EditCheck)
-  }, [wizard.currentPhase, video.id, video.editingIssues, wizard, processPhase2EditCheck, enqueueLLMCall])
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.editingIssues, videoData.reviewedPhases, wizard, processPhase2EditCheck, enqueueLLMCall])
 
   /**
    * Process Phase 3 compliance check via API.
@@ -493,8 +941,10 @@ export function WizardOrchestrator({
       const phase3Data = result.data as Phase3Response
 
       wizard.removeSpinner(spinnerId)
-      // Don't mark as completed yet - phase completes when user clicks "Avançar"
-      wizard.setPhaseStatus(3, 'pending')
+      // Phase 3 requires user confirmation before being marked as completed
+      // Set to 'needs_review' (yellow in breadcrumb) to indicate it needs confirmation
+      wizard.setPhaseStatus(3, 'needs_review')
+      setPhase3FromCache(true) // Indicate that confirmation is needed
       wizard.addAlert(
         3,
         'Riscos e Conformidade',
@@ -523,17 +973,35 @@ export function WizardOrchestrator({
    *
    * Per processamento_video.md, Phase 3 processes automatically.
    * Only triggers once per video (tracked via phase3ProcessingRef).
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    // This prevents effects from running with stale data from the video prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Only process when on phase 3
     if (wizard.currentPhase !== 3) {
       return
     }
 
-    // Skip if phase 2 needs review - navigation will redirect back
-    // This prevents race condition where LLM triggers before navigation takes effect
-    if (phaseNeedsReviewConfirmation(video, 2)) {
-      log('INFO', 'Skipping Phase 3 auto-processing - Phase 2 needs review', { videoId: video.id })
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping Phase 3 auto-processing - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+        currentPhase: wizard.currentPhase,
+      })
       return
     }
 
@@ -542,24 +1010,28 @@ export function WizardOrchestrator({
       return
     }
 
-    // Skip if riskAndCompliance already exist on the video (previously processed)
-    if (video.riskAndCompliance !== undefined) {
-      log('INFO', 'Phase 3 compliance data already exists, skipping (handled by cached data effect)', { videoId: video.id })
+    // CAMINHO 1 - SMART LOAD: Check if riskAndCompliance already exist (using fresh videoData, not stale video prop)
+    if (videoData.riskAndCompliance !== undefined) {
+      log('INFO', 'Phase 3: Smart load - riskAndCompliance exist', { videoId: video.id })
       phase3ProcessingRef.current = video.id
 
       // Mark as loaded from cache (needs review confirmation if not already reviewed)
-      const needsReview = !video.reviewedPhases?.includes(3)
+      const isReviewed = videoData.reviewedPhases?.includes(3) ?? false
+      const needsReview = !isReviewed
       setPhase3FromCache(needsReview)
+      if (needsReview) {
+        wizard.setPhaseStatus(3, 'needs_review')
+      }
 
       // State and alert already handled by cached data effect
       return
     }
 
-    // Process via LLM (enqueued to prevent concurrent calls)
-    log('INFO', 'No compliance check found, initiating LLM processing for Phase 3', { videoId: video.id })
+    // CAMINHO 2 - LLM CALL: No riskAndCompliance exist - process via LLM
+    log('INFO', 'Phase 3: LLM call - no riskAndCompliance found', { videoId: video.id })
     phase3ProcessingRef.current = video.id
     enqueueLLMCall(processPhase3Compliance)
-  }, [wizard.currentPhase, video.id, video.riskAndCompliance, wizard, processPhase3Compliance, enqueueLLMCall])
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.riskAndCompliance, videoData.reviewedPhases, wizard, processPhase3Compliance, enqueueLLMCall])
 
   /**
    * Process Phase 4 chapters generation via API.
@@ -591,8 +1063,10 @@ export function WizardOrchestrator({
       const phase4Data = result.data as Phase4Response
 
       wizard.removeSpinner(spinnerId)
-      // Don't mark as completed yet - phase completes when user clicks "Avançar"
-      wizard.setPhaseStatus(4, 'pending')
+      // Phase 4 requires user confirmation before being marked as completed
+      // Set to 'needs_review' (yellow in breadcrumb) to indicate it needs confirmation
+      wizard.setPhaseStatus(4, 'needs_review')
+      setPhase4FromCache(true) // Indicate that confirmation is needed
 
       // Format chapters for console alert
       const chaptersText = phase4Data.chapters
@@ -623,17 +1097,38 @@ export function WizardOrchestrator({
    *
    * Per processamento_video.md, Phase 4 processes automatically.
    * Only triggers once per video (tracked via phase4ProcessingRef).
+   *
+   * NOTE: No review-blocking here. Phases are only blocked if empty/not processed.
+   * Validation of all phases happens only in Phase 8 before sending to YouTube.
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    // This prevents effects from running with stale data from the video prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Only process when on phase 4
     if (wizard.currentPhase !== 4) {
       return
     }
 
-    // Skip if earlier phases need review - navigation will redirect back
-    // This prevents race condition where LLM triggers before navigation takes effect
-    if (phaseNeedsReviewConfirmation(video, 2) || phaseNeedsReviewConfirmation(video, 3)) {
-      log('INFO', 'Skipping Phase 4 auto-processing - earlier phase needs review', { videoId: video.id })
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping Phase 4 auto-processing - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+        currentPhase: wizard.currentPhase,
+      })
       return
     }
 
@@ -642,20 +1137,28 @@ export function WizardOrchestrator({
       return
     }
 
-    // Skip if chapters already exist on the video (previously processed)
-    if (video.chapters !== undefined && video.chapters.length > 0) {
-      log('INFO', 'Phase 4 chapters already exist, skipping (handled by cached data effect)', { videoId: video.id })
+    // CAMINHO 1 - SMART LOAD: Check if chapters already exist (using fresh videoData, not stale video prop)
+    if (videoData.chapters !== undefined && videoData.chapters.length > 0) {
+      log('INFO', 'Phase 4: Smart load - chapters exist', { videoId: video.id, count: videoData.chapters.length })
       phase4ProcessingRef.current = video.id
+
+      // Mark as loaded from cache (needs review confirmation if not already reviewed)
+      const isReviewed = videoData.reviewedPhases?.includes(4) ?? false
+      const needsReview = !isReviewed
+      setPhase4FromCache(needsReview)
+      if (needsReview) {
+        wizard.setPhaseStatus(4, 'needs_review')
+      }
 
       // State and alert already handled by cached data effect
       return
     }
 
-    // Process via LLM (enqueued to prevent concurrent calls)
-    log('INFO', 'No chapters found, initiating LLM processing for Phase 4', { videoId: video.id })
+    // CAMINHO 2 - LLM CALL: No chapters exist - process via LLM
+    log('INFO', 'Phase 4: LLM call - no chapters found', { videoId: video.id })
     phase4ProcessingRef.current = video.id
     enqueueLLMCall(processPhase4Chapters)
-  }, [wizard.currentPhase, video.id, video.chapters, wizard, processPhase4Chapters, enqueueLLMCall])
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.chapters, videoData.reviewedPhases, wizard, processPhase4Chapters, enqueueLLMCall])
 
   /**
    * Process Phase 5 title suggestions via API.
@@ -720,11 +1223,34 @@ export function WizardOrchestrator({
    * Per processamento_video.md, Phase 5 processes automatically.
    * Only triggers once per video (tracked via phase5ProcessingRef).
    *
-   * Smart loading: If suggestedTitles already exist, use them instead of calling LLM.
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    // This prevents effects from running with stale data from the video prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Only process when on phase 5
     if (wizard.currentPhase !== 5) {
+      return
+    }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping Phase 5 auto-processing - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+        currentPhase: wizard.currentPhase,
+      })
       return
     }
 
@@ -735,47 +1261,67 @@ export function WizardOrchestrator({
       return
     }
 
-    // Skip if earlier phases need review - navigation will redirect back
-    if (phaseNeedsReviewConfirmation(video, 2) || phaseNeedsReviewConfirmation(video, 3)) {
-      log('INFO', 'Skipping Phase 5 auto-processing - earlier phase needs review', { videoId: video.id })
-      return
-    }
-
     // Skip if already processing or processed this video
     if (phase5ProcessingRef.current === video.id) {
       return
     }
 
-    // Smart loading: Check if suggestedTitles already exist
-    if (video.suggestedTitles && video.suggestedTitles.length > 0) {
-      log('INFO', 'Phase 5 suggested titles already exist, skipping (handled by cached data effect)', { videoId: video.id })
+    // CAMINHO 1 - SMART LOAD: Check if suggestedTitles exist (using fresh videoData, not stale video prop)
+    if (videoData.suggestedTitles && videoData.suggestedTitles.length > 0) {
+      log('INFO', 'Phase 5: Smart load - suggestedTitles exist', { videoId: video.id, count: videoData.suggestedTitles.length })
       phase5ProcessingRef.current = video.id
-
-      // State and alert already handled by cached data effect
+      // State and alert handled by cached data effect
       return
     }
 
-    // No suggestedTitles exist - process via LLM
-    // Enqueued to prevent concurrent calls
-    log('INFO', 'Initiating LLM processing for Phase 5', { videoId: video.id })
+    // CAMINHO 2 - LLM CALL: No suggestedTitles exist - process via LLM
+    log('INFO', 'Phase 5: LLM call - no suggestedTitles found', { videoId: video.id })
     phase5ProcessingRef.current = video.id
-    enqueueLLMCall(processPhase5Titles)
-  }, [wizard.currentPhase, video.id, video.suggestedTitles, wizard, processPhase5Titles, enqueueLLMCall])
+    enqueueLLMCall(() => processPhase5Titles())
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.suggestedTitles, processPhase5Titles, enqueueLLMCall])
 
   /**
    * Handle title selection from Phase 5.
    * Persists the selected title to the video document.
    *
    * SEO interdependency: When title changes, description and tags need to be regenerated.
+   *
+   * NOTE: Uses optimistic UI update - title updates immediately in header,
+   * then persists to API asynchronously.
    */
   const handleTitleSelect = useCallback(async (title: string) => {
     log('INFO', 'Title selected', { videoId: video.id, title })
 
-    // Check if title actually changed (SEO interdependency)
-    const titleChanged = title !== videoData.title
+    // Get previous title BEFORE updating state (for SEO interdependency check)
+    const previousTitle = videoData.title
+    const titleChanged = title !== previousTitle
+
+    // OPTIMISTIC UPDATE: Update local video data immediately for responsive UI
+    setVideoData(prev => ({ ...prev, title }))
+
+    // Mark phase 5 as completed when title is selected
+    wizard.setPhaseStatus(5, 'completed')
+
+    // SEO interdependency: If title changed, invalidate description and tags
+    if (titleChanged) {
+      log('INFO', 'Title changed, invalidating phases 6 and 7', { videoId: video.id, oldTitle: previousTitle, newTitle: title })
+
+      // Clear description and tags results so they regenerate when entering those phases
+      setDescriptionResult(null)
+      setTagsResult(null)
+      phase6ProcessingRef.current = null
+      phase7ProcessingRef.current = null
+
+      // CRITICAL: Also clear videoData.description and videoData.tags
+      // Otherwise the auto-processing effects will try to Smart Load with stale data
+      setVideoData(prev => ({ ...prev, description: undefined, tags: undefined }))
+
+      // Invalidate phases 6, 7, 8 in wizard state
+      wizard.invalidateFromPhase(5)
+    }
 
     try {
-      // Persist the selected title via API
+      // Persist the selected title via API (async, after UI already updated)
       const response = await fetch(`/api/videos/${video.id}/title`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -787,28 +1333,13 @@ export function WizardOrchestrator({
         throw new Error(errorData.error?.message || 'Erro ao salvar titulo')
       }
 
-      // Update local video data
-      setVideoData(prev => ({ ...prev, title }))
-
-      // SEO interdependency: If title changed, invalidate description and tags
-      if (titleChanged) {
-        log('INFO', 'Title changed, invalidating phases 6 and 7', { videoId: video.id, oldTitle: videoData.title, newTitle: title })
-
-        // Clear description and tags results so they regenerate when entering those phases
-        setDescriptionResult(null)
-        setTagsResult(null)
-        phase6ProcessingRef.current = null
-        phase7ProcessingRef.current = null
-
-        // Invalidate phases 6, 7, 8 in wizard state
-        wizard.invalidateFromPhase(5)
-      }
-
       log('INFO', 'Title persisted successfully', { videoId: video.id, title })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao salvar titulo'
       log('ERROR', 'Failed to persist title', { videoId: video.id, error: message })
       wizard.addAlert(5, 'Erro', message, 'error')
+      // Revert optimistic update on error
+      setVideoData(prev => ({ ...prev, title: previousTitle }))
     }
   }, [video.id, videoData.title, wizard])
 
@@ -836,6 +1367,10 @@ export function WizardOrchestrator({
       phase6ProcessingRef.current = null
       phase7ProcessingRef.current = null
 
+      // CRITICAL: Also clear videoData.description and videoData.tags
+      // Otherwise the auto-processing effects will try to Smart Load with stale data
+      setVideoData(prev => ({ ...prev, description: undefined, tags: undefined }))
+
       // Set processing ref to prevent auto-processing effect from triggering
       phase5ProcessingRef.current = video.id
 
@@ -846,6 +1381,173 @@ export function WizardOrchestrator({
       isRevalidatingPhase5Ref.current = false
     }
   }, [video.id, wizard, processPhase5Titles, enqueueLLMCall])
+
+  /**
+   * Process Phase 5B short titles via API.
+   * Called automatically when entering Phase 5B (cut videos only).
+   * Can also be called with additionalContext for revalidation.
+   */
+  const processPhase5BShortTitles = useCallback(async (additionalContext?: string) => {
+    log('INFO', 'Processing Phase 5B short titles', { videoId: video.id, hasAdditionalContext: !!additionalContext })
+
+    // Clear previous error state on retry
+    setShortTitlesError(null)
+
+    const spinnerId = wizard.addSpinner(5, 'Gerando sugestoes de titulo curto para thumbnail...')
+    wizard.setPhaseLoading(5)
+
+    try {
+      const response = await fetch(`/api/wizard/phase/5b`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoId: video.id,
+          additionalContext,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error?.message || 'Erro ao processar fase 5B'
+        throw new Error(errorMessage)
+      }
+
+      const result = await response.json()
+      const phase5BData = result.data as Phase5BResponse
+
+      wizard.removeSpinner(spinnerId)
+      wizard.setPhaseStatus(5, 'pending')
+      wizard.addAlert(
+        5,
+        'Titulos Curtos',
+        'Escolha o melhor titulo curto para a thumbnail.',
+        'success'
+      )
+      setShortTitlesResult(phase5BData)
+
+      log('INFO', 'Phase 5B short titles completed', {
+        videoId: video.id,
+        shortTitleCount: phase5BData.shortTitles.length,
+      })
+    } catch (error) {
+      wizard.removeSpinner(spinnerId)
+      const message = error instanceof Error ? error.message : 'Erro ao gerar titulos curtos'
+      wizard.setPhaseError(5, message)
+      wizard.addAlert(5, 'Erro', message, 'error')
+      setShortTitlesError(message)
+      log('ERROR', 'Phase 5B short titles failed', { videoId: video.id, error: message })
+    }
+  }, [video.id, wizard])
+
+  /**
+   * Auto-process Phase 5B when entering it (cut videos only).
+   */
+  useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
+    // Only process for cut videos on phase 5B
+    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
+    // but can be '5B' at runtime for cut videos
+    if ((wizard.currentPhase as unknown as string) !== '5B' || video.videoType !== 'cut') {
+      return
+    }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      return
+    }
+
+    // CRITICAL: Skip if revalidation is in progress
+    if (isRevalidatingPhase5BRef.current) {
+      log('INFO', 'Skipping Phase 5B auto-processing - revalidation in progress', { videoId: video.id })
+      return
+    }
+
+    // Skip if already processing or processed this video
+    if (phase5BProcessingRef.current === video.id) {
+      return
+    }
+
+    // CAMINHO 1 - SMART LOAD: Check if suggestedShortTitles exist
+    if (videoData.suggestedShortTitles && videoData.suggestedShortTitles.length > 0) {
+      log('INFO', 'Phase 5B: Smart load - suggestedShortTitles exist', { videoId: video.id, count: videoData.suggestedShortTitles.length })
+      phase5BProcessingRef.current = video.id
+      return
+    }
+
+    // CAMINHO 2 - LLM CALL: No suggestedShortTitles exist - process via LLM
+    log('INFO', 'Phase 5B: LLM call - no suggestedShortTitles found', { videoId: video.id })
+    phase5BProcessingRef.current = video.id
+    enqueueLLMCall(() => processPhase5BShortTitles())
+  }, [wizard.currentPhase, video.id, video.videoType, videoDataReadyFor, videoData.suggestedShortTitles, processPhase5BShortTitles, enqueueLLMCall])
+
+  /**
+   * Handle short title selection from Phase 5B.
+   * Persists the selected short title to the video document.
+   *
+   * Note: Phase 5B is independent - no SEO cascade to phases 6/7.
+   */
+  const handleShortTitleSelect = useCallback(async (shortTitle: string) => {
+    log('INFO', 'Short title selected', { videoId: video.id, shortTitle })
+
+    // OPTIMISTIC UPDATE: Update local video data immediately for responsive UI
+    setVideoData(prev => ({ ...prev, shortTitle }))
+
+    try {
+      // Persist the selected short title via API (async, after UI already updated)
+      const response = await fetch(`/api/videos/${video.id}/short-title`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shortTitle }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao salvar titulo curto')
+      }
+
+      log('INFO', 'Short title persisted successfully', { videoId: video.id, shortTitle })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar titulo curto'
+      log('ERROR', 'Failed to persist short title', { videoId: video.id, error: message })
+      wizard.addAlert(5, 'Erro', message, 'error')
+      // Revert optimistic update on error
+      setVideoData(prev => ({ ...prev, shortTitle: undefined }))
+    }
+  }, [video.id, wizard])
+
+  /**
+   * Handle revalidation request from Phase 5B.
+   * Phase 5B is independent - no cascade to phases 6/7.
+   */
+  const handleRevalidatePhase5B = useCallback(async (additionalContext: string) => {
+    log('INFO', 'Revalidating Phase 5B', { videoId: video.id, additionalContext })
+
+    // CRITICAL: Set revalidation flag FIRST, before any state changes
+    isRevalidatingPhase5BRef.current = true
+
+    try {
+      // Clear old result immediately to show loading state
+      setShortTitlesResult(null)
+
+      // Set processing ref to prevent auto-processing effect from triggering
+      phase5BProcessingRef.current = video.id
+
+      // Call LLM with additional context (enqueued to prevent concurrent calls)
+      await enqueueLLMCall(() => processPhase5BShortTitles(additionalContext))
+    } finally {
+      // Clear revalidation flag after processing completes (success or error)
+      isRevalidatingPhase5BRef.current = false
+    }
+  }, [video.id, processPhase5BShortTitles, enqueueLLMCall])
 
   /**
    * Process Phase 6 description generation via API.
@@ -881,7 +1583,8 @@ export function WizardOrchestrator({
       const phase6Data = result.data as Phase6Response
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(6, 'pending')
+      // Mark phase as completed immediately after LLM returns
+      wizard.setPhaseStatus(6, 'completed')
       wizard.addAlert(
         6,
         'Descricao',
@@ -889,6 +1592,10 @@ export function WizardOrchestrator({
         'success'
       )
       setDescriptionResult(phase6Data)
+
+      // Update videoData with the generated description
+      // Note: Description is already persisted server-side in the API route
+      setVideoData(prev => ({ ...prev, description: phase6Data.description }))
 
       log('INFO', 'Phase 6 description generation completed', {
         videoId: video.id,
@@ -909,10 +1616,35 @@ export function WizardOrchestrator({
    *
    * Per processamento_video.md, Phase 6 processes automatically.
    * Only triggers once per video (tracked via phase6ProcessingRef).
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    // This prevents effects from running with stale data from the video prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Only process when on phase 6
     if (wizard.currentPhase !== 6) {
+      return
+    }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping Phase 6 auto-processing - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+        currentPhase: wizard.currentPhase,
+      })
       return
     }
 
@@ -923,23 +1655,24 @@ export function WizardOrchestrator({
       return
     }
 
-    // Skip if earlier phases need review - navigation will redirect back
-    if (phaseNeedsReviewConfirmation(video, 2) || phaseNeedsReviewConfirmation(video, 3)) {
-      log('INFO', 'Skipping Phase 6 auto-processing - earlier phase needs review', { videoId: video.id })
-      return
-    }
-
     // Skip if already processing or processed this video
     if (phase6ProcessingRef.current === video.id) {
       return
     }
 
-    // For Phase 6, we always need to call LLM to get description
-    // Enqueued to prevent concurrent calls
-    log('INFO', 'Initiating LLM processing for Phase 6', { videoId: video.id })
+    // CAMINHO 1 - SMART LOAD: Check if description exists (using fresh videoData, not stale video prop)
+    if (videoData.description && videoData.description.trim().length > 0) {
+      log('INFO', 'Phase 6: Smart load - description exists', { videoId: video.id, length: videoData.description.length })
+      phase6ProcessingRef.current = video.id
+      // State and alert handled by cached data effect
+      return
+    }
+
+    // CAMINHO 2 - LLM CALL: No description exists - process via LLM
+    log('INFO', 'Phase 6: LLM call - no description found', { videoId: video.id })
     phase6ProcessingRef.current = video.id
     enqueueLLMCall(processPhase6Description)
-  }, [wizard.currentPhase, video.id, video, processPhase6Description, enqueueLLMCall])
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.description, processPhase6Description, enqueueLLMCall])
 
   /**
    * Handle description change from Phase 6.
@@ -978,6 +1711,10 @@ export function WizardOrchestrator({
         setTagsResult(null)
         phase7ProcessingRef.current = null
 
+        // CRITICAL: Also clear videoData.tags
+        // Otherwise the auto-processing effect will try to Smart Load with stale data
+        setVideoData(prev => ({ ...prev, tags: undefined }))
+
         // Invalidate phases 7, 8 in wizard state
         wizard.invalidateFromPhase(6)
       }
@@ -1011,6 +1748,10 @@ export function WizardOrchestrator({
       // Clear tags result (SEO interdependency)
       setTagsResult(null)
       phase7ProcessingRef.current = null
+
+      // CRITICAL: Also clear videoData.tags
+      // Otherwise the auto-processing effect will try to Smart Load with stale data
+      setVideoData(prev => ({ ...prev, tags: undefined }))
 
       // Set processing ref to prevent auto-processing effect from triggering
       phase6ProcessingRef.current = video.id
@@ -1057,7 +1798,8 @@ export function WizardOrchestrator({
       const phase7Data = result.data as Phase7Response
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(7, 'pending')
+      // Mark phase as completed immediately after LLM returns
+      wizard.setPhaseStatus(7, 'completed')
       wizard.addAlert(
         7,
         'Tags',
@@ -1065,6 +1807,10 @@ export function WizardOrchestrator({
         'success'
       )
       setTagsResult(phase7Data)
+
+      // Update videoData with the generated tags
+      // Note: Tags are already persisted server-side in the API route
+      setVideoData(prev => ({ ...prev, tags: phase7Data.tags }))
 
       log('INFO', 'Phase 7 tags generation completed', {
         videoId: video.id,
@@ -1085,10 +1831,35 @@ export function WizardOrchestrator({
    *
    * Per processamento_video.md, Phase 7 processes automatically.
    * Only triggers once per video (tracked via phase7ProcessingRef).
+   *
+   * REGRA DOS DOIS CAMINHOS (Story 5.3 - DEFINITIVE FIX):
+   * Uses videoData (fresh state) instead of video (stale prop) to check for data.
+   * Also requires videoDataReadyFor to be true before running.
    */
   useEffect(() => {
+    // CRITICAL: Skip during video transition to prevent race conditions
+    if (isTransitioningRef.current) {
+      return
+    }
+
+    // CRITICAL: Wait for fresh video data to be loaded before auto-processing
+    // This prevents effects from running with stale data from the video prop
+    if (videoDataReadyFor !== video.id) {
+      return
+    }
+
     // Only process when on phase 7
     if (wizard.currentPhase !== 7) {
+      return
+    }
+
+    // CRITICAL: Verify we're operating on the correct video
+    if (activeVideoIdRef.current !== video.id) {
+      log('WARN', 'Skipping Phase 7 auto-processing - video mismatch', {
+        activeVideoId: activeVideoIdRef.current,
+        videoId: video.id,
+        currentPhase: wizard.currentPhase,
+      })
       return
     }
 
@@ -1099,23 +1870,24 @@ export function WizardOrchestrator({
       return
     }
 
-    // Skip if earlier phases need review - navigation will redirect back
-    if (phaseNeedsReviewConfirmation(video, 2) || phaseNeedsReviewConfirmation(video, 3)) {
-      log('INFO', 'Skipping Phase 7 auto-processing - earlier phase needs review', { videoId: video.id })
-      return
-    }
-
     // Skip if already processing or processed this video
     if (phase7ProcessingRef.current === video.id) {
       return
     }
 
-    // For Phase 7, we always need to call LLM to get tags
-    // Enqueued to prevent concurrent calls
-    log('INFO', 'Initiating LLM processing for Phase 7', { videoId: video.id })
+    // CAMINHO 1 - SMART LOAD: Check if tags exist (using fresh videoData, not stale video prop)
+    if (videoData.tags && videoData.tags.length > 0) {
+      log('INFO', 'Phase 7: Smart load - tags exist', { videoId: video.id, count: videoData.tags.length })
+      phase7ProcessingRef.current = video.id
+      // State and alert handled by cached data effect
+      return
+    }
+
+    // CAMINHO 2 - LLM CALL: No tags exist - process via LLM
+    log('INFO', 'Phase 7: LLM call - no tags found', { videoId: video.id })
     phase7ProcessingRef.current = video.id
     enqueueLLMCall(processPhase7Tags)
-  }, [wizard.currentPhase, video.id, video, processPhase7Tags, enqueueLLMCall])
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.tags, processPhase7Tags, enqueueLLMCall])
 
   /**
    * Handle tags change from Phase 7.
@@ -1181,28 +1953,79 @@ export function WizardOrchestrator({
   /**
    * Handle send to YouTube from Phase 8.
    * Calls the YouTube API to update video metadata.
+   *
+   * VALIDATION: Before sending, validates that all required phases are complete
+   * and phases 2 and 3 have been reviewed if they contain data.
    */
   const handleSendToYouTube = useCallback(async () => {
     log('INFO', 'Sending video to YouTube', { videoId: video.id })
 
     // Clear previous error
     setPhase8Error(null)
+
+    // VALIDATION: Check if phases 2 and 3 need review confirmation
+    const phase2HasData = video.editingIssues !== undefined
+    const phase3HasData = video.riskAndCompliance !== undefined
+    const phase2Reviewed = videoData.reviewedPhases?.includes(2) ?? false
+    const phase3Reviewed = videoData.reviewedPhases?.includes(3) ?? false
+
+    const unreviewedPhases: number[] = []
+    if (phase2HasData && !phase2Reviewed) {
+      unreviewedPhases.push(2)
+    }
+    if (phase3HasData && !phase3Reviewed) {
+      unreviewedPhases.push(3)
+    }
+
+    if (unreviewedPhases.length > 0) {
+      const phaseNames = unreviewedPhases.map(p => p === 2 ? 'Checagem de Edição' : 'Riscos e Conformidade')
+      const message = `Antes de publicar, você precisa revisar: ${phaseNames.join(' e ')}`
+      setPhase8Error(message)
+      wizard.addAlert(8, 'Revisão Pendente', message, 'warning')
+      log('WARN', 'Cannot send to YouTube - phases need review', { videoId: video.id, unreviewedPhases })
+      return
+    }
+
+    // VALIDATION: Check required fields
+    if (!videoData.title?.trim()) {
+      setPhase8Error('O título do vídeo é obrigatório')
+      wizard.addAlert(8, 'Dados Incompletos', 'O título do vídeo é obrigatório', 'warning')
+      return
+    }
+
     setIsSending(true)
 
     const spinnerId = wizard.addSpinner(8, 'Enviando metadados para o YouTube...')
 
     try {
-      // Build description with chapters at the beginning using utility
-      const finalDescription = buildDescriptionWithChapters(
-        videoData.description || '',
-        videoData.chapters || []
-      )
+      // Fetch podcast settings to get youtubeFooter
+      let youtubeFooter = ''
+      try {
+        const podcastResponse = await fetch('/api/podcast')
+        if (podcastResponse.ok) {
+          const podcastData = await podcastResponse.json()
+          youtubeFooter = podcastData.data?.youtubeFooter || ''
+        }
+      } catch {
+        // Silently ignore - youtubeFooter is optional
+      }
+
+      // Build title with podcast suffix
+      const finalTitle = `${videoData.title} | PPT Não Compila Podcast`
+
+      // Build complete description with all sections
+      const finalDescription = buildCompleteYouTubeDescription({
+        description: videoData.description || '',
+        guests: videoData.guests,
+        chapters: videoData.chapters,
+        youtubeFooter,
+      })
 
       const response = await fetch(`/api/youtube/videos/${video.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: videoData.title,
+          title: finalTitle,
           description: finalDescription,
           tags: videoData.tags || [],
         }),
@@ -1212,6 +2035,13 @@ export function WizardOrchestrator({
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error?.message || 'Erro ao enviar para o YouTube')
       }
+
+      // Update video status to 'sent' in Firestore
+      await fetch(`/api/videos/${video.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'sent' }),
+      })
 
       wizard.removeSpinner(spinnerId)
       setIsSending(false)
@@ -1223,8 +2053,11 @@ export function WizardOrchestrator({
         'success'
       )
 
-      // Update video data status
+      // Update local video data status
       setVideoData(prev => ({ ...prev, status: 'sent' }))
+
+      // Open YouTube Studio in a new tab
+      window.open(`https://studio.youtube.com/video/${video.id}/edit`, '_blank')
 
       log('INFO', 'Video sent to YouTube successfully', { videoId: video.id })
     } catch (error) {
@@ -1235,7 +2068,7 @@ export function WizardOrchestrator({
       wizard.addAlert(8, 'Erro', message, 'error')
       log('ERROR', 'Failed to send video to YouTube', { videoId: video.id, error: message })
     }
-  }, [video.id, videoData, wizard])
+  }, [video.id, video.editingIssues, video.riskAndCompliance, videoData, wizard])
 
   /**
    * Handle retry after Phase 8 error.
@@ -1249,7 +2082,7 @@ export function WizardOrchestrator({
    * Handle review confirmation for phases 2 and 3.
    * Persists the phase to reviewedPhases array in Firestore.
    */
-  const handleConfirmReview = useCallback(async (phase: 2 | 3) => {
+  const handleConfirmReview = useCallback(async (phase: 2 | 3 | 4) => {
     log('INFO', 'Confirming review for phase', { videoId: video.id, phase })
     setIsConfirmingReview(true)
 
@@ -1277,12 +2110,15 @@ export function WizardOrchestrator({
         }
       })
 
-      // Clear the "from cache" flag for this phase
+      // Clear the "from cache" flag and mark as completed
       if (phase === 2) {
         setPhase2FromCache(false)
-      } else {
+      } else if (phase === 3) {
         setPhase3FromCache(false)
+      } else {
+        setPhase4FromCache(false)
       }
+      wizard.setPhaseStatus(phase, 'completed')
 
       log('INFO', 'Review confirmed', { videoId: video.id, phase })
     } catch (error) {
@@ -1307,7 +2143,61 @@ export function WizardOrchestrator({
    * Render the interactive panel content based on current phase.
    * Using useMemo to ensure React detects phase changes and re-renders.
    */
+  // Handler for Phase 0 parent selection (cut/reel only)
+  const handleParentSelected = useCallback(
+    (parentEpisodeId: string, inheritedData: { guests: Video['guests']; theme: string }) => {
+      // Update local video data with inherited fields
+      setVideoData((prev) => ({
+        ...prev,
+        parentEpisodeId,
+        guests: inheritedData.guests,
+        theme: inheritedData.theme,
+      }))
+
+      log('INFO', 'Parent episode selected', {
+        videoId: video.id,
+        parentEpisodeId,
+        videoType: video.videoType,
+      })
+    },
+    [video.id, video.videoType]
+  )
+
   const interactivePanel = useMemo(() => {
+    // Phase 0 is only for cut and reel videos
+    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
+    // but can be 0 at runtime for cut/reel videos
+    if ((wizard.currentPhase as number) === 0 && (video.videoType === 'cut' || video.videoType === 'reel')) {
+      return (
+        <Phase0ParentSelection
+          wizard={wizard}
+          video={videoData}
+          onParentSelected={handleParentSelected}
+        />
+      )
+    }
+
+    // Phase 5B is only for cut videos (short title for thumbnails)
+    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
+    // but can be '5B' at runtime for cut videos
+    if ((wizard.currentPhase as unknown as string) === '5B' && video.videoType === 'cut') {
+      return (
+        <Phase5BShortTitle
+          wizard={wizard}
+          video={videoData}
+          shortTitlesResult={shortTitlesResult}
+          error={shortTitlesError}
+          onRetry={() => {
+            // Reset processing ref to allow retry
+            phase5BProcessingRef.current = null
+            enqueueLLMCall(() => processPhase5BShortTitles())
+          }}
+          onRevalidate={handleRevalidatePhase5B}
+          onShortTitleSelect={handleShortTitleSelect}
+        />
+      )
+    }
+
     switch (wizard.currentPhase) {
       case 1:
         return (
@@ -1366,6 +2256,10 @@ export function WizardOrchestrator({
               phase4ProcessingRef.current = null
               enqueueLLMCall(processPhase4Chapters)
             }}
+            isFromCache={phase4FromCache}
+            isReviewed={videoData.reviewedPhases?.includes(4) ?? false}
+            onConfirmReview={() => handleConfirmReview(4)}
+            isConfirmingReview={isConfirmingReview}
           />
         )
       case 5:
@@ -1434,6 +2328,8 @@ export function WizardOrchestrator({
   }, [
     // Core dependency - phase changes should trigger re-render
     wizard.currentPhase,
+    // Video type for conditional rendering of Phase 0
+    video.videoType,
     // Phase-specific data
     wizard,
     videoData,
@@ -1446,6 +2342,8 @@ export function WizardOrchestrator({
     chaptersError,
     titlesResult,
     titlesError,
+    shortTitlesResult,
+    shortTitlesError,
     descriptionResult,
     descriptionError,
     tagsResult,
@@ -1455,12 +2353,16 @@ export function WizardOrchestrator({
     phase8Error,
     phase2FromCache,
     phase3FromCache,
+    phase4FromCache,
     isConfirmingReview,
     // Callbacks
+    handleParentSelected,
     handleContextChange,
     handleConfirmReview,
     handleRevalidatePhase5,
     handleTitleSelect,
+    handleRevalidatePhase5B,
+    handleShortTitleSelect,
     handleRevalidatePhase6,
     handleDescriptionChange,
     handleRevalidatePhase7,
@@ -1472,9 +2374,40 @@ export function WizardOrchestrator({
     processPhase3Compliance,
     processPhase4Chapters,
     processPhase5Titles,
+    processPhase5BShortTitles,
     processPhase6Description,
     processPhase7Tags,
   ])
+
+  // Check if transcription is missing (Story 5.6 - Transcrição On-Demand)
+  // Show TranscriptionLoader BEFORE the wizard if transcription is not available
+  const needsTranscription = !videoData.transcriptionSRT || !videoData.transcriptionTXT
+
+  if (needsTranscription) {
+    return (
+      <TranscriptionLoader
+        video={videoData}
+        onSuccess={(transcriptionData: TranscriptionData) => {
+          // Update videoData with the transcription directly
+          // This avoids the loop caused by router.refresh() not updating local state
+          log('INFO', 'Transcription loaded, updating video data', { videoId: videoData.id })
+          setVideoData(prev => ({
+            ...prev,
+            transcriptionSRT: transcriptionData.transcriptionSRT,
+            transcriptionTXT: transcriptionData.transcriptionTXT,
+          }))
+          // CRITICAL: Now that transcription is loaded, mark data as ready for auto-processing
+          // This was deferred earlier because transcription was missing
+          setVideoDataReadyFor(videoData.id)
+          log('INFO', 'Video data now ready for auto-processing after transcription load', { videoId: videoData.id })
+        }}
+        onCancel={() => {
+          log('INFO', 'Transcription loading cancelled', { videoId: videoData.id })
+          router.push('/videos')
+        }}
+      />
+    )
+  }
 
   return (
     <WizardLayout

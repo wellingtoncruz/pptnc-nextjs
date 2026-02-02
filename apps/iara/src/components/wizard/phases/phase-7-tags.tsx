@@ -22,7 +22,7 @@ import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 import type { Phase7Response } from '@/lib/llm/types'
 
-import { getNextPhaseName } from '@/lib/wizard'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 
 import { ProcessingSpinner } from '../processing-spinner'
 
@@ -315,7 +315,7 @@ export function Phase7Tags({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseName(7)}
+                Avançar para {getNextPhaseNameForType(7, video.videoType)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

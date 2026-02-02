@@ -6,6 +6,7 @@ import {
   canNavigateToPhase,
   ConsoleMessage,
   createInitialWizardState,
+  ExtendedWizardPhase,
   getFirstIncompletePhase,
   getNextPhase,
   getWizardProgress,
@@ -93,7 +94,23 @@ interface InitParams {
  */
 function initializeWizardState({ videoId, videoData }: InitParams): WizardState {
   const stored = loadWizardState(videoId)
-  const initial = stored ?? createInitialWizardState(videoId)
+  const videoType = videoData?.videoType ?? 'episode'
+
+  // Create initial state with video type for proper phase initialization
+  let initial = stored ?? createInitialWizardState(
+    videoId,
+    videoType,
+    videoData?.parentEpisodeId
+  )
+
+  // If we have stored state but it doesn't have videoType (old format),
+  // or videoType doesn't match, update it to ensure correct navigation
+  if (stored && (!stored.videoType || stored.videoType !== videoType)) {
+    initial = {
+      ...initial,
+      videoType,
+    }
+  }
 
   // If video data is provided, hydrate synchronously
   // This ensures the state is correct from the first render
@@ -139,6 +156,20 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
   // Use React's useId for unique prefix + counter for guaranteed unique IDs
   const idPrefix = useId()
   const messageCounter = useRef(0)
+
+  // Track previous videoId to detect video changes
+  const previousVideoIdRef = useRef(videoId)
+
+  // Reset state when videoId changes (user navigated to different video)
+  useEffect(() => {
+    if (previousVideoIdRef.current !== videoId) {
+      // Video changed - reinitialize state for new video
+      const newState = initializeWizardState({ videoId, videoData })
+      dispatch({ type: 'RESET_TO_STATE', state: newState })
+      setConsoleMessages([])
+      previousVideoIdRef.current = videoId
+    }
+  }, [videoId, videoData])
 
   // Persist state changes to localStorage
   useEffect(() => {
@@ -199,8 +230,12 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
    * Complete the current phase and advance to the next one.
    * This is a combined action that avoids stale state issues
    * when calling setPhaseData + goToNextPhase separately.
+   *
+   * Supports extended phases (0 and '5B') for cut/reel videos.
+   * Extended phases don't update the phases record - their completion
+   * is tracked via video data (parentEpisodeId for 0, shortTitle for 5B).
    */
-  const completePhaseAndAdvance = useCallback((phase: WizardPhase, data: unknown) => {
+  const completePhaseAndAdvance = useCallback((phase: ExtendedWizardPhase, data: unknown) => {
     dispatch({ type: 'COMPLETE_PHASE_AND_ADVANCE', phase, data })
   }, [])
 

@@ -48,6 +48,7 @@ export function VideoDetailPanel({
   return (
     <div data-testid="video-detail-panel" className="flex h-full flex-col bg-background">
       <WizardOrchestrator
+        key={video.id}
         video={video as Video}
         className="flex flex-col h-full"
       />

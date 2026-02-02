@@ -1,11 +1,10 @@
 'use client'
 
-import Image from 'next/image'
-import { Check, Film } from 'lucide-react'
-
-import { AlertCircle } from 'lucide-react'
+import { Check, AlertCircle } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { VideoThumbnail } from '@/components/ui/video-thumbnail'
+import { useLLMProcessing } from '@/contexts'
 import { cn } from '@/lib/utils'
 import { getBestThumbnailUrl } from '@/lib/video-utils'
 import type { VideoSummary, VideoStatus, VideoType } from '@/types/video'
@@ -47,40 +46,12 @@ const typeLabels: Record<VideoType, string> = {
 }
 
 /**
- * Checks if a video is pending transcription.
- *
- * A video is pending transcription if:
- * - It has status 'new' or 'draft' (editable states)
- * - BOTH transcriptionSRT AND transcriptionTXT are empty
- *
- * Note: The LLM processing uses SRT first, then TXT as fallback.
- * If either exists, the video is considered to have transcription available.
- * This is intentional - some legacy videos may only have TXT without SRT,
- * and we don't want to block them from processing.
+ * Gets the message for why a sent video is blocked.
  */
-function isPendingTranscription(video: VideoSummary): boolean {
-  // Only check editable statuses - sent/processing videos shouldn't show as pending
-  if (video.status !== 'new' && video.status !== 'draft') {
-    return false
-  }
-  // Pending if NEITHER transcription format is available
-  const hasAnyTranscription = Boolean(video.transcriptionSRT || video.transcriptionTXT)
-  return !hasAnyTranscription
-}
-
-/**
- * Gets the appropriate message for why a video is blocked.
- */
-function getBlockedMessage(isSent: boolean): { title: string; description: string } {
-  if (isSent) {
-    return {
-      title: 'Vídeo já publicado',
-      description: 'Para trabalhar nesse vídeo, torne ele Privado ou Não Listado no YouTube.',
-    }
-  }
+function getBlockedMessage(): { title: string; description: string } {
   return {
-    title: 'Aguardando transcrição',
-    description: 'A transcrição ainda está sendo processada pelo YouTube. Aguarde alguns minutos.',
+    title: 'Vídeo já publicado',
+    description: 'Para trabalhar nesse vídeo, torne ele Privado ou Não Listado no YouTube.',
   }
 }
 
@@ -91,31 +62,38 @@ function getBlockedMessage(isSent: boolean): { title: string; description: strin
  * Sent videos are dimmed and non-interactive. They show a hover card
  * over the thumbnail explaining that the video must be made Private or Unlisted to edit.
  *
- * Videos pending transcription are also dimmed and show a hover card
- * explaining that the transcription is still being processed.
+ * Note: Videos without transcription are NOT blocked. Transcription is
+ * fetched on-demand when the producer selects a video in the Wizard.
+ * @see Story 5.6 - Transcrição On-Demand
  */
 export function VideoListItem({ video, isSelected, onSelect }: VideoListItemProps) {
-  const thumbnailUrl = getBestThumbnailUrl(video.thumbnails)
+  const { isProcessing: isLLMProcessing } = useLLMProcessing()
+  // Prefer storageThumbnailUrl (works for draft/private videos), fall back to YouTube URL
+  const thumbnailUrl = video.storageThumbnailUrl || getBestThumbnailUrl(video.thumbnails)
   const isSent = video.status === 'sent'
-  const pendingTranscription = isPendingTranscription(video)
-  const isDisabled = isSent || pendingTranscription
+
+  // Bloqueia seleção se:
+  // 1. Vídeo já foi enviado (sent)
+  // 2. Uma chamada LLM está em andamento (bloqueio suave, sem mensagem)
+  const isDisabled = isSent
+  const isSelectionBlocked = isLLMProcessing && !isSelected
 
   const handleClick = () => {
-    // Disabled videos cannot be selected
-    if (isDisabled) return
+    // Vídeos desabilitados ou bloqueados não podem ser selecionados
+    if (isDisabled || isSelectionBlocked) return
     onSelect(video.id)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Disabled videos cannot be selected via keyboard
-    if (isDisabled) return
+    // Vídeos desabilitados ou bloqueados não podem ser selecionados via teclado
+    if (isDisabled || isSelectionBlocked) return
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       onSelect(video.id)
     }
   }
 
-  const blockedMessage = isDisabled ? getBlockedMessage(isSent) : null
+  const blockedMessage = isDisabled ? getBlockedMessage() : null
 
   return (
     <div
@@ -134,28 +112,22 @@ export function VideoListItem({ video, isSelected, onSelect }: VideoListItemProp
         'group flex gap-3 rounded-lg p-2 transition-colors overflow-hidden',
         isDisabled
           ? 'cursor-not-allowed opacity-50'
-          : 'cursor-pointer hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          : isSelectionBlocked
+            ? 'cursor-wait opacity-70' // Bloqueio suave durante processamento LLM
+            : 'cursor-pointer hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isSelected && !isDisabled && 'ring-2 ring-blue-400 bg-accent'
       )}
     >
-      {/* Thumbnail with overlay for blocked videos */}
+      {/* Thumbnail with overlay for blocked videos - uses VideoThumbnail with YouTube fallback */}
       <div className="relative aspect-video w-24 shrink-0 overflow-hidden rounded-md bg-muted">
-        {thumbnailUrl ? (
-          <Image
-            src={thumbnailUrl}
-            alt={video.title}
-            fill
-            className="object-cover"
-            sizes="96px"
-          />
-        ) : (
-          <div
-            data-testid="thumbnail-placeholder"
-            className="flex h-full w-full items-center justify-center"
-          >
-            <Film className="h-6 w-6 text-muted-foreground/50" />
-          </div>
-        )}
+        <VideoThumbnail
+          youtubeId={video.id}
+          thumbnailUrl={thumbnailUrl || null}
+          alt={video.title}
+          width={96}
+          height={54}
+          className="w-full h-full"
+        />
 
         {/* Hover overlay for blocked videos */}
         {isDisabled && blockedMessage && (

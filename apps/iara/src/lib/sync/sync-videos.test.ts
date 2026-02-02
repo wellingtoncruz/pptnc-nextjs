@@ -10,27 +10,35 @@ vi.mock('firebase-admin/firestore', () => ({
 
 // Store mock functions for per-test control
 let mockListVideos: ReturnType<typeof vi.fn>
-let mockDownloadPortugueseCaptions: ReturnType<typeof vi.fn>
+let mockListPlaylistItems: ReturnType<typeof vi.fn>
+let mockGetVideoDetails: ReturnType<typeof vi.fn>
+let mockGetVideoDetailsBatch: ReturnType<typeof vi.fn>
 
 // Mock YouTubeClient as a class
+// Note: downloadPortugueseCaptions is no longer used in sync (Story 5.6 - Transcrição On-Demand)
 vi.mock('@/lib/youtube', () => ({
   YouTubeClient: class MockYouTubeClient {
     constructor(_accessToken: string) {}
+    // Legacy method (still used by some tests)
     listVideos(...args: unknown[]) {
       return mockListVideos(...args)
     }
-    downloadPortugueseCaptions(...args: unknown[]) {
-      return mockDownloadPortugueseCaptions(...args)
+    // 2-phase flow methods (Story 7.2)
+    listPlaylistItems(...args: unknown[]) {
+      return mockListPlaylistItems(...args)
     }
-  },
-  YouTubeAPIError: class MockYouTubeAPIError extends Error {
-    code: string
-    status?: number
-    constructor(code: string, message: string, status?: number) {
-      super(message)
-      this.code = code
-      this.status = status
-      this.name = 'YouTubeAPIError'
+    getVideoDetails(...args: unknown[]) {
+      return mockGetVideoDetails(...args)
+    }
+    getVideoDetailsBatch(...args: unknown[]) {
+      return mockGetVideoDetailsBatch(...args)
+    }
+    // Static method for channel ID conversion
+    static channelIdToUploadsPlaylist(channelId: string) {
+      if (!channelId.startsWith('UC')) {
+        throw new Error(`Invalid channel ID format: ${channelId}`)
+      }
+      return 'UU' + channelId.substring(2)
     }
   },
 }))
@@ -39,6 +47,7 @@ vi.mock('@/lib/youtube', () => ({
 vi.mock('@/lib/firebase/videos-admin', () => ({
   getAllVideosRaw: vi.fn(),
   batchWriteVideos: vi.fn(),
+  getExistingVideoIds: vi.fn(),
 }))
 
 // Mock podcasts-admin
@@ -51,24 +60,35 @@ vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
+// Mock storage-admin for thumbnail uploads (Story 7.3)
+let mockUploadVideoThumbnail: ReturnType<typeof vi.fn>
+vi.mock('@/lib/firebase/storage-admin', () => ({
+  uploadVideoThumbnail: (...args: unknown[]) => mockUploadVideoThumbnail(...args),
+}))
+
 // Mock video-utils
 vi.mock('@/lib/video-utils', () => ({
   classifyVideoType: vi.fn(),
 }))
 
-// Mock srt-parser
-vi.mock('@/lib/srt-parser', () => ({
-  parseSrtToText: vi.fn((srt: string) => srt.replace(/\d+\n[\d:,]+ --> [\d:,]+\n/g, '').trim()),
-}))
-
-import { getAllVideosRaw, batchWriteVideos } from '@/lib/firebase/videos-admin'
+import { getAllVideosRaw, batchWriteVideos, getExistingVideoIds } from '@/lib/firebase/videos-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { classifyVideoType } from '@/lib/video-utils'
 
 import { syncVideos } from './sync-videos'
 
+/**
+ * Helper to create thumbnails object from video ID.
+ */
+function makeThumbnails(videoId: string) {
+  return {
+    high: { url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`, width: 480, height: 360 },
+  }
+}
+
 const mockGetAllVideosRaw = vi.mocked(getAllVideosRaw)
 const mockBatchWriteVideos = vi.mocked(batchWriteVideos)
+const mockGetExistingVideoIds = vi.mocked(getExistingVideoIds)
 const mockGetPodcastAdmin = vi.mocked(getPodcastAdmin)
 const mockClassifyVideoType = vi.mocked(classifyVideoType)
 
@@ -93,19 +113,29 @@ describe('sync-videos.ts - Video import (create only)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // Legacy mock (some tests still use listVideos)
     mockListVideos = vi.fn()
-    mockDownloadPortugueseCaptions = vi.fn().mockResolvedValue(null) // Default: no captions available
+    // 2-phase flow mocks (Story 7.2)
+    mockListPlaylistItems = vi.fn()
+    mockGetVideoDetails = vi.fn().mockResolvedValue([])
+    mockGetVideoDetailsBatch = vi.fn().mockResolvedValue([])
+    // Thumbnail upload mock (Story 7.3)
+    mockUploadVideoThumbnail = vi.fn().mockResolvedValue('https://storage.example.com/thumbnail.jpg')
     mockGetPodcastAdmin.mockResolvedValue(mockPodcast as never)
     mockClassifyVideoType.mockReturnValue('episode')
+    // Default: empty Set for delta sync (simulates first sync or no existing videos)
+    mockGetExistingVideoIds.mockResolvedValue(new Set())
   })
 
   describe('syncVideos', () => {
     it('returns zero counts when YouTube has no videos', async () => {
-      mockListVideos.mockResolvedValue({ videos: [], nextPageToken: undefined })
+      // 2-phase flow: listPlaylistItems returns empty
+      mockListPlaylistItems.mockResolvedValue({ videoIds: [], nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue([])
 
       const result = await syncVideos('pptnc', 'access-token')
 
+      // Note: transcription fields removed per Story 5.6 (Transcrição On-Demand)
       expect(result).toEqual({
         added: 0,
         addedAsSent: 0,
@@ -114,12 +144,11 @@ describe('sync-videos.ts - Video import (create only)', () => {
         liveBroadcastsExcluded: 0,
         newVideos: 0,
         reopenedVideos: 0,
-        transcriptionsFetched: 0,
-        transcriptionsUnavailable: 0,
-        quotaError: undefined,
       })
       // batchWriteVideos should NOT be called when there are no new videos
       expect(mockBatchWriteVideos).not.toHaveBeenCalled()
+      // getVideoDetailsBatch should NOT be called when no IDs to fetch
+      expect(mockGetVideoDetailsBatch).not.toHaveBeenCalled()
     })
 
     it('creates new videos not in Firestore', async () => {
@@ -128,7 +157,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           id: 'new-video-1',
           title: 'New Video 1',
           description: 'Description 1',
-          thumbnail: 'https://i.ytimg.com/vi/new-video-1/hqdefault.jpg',
+          thumbnails: makeThumbnails('new-video-1'),
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'public' as const, // Public → addedAsSent
@@ -136,7 +165,9 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // 2-phase flow: Phase 1 returns IDs, Phase 2 returns details
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['new-video-1'], nextPageToken: undefined })
+      mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
       mockGetAllVideosRaw.mockResolvedValue([])
       mockBatchWriteVideos.mockResolvedValue(undefined)
 
@@ -159,25 +190,14 @@ describe('sync-videos.ts - Video import (create only)', () => {
       )
     })
 
-    it('skips existing videos without modification', async () => {
-      const youtubeVideos = [
-        {
-          id: 'existing-video',
-          title: 'Updated Title', // Title changed on YouTube
-          description: 'Updated description',
-          thumbnail: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg',
-          duration: 3600,
-          publishedAt: '2024-01-15T00:00:00Z',
-          privacyStatus: 'public' as const,
-          liveBroadcastContent: 'none' as const,
-        },
-      ]
-
+    it('skips existing videos without modification (delta sync)', async () => {
+      // With delta sync, existing videos are detected via getExistingVideoIds
+      // and the sync stops early when encountering them
       const firestoreVideosRaw = [
         {
           id: 'existing-video',
           podcastId: 'pptnc',
-          title: 'Old Title', // Different from YouTube
+          title: 'Old Title',
           description: 'Old description',
           thumbnails: { high: { url: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg' } },
           duration: 3600,
@@ -190,20 +210,23 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // Delta sync: existing video ID is in the Set
+      mockGetExistingVideoIds.mockResolvedValue(new Set(['existing-video']))
+      // 2-phase flow: Phase 1 returns the ID, but it's in existingIds so it's skipped
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['existing-video'], nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
 
       const result = await syncVideos('pptnc', 'access-token')
 
       expect(result.added).toBe(0)
-      expect(result.skipped).toBe(1)
+      expect(result.skipped).toBe(1) // Skipped count = existingIds.size
       // batchWriteVideos should NOT be called when there are no new videos
       expect(mockBatchWriteVideos).not.toHaveBeenCalled()
+      // getVideoDetailsBatch should NOT be called when no new IDs
+      expect(mockGetVideoDetailsBatch).not.toHaveBeenCalled()
     })
 
     it('never deletes videos even if removed from YouTube', async () => {
-      const youtubeVideos: never[] = [] // Video was removed from YouTube
-
       const firestoreVideosRaw = [
         {
           id: 'removed-from-youtube',
@@ -221,7 +244,8 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // 2-phase flow: Phase 1 returns empty (video removed from YouTube)
+      mockListPlaylistItems.mockResolvedValue({ videoIds: [], nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
 
       const result = await syncVideos('pptnc', 'access-token')
@@ -233,24 +257,22 @@ describe('sync-videos.ts - Video import (create only)', () => {
     })
 
     it('handles pagination from YouTube API', async () => {
-      const page1Videos = [
+      const allVideos = [
         {
           id: 'video-1',
           title: 'Video 1',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/video-1/hqdefault.jpg',
+          thumbnails: makeThumbnails('video-1'),
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'public' as const, // Public → sent
           liveBroadcastContent: 'none' as const,
         },
-      ]
-      const page2Videos = [
         {
           id: 'video-2',
           title: 'Video 2',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/video-2/hqdefault.jpg',
+          thumbnails: makeThumbnails('video-2'),
           duration: 600,
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'public' as const, // Public → sent
@@ -258,10 +280,13 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos
-        .mockResolvedValueOnce({ videos: page1Videos, nextPageToken: 'page2token' })
-        .mockResolvedValueOnce({ videos: page2Videos, nextPageToken: undefined })
+      // 2-phase flow: Phase 1 returns IDs across multiple pages
+      mockListPlaylistItems
+        .mockResolvedValueOnce({ videoIds: ['video-1'], nextPageToken: 'page2token' })
+        .mockResolvedValueOnce({ videoIds: ['video-2'], nextPageToken: undefined })
 
+      // Phase 2: getVideoDetailsBatch fetches all new IDs in one batch
+      mockGetVideoDetailsBatch.mockResolvedValue(allVideos)
       mockGetAllVideosRaw.mockResolvedValue([])
       mockBatchWriteVideos.mockResolvedValue(undefined)
 
@@ -270,7 +295,10 @@ describe('sync-videos.ts - Video import (create only)', () => {
       // Both are public, so addedAsSent=2, added=0
       expect(result.newVideos).toBe(2)
       expect(result.addedAsSent).toBe(2)
-      expect(mockListVideos).toHaveBeenCalledTimes(2)
+      expect(mockListPlaylistItems).toHaveBeenCalledTimes(2)
+      // getVideoDetailsBatch called once with all IDs
+      expect(mockGetVideoDetailsBatch).toHaveBeenCalledTimes(1)
+      expect(mockGetVideoDetailsBatch).toHaveBeenCalledWith(['video-1', 'video-2'])
     })
 
     it('classifies video type using podcast config', async () => {
@@ -279,7 +307,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           id: 'new-video',
           title: 'New Video',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/new-video/hqdefault.jpg',
+          thumbnails: makeThumbnails('new-video'),
           duration: 600, // 10 minutes = cut
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'unlisted' as const, // Non-public → new status
@@ -287,7 +315,9 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // 2-phase flow
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['new-video'], nextPageToken: undefined })
+      mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
       mockGetAllVideosRaw.mockResolvedValue([])
       mockBatchWriteVideos.mockResolvedValue(undefined)
       mockClassifyVideoType.mockReturnValue('cut')
@@ -311,7 +341,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           id: 'new-video',
           title: 'New Video',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/new-video/hqdefault.jpg',
+          thumbnails: makeThumbnails('new-video'),
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'private' as const, // Non-public → new status
@@ -319,7 +349,9 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // 2-phase flow
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['new-video'], nextPageToken: undefined })
+      mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
       mockGetAllVideosRaw.mockResolvedValue([])
       mockBatchWriteVideos.mockResolvedValue(undefined)
 
@@ -343,7 +375,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
           id: 'public-video',
           title: 'Public Video',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/public-video/hqdefault.jpg',
+          thumbnails: makeThumbnails('public-video'),
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'public' as const, // Public → sent status
@@ -351,7 +383,9 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // 2-phase flow
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['public-video'], nextPageToken: undefined })
+      mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
       mockGetAllVideosRaw.mockResolvedValue([])
       mockBatchWriteVideos.mockResolvedValue(undefined)
 
@@ -370,18 +404,8 @@ describe('sync-videos.ts - Video import (create only)', () => {
     })
 
     it('reopens sent videos when visibility changes to non-public', async () => {
-      const youtubeVideos = [
-        {
-          id: 'sent-video',
-          title: 'Previously Sent Video',
-          description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/sent-video/hqdefault.jpg',
-          duration: 3600,
-          publishedAt: '2024-01-15T00:00:00Z',
-          privacyStatus: 'private' as const, // Changed from public to private
-          liveBroadcastContent: 'none' as const,
-        },
-      ]
+      // With delta sync, the sent video is already in Firestore so won't be in new videos
+      // But we need to re-evaluate it via getVideoDetails
 
       const firestoreVideosRaw = [
         {
@@ -393,9 +417,25 @@ describe('sync-videos.ts - Video import (create only)', () => {
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // Delta sync: sent-video exists, so it's skipped in Phase 1
+      mockGetExistingVideoIds.mockResolvedValue(new Set(['sent-video']))
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['sent-video'], nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
       mockBatchWriteVideos.mockResolvedValue(undefined)
+
+      // getVideoDetails is called to re-evaluate sent videos (separate from 2-phase flow)
+      mockGetVideoDetails.mockResolvedValue([
+        {
+          id: 'sent-video',
+          title: 'Previously Sent Video',
+          description: 'Description',
+          thumbnails: makeThumbnails('sent-video'),
+          duration: 3600,
+          publishedAt: '2024-01-15T00:00:00Z',
+          privacyStatus: 'private' as const, // Changed from public to private
+          liveBroadcastContent: 'none' as const,
+        },
+      ])
 
       const result = await syncVideos('pptnc', 'access-token')
 
@@ -426,128 +466,8 @@ describe('sync-videos.ts - Video import (create only)', () => {
       )
     })
 
-    it('fetches transcriptions for new non-public videos', async () => {
-      const youtubeVideos = [
-        {
-          id: 'new-video',
-          title: 'New Video',
-          description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/new-video/hqdefault.jpg',
-          duration: 3600,
-          publishedAt: '2024-01-15T00:00:00Z',
-          privacyStatus: 'private' as const, // Non-public → new status → needs transcription
-          liveBroadcastContent: 'none' as const,
-        },
-      ]
-
-      const srtContent = `1
-00:00:00,000 --> 00:00:02,500
-Olá mundo`
-
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
-      mockGetAllVideosRaw.mockResolvedValue([])
-      mockBatchWriteVideos.mockResolvedValue(undefined)
-      mockDownloadPortugueseCaptions.mockResolvedValue(srtContent)
-
-      const result = await syncVideos('pptnc', 'access-token')
-
-      expect(result.transcriptionsFetched).toBe(1)
-      expect(result.transcriptionsUnavailable).toBe(0)
-      expect(mockDownloadPortugueseCaptions).toHaveBeenCalledWith('new-video')
-      // Should have been called twice: once for creates, once for transcription updates
-      expect(mockBatchWriteVideos).toHaveBeenCalledTimes(2)
-    })
-
-    it('does not fetch transcriptions for public (sent) videos', async () => {
-      const youtubeVideos = [
-        {
-          id: 'public-video',
-          title: 'Public Video',
-          description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/public-video/hqdefault.jpg',
-          duration: 3600,
-          publishedAt: '2024-01-15T00:00:00Z',
-          privacyStatus: 'public' as const, // Public → sent status → no transcription needed
-          liveBroadcastContent: 'none' as const,
-        },
-      ]
-
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
-      mockGetAllVideosRaw.mockResolvedValue([])
-      mockBatchWriteVideos.mockResolvedValue(undefined)
-
-      const result = await syncVideos('pptnc', 'access-token')
-
-      expect(result.transcriptionsFetched).toBe(0)
-      expect(result.transcriptionsUnavailable).toBe(0)
-      expect(mockDownloadPortugueseCaptions).not.toHaveBeenCalled()
-    })
-
-    it('fetches transcriptions for reopened videos', async () => {
-      const youtubeVideos = [
-        {
-          id: 'sent-video',
-          title: 'Previously Sent Video',
-          description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/sent-video/hqdefault.jpg',
-          duration: 3600,
-          publishedAt: '2024-01-15T00:00:00Z',
-          privacyStatus: 'private' as const, // Changed from public to private → reopen → needs transcription
-          liveBroadcastContent: 'none' as const,
-        },
-      ]
-
-      const firestoreVideosRaw = [
-        {
-          id: 'sent-video',
-          podcastId: 'pptnc',
-          title: 'Previously Sent Video',
-          status: 'sent',
-          youtubePrivacyStatus: 'public',
-        },
-      ]
-
-      const srtContent = `1
-00:00:00,000 --> 00:00:02,500
-Olá mundo`
-
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
-      mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
-      mockBatchWriteVideos.mockResolvedValue(undefined)
-      mockDownloadPortugueseCaptions.mockResolvedValue(srtContent)
-
-      const result = await syncVideos('pptnc', 'access-token')
-
-      expect(result.reopened).toBe(1)
-      expect(result.transcriptionsFetched).toBe(1)
-      expect(mockDownloadPortugueseCaptions).toHaveBeenCalledWith('sent-video')
-    })
-
-    it('handles unavailable transcriptions gracefully', async () => {
-      const youtubeVideos = [
-        {
-          id: 'new-video',
-          title: 'New Video',
-          description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/new-video/hqdefault.jpg',
-          duration: 3600,
-          publishedAt: '2024-01-15T00:00:00Z',
-          privacyStatus: 'private' as const,
-          liveBroadcastContent: 'none' as const,
-        },
-      ]
-
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
-      mockGetAllVideosRaw.mockResolvedValue([])
-      mockBatchWriteVideos.mockResolvedValue(undefined)
-      mockDownloadPortugueseCaptions.mockResolvedValue(null) // No captions available
-
-      const result = await syncVideos('pptnc', 'access-token')
-
-      expect(result.transcriptionsFetched).toBe(0)
-      expect(result.transcriptionsUnavailable).toBe(1)
-      expect(result.quotaError).toBeUndefined()
-    })
+    // Note: Transcription tests removed per Story 5.6 (Transcrição On-Demand)
+    // Transcriptions are now fetched on-demand when producer selects a video
 
     it('excludes live broadcasts from import', async () => {
       const youtubeVideos = [
@@ -555,7 +475,7 @@ Olá mundo`
           id: 'regular-video',
           title: 'Regular Video',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/regular-video/hqdefault.jpg',
+          thumbnails: makeThumbnails('regular-video'),
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'public' as const,
@@ -565,7 +485,7 @@ Olá mundo`
           id: 'live-video',
           title: 'Live Stream',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/live-video/hqdefault.jpg',
+          thumbnails: makeThumbnails('live-video'),
           duration: 7200,
           publishedAt: '2024-01-15T00:00:00Z',
           privacyStatus: 'public' as const,
@@ -575,7 +495,7 @@ Olá mundo`
           id: 'upcoming-video',
           title: 'Upcoming Stream',
           description: 'Description',
-          thumbnail: 'https://i.ytimg.com/vi/upcoming-video/hqdefault.jpg',
+          thumbnails: makeThumbnails('upcoming-video'),
           duration: 0,
           publishedAt: '2024-01-16T00:00:00Z',
           privacyStatus: 'private' as const,
@@ -583,7 +503,13 @@ Olá mundo`
         },
       ]
 
-      mockListVideos.mockResolvedValue({ videos: youtubeVideos, nextPageToken: undefined })
+      // 2-phase flow: Phase 1 returns all IDs
+      mockListPlaylistItems.mockResolvedValue({
+        videoIds: ['regular-video', 'live-video', 'upcoming-video'],
+        nextPageToken: undefined,
+      })
+      // Phase 2: returns all video details
+      mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
       mockGetAllVideosRaw.mockResolvedValue([])
       mockBatchWriteVideos.mockResolvedValue(undefined)
 
@@ -609,6 +535,450 @@ Olá mundo`
           ]),
         })
       )
+    })
+
+    describe('Delta Sync (Story 7.1)', () => {
+      it('uses getExistingVideoIds for delta sync', async () => {
+        mockListPlaylistItems.mockResolvedValue({ videoIds: [], nextPageToken: undefined })
+        mockGetAllVideosRaw.mockResolvedValue([])
+
+        await syncVideos('pptnc', 'access-token')
+
+        // Should call getExistingVideoIds for optimized delta sync
+        expect(mockGetExistingVideoIds).toHaveBeenCalledWith('pptnc')
+      })
+
+      it('skips existing videos but continues fetching all pages', async () => {
+        // Simulate: new videos interspersed with existing videos across pages
+        const newVideosDetails = [
+          {
+            id: 'new-video-1',
+            title: 'New Video 1',
+            description: 'Description',
+            thumbnails: makeThumbnails('new-video-1'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+          {
+            id: 'new-video-2',
+            title: 'New Video 2',
+            description: 'Description',
+            thumbnails: makeThumbnails('new-video-2'),
+            duration: 3600,
+            publishedAt: '2024-01-14T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+          {
+            id: 'new-video-3',
+            title: 'New Video 3',
+            description: 'Description',
+            thumbnails: makeThumbnails('new-video-3'),
+            duration: 3600,
+            publishedAt: '2024-01-10T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        // Set up existing IDs (these will be skipped)
+        mockGetExistingVideoIds.mockResolvedValue(new Set(['existing-video', 'older-existing']))
+
+        // 2-phase flow: Phase 1 returns IDs across 2 pages, with existing mixed in
+        mockListPlaylistItems
+          .mockResolvedValueOnce({
+            videoIds: ['new-video-1', 'new-video-2', 'existing-video'],
+            nextPageToken: 'page2token',
+          })
+          .mockResolvedValueOnce({
+            videoIds: ['older-existing', 'new-video-3'],
+            nextPageToken: undefined,
+          })
+        // Phase 2: only gets called with the 3 new IDs (existing ones skipped)
+        mockGetVideoDetailsBatch.mockResolvedValue(newVideosDetails)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        const result = await syncVideos('pptnc', 'access-token')
+
+        // Should add all 3 new videos (skipping existing ones)
+        expect(result.added).toBe(3)
+        expect(result.newVideos).toBe(3)
+        // Should fetch ALL pages (no early exit)
+        expect(mockListPlaylistItems).toHaveBeenCalledTimes(2)
+        // getVideoDetailsBatch called with only new IDs
+        expect(mockGetVideoDetailsBatch).toHaveBeenCalledWith(['new-video-1', 'new-video-2', 'new-video-3'])
+      })
+
+      it('fetches all pages even when existing videos are encountered', async () => {
+        const allVideos = [
+          {
+            id: 'video-1',
+            title: 'Video 1',
+            description: 'Description',
+            thumbnails: makeThumbnails('video-1'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'public' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+          {
+            id: 'video-2',
+            title: 'Video 2',
+            description: 'Description',
+            thumbnails: makeThumbnails('video-2'),
+            duration: 3600,
+            publishedAt: '2024-01-14T00:00:00Z',
+            privacyStatus: 'public' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        // Some existing videos
+        mockGetExistingVideoIds.mockResolvedValue(new Set(['existing-in-page-1']))
+
+        // 2-phase flow: Phase 1 paginates through all pages
+        mockListPlaylistItems
+          .mockResolvedValueOnce({ videoIds: ['video-1', 'existing-in-page-1'], nextPageToken: 'page2token' })
+          .mockResolvedValueOnce({ videoIds: ['video-2'], nextPageToken: undefined })
+        // Phase 2: gets only new IDs
+        mockGetVideoDetailsBatch.mockResolvedValue(allVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        const result = await syncVideos('pptnc', 'access-token')
+
+        // Should fetch all pages (existing videos are skipped, not early exit)
+        expect(mockListPlaylistItems).toHaveBeenCalledTimes(2)
+        expect(result.newVideos).toBe(2)
+      })
+
+      it('reports skipped count based on existing videos', async () => {
+        // Existing videos = skipped count
+        mockGetExistingVideoIds.mockResolvedValue(new Set(['video-1', 'video-2', 'video-3']))
+
+        // All videos in the page are existing
+        mockListPlaylistItems.mockResolvedValue({ videoIds: ['video-1'], nextPageToken: undefined })
+        mockGetAllVideosRaw.mockResolvedValue([])
+
+        const result = await syncVideos('pptnc', 'access-token')
+
+        // Skipped should reflect existing videos count
+        expect(result.skipped).toBe(3)
+      })
+    })
+
+    describe('2-Phase Optimized Flow (Story 7.2)', () => {
+      it('calls listPlaylistItems for Phase 1 (ID collection)', async () => {
+        mockListPlaylistItems.mockResolvedValue({ videoIds: [], nextPageToken: undefined })
+        mockGetAllVideosRaw.mockResolvedValue([])
+
+        await syncVideos('pptnc', 'access-token')
+
+        // Phase 1: Should call listPlaylistItems with uploads playlist ID
+        expect(mockListPlaylistItems).toHaveBeenCalledWith(
+          'UU123', // Converted from UC123
+          50,
+          undefined
+        )
+      })
+
+      it('only fetches video details for new IDs (Phase 2)', async () => {
+        const newVideoDetails = [
+          {
+            id: 'new-video',
+            title: 'New Video',
+            description: 'Description',
+            thumbnails: makeThumbnails('new-video'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        // 3 IDs returned from playlist, but 2 are existing
+        mockGetExistingVideoIds.mockResolvedValue(new Set(['existing-1', 'existing-2']))
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds: ['new-video', 'existing-1', 'existing-2'],
+          nextPageToken: undefined,
+        })
+        mockGetVideoDetailsBatch.mockResolvedValue(newVideoDetails)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        await syncVideos('pptnc', 'access-token')
+
+        // Phase 2: Should only call getVideoDetailsBatch with new ID
+        expect(mockGetVideoDetailsBatch).toHaveBeenCalledWith(['new-video'])
+        expect(mockGetVideoDetailsBatch).toHaveBeenCalledTimes(1)
+      })
+
+      it('does not call getVideoDetailsBatch when no new videos', async () => {
+        // All videos are existing
+        mockGetExistingVideoIds.mockResolvedValue(new Set(['existing-1', 'existing-2']))
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds: ['existing-1'],
+          nextPageToken: undefined,
+        })
+        mockGetAllVideosRaw.mockResolvedValue([])
+
+        await syncVideos('pptnc', 'access-token')
+
+        // Should NOT call getVideoDetailsBatch when no new IDs
+        expect(mockGetVideoDetailsBatch).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('Parallel Thumbnail Upload (Story 7.3)', () => {
+      it('uploads thumbnails for multiple new videos', async () => {
+        const youtubeVideos = [
+          {
+            id: 'video-1',
+            title: 'Video 1',
+            description: 'Desc 1',
+            thumbnails: makeThumbnails('video-1'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+          {
+            id: 'video-2',
+            title: 'Video 2',
+            description: 'Desc 2',
+            thumbnails: makeThumbnails('video-2'),
+            duration: 3600,
+            publishedAt: '2024-01-14T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+          {
+            id: 'video-3',
+            title: 'Video 3',
+            description: 'Desc 3',
+            thumbnails: makeThumbnails('video-3'),
+            duration: 3600,
+            publishedAt: '2024-01-13T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds: ['video-1', 'video-2', 'video-3'],
+          nextPageToken: undefined,
+        })
+        mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        await syncVideos('pptnc', 'access-token')
+
+        // Should upload thumbnail for each new video
+        expect(mockUploadVideoThumbnail).toHaveBeenCalledTimes(3)
+        expect(mockUploadVideoThumbnail).toHaveBeenCalledWith(
+          'pptnc',
+          'video-1',
+          expect.arrayContaining([expect.stringContaining('video-1')])
+        )
+        expect(mockUploadVideoThumbnail).toHaveBeenCalledWith(
+          'pptnc',
+          'video-2',
+          expect.arrayContaining([expect.stringContaining('video-2')])
+        )
+        expect(mockUploadVideoThumbnail).toHaveBeenCalledWith(
+          'pptnc',
+          'video-3',
+          expect.arrayContaining([expect.stringContaining('video-3')])
+        )
+      })
+
+      it('continues sync when thumbnail upload fails for one video', async () => {
+        const youtubeVideos = [
+          {
+            id: 'video-ok',
+            title: 'Video OK',
+            description: 'Desc',
+            thumbnails: makeThumbnails('video-ok'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+          {
+            id: 'video-fail',
+            title: 'Video Fail',
+            description: 'Desc',
+            thumbnails: makeThumbnails('video-fail'),
+            duration: 3600,
+            publishedAt: '2024-01-14T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds: ['video-ok', 'video-fail'],
+          nextPageToken: undefined,
+        })
+        mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        // First upload succeeds, second fails
+        mockUploadVideoThumbnail
+          .mockResolvedValueOnce('https://storage.example.com/video-ok.jpg')
+          .mockRejectedValueOnce(new Error('Network error'))
+
+        // Sync should NOT throw
+        const result = await syncVideos('pptnc', 'access-token')
+
+        // Both videos should be created
+        expect(result.added).toBe(2)
+        expect(mockBatchWriteVideos).toHaveBeenCalledWith(
+          'pptnc',
+          expect.objectContaining({
+            creates: expect.arrayContaining([
+              expect.objectContaining({ id: 'video-ok' }),
+              expect.objectContaining({ id: 'video-fail' }),
+            ]),
+          })
+        )
+
+        // Video with successful upload should have storageThumbnailUrl
+        const createCall = mockBatchWriteVideos.mock.calls[0][1]
+        const videoOk = createCall.creates.find((v: { id: string }) => v.id === 'video-ok')
+        const videoFail = createCall.creates.find((v: { id: string }) => v.id === 'video-fail')
+
+        expect(videoOk.storageThumbnailUrl).toBe('https://storage.example.com/video-ok.jpg')
+        expect(videoFail.storageThumbnailUrl).toBeUndefined()
+      })
+
+      it('does not call uploadVideoThumbnail when no new videos', async () => {
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds: [],
+          nextPageToken: undefined,
+        })
+        mockGetAllVideosRaw.mockResolvedValue([])
+
+        await syncVideos('pptnc', 'access-token')
+
+        expect(mockUploadVideoThumbnail).not.toHaveBeenCalled()
+      })
+
+      it('handles exactly 5 videos (concurrency boundary)', async () => {
+        // Create exactly 5 videos to match THUMBNAIL_UPLOAD_CONCURRENCY
+        const videoIds = ['v1', 'v2', 'v3', 'v4', 'v5']
+        const youtubeVideos = videoIds.map((id, i) => ({
+          id,
+          title: `Video ${i + 1}`,
+          description: 'Desc',
+          thumbnails: makeThumbnails(id),
+          duration: 3600,
+          publishedAt: `2024-01-${15 - i}T00:00:00Z`,
+          privacyStatus: 'private' as const,
+          liveBroadcastContent: 'none' as const,
+        }))
+
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds,
+          nextPageToken: undefined,
+        })
+        mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        const result = await syncVideos('pptnc', 'access-token')
+
+        expect(result.added).toBe(5)
+        expect(mockUploadVideoThumbnail).toHaveBeenCalledTimes(5)
+      })
+
+      it('handles more than 5 videos (exceeds concurrency limit)', async () => {
+        // Create 8 videos to exceed THUMBNAIL_UPLOAD_CONCURRENCY (5)
+        const videoIds = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8']
+        const youtubeVideos = videoIds.map((id, i) => ({
+          id,
+          title: `Video ${i + 1}`,
+          description: 'Desc',
+          thumbnails: makeThumbnails(id),
+          duration: 3600,
+          publishedAt: `2024-01-${15 - i}T00:00:00Z`,
+          privacyStatus: 'private' as const,
+          liveBroadcastContent: 'none' as const,
+        }))
+
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds,
+          nextPageToken: undefined,
+        })
+        mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        const result = await syncVideos('pptnc', 'access-token')
+
+        // All 8 videos should be created
+        expect(result.added).toBe(8)
+        expect(mockUploadVideoThumbnail).toHaveBeenCalledTimes(8)
+
+        // Verify all videos were created with correct IDs (order preserved)
+        const createCall = mockBatchWriteVideos.mock.calls[0][1]
+        expect(createCall.creates).toHaveLength(8)
+        videoIds.forEach((id, index) => {
+          expect(createCall.creates[index].id).toBe(id)
+        })
+      })
+
+      it('preserves result order regardless of upload completion order', async () => {
+        const youtubeVideos = [
+          {
+            id: 'slow-video',
+            title: 'Slow',
+            description: 'Desc',
+            thumbnails: makeThumbnails('slow-video'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+          {
+            id: 'fast-video',
+            title: 'Fast',
+            description: 'Desc',
+            thumbnails: makeThumbnails('fast-video'),
+            duration: 3600,
+            publishedAt: '2024-01-14T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        mockListPlaylistItems.mockResolvedValue({
+          videoIds: ['slow-video', 'fast-video'],
+          nextPageToken: undefined,
+        })
+        mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+
+        // Simulate different upload times - first is slow, second is fast
+        mockUploadVideoThumbnail
+          .mockImplementationOnce(() => new Promise(resolve =>
+            setTimeout(() => resolve('https://storage/slow.jpg'), 10)
+          ))
+          .mockImplementationOnce(() => Promise.resolve('https://storage/fast.jpg'))
+
+        await syncVideos('pptnc', 'access-token')
+
+        // Results should still be in original order (slow first, fast second)
+        const createCall = mockBatchWriteVideos.mock.calls[0][1]
+        expect(createCall.creates[0].id).toBe('slow-video')
+        expect(createCall.creates[1].id).toBe('fast-video')
+      })
     })
   })
 })

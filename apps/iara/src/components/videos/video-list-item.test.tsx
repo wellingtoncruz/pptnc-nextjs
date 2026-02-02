@@ -5,6 +5,17 @@ import type { VideoSummary } from '@/types/video'
 
 import { VideoListItem } from './video-list-item'
 
+// Mock do contexto de processamento LLM
+const mockUseLLMProcessing = vi.fn(() => ({
+  isProcessing: false,
+  startProcessing: vi.fn(),
+  stopProcessing: vi.fn(),
+}))
+
+vi.mock('@/contexts', () => ({
+  useLLMProcessing: () => mockUseLLMProcessing(),
+}))
+
 const createMockVideo = (overrides: Partial<VideoSummary> = {}): VideoSummary => ({
   id: 'video-123',
   title: 'Test Video Title',
@@ -14,9 +25,8 @@ const createMockVideo = (overrides: Partial<VideoSummary> = {}): VideoSummary =>
   duration: 600,
   status: 'new',
   videoType: 'cut',
-  // Default to having transcription so video is not blocked
-  transcriptionSRT: 'mock-srt',
-  transcriptionTXT: 'mock-txt',
+  // Note: Transcription fields are optional - videos are not blocked for missing transcription
+  // Transcription is fetched on-demand when producer selects video (Story 5.6)
   ...overrides,
 })
 
@@ -38,12 +48,17 @@ describe('VideoListItem', () => {
       expect(screen.getByText(video.title)).toBeInTheDocument()
     })
 
-    it('renderiza placeholder quando não há thumbnail', () => {
+    it('renderiza VideoThumbnail com fallback do YouTube quando não há thumbnail customizado', () => {
       const video = createMockVideo({ thumbnails: undefined })
       render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
 
-      // Should have a placeholder icon
-      expect(screen.getByTestId('thumbnail-placeholder')).toBeInTheDocument()
+      // VideoThumbnail uses YouTube fallback when no custom thumbnail
+      // It will try hqdefault -> default -> "Sem thumbnail"
+      // hqdefault is used because it's guaranteed to exist for ALL videos
+      const img = screen.getByRole('img', { name: video.title })
+      expect(img).toBeInTheDocument()
+      // Should start with YouTube hqdefault fallback (guaranteed to exist)
+      expect(img).toHaveAttribute('src', expect.stringContaining('hqdefault.jpg'))
     })
   })
 
@@ -275,78 +290,79 @@ describe('VideoListItem', () => {
     })
   })
 
-  describe('pending transcription behavior', () => {
-    it('renderiza vídeo sem transcrição com opacidade reduzida', () => {
+  describe('transcription on-demand behavior (Story 5.6)', () => {
+    it('não bloqueia vídeo sem transcrição - transcrição é carregada sob demanda', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
       const video = createMockVideo({
         status: 'new',
         transcriptionSRT: undefined,
         transcriptionTXT: undefined,
       })
-      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
+      render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
 
+      // Video without transcription should be selectable
       const item = screen.getByRole('option')
-      expect(item).toHaveClass('opacity-50')
+      expect(item).not.toHaveClass('opacity-50')
+      expect(item).not.toHaveClass('cursor-not-allowed')
+
+      await user.click(item)
+      expect(onSelect).toHaveBeenCalledWith(video.id)
     })
 
-    it('renderiza vídeo sem transcrição com cursor-not-allowed', () => {
+    it('não bloqueia vídeo draft sem transcrição', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
       const video = createMockVideo({
         status: 'draft',
         transcriptionSRT: undefined,
         transcriptionTXT: undefined,
       })
-      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
-
-      const item = screen.getByRole('option')
-      expect(item).toHaveClass('cursor-not-allowed')
-    })
-
-    it('não bloqueia vídeo com transcrição preenchida', async () => {
-      const onSelect = vi.fn()
-      const user = userEvent.setup()
-      const video = createMockVideo({
-        status: 'new',
-        transcriptionSRT: 'has content',
-        transcriptionTXT: 'has content',
-      })
       render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
 
       await user.click(screen.getByRole('option'))
-
       expect(onSelect).toHaveBeenCalledWith(video.id)
     })
+  })
 
-    it('não bloqueia vídeo ready sem transcrição', async () => {
+  describe('bloqueio durante processamento LLM', () => {
+    it('bloqueia seleção quando LLM está processando e vídeo não está selecionado', async () => {
+      // Override mock para simular processamento
+      vi.mocked(await import('@/contexts')).useLLMProcessing = () => ({
+        isProcessing: true,
+        startProcessing: vi.fn(),
+        stopProcessing: vi.fn(),
+      })
+
       const onSelect = vi.fn()
       const user = userEvent.setup()
-      const video = createMockVideo({
-        status: 'ready',
-        transcriptionSRT: undefined,
-        transcriptionTXT: undefined,
-      })
+      const video = createMockVideo()
       render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
 
       await user.click(screen.getByRole('option'))
+      expect(onSelect).not.toHaveBeenCalled()
 
-      expect(onSelect).toHaveBeenCalledWith(video.id)
+      const item = screen.getByRole('option')
+      expect(item).toHaveClass('cursor-wait')
+      expect(item).toHaveClass('opacity-70')
     })
 
-    it('exibe overlay específico para transcrição pendente', async () => {
-      const user = userEvent.setup()
-      const video = createMockVideo({
-        status: 'new',
-        transcriptionSRT: undefined,
-        transcriptionTXT: undefined,
+    it('permite interação no vídeo já selecionado durante processamento', async () => {
+      vi.mocked(await import('@/contexts')).useLLMProcessing = () => ({
+        isProcessing: true,
+        startProcessing: vi.fn(),
+        stopProcessing: vi.fn(),
       })
-      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
 
-      // Overlay is shown on group hover
-      const item = screen.getByRole('option')
-      await user.hover(item)
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo()
+      // Vídeo já está selecionado
+      render(<VideoListItem video={video} isSelected={true} onSelect={onSelect} />)
 
-      // Overlay shows title
-      const overlay = screen.getByTestId('blocked-overlay')
-      expect(overlay).toBeInTheDocument()
-      expect(overlay).toHaveTextContent('Aguardando transcrição')
+      await user.click(screen.getByRole('option'))
+      // Pode clicar no vídeo atual (para não bloquear o wizard)
+      expect(onSelect).toHaveBeenCalledWith(video.id)
     })
   })
 })

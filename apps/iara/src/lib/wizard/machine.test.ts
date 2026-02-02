@@ -5,6 +5,7 @@ import {
   createInitialWizardState,
   getFirstIncompletePhase,
   getNextPhase,
+  getNextPhaseForType,
   getPreviousPhase,
   getWizardProgress,
   isWizardComplete,
@@ -26,6 +27,53 @@ describe('createInitialWizardState', () => {
         error: null,
       })
     }
+  })
+
+  it('starts at phase 1 for episode video type', () => {
+    const state = createInitialWizardState('video-123', 'episode')
+    expect(state.currentPhase).toBe(1)
+  })
+
+  it('starts at phase 0 for reel without parent', () => {
+    const state = createInitialWizardState('video-123', 'reel')
+    // Phase 0 is cast to WizardPhase for type safety
+    expect(state.currentPhase as number).toBe(0)
+  })
+
+  it('starts at phase 0 for cut without parent', () => {
+    const state = createInitialWizardState('video-123', 'cut')
+    expect(state.currentPhase as number).toBe(0)
+  })
+
+  it('starts at phase 5 for reel with parent', () => {
+    const state = createInitialWizardState('video-123', 'reel', 'parent-episode-id')
+    expect(state.currentPhase).toBe(5)
+  })
+
+  it('starts at phase 5 for cut with parent', () => {
+    const state = createInitialWizardState('video-123', 'cut', 'parent-episode-id')
+    expect(state.currentPhase).toBe(5)
+  })
+
+  it('defaults to episode flow when videoType is undefined', () => {
+    const state = createInitialWizardState('video-123', undefined)
+    expect(state.currentPhase).toBe(1)
+  })
+
+  it('includes videoType in state', () => {
+    const episodeState = createInitialWizardState('video-123', 'episode')
+    expect(episodeState.videoType).toBe('episode')
+
+    const cutState = createInitialWizardState('video-123', 'cut')
+    expect(cutState.videoType).toBe('cut')
+
+    const reelState = createInitialWizardState('video-123', 'reel')
+    expect(reelState.videoType).toBe('reel')
+  })
+
+  it('defaults videoType to episode when not provided', () => {
+    const state = createInitialWizardState('video-123')
+    expect(state.videoType).toBe('episode')
   })
 })
 
@@ -189,6 +237,121 @@ describe('wizardReducer', () => {
       // Current phase should stay at 8
       expect(newState.currentPhase).toBe(8)
     })
+
+    describe('with videoType-aware navigation', () => {
+      it('cut: phase 5 advances to 5B (not 6)', () => {
+        const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+        state.currentPhase = 5
+        const data = { selectedTitle: 'Test Title' }
+
+        const newState = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 5,
+          data,
+        })
+
+        // Phase 5 should be completed
+        expect(newState.phases[5].status).toBe('completed')
+        expect(newState.phases[5].data).toEqual(data)
+        // Current phase should be '5B' for cut videos
+        expect(newState.currentPhase as string).toBe('5B')
+      })
+
+      it('reel: phase 5 advances to 6 (no 5B for reel)', () => {
+        const state = createInitialWizardState('video-123', 'reel', 'parent-id')
+        state.currentPhase = 5
+        const data = { selectedTitle: 'Test Title' }
+
+        const newState = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 5,
+          data,
+        })
+
+        // Phase 5 should be completed
+        expect(newState.phases[5].status).toBe('completed')
+        // Current phase should be 6 for reel videos (no 5B)
+        expect(newState.currentPhase).toBe(6)
+      })
+
+      it('episode: phase 5 advances to 6', () => {
+        const state = createInitialWizardState('video-123', 'episode')
+        // Mark phases 1-4 as completed
+        for (let phase = 1; phase <= 4; phase++) {
+          state.phases[phase as 1].status = 'completed'
+        }
+        state.currentPhase = 5
+        const data = { selectedTitle: 'Test Title' }
+
+        const newState = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 5,
+          data,
+        })
+
+        // Current phase should be 6 for episode videos
+        expect(newState.currentPhase).toBe(6)
+      })
+
+      it('cut/reel: phase 0 advances to 5', () => {
+        const state = createInitialWizardState('video-123', 'cut')
+        // Phase 0 is the starting phase for cut without parent
+        expect(state.currentPhase as number).toBe(0)
+
+        const data = { parentEpisodeId: 'ep-123' }
+
+        const newState = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 0,
+          data,
+        })
+
+        // Current phase should be 5 (next after 0 for cut)
+        expect(newState.currentPhase).toBe(5)
+        // Phase 0 is NOT tracked in phases record, so phases should be unchanged
+        expect(newState.phases).toEqual(state.phases)
+      })
+
+      it('cut: phase 5B advances to 6', () => {
+        const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+        // Simulate being on phase 5B
+        state.currentPhase = '5B' as unknown as 5
+
+        const data = { shortTitle: 'IMPACTANTE!' }
+
+        const newState = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: '5B',
+          data,
+        })
+
+        // Current phase should be 6
+        expect(newState.currentPhase).toBe(6)
+        // Phase 5B is NOT tracked in phases record, so phases should be unchanged
+        expect(newState.phases).toEqual(state.phases)
+      })
+
+      it('extended phases (0 and 5B) do not modify phases record', () => {
+        // Phase 0
+        const state0 = createInitialWizardState('video-123', 'cut')
+        const newState0 = wizardReducer(state0, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 0,
+          data: { parentEpisodeId: 'ep-123' },
+        })
+        expect(newState0.phases).toEqual(state0.phases)
+
+        // Phase 5B
+        const state5B = createInitialWizardState('video-123', 'cut', 'parent-id')
+        state5B.currentPhase = '5B' as unknown as 5
+        const newState5B = wizardReducer(state5B, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: '5B',
+          data: { shortTitle: 'Test' },
+        })
+        expect(newState5B.phases).toEqual(state5B.phases)
+      })
+    })
   })
 
   describe('RESET', () => {
@@ -204,6 +367,19 @@ describe('wizardReducer', () => {
       expect(newState.currentPhase).toBe(1)
       expect(newState.phases[1].status).toBe('pending')
       expect(newState.phases[1].data).toBeNull()
+    })
+
+    it('preserves videoType when resetting', () => {
+      const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+      state.currentPhase = 6
+      state.phases[5].status = 'completed'
+
+      const newState = wizardReducer(state, { type: 'RESET' })
+
+      // videoType should be preserved
+      expect(newState.videoType).toBe('cut')
+      // currentPhase should be initial for cut (0 without parent)
+      expect(newState.currentPhase as number).toBe(0)
     })
   })
 
@@ -440,7 +616,7 @@ describe('wizardReducer', () => {
   })
 
   describe('HYDRATE_FROM_VIDEO_DATA', () => {
-    it('marks phases as completed when video has data', () => {
+    it('marks phases as completed when video has data and phases are reviewed', () => {
       const state = createInitialWizardState('video-123')
       // All phases are pending (fresh localStorage)
 
@@ -448,6 +624,7 @@ describe('wizardReducer', () => {
         critique: 'Great video!',
         editingIssues: [],
         riskAndCompliance: [],
+        reviewedPhases: [2, 3], // Phases 2 and 3 were confirmed by user
       }
 
       const newState = wizardReducer(state, {
@@ -465,15 +642,15 @@ describe('wizardReducer', () => {
       expect(newState.currentPhase).toBe(4)
     })
 
-    it('resets completed phases when video data is missing', () => {
+    it('marks phases 2 and 3 as needs_review when data exists but not reviewed', () => {
       const state = createInitialWizardState('video-123')
-      state.phases[1].status = 'completed'
-      state.phases[2].status = 'completed'
+      // All phases are pending (fresh localStorage)
 
-      // Video only has phase 1 data
       const videoData = {
         critique: 'Great video!',
-        // No editingIssues
+        editingIssues: [],
+        riskAndCompliance: [],
+        // No reviewedPhases - phases 2 and 3 need confirmation
       }
 
       const newState = wizardReducer(state, {
@@ -481,16 +658,48 @@ describe('wizardReducer', () => {
         videoData,
       })
 
-      // Phase 1 should stay completed
+      // Phase 1 should be completed (no review needed)
       expect(newState.phases[1].status).toBe('completed')
-      // Phase 2 should be reset (no data in video)
+      // Phases 2 and 3 should be needs_review (data exists but not confirmed)
+      expect(newState.phases[2].status).toBe('needs_review')
+      expect(newState.phases[3].status).toBe('needs_review')
+      // Phase 4 should still be pending
+      expect(newState.phases[4].status).toBe('pending')
+      // Current phase should be first incomplete (2 - needs_review counts as incomplete)
+      expect(newState.currentPhase).toBe(2)
+    })
+
+    it('resets completed phases when video data is missing (Firestore is source of truth)', () => {
+      // Story 5.3 fix: HYDRATE_FROM_VIDEO_DATA now resets phases when Firestore
+      // doesn't have data, even if localStorage says completed.
+      // This fixes the "infinite spinner" bug caused by stale localStorage.
+      const state = createInitialWizardState('video-123')
+      state.phases[1].status = 'completed'
+      state.phases[2].status = 'completed'
+      state.currentPhase = 3
+
+      // Video only has phase 1 data - phase 2 has no data in Firestore
+      const videoData = {
+        critique: 'Great video!',
+        // No editingIssues - Firestore is truth, phase 2 should be reset
+      }
+
+      const newState = wizardReducer(state, {
+        type: 'HYDRATE_FROM_VIDEO_DATA',
+        videoData,
+      })
+
+      // Phase 1 stays completed (has data), Phase 2 is reset to pending (no data)
+      expect(newState.phases[1].status).toBe('completed')
       expect(newState.phases[2].status).toBe('pending')
+      // currentPhase should be corrected to first incomplete phase
       expect(newState.currentPhase).toBe(2)
     })
 
     it('returns same state when no changes needed', () => {
       const state = createInitialWizardState('video-123')
       state.phases[1].status = 'completed'
+      state.currentPhase = 2 // Correct current phase for completed phase 1
 
       const videoData = {
         critique: 'Great video!',
@@ -502,6 +711,70 @@ describe('wizardReducer', () => {
       })
 
       // No changes needed - should return same state
+      expect(newState).toBe(state)
+    })
+
+    it('corrects currentPhase when it is ahead of first incomplete phase', () => {
+      const state = createInitialWizardState('video-123')
+      // Simulate corrupted localStorage: currentPhase is 6 but no phases completed
+      state.currentPhase = 6
+
+      const videoData = {} // No data in video
+
+      const newState = wizardReducer(state, {
+        type: 'HYDRATE_FROM_VIDEO_DATA',
+        videoData,
+      })
+
+      // Should correct currentPhase to 1 (first incomplete phase)
+      expect(newState.currentPhase).toBe(1)
+    })
+
+    it('resets all completed phases when video data is empty (Firestore is source of truth)', () => {
+      // Story 5.3 fix: If Firestore has no data, phases cannot be completed.
+      // This prevents the "infinite spinner" bug from stale localStorage.
+      const state = createInitialWizardState('video-123')
+      // localStorage says phases 1-3 are completed (stale)
+      state.phases[1].status = 'completed'
+      state.phases[2].status = 'completed'
+      state.phases[3].status = 'completed'
+      state.currentPhase = 4
+
+      // Firestore has no data - this is the source of truth
+      const videoData = {}
+
+      const newState = wizardReducer(state, {
+        type: 'HYDRATE_FROM_VIDEO_DATA',
+        videoData,
+      })
+
+      // All phases should be reset to pending - Firestore has no data
+      expect(newState.phases[1].status).toBe('pending')
+      expect(newState.phases[2].status).toBe('pending')
+      expect(newState.phases[3].status).toBe('pending')
+      // currentPhase should be corrected to first incomplete phase (1)
+      expect(newState.currentPhase).toBe(1)
+    })
+
+    it('keeps currentPhase when no changes needed and state is valid', () => {
+      const state = createInitialWizardState('video-123')
+      state.phases[1].status = 'completed'
+      state.phases[2].status = 'completed'
+      state.currentPhase = 3 // At first incomplete phase
+
+      // Phase 2 has data AND is reviewed, so it stays completed
+      const videoData = {
+        critique: 'Great!',
+        editingIssues: [],
+        reviewedPhases: [2], // Phase 2 was confirmed by user
+      }
+
+      const newState = wizardReducer(state, {
+        type: 'HYDRATE_FROM_VIDEO_DATA',
+        videoData,
+      })
+
+      // No changes - video data matches localStorage, currentPhase is valid
       expect(newState).toBe(state)
     })
 
@@ -518,6 +791,7 @@ describe('wizardReducer', () => {
         description: 'Description',
         tags: ['tag1'],
         status: 'sent',
+        reviewedPhases: [2, 3, 4], // Phases 2, 3, and 4 were confirmed by user
       }
 
       const newState = wizardReducer(state, {
@@ -525,7 +799,7 @@ describe('wizardReducer', () => {
         videoData,
       })
 
-      // All phases should be completed
+      // All phases should be completed (including 2, 3, and 4 since they were reviewed)
       for (let i = 1; i <= 8; i++) {
         expect(newState.phases[i as 1].status).toBe('completed')
       }
@@ -536,12 +810,14 @@ describe('wizardReducer', () => {
       const state = createInitialWizardState('video-123')
 
       // Video has data for phases 1, 2, 3, 5 (skipping 4)
+      // Phases 2 and 3 are reviewed
       const videoData = {
         critique: 'Great video!',
         editingIssues: [],
         riskAndCompliance: [],
         // No chapters (phase 4)
         suggestedTitles: ['Title 1', 'Title 2'],
+        reviewedPhases: [2, 3], // Phases 2 and 3 were confirmed by user
       }
 
       const newState = wizardReducer(state, {
@@ -558,6 +834,115 @@ describe('wizardReducer', () => {
       // Current phase should be first incomplete (4)
       expect(newState.currentPhase).toBe(4)
     })
+
+    describe('reel/cut video type support', () => {
+      it('marks phases 1-4 as completed for reel video', () => {
+        const state = createInitialWizardState('video-123', 'reel', 'parent-id')
+
+        const videoData = {
+          videoType: 'reel' as const,
+          parentEpisodeId: 'parent-id',
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // Phases 1-4 should be auto-completed for reel (skipped)
+        expect(newState.phases[1].status).toBe('completed')
+        expect(newState.phases[2].status).toBe('completed')
+        expect(newState.phases[3].status).toBe('completed')
+        expect(newState.phases[4].status).toBe('completed')
+        // Phase 5 should be pending (first reel phase after parent selection)
+        expect(newState.phases[5].status).toBe('pending')
+        // Current phase should be 5
+        expect(newState.currentPhase).toBe(5)
+      })
+
+      it('sets phase 0 for reel without parentEpisodeId', () => {
+        const state = createInitialWizardState('video-123', 'reel')
+
+        const videoData = {
+          videoType: 'reel' as const,
+          // No parentEpisodeId
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // Should go to phase 0 for parent selection
+        expect(newState.currentPhase as number).toBe(0)
+      })
+
+      it('skips to phase 5 for reel with suggestedTitles', () => {
+        const state = createInitialWizardState('video-123', 'reel', 'parent-id')
+
+        const videoData = {
+          videoType: 'reel' as const,
+          parentEpisodeId: 'parent-id',
+          suggestedTitles: ['Title 1', 'Title 2'],
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // Phase 5 should be completed (has suggested titles)
+        expect(newState.phases[5].status).toBe('completed')
+        // Current phase should be 6
+        expect(newState.currentPhase).toBe(6)
+      })
+
+      it('handles full reel flow completion', () => {
+        const state = createInitialWizardState('video-123', 'reel', 'parent-id')
+
+        const videoData = {
+          videoType: 'reel' as const,
+          parentEpisodeId: 'parent-id',
+          suggestedTitles: ['Title 1'],
+          description: 'Reel description',
+          tags: ['reel', 'short'],
+          status: 'sent',
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // All phases should be completed
+        for (let i = 1; i <= 8; i++) {
+          expect(newState.phases[i as 1].status).toBe('completed')
+        }
+        expect(newState.currentPhase).toBe(8)
+      })
+
+      it('marks phases 1-4 as completed for cut video', () => {
+        const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+
+        const videoData = {
+          videoType: 'cut' as const,
+          parentEpisodeId: 'parent-id',
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // Phases 1-4 should be auto-completed for cut (skipped)
+        expect(newState.phases[1].status).toBe('completed')
+        expect(newState.phases[2].status).toBe('completed')
+        expect(newState.phases[3].status).toBe('completed')
+        expect(newState.phases[4].status).toBe('completed')
+        // Current phase should be 5
+        expect(newState.currentPhase).toBe(5)
+      })
+    })
   })
 })
 
@@ -569,6 +954,64 @@ describe('getNextPhase', () => {
 
   it('returns null for last phase', () => {
     expect(getNextPhase(8)).toBeNull()
+  })
+})
+
+describe('getNextPhaseForType', () => {
+  describe('episode video type', () => {
+    it('returns sequential phases 1->2->...->8', () => {
+      expect(getNextPhaseForType(1, 'episode')).toBe(2)
+      expect(getNextPhaseForType(2, 'episode')).toBe(3)
+      expect(getNextPhaseForType(5, 'episode')).toBe(6)
+      expect(getNextPhaseForType(7, 'episode')).toBe(8)
+    })
+
+    it('returns null for last phase', () => {
+      expect(getNextPhaseForType(8, 'episode')).toBeNull()
+    })
+
+    it('returns null for phase not in episode flow', () => {
+      expect(getNextPhaseForType(0, 'episode')).toBeNull()
+      expect(getNextPhaseForType('5B', 'episode')).toBeNull()
+    })
+  })
+
+  describe('cut video type', () => {
+    it('follows cut flow: 0->5->5B->6->7->8', () => {
+      expect(getNextPhaseForType(0, 'cut')).toBe(5)
+      expect(getNextPhaseForType(5, 'cut')).toBe('5B')
+      expect(getNextPhaseForType('5B', 'cut')).toBe(6)
+      expect(getNextPhaseForType(6, 'cut')).toBe(7)
+      expect(getNextPhaseForType(7, 'cut')).toBe(8)
+    })
+
+    it('returns null for last phase', () => {
+      expect(getNextPhaseForType(8, 'cut')).toBeNull()
+    })
+
+    it('returns null for phases not in cut flow (1-4)', () => {
+      expect(getNextPhaseForType(1, 'cut')).toBeNull()
+      expect(getNextPhaseForType(2, 'cut')).toBeNull()
+      expect(getNextPhaseForType(3, 'cut')).toBeNull()
+      expect(getNextPhaseForType(4, 'cut')).toBeNull()
+    })
+  })
+
+  describe('reel video type', () => {
+    it('follows reel flow: 0->5->6->7->8 (no 5B)', () => {
+      expect(getNextPhaseForType(0, 'reel')).toBe(5)
+      expect(getNextPhaseForType(5, 'reel')).toBe(6)
+      expect(getNextPhaseForType(6, 'reel')).toBe(7)
+      expect(getNextPhaseForType(7, 'reel')).toBe(8)
+    })
+
+    it('returns null for last phase', () => {
+      expect(getNextPhaseForType(8, 'reel')).toBeNull()
+    })
+
+    it('returns null for phase 5B (not in reel flow)', () => {
+      expect(getNextPhaseForType('5B', 'reel')).toBeNull()
+    })
   })
 })
 

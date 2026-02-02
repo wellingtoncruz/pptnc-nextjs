@@ -8,18 +8,15 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 
 /**
  * Sync result data for the modal.
+ *
+ * Note: Transcriptions are no longer fetched during sync (Story 5.6).
+ * They are fetched on-demand when the producer selects a video.
  */
 export interface SyncResultData {
   /** Number of new videos found */
   newVideos: number
   /** Number of videos that returned to editing */
   reopenedVideos: number
-  /** Number of videos with transcription fetched */
-  transcriptionsFetched: number
-  /** Number of videos without transcription */
-  transcriptionsUnavailable: number
-  /** Error message if quota was exceeded */
-  quotaError?: string
 }
 
 interface SyncResultModalProps {
@@ -35,9 +32,9 @@ interface SyncResultModalProps {
  * Shows:
  * - Number of new videos found
  * - Number of videos that returned to editing
- * - Transcription fetch results
- * - Quota error warning if applicable
  * - General error message if sync failed
+ *
+ * Note: Transcriptions are no longer fetched during sync (Story 5.6).
  */
 export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultModalProps) {
   // Handle escape key
@@ -100,9 +97,6 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
 
   const hasNewVideos = result.newVideos > 0
   const hasReopenedVideos = result.reopenedVideos > 0
-  const hasQuotaError = !!result.quotaError
-  const hasTranscriptions = result.transcriptionsFetched > 0
-  const hasUnavailableTranscriptions = result.transcriptionsUnavailable > 0
 
   // Determine icon and title based on result
   const hasAnyChanges = hasNewVideos || hasReopenedVideos
@@ -156,25 +150,6 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
               Nenhum vídeo novo foi encontrado no canal.
             </p>
           )}
-
-          {/* Transcription info */}
-          {hasTranscriptions && (
-            <p className="text-sm text-muted-foreground">
-              {result.transcriptionsFetched}{' '}
-              {result.transcriptionsFetched === 1 ? 'transcrição baixada' : 'transcrições baixadas'}
-            </p>
-          )}
-
-          {hasUnavailableTranscriptions && (
-            <p className="text-sm text-yellow-600 dark:text-yellow-500">
-              {result.transcriptionsUnavailable}{' '}
-              {result.transcriptionsUnavailable === 1 ? 'vídeo aguardando' : 'vídeos aguardando'}{' '}
-              transcrição
-            </p>
-          )}
-
-          {/* Quota warning */}
-          {hasQuotaError && <p className="text-sm text-destructive">{result.quotaError}</p>}
         </CardContent>
 
         <CardFooter className="justify-end">

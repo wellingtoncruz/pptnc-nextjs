@@ -4,9 +4,12 @@ import { useCallback, useRef, useEffect } from 'react'
 import { RefreshCw, Inbox, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { VideoSummary, VideoTypeFilter } from '@/types/video'
+import type { VideoStatusFilter } from '@/hooks/use-videos'
 
 import { VideoListItem } from './video-list-item'
 
@@ -25,6 +28,9 @@ interface VideoListPanelProps {
   // Filter
   typeFilter?: VideoTypeFilter
   onTypeFilterChange?: (type: VideoTypeFilter) => void
+  // Status filter
+  statusFilter?: VideoStatusFilter
+  onStatusFilterChange?: (status: VideoStatusFilter) => void
 }
 
 const typeLabels: Record<VideoTypeFilter, string> = {
@@ -69,7 +75,15 @@ export function VideoListPanel({
   onPageChange,
   typeFilter = 'all',
   onTypeFilterChange,
+  statusFilter = 'not_sent',
+  onStatusFilterChange,
 }: VideoListPanelProps) {
+  // Derive "only new" from statusFilter (not_sent means all except sent)
+  const onlyNewVideos = statusFilter === 'not_sent'
+
+  const handleOnlyNewToggle = (checked: boolean) => {
+    onStatusFilterChange?.(checked ? 'not_sent' : 'all')
+  }
   const hasVideos = videos && videos.length > 0
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -143,16 +157,33 @@ export function VideoListPanel({
       {/* Header */}
       <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4 overflow-hidden">
         <h2 className="min-w-0 truncate text-lg font-semibold">Vídeos</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onSync}
-          disabled={isSyncing}
-          className="shrink-0 gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">{isSyncing ? 'Verificando...' : 'Verificar novos'}</span>
-        </Button>
+        <div className="flex shrink-0 items-center gap-3">
+          {/* Only new videos switch */}
+          <div className="flex items-center gap-2">
+            <Switch
+              id="only-new-videos"
+              checked={onlyNewVideos}
+              onCheckedChange={handleOnlyNewToggle}
+              size="sm"
+            />
+            <Label
+              htmlFor="only-new-videos"
+              className="cursor-pointer text-xs text-muted-foreground whitespace-nowrap"
+            >
+              Só novos
+            </Label>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSync}
+            disabled={isSyncing}
+            className="shrink-0 gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{isSyncing ? 'Verificando...' : 'Verificar novos'}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Tabs for filtering by type */}

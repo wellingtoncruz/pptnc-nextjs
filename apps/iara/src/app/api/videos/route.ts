@@ -7,6 +7,7 @@
  * - page: Page number (1-indexed, default: 1)
  * - limit: Videos per page (default: 20, max: 100)
  * - type: Filter by video type (episode, cut, reel)
+ * - status: Filter by video status (new, draft, sent, not_sent)
  *
  * Returns:
  * - Success: { data: VideoSummary[], pagination: { page, limit, totalCount, totalPages } }
@@ -55,10 +56,16 @@ export async function GET(request: NextRequest) {
       ? (typeParam as 'episode' | 'cut' | 'reel')
       : undefined
 
+    const statusParam = searchParams.get('status')
+    const status = statusParam && ['new', 'draft', 'sent', 'not_sent'].includes(statusParam)
+      ? (statusParam as 'new' | 'draft' | 'sent' | 'not_sent')
+      : undefined
+
     const result = await getVideosForDisplayAdmin(PODCAST_ID, {
       page,
       limit,
       videoType,
+      status,
     })
 
     return NextResponse.json(result)

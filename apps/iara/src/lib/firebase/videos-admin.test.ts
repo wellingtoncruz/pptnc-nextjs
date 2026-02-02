@@ -9,6 +9,7 @@ const mockCommit = vi.fn()
 const mockBatch = vi.fn()
 const mockOrderBy = vi.fn()
 const mockWhere = vi.fn()
+const mockSelect = vi.fn()
 
 vi.mock('firebase-admin/firestore', () => ({
   FieldValue: {
@@ -29,6 +30,7 @@ const createMockCollectionRef = () => ({
   orderBy: mockOrderBy,
   where: mockWhere,
   get: mockGet,
+  select: mockSelect,
 })
 
 // Mock admin
@@ -58,6 +60,7 @@ import {
   updateVideoAdmin,
   softDeleteVideoAdmin,
   batchWriteVideos,
+  getExistingVideoIds,
 } from './videos-admin'
 
 describe('videos-admin.ts - Admin SDK operations', () => {
@@ -94,6 +97,10 @@ describe('videos-admin.ts - Admin SDK operations', () => {
     })
     mockWhere.mockReturnValue({
       orderBy: mockOrderBy,
+      get: mockGet,
+    })
+    // Setup select to return chainable mock with get (for getExistingVideoIds)
+    mockSelect.mockReturnValue({
       get: mockGet,
     })
   })
@@ -190,6 +197,10 @@ describe('videos-admin.ts - Admin SDK operations', () => {
 
   describe('updateVideoAdmin', () => {
     it('updates video with validated data', async () => {
+      // Mock the get() call for AUTO-DRAFT logic check
+      mockGet.mockResolvedValueOnce({
+        data: () => ({ status: 'draft' }), // Not 'new', so no auto-transition
+      })
       mockUpdate.mockResolvedValueOnce(undefined)
 
       await updateVideoAdmin('pptnc', 'video-123', { deleted: true })
@@ -283,6 +294,49 @@ describe('videos-admin.ts - Admin SDK operations', () => {
 
       // Should have called commit at least twice (600 items / 500 per batch = 2 batches)
       expect(mockCommit).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('getExistingVideoIds', () => {
+    it('returns empty Set when no videos exist', async () => {
+      mockGet.mockResolvedValueOnce({
+        docs: [],
+      })
+
+      const result = await getExistingVideoIds('pptnc')
+
+      expect(result).toBeInstanceOf(Set)
+      expect(result.size).toBe(0)
+    })
+
+    it('returns Set of video IDs for delta sync', async () => {
+      mockGet.mockResolvedValueOnce({
+        docs: [
+          { id: 'video-1' },
+          { id: 'video-2' },
+          { id: 'video-3' },
+        ],
+      })
+
+      const result = await getExistingVideoIds('pptnc')
+
+      expect(result).toBeInstanceOf(Set)
+      expect(result.size).toBe(3)
+      expect(result.has('video-1')).toBe(true)
+      expect(result.has('video-2')).toBe(true)
+      expect(result.has('video-3')).toBe(true)
+      expect(result.has('video-4')).toBe(false)
+    })
+
+    it('uses select() for optimized query (only IDs)', async () => {
+      mockGet.mockResolvedValueOnce({
+        docs: [{ id: 'video-1' }],
+      })
+
+      await getExistingVideoIds('pptnc')
+
+      // Verify select() was called (optimized query without fetching data)
+      expect(mockSelect).toHaveBeenCalled()
     })
   })
 })

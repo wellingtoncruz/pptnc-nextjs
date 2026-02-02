@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { z } from 'zod'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAutoSave } from '@/hooks/use-auto-save'
@@ -58,6 +57,9 @@ const DurationConfigSchema = z.object({
  * - Inputs for min/max of each type
  * - Validation for non-negative and non-overlapping values
  * - Auto-save with 1.5s debounce
+ *
+ * Note: Title is rendered by parent AccordionTrigger.
+ * @see docs/stories/8-2-secoes-colapsaveis.md
  */
 export function DurationSettingsForm({ videoTypes, onSave }: DurationSettingsFormProps) {
   const [reelMax, setReelMax] = useState(videoTypes.reel.maxDuration ?? 0)
@@ -99,87 +101,82 @@ export function DurationSettingsForm({ videoTypes, onSave }: DurationSettingsFor
   )
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Duração por Tipo de Vídeo</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <p className="text-sm text-muted-foreground">
-          Defina os limites de duração (em segundos) para classificação automática de vídeos.
-        </p>
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Defina os limites de duração (em segundos) para classificação automática de vídeos.
+      </p>
 
-        {/* Reel */}
-        <div className="space-y-2">
-          <Label className="text-base font-medium">Reels</Label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">0 até</span>
-            <Input
-              type="number"
-              min={0}
-              value={reelMax}
-              onChange={(e) => setReelMax(Number(e.target.value))}
-              onBlur={() => save()}
-              className="w-24"
-              aria-label="Duração máxima de Reels em segundos"
-            />
-            <span className="text-sm text-muted-foreground">segundos</span>
-          </div>
+      {/* Reel */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Reels</Label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">0 até</span>
+          <Input
+            type="number"
+            min={0}
+            value={reelMax}
+            onChange={(e) => setReelMax(Number(e.target.value))}
+            onBlur={() => save()}
+            className="w-24"
+            aria-label="Duração máxima de Reels em segundos"
+          />
+          <span className="text-sm text-muted-foreground">segundos</span>
         </div>
+      </div>
 
-        {/* Cut */}
-        <div className="space-y-2">
-          <Label className="text-base font-medium">Cortes</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              min={0}
-              value={cutMin}
-              onChange={(e) => setCutMin(Number(e.target.value))}
-              onBlur={() => save()}
-              className="w-24"
-              aria-label="Duração mínima de Cortes em segundos"
-            />
-            <span className="text-sm text-muted-foreground">até</span>
-            <Input
-              type="number"
-              min={0}
-              value={cutMax}
-              onChange={(e) => setCutMax(Number(e.target.value))}
-              onBlur={() => save()}
-              className="w-24"
-              aria-label="Duração máxima de Cortes em segundos"
-            />
-            <span className="text-sm text-muted-foreground">segundos</span>
-          </div>
+      {/* Cut */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Cortes</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            min={0}
+            value={cutMin}
+            onChange={(e) => setCutMin(Number(e.target.value))}
+            onBlur={() => save()}
+            className="w-24"
+            aria-label="Duração mínima de Cortes em segundos"
+          />
+          <span className="text-sm text-muted-foreground">até</span>
+          <Input
+            type="number"
+            min={0}
+            value={cutMax}
+            onChange={(e) => setCutMax(Number(e.target.value))}
+            onBlur={() => save()}
+            className="w-24"
+            aria-label="Duração máxima de Cortes em segundos"
+          />
+          <span className="text-sm text-muted-foreground">segundos</span>
         </div>
+      </div>
 
-        {/* Episode */}
-        <div className="space-y-2">
-          <Label className="text-base font-medium">Episódios</Label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">A partir de</span>
-            <Input
-              type="number"
-              min={0}
-              value={episodeMin}
-              onChange={(e) => setEpisodeMin(Number(e.target.value))}
-              onBlur={() => save()}
-              className="w-24"
-              aria-label="Duração mínima de Episódios em segundos"
-            />
-            <span className="text-sm text-muted-foreground">segundos (sem limite máximo)</span>
-          </div>
+      {/* Episode */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Episódios</Label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">A partir de</span>
+          <Input
+            type="number"
+            min={0}
+            value={episodeMin}
+            onChange={(e) => setEpisodeMin(Number(e.target.value))}
+            onBlur={() => save()}
+            className="w-24"
+            aria-label="Duração mínima de Episódios em segundos"
+          />
+          <span className="text-sm text-muted-foreground">segundos (sem limite máximo)</span>
         </div>
+      </div>
 
-        {/* Status/Error */}
-        <div className="pt-2">
-          {validationError ? (
-            <p className="text-xs text-destructive">{validationError}</p>
-          ) : (
-            <SaveStatusIndicator status={saveStatus} />
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      {/* Status/Error */}
+      <div className="pt-2">
+        {validationError ? (
+          <p className="text-xs text-destructive">{validationError}</p>
+        ) : (
+          <SaveStatusIndicator status={saveStatus} />
+        )}
+      </div>
+    </div>
   )
 }

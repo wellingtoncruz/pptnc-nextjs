@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useCallback, useState, useEffect, useRef } from 'react'
 
+import { LLMProcessingProvider } from '@/contexts'
 import { MasterDetailLayout } from '@/components/layout/master-detail-layout'
 import { Sidebar } from '@/components/layout/sidebar'
 import { VideoListPanel } from '@/components/videos/video-list-panel'
@@ -10,7 +11,9 @@ import { VideoDetailPanel } from '@/components/videos/video-detail-panel'
 import { SyncOverlay } from '@/components/videos/sync-overlay'
 import { SyncResultModal, type SyncResultData } from '@/components/videos/sync-result-modal'
 import { SettingsPanel } from '@/components/settings/settings-panel'
+import { UserListPanel } from '@/components/users/user-list-panel'
 import { useVideos } from '@/hooks/use-videos'
+import { useCurrentUser } from '@/hooks/use-current-user'
 import { log } from '@/lib/logger'
 
 interface VideosLayoutProps {
@@ -26,6 +29,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const { isAdmin, isLoading: isLoadingUser } = useCurrentUser()
 
   const currentView = searchParams.get('view')
 
@@ -65,6 +69,8 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     setPage,
     typeFilter,
     setTypeFilter,
+    statusFilter,
+    setStatusFilter,
   } = useVideos()
 
   // Handle video selection - updates URL (Rule #10)
@@ -103,12 +109,11 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       log('INFO', 'Sync completed', { newVideos: newCount, reopenedVideos: reopenedCount })
 
       // Show result modal
+      // Note: Transcriptions are no longer fetched during sync (Story 5.6)
+      // They are fetched on-demand when the producer selects a video
       setSyncResult({
         newVideos: newCount,
         reopenedVideos: reopenedCount,
-        transcriptionsFetched: result.transcriptionsFetched ?? 0,
-        transcriptionsUnavailable: result.transcriptionsUnavailable ?? 0,
-        quotaError: result.quotaError,
       })
       setSyncModalOpen(true)
     } catch (err) {
@@ -137,14 +142,59 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     )
   }
 
+  // When in users view, show only sidebar and user list panel
+  // Redirect non-admin users to /videos
+  if (currentView === 'users') {
+    // Wait for user loading before checking admin status
+    if (isLoadingUser) {
+      return (
+        <div className="flex h-screen">
+          <div className="shrink-0">
+            <Sidebar userName={userName} />
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        </div>
+      )
+    }
+
+    // Redirect non-admin users - show loading during redirect to avoid flash
+    if (!isAdmin) {
+      router.replace('/videos')
+      return (
+        <div className="flex h-screen">
+          <div className="shrink-0">
+            <Sidebar userName={userName} />
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="flex h-screen">
+        <div className="shrink-0">
+          <Sidebar userName={userName} />
+        </div>
+        <div className="flex-1">
+          <UserListPanel />
+        </div>
+      </div>
+    )
+  }
+
   // Find the selected video from the list
   const selectedVideo = selectedVideoId
     ? videos.find(v => v.id === selectedVideoId) ?? null
     : null
 
   // Default: show full master-detail layout with video list
+  // LLMProcessingProvider bloqueia troca de vídeo durante chamadas LLM
   return (
-    <>
+    <LLMProcessingProvider>
       <SyncOverlay isOpen={isSyncing} />
       <SyncResultModal
         isOpen={syncModalOpen}
@@ -168,10 +218,12 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
             onPageChange={setPage}
             typeFilter={typeFilter}
             onTypeFilterChange={setTypeFilter}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
           />
         }
         detail={<VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} />}
       />
-    </>
+    </LLMProcessingProvider>
   )
 }

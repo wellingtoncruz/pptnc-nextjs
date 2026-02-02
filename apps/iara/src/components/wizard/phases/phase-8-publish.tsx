@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import {
   UploadIcon,
   CheckCircleIcon,
@@ -9,11 +10,15 @@ import {
   TagIcon,
   ListIcon,
   Loader2Icon,
+  UsersIcon,
+  LinkedinIcon,
+  ClockIcon,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 import type { Video } from '@/types/video'
 
 interface Phase8PublishProps {
@@ -58,11 +63,24 @@ export function Phase8Publish({
   const description = video.description || ''
   const tags = video.tags || []
   const chapters = video.chapters || []
+  const guests = video.guests || []
 
-  // Truncate description for preview
-  const descriptionPreview = description.length > 200
-    ? description.substring(0, 200) + '...'
-    : description
+  // Fetch youtubeFooter from podcast settings
+  const [youtubeFooter, setYoutubeFooter] = useState<string>('')
+  useEffect(() => {
+    async function fetchPodcast() {
+      try {
+        const response = await fetch('/api/podcast')
+        if (response.ok) {
+          const data = await response.json()
+          setYoutubeFooter(data.data?.youtubeFooter || '')
+        }
+      } catch {
+        // Silently ignore - youtubeFooter is optional
+      }
+    }
+    fetchPodcast()
+  }, [])
 
   // Validation: all required fields must exist
   const isValid = title.trim().length > 0 &&
@@ -160,45 +178,121 @@ export function Phase8Publish({
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <FileTextIcon className="size-4" />
-                Titulo
+                Título
               </div>
               <p className="text-sm font-medium">
-                {title || <span className="text-muted-foreground italic">Titulo nao definido</span>}
+                {title || <span className="text-muted-foreground italic">Título não definido</span>}
               </p>
             </div>
 
-            {/* Description preview */}
+            <Separator />
+
+            {/* Description - full content */}
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <FileTextIcon className="size-4" />
-                Descricao
+                Descrição
               </div>
-              <p className="text-sm text-muted-foreground">
-                {descriptionPreview || <span className="italic">Descricao nao definida</span>}
+              <p className="text-sm whitespace-pre-wrap">
+                {description || <span className="text-muted-foreground italic">Descrição não definida</span>}
               </p>
             </div>
 
-            {/* Tags and Chapters count */}
-            <div className="flex gap-4 pt-2">
-              <div className="flex items-center gap-2">
-                <TagIcon className="size-4 text-muted-foreground" />
-                <Badge variant="secondary">
-                  {tags.length} {tags.length === 1 ? 'tag' : 'tags'}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <ListIcon className="size-4 text-muted-foreground" />
-                <Badge variant="secondary">
-                  {chapters.length} {chapters.length === 1 ? 'capitulo' : 'capitulos'}
-                </Badge>
-              </div>
-            </div>
+            {/* Guests */}
+            {guests.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <UsersIcon className="size-4" />
+                    Convidados
+                  </div>
+                  <ul className="space-y-2 text-sm">
+                    {guests.map((guest, index) => (
+                      <li key={index} className="space-y-0.5">
+                        <div className="font-medium">{guest.name}</div>
+                        {guest.linkedin && (
+                          <a
+                            href={guest.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <LinkedinIcon className="size-3" />
+                            <span className="text-xs truncate max-w-xs">{guest.linkedin}</span>
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
+
+            {/* Chapters */}
+            {chapters.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <ClockIcon className="size-4" />
+                    Capítulos
+                  </div>
+                  <ul className="space-y-1 text-sm">
+                    {chapters.map((chapter, index) => (
+                      <li key={index} className="flex items-center gap-3">
+                        <span className="font-mono text-muted-foreground shrink-0">
+                          {chapter.timestamp}
+                        </span>
+                        <span>{chapter.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
+
+            {/* Tags */}
+            {tags.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <TagIcon className="size-4" />
+                    Tags ({tags.length})
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* YouTube Footer */}
+            {youtubeFooter && (
+              <>
+                <Separator />
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <ListIcon className="size-4" />
+                    Rodapé do YouTube
+                  </div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {youtubeFooter}
+                  </p>
+                </div>
+              </>
+            )}
 
             {/* Validation warning */}
             {!isValid && !isSent && (
               <div className="flex items-center gap-2 text-amber-500 text-sm pt-2">
                 <AlertTriangleIcon className="size-4" />
-                <span>Preencha titulo, descricao e pelo menos 1 tag para enviar.</span>
+                <span>Preencha título, descrição e pelo menos 1 tag para enviar.</span>
               </div>
             )}
           </CardContent>

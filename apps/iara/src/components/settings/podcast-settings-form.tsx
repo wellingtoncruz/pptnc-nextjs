@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { z } from 'zod'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { log } from '@/lib/logger'
-import type { SerializedPodcast } from '@/app/settings/page'
+import { MAX_YOUTUBE_FOOTER_LENGTH } from '@/lib/schemas/podcast'
+import type { SerializedPodcast } from '@/types/podcast'
 
 /**
  * Client-side validation schemas for individual fields.
@@ -16,11 +17,12 @@ import type { SerializedPodcast } from '@/app/settings/page'
  */
 const NameSchema = z.string().min(1, 'Nome é obrigatório')
 const ChannelIdSchema = z.string().min(1, 'Channel ID é obrigatório')
+const YoutubeFooterSchema = z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional()
 
 /**
  * Updates podcast via API route (server-side).
  */
-async function updatePodcastViaApi(data: { name?: string; channelId?: string }): Promise<void> {
+async function updatePodcastViaApi(data: { name?: string; channelId?: string; youtubeFooter?: string }): Promise<void> {
   const response = await fetch('/api/podcast', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -45,12 +47,17 @@ interface PodcastSettingsFormProps {
  * - Zod validation before saving
  * - Save status indicators (saving/saved/error)
  * - Immediate save on blur
+ *
+ * Note: Title is rendered by parent AccordionTrigger.
+ * @see docs/stories/8-2-secoes-colapsaveis.md
  */
 export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
   const [name, setName] = useState(podcast.name)
   const [channelId, setChannelId] = useState(podcast.channelId)
+  const [youtubeFooter, setYoutubeFooter] = useState(podcast.youtubeFooter ?? '')
   const [nameError, setNameError] = useState<string | null>(null)
   const [channelIdError, setChannelIdError] = useState<string | null>(null)
+  const [youtubeFooterError, setYoutubeFooterError] = useState<string | null>(null)
 
   const {
     saveStatus: nameSaveStatus,
@@ -110,68 +117,121 @@ export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
     1500
   )
 
+  const {
+    saveStatus: youtubeFooterSaveStatus,
+    save: saveYoutubeFooter,
+  } = useAutoSave(
+    youtubeFooter,
+    async (value) => {
+      setYoutubeFooterError(null)
+      // Client-side Zod validation (AC5)
+      const result = YoutubeFooterSchema.safeParse(value)
+      if (!result.success) {
+        const message = result.error.issues[0]?.message || 'Valor inválido'
+        setYoutubeFooterError(message)
+        throw new Error(message)
+      }
+      try {
+        await updatePodcastViaApi({ youtubeFooter: value || undefined })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao salvar'
+        setYoutubeFooterError(message)
+        log('ERROR', 'Failed to save podcast youtubeFooter', {
+          podcastId: podcast.id,
+          error: message,
+        })
+        throw err
+      }
+    },
+    1500
+  )
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Informações do Podcast</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nome do Podcast</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={() => saveName()}
-            aria-invalid={!!nameError}
-            aria-describedby={nameError ? 'name-error' : undefined}
-          />
-          <div className="flex items-center justify-between">
-            {nameError ? (
-              <p id="name-error" className="text-xs text-destructive">
-                {nameError}
-              </p>
-            ) : (
-              <SaveStatusIndicator status={nameSaveStatus} />
-            )}
-          </div>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="name">Nome do Podcast</Label>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => saveName()}
+          aria-invalid={!!nameError}
+          aria-describedby={nameError ? 'name-error' : undefined}
+        />
+        <div className="flex items-center justify-between">
+          {nameError ? (
+            <p id="name-error" className="text-xs text-destructive">
+              {nameError}
+            </p>
+          ) : (
+            <SaveStatusIndicator status={nameSaveStatus} />
+          )}
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="channelId">Channel ID do YouTube</Label>
-          <Input
-            id="channelId"
-            value={channelId}
-            onChange={(e) => setChannelId(e.target.value)}
-            onBlur={() => saveChannelId()}
-            aria-invalid={!!channelIdError}
-            aria-describedby={channelIdError ? 'channelId-error' : undefined}
-          />
-          <div className="flex items-center justify-between">
-            {channelIdError ? (
-              <p id="channelId-error" className="text-xs text-destructive">
-                {channelIdError}
-              </p>
-            ) : (
-              <SaveStatusIndicator status={channelIdSaveStatus} />
-            )}
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="channelId">Channel ID do YouTube</Label>
+        <Input
+          id="channelId"
+          value={channelId}
+          onChange={(e) => setChannelId(e.target.value)}
+          onBlur={() => saveChannelId()}
+          aria-invalid={!!channelIdError}
+          aria-describedby={channelIdError ? 'channelId-error' : undefined}
+        />
+        <div className="flex items-center justify-between">
+          {channelIdError ? (
+            <p id="channelId-error" className="text-xs text-destructive">
+              {channelIdError}
+            </p>
+          ) : (
+            <SaveStatusIndicator status={channelIdSaveStatus} />
+          )}
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="ownerId">Owner ID</Label>
-          <Input
-            id="ownerId"
-            value={podcast.ownerId}
-            disabled
-            className="bg-muted"
-          />
-          <p className="text-xs text-muted-foreground">
-            O Owner ID é definido automaticamente
-          </p>
+      <div className="space-y-2">
+        <Label htmlFor="ownerId">Owner ID</Label>
+        <Input
+          id="ownerId"
+          value={podcast.ownerId}
+          disabled
+          className="bg-muted"
+        />
+        <p className="text-xs text-muted-foreground">
+          O Owner ID é definido automaticamente
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="youtubeFooter">Rodapé do YouTube</Label>
+        <Textarea
+          id="youtubeFooter"
+          value={youtubeFooter}
+          onChange={(e) => setYoutubeFooter(e.target.value)}
+          onBlur={() => saveYoutubeFooter()}
+          placeholder="Texto que será adicionado ao final das descrições dos vídeos..."
+          rows={6}
+          aria-invalid={!!youtubeFooterError}
+          aria-describedby={youtubeFooterError ? 'youtubeFooter-error' : 'youtubeFooter-description'}
+        />
+        <div className="flex items-center justify-between">
+          {youtubeFooterError ? (
+            <p id="youtubeFooter-error" className="text-xs text-destructive">
+              {youtubeFooterError}
+            </p>
+          ) : (
+            <SaveStatusIndicator status={youtubeFooterSaveStatus} />
+          )}
+          <span className="text-xs text-muted-foreground">
+            {youtubeFooter.length}/{MAX_YOUTUBE_FOOTER_LENGTH}
+          </span>
         </div>
-      </CardContent>
-    </Card>
+        <p id="youtubeFooter-description" className="text-xs text-muted-foreground">
+          Este texto será adicionado automaticamente ao final das descrições geradas para os vídeos.
+        </p>
+      </div>
+    </div>
   )
 }
 

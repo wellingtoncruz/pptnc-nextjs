@@ -27,15 +27,9 @@ describe('PromptsSettingsForm', () => {
     vi.useRealTimers()
   })
 
-  it('renders card with title', () => {
-    render(
-      <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
-    )
-
-    expect(screen.getByText('Prompts por Tipo de Vídeo')).toBeInTheDocument()
-  })
-
   it('renders accordion with three video types', () => {
+    // Note: Title "Prompts por Tipo de Vídeo" is now rendered by parent AccordionTrigger
+    // in settings-page-client.tsx (Story 8.2 refactor)
     render(
       <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
     )

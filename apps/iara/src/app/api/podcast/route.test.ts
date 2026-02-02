@@ -36,6 +36,27 @@ function createMockRequest(body: unknown): NextRequest {
   })
 }
 
+/**
+ * Helper to create admin session mock.
+ * PATCH /api/podcast requires admin role (Story 8.1).
+ */
+function createAdminSession(): Session {
+  return {
+    user: { id: 'user123', name: 'Test User', email: 'test@example.com', role: 'admin' },
+    expires: '2026-12-31',
+  } as Session
+}
+
+/**
+ * Helper to create regular user session mock.
+ */
+function createUserSession(): Session {
+  return {
+    user: { id: 'user123', name: 'Test User', email: 'test@example.com', role: 'user' },
+    expires: '2026-12-31',
+  } as Session
+}
+
 describe('PATCH /api/podcast', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -52,11 +73,20 @@ describe('PATCH /api/podcast', () => {
     expect(json.error.code).toBe('AUTH_EXPIRED')
   })
 
+  it('returns 403 when user is not admin', async () => {
+    mockAuthFn.mockResolvedValue(createUserSession())
+
+    const request = createMockRequest({ name: 'New Name' })
+    const response = await PATCH(request)
+    const json = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(json.error.code).toBe('FORBIDDEN')
+    expect(json.error.message).toBe('Admin access required')
+  })
+
   it('updates podcast name successfully', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
     mockUpdatePodcast.mockResolvedValue(undefined)
 
     const request = createMockRequest({ name: 'New Podcast Name' })
@@ -74,10 +104,7 @@ describe('PATCH /api/podcast', () => {
   })
 
   it('updates channelId successfully', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
     mockUpdatePodcast.mockResolvedValue(undefined)
 
     const request = createMockRequest({ channelId: 'UC123456' })
@@ -90,10 +117,7 @@ describe('PATCH /api/podcast', () => {
   })
 
   it('returns 400 for invalid data (Zod validation)', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
 
     // Empty name should fail validation
     const request = createMockRequest({ name: '' })
@@ -105,10 +129,7 @@ describe('PATCH /api/podcast', () => {
   })
 
   it('returns 500 on Firestore error', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
     mockUpdatePodcast.mockRejectedValue(new Error('Firestore connection failed'))
 
     const request = createMockRequest({ name: 'New Name' })
@@ -123,10 +144,7 @@ describe('PATCH /api/podcast', () => {
   })
 
   it('logs successful updates with field names', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
     mockUpdatePodcast.mockResolvedValue(undefined)
 
     const request = createMockRequest({ name: 'Name', channelId: 'UC123' })
@@ -138,10 +156,7 @@ describe('PATCH /api/podcast', () => {
   })
 
   it('updates prompts successfully', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
     mockUpdatePodcast.mockResolvedValue(undefined)
 
     // New prompt structure with PromptField objects
@@ -150,6 +165,7 @@ describe('PATCH /api/podcast', () => {
         critique: { description: 'Critique prompt', expectedOutput: 'Critique output' },
         editing: { description: 'Editing prompt', expectedOutput: 'Editing output' },
         compliance: { description: 'Compliance prompt', expectedOutput: 'Compliance output' },
+        chapters: { description: 'Chapters prompt', expectedOutput: 'Chapters output' },
         titles: { description: 'Titles prompt', expectedOutput: 'Titles output' },
         description: { description: 'Description prompt', expectedOutput: 'Description output' },
         tags: { description: 'Tags prompt', expectedOutput: 'Tags output' },
@@ -176,10 +192,7 @@ describe('PATCH /api/podcast', () => {
   })
 
   it('updates videoTypes successfully', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
     mockUpdatePodcast.mockResolvedValue(undefined)
 
     const videoTypes = {
@@ -197,10 +210,7 @@ describe('PATCH /api/podcast', () => {
   })
 
   it('returns 400 for prompt exceeding max length', async () => {
-    mockAuthFn.mockResolvedValue({
-      user: { id: 'user123', name: 'Test User', email: 'test@example.com' },
-      expires: '2026-12-31',
-    } as Session)
+    mockAuthFn.mockResolvedValue(createAdminSession())
 
     const prompts = {
       episode: 'a'.repeat(10001), // Exceeds MAX_PROMPT_LENGTH

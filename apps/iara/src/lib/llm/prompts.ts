@@ -417,6 +417,23 @@ export const PHASE_CONFIG: Record<WizardPhase, PhaseConfig> = {
 }
 
 /**
+ * Get phase prompt from a specific video type's prompts.
+ * Returns undefined if the prompt is not configured or empty.
+ */
+function getPhasePromptFromVideoType(
+  videoTypePrompts: Record<string, { description: string; expectedOutput: string } | undefined> | undefined,
+  promptKey: string
+): { description: string; expectedOutput: string } | undefined {
+  if (!videoTypePrompts) return undefined
+
+  const phasePrompt = videoTypePrompts[promptKey]
+  if (!phasePrompt?.description || !phasePrompt?.expectedOutput) {
+    return undefined
+  }
+  return phasePrompt
+}
+
+/**
  * Build phase prompt following processamento_video.md template.
  *
  * Template:
@@ -433,10 +450,10 @@ export const PHASE_CONFIG: Record<WizardPhase, PhaseConfig> = {
  * Dê uma atenção especial a essa instrução: {additionalContext}
  * ```
  *
- * Falls back to BASE_SYSTEM_PROMPTS when:
- * - persona is undefined
- * - prompts is undefined
- * - prompt description/expectedOutput is empty
+ * Fallback chain:
+ * 1. Try videoType-specific prompts (e.g., prompts.reel.titles)
+ * 2. Fallback to episode prompts (e.g., prompts.episode.titles)
+ * 3. Fallback to BASE_SYSTEM_PROMPTS (hardcoded defaults)
  *
  * @param phase - Wizard phase (1-8)
  * @param persona - Persona from podcast.personas.{personaName}
@@ -462,18 +479,23 @@ export function buildPhasePrompt(
 
   const config = PHASE_CONFIG[phase]
 
-  // Get prompts for the video type
-  const videoTypePrompts = prompts[videoType]
-  if (!videoTypePrompts) {
-    return BASE_SYSTEM_PROMPTS[phase]
+  // Try to get prompt from the video type's prompts
+  // Fallback chain: videoType -> episode -> BASE_SYSTEM_PROMPTS
+  let phasePrompt = getPhasePromptFromVideoType(
+    prompts[videoType] as Record<string, { description: string; expectedOutput: string } | undefined>,
+    config.promptKey
+  )
+
+  // If not found and not already episode, try episode prompts as fallback
+  if (!phasePrompt && videoType !== 'episode') {
+    phasePrompt = getPhasePromptFromVideoType(
+      prompts.episode as Record<string, { description: string; expectedOutput: string } | undefined>,
+      config.promptKey
+    )
   }
 
-  // Get the specific phase prompt using the promptKey
-  // Need to use type assertion since promptKey is dynamic
-  const phasePrompt = (videoTypePrompts as Record<string, { description: string; expectedOutput: string } | undefined>)[config.promptKey]
-
-  // Fallback if prompt is not configured or empty
-  if (!phasePrompt?.description || !phasePrompt?.expectedOutput) {
+  // Final fallback to BASE_SYSTEM_PROMPTS
+  if (!phasePrompt) {
     return BASE_SYSTEM_PROMPTS[phase]
   }
 

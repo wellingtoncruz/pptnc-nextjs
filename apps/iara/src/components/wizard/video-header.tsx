@@ -141,3 +141,34 @@ export function VideoMetadata({ video, className }: VideoMetadataProps) {
     </div>
   )
 }
+
+interface VideoShortTitleProps {
+  video: Video
+  className?: string
+}
+
+/**
+ * VideoShortTitle component displays the short title for cut videos.
+ *
+ * Only renders for videos with videoType === 'cut' and a defined shortTitle.
+ * Displays format: "Thumb: {shortTitle}" with attention-grabbing styling.
+ *
+ * @see Story 4.3 - AC2 (Display do título curto no player)
+ */
+export function VideoShortTitle({ video, className }: VideoShortTitleProps) {
+  // Only show for cut videos with a shortTitle defined
+  if (video.videoType !== 'cut' || !video.shortTitle) {
+    return null
+  }
+
+  return (
+    <div className={cn('flex items-center gap-2', className)}>
+      <span className="inline-flex items-center rounded-md bg-orange-500/20 px-2 py-1 text-xs font-semibold text-orange-600 ring-1 ring-inset ring-orange-500/30">
+        Thumb
+      </span>
+      <span className="text-sm font-semibold text-foreground">
+        {video.shortTitle}
+      </span>
+    </div>
+  )
+}

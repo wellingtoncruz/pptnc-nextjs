@@ -62,6 +62,23 @@ export const YouTubeStatusSchema = z.object({
 })
 
 /**
+ * YouTube API Live Streaming Details schema.
+ *
+ * This part is only populated for videos that were live streams.
+ * The presence of actualEndTime indicates a finished live broadcast.
+ *
+ * @see https://developers.google.com/youtube/v3/docs/videos#liveStreamingDetails
+ */
+export const YouTubeLiveStreamingDetailsSchema = z.object({
+  actualStartTime: z.string().optional(), // ISO 8601 datetime - when stream actually started
+  actualEndTime: z.string().optional(), // ISO 8601 datetime - when stream ended (indicates FINISHED live)
+  scheduledStartTime: z.string().optional(), // ISO 8601 datetime - when stream was scheduled
+  scheduledEndTime: z.string().optional(),
+  concurrentViewers: z.string().optional(), // Only while live
+  activeLiveChatId: z.string().optional(),
+})
+
+/**
  * YouTube Video Item schema - single video from YouTube API response.
  *
  * Represents a single item from the videos.list endpoint.
@@ -74,6 +91,7 @@ export const YouTubeVideoItemSchema = z.object({
   snippet: YouTubeSnippetSchema,
   contentDetails: YouTubeContentDetailsSchema,
   status: YouTubeStatusSchema.optional(),
+  liveStreamingDetails: YouTubeLiveStreamingDetailsSchema.optional(),
 })
 
 /**

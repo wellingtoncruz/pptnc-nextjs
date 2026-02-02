@@ -278,6 +278,81 @@ describe('buildPhasePrompt', () => {
 
     expect(result).toContain('Sua tarefa: Gere títulos para reel')
   })
+
+  describe('episode fallback for reel/cut', () => {
+    it('falls back to episode prompts when reel prompt is empty', () => {
+      const promptsWithEmptyReel: Prompts = {
+        ...validPrompts,
+        reel: {
+          titles: { description: '', expectedOutput: '' },
+          description: { description: '', expectedOutput: '' },
+          tags: { description: '', expectedOutput: '' },
+        },
+      }
+      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyReel, 'reel')
+
+      // Should use episode titles prompt as fallback
+      expect(result).toContain('Sua tarefa: Gere títulos SEO')
+      expect(result).not.toContain('Gere títulos para reel')
+    })
+
+    it('falls back to episode prompts when cut prompt is empty', () => {
+      const promptsWithEmptyCut: Prompts = {
+        ...validPrompts,
+        cut: {
+          titles: { description: '', expectedOutput: '' },
+          thumbs: { description: 'Sugira thumbnails', expectedOutput: 'Um JSON com thumbnails' },
+          description: { description: '', expectedOutput: '' },
+          tags: { description: '', expectedOutput: '' },
+        },
+      }
+      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyCut, 'cut')
+
+      // Should use episode titles prompt as fallback
+      expect(result).toContain('Sua tarefa: Gere títulos SEO')
+      expect(result).not.toContain('Gere títulos para corte')
+    })
+
+    it('falls back to BASE_SYSTEM_PROMPTS when both reel and episode prompts are empty', () => {
+      const promptsWithEmptyBoth: Prompts = {
+        episode: {
+          ...validPrompts.episode,
+          titles: { description: '', expectedOutput: '' },
+        },
+        cut: validPrompts.cut,
+        reel: {
+          titles: { description: '', expectedOutput: '' },
+          description: { description: '', expectedOutput: '' },
+          tags: { description: '', expectedOutput: '' },
+        },
+      }
+      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyBoth, 'reel')
+
+      expect(result).toBe(BASE_SYSTEM_PROMPTS[5])
+    })
+
+    it('uses reel-specific prompt when available (no fallback)', () => {
+      const result = buildPhasePrompt(5, validWriterPersona, validPrompts, 'reel')
+
+      // Should use reel-specific prompt, not episode fallback
+      expect(result).toContain('Sua tarefa: Gere títulos para reel')
+      expect(result).not.toContain('Gere títulos SEO')
+    })
+
+    it('episode type does not trigger fallback even if empty', () => {
+      const promptsWithEmptyEpisode: Prompts = {
+        ...validPrompts,
+        episode: {
+          ...validPrompts.episode,
+          titles: { description: '', expectedOutput: '' },
+        },
+      }
+      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyEpisode, 'episode')
+
+      // Should fallback to BASE_SYSTEM_PROMPTS, not look for other types
+      expect(result).toBe(BASE_SYSTEM_PROMPTS[5])
+    })
+  })
 })
 
 describe('getSystemPrompt (deprecated)', () => {

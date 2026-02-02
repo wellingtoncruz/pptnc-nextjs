@@ -27,7 +27,8 @@ import { getAdminDb } from './admin'
 /**
  * Maximum operations per Firestore batch.
  */
-const MAX_BATCH_SIZE = 500
+// Reduced from 500 to 20 to handle large documents with base64 thumbnails
+const MAX_BATCH_SIZE = 20
 
 /**
  * Parses a date value that can be either a Firestore Timestamp or ISO 8601 string.
@@ -71,6 +72,8 @@ export interface GetVideosForDisplayOptions {
   limit?: number
   /** Filter by video type (undefined means all) */
   videoType?: 'episode' | 'cut' | 'reel'
+  /** Filter by video status (undefined means all, 'not_sent' means all except 'sent') */
+  status?: 'new' | 'draft' | 'sent' | 'not_sent'
 }
 
 /**
@@ -184,7 +187,7 @@ export async function getVideosForDisplayAdmin(
   podcastId: string,
   options: GetVideosForDisplayOptions = {}
 ): Promise<PaginatedVideosResult> {
-  const { page = 1, limit = 20, videoType } = options
+  const { page = 1, limit = 20, videoType, status } = options
   const db = getAdminDb()
   const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
 
@@ -195,6 +198,14 @@ export async function getVideosForDisplayAdmin(
   // Filter by videoType at Firestore level if specified
   if (videoType) {
     query = query.where('videoType', '==', videoType)
+  }
+
+  // Filter by status at Firestore level if specified
+  if (status === 'not_sent') {
+    // Show all videos except 'sent' - for "Só novos" switch
+    query = query.where('status', '!=', 'sent')
+  } else if (status) {
+    query = query.where('status', '==', status)
   }
 
   try {
@@ -248,6 +259,8 @@ export async function getVideosForDisplayAdmin(
         publishedAt: rawData.publishedAt,
         createdAt: rawData.createdAt,
         updatedAt: rawData.updatedAt,
+        // Thumbnail stored in Firebase Storage (works for draft/private videos)
+        storageThumbnailUrl: rawData.storageThumbnailUrl,
         _publishedAt: publishedAtDate,
       }
       videos.push(summary)
@@ -270,6 +283,7 @@ export async function getVideosForDisplayAdmin(
       page,
       limit,
       videoType: videoType ?? 'all',
+      status: status ?? 'all',
       totalCount,
       returnedCount: paginatedVideos.length,
     })
@@ -411,6 +425,10 @@ export async function createVideoAdmin(data: VideoCreate): Promise<void> {
  * Uses update() for field-level updates (enforcement rule #4).
  * Uses FieldValue.serverTimestamp() for updatedAt (enforcement rule #12).
  *
+ * AUTO-DRAFT: If the video status is 'new' and we're updating any field
+ * (except explicitly setting status), the status is automatically changed
+ * to 'draft'. This reflects that the video has been modified by the platform.
+ *
  * @param podcastId - The podcast document ID (enforcement rule #8)
  * @param videoId - The video document ID
  * @param data - Partial video data to update
@@ -428,8 +446,21 @@ export async function updateVideoAdmin(
   const docRef = db.collection('podcasts').doc(podcastId).collection('videos').doc(videoId)
 
   try {
+    // AUTO-DRAFT: If not explicitly setting status, check if we need to transition from 'new' to 'draft'
+    let updateData: Record<string, unknown> = { ...validated }
+
+    if (!('status' in validated)) {
+      const docSnap = await docRef.get()
+      const currentStatus = docSnap.data()?.status
+
+      if (currentStatus === 'new') {
+        updateData.status = 'draft'
+        log('INFO', 'Auto-transitioning video status from new to draft', { podcastId, videoId })
+      }
+    }
+
     await docRef.update({
-      ...validated,
+      ...updateData,
       updatedAt: FieldValue.serverTimestamp(),
     })
 
@@ -571,25 +602,51 @@ export async function batchWriteVideos(
 }
 
 /**
- * Gets episodes with context defined for cut/reel parent selection.
+ * Gets all existing video IDs for a podcast (optimized query).
  *
- * Only returns episodes (videoType = 'episode') that have theme set
- * (context is defined when theme is populated).
- * Used in EpisodeOriginSelector for cut/reel processing.
+ * Uses .select() to return only document IDs without fetching data.
+ * Returns a Set for O(1) lookup performance in delta sync.
+ *
+ * @param podcastId - The podcast document ID
+ * @returns Set of existing video IDs
+ */
+export async function getExistingVideoIds(podcastId: string): Promise<Set<string>> {
+  const db = getAdminDb()
+  const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
+
+  const snapshot = await videosRef.select().get() // Apenas IDs, sem dados
+
+  const ids = new Set(snapshot.docs.map((doc) => doc.id))
+
+  log('INFO', 'Existing video IDs loaded for delta sync', {
+    podcastId,
+    count: ids.size,
+  })
+
+  return ids
+}
+
+/**
+ * Gets episodes for cut/reel parent selection.
+ *
+ * Returns ALL episodes (videoType = 'episode') sorted by publishedAt desc.
+ * If an episode doesn't have theme/guests, the inheritance will fail silently.
+ * Used in Phase 0 (Parent Selection) for cut/reel videos.
  *
  * @param podcastId - The podcast document ID (enforcement rule #8)
- * @returns Array of video summaries for episodes with context
+ * @param limit - Maximum number of episodes to return (default: no limit)
+ * @returns Array of video summaries for episodes, sorted by publishedAt desc
  */
 export async function getEpisodesWithContext(
-  podcastId: string
+  podcastId: string,
+  limit?: number
 ): Promise<VideoSummary[]> {
   const db = getAdminDb()
   const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
 
   try {
-    // Query episodes with theme defined (context is set when theme exists)
-    // Note: Firestore can't query "field exists", so we query by videoType
-    // and filter in-memory for theme
+    // Query all episodes - no filter by theme
+    // If episode doesn't have theme/guests, inheritance fails silently
     const snapshot = await videosRef
       .where('videoType', '==', 'episode')
       .get()
@@ -598,45 +655,50 @@ export async function getEpisodesWithContext(
       return []
     }
 
-    const episodes: VideoSummary[] = []
+    const episodes: Array<VideoSummary & { _publishedAt: Date }> = []
 
     for (const docSnap of snapshot.docs) {
       const rawData = docSnap.data()
 
-      // Filter only episodes with theme defined (context is set)
-      if (!rawData.theme) {
-        continue
-      }
-
-      // Parse publishedAt safely
+      // Parse publishedAt safely for sorting
       const publishedAtDate = parsePublishedAt(rawData.publishedAt)
 
       episodes.push({
         id: docSnap.id,
         title: rawData.title ?? 'Sem título',
         thumbnails: rawData.thumbnails,
+        storageThumbnailUrl: rawData.storageThumbnailUrl, // Base64 cached thumbnail
         duration: rawData.duration ?? 0,
         status: rawData.status ?? 'new',
         videoType: 'episode',
         transcriptionSRT: rawData.transcriptionSRT,
         transcriptionTXT: rawData.transcriptionTXT,
-        // Include context fields for preview
+        // Include context fields for preview (may be undefined)
         theme: rawData.theme,
         guests: rawData.guests,
+        // Include original publishedAt (preserving Firestore type)
+        publishedAt: rawData.publishedAt,
+        // Internal field for sorting
+        _publishedAt: publishedAtDate,
       })
     }
 
-    // Sort by title for consistent display
-    episodes.sort((a, b) => a.title.localeCompare(b.title))
+    // Sort by publishedAt desc (most recent first)
+    episodes.sort((a, b) => b._publishedAt.getTime() - a._publishedAt.getTime())
 
-    log('INFO', 'Episodes with context fetched', {
+    // Apply limit if specified and remove internal _publishedAt field
+    const sliced = limit ? episodes.slice(0, limit) : episodes
+    const result: VideoSummary[] = sliced.map(({ _publishedAt, ...episode }) => episode)
+
+    log('INFO', 'Episodes fetched for parent selection', {
       podcastId,
-      count: episodes.length,
+      count: result.length,
+      limit,
     })
 
-    return episodes
+    return result
   } catch (error) {
-    log('ERROR', 'Failed to get episodes with context', { podcastId, error })
+    log('ERROR', 'Failed to get episodes for parent selection', { podcastId, error })
     throw error
   }
 }

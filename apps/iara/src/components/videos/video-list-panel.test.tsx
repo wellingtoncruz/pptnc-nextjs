@@ -5,6 +5,15 @@ import type { VideoSummary } from '@/types/video'
 
 import { VideoListPanel } from './video-list-panel'
 
+// Mock do contexto de processamento LLM
+vi.mock('@/contexts', () => ({
+  useLLMProcessing: () => ({
+    isProcessing: false,
+    startProcessing: vi.fn(),
+    stopProcessing: vi.fn(),
+  }),
+}))
+
 const createMockVideo = (overrides: Partial<VideoSummary> = {}): VideoSummary => ({
   id: 'video-123',
   title: 'Test Video Title',

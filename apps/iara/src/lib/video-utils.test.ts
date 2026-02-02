@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import {
   classifyVideoType,
+  formatDuration,
   parseYouTubeDuration,
   getBestThumbnailUrl,
   inferVideoType,
@@ -38,6 +39,43 @@ describe('parseYouTubeDuration', () => {
   it('returns 0 for null-like strings', () => {
     expect(parseYouTubeDuration('P')).toBe(0)
     expect(parseYouTubeDuration('T')).toBe(0)
+  })
+})
+
+describe('formatDuration', () => {
+  it.each([
+    [0, '0:00'],
+    [30, '0:30'],
+    [60, '1:00'],
+    [65, '1:05'],
+    [90, '1:30'],
+    [300, '5:00'],
+    [599, '9:59'],
+    [600, '10:00'],
+    [3599, '59:59'],
+  ])('formats %d seconds as %s (minutes:seconds)', (seconds, expected) => {
+    expect(formatDuration(seconds)).toBe(expected)
+  })
+
+  it.each([
+    [3600, '1:00:00'],
+    [3661, '1:01:01'],
+    [3723, '1:02:03'],
+    [7200, '2:00:00'],
+    [7325, '2:02:05'],
+    [36000, '10:00:00'],
+  ])('formats %d seconds as %s (hours:minutes:seconds)', (seconds, expected) => {
+    expect(formatDuration(seconds)).toBe(expected)
+  })
+
+  it('returns 0:00 for negative values', () => {
+    expect(formatDuration(-1)).toBe('0:00')
+    expect(formatDuration(-100)).toBe('0:00')
+  })
+
+  it('pads minutes and seconds with leading zeros for hours format', () => {
+    expect(formatDuration(3601)).toBe('1:00:01')
+    expect(formatDuration(3660)).toBe('1:01:00')
   })
 })
 

@@ -3,34 +3,92 @@
 import { AlertCircle, Check, Circle, Loader2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { PHASE_METADATA, WIZARD_PHASES, WizardPhase, WizardState } from '@/lib/wizard'
+import {
+  EXTENDED_PHASE_METADATA,
+  ExtendedWizardPhase,
+  getPhasesForVideoType,
+  VideoTypeForWizard,
+  WizardState,
+} from '@/lib/wizard'
+import type { Video } from '@/types/video'
 
 interface WizardBreadcrumbProps {
   state: WizardState
-  onPhaseClick: (phase: WizardPhase) => void
-  canNavigateToPhase: (phase: WizardPhase) => boolean
+  videoType?: VideoTypeForWizard
+  /** Video data used to determine completion of extended phases (0, 5B) */
+  video?: Video
+  onPhaseClick: (phase: ExtendedWizardPhase) => void
+  canNavigateToPhase: (phase: ExtendedWizardPhase) => boolean
 }
 
 /**
- * Breadcrumb component showing the 8 phases of the wizard.
+ * Default phase state for phases not in the wizard state (e.g., phase 0 and 5B for cut/reel).
+ */
+const DEFAULT_PHASE_STATE = { status: 'pending' as const, data: null, error: null }
+
+/**
+ * Determines the phase state for extended phases (0 and 5B) based on video data.
+ *
+ * - Phase 0: completed if video.parentEpisodeId is defined
+ * - Phase 5B: completed if video.shortTitle is defined
+ */
+function getExtendedPhaseState(
+  phase: ExtendedWizardPhase,
+  video?: Video
+): { status: 'pending' | 'completed'; data: null; error: null } {
+  if (!video) {
+    return DEFAULT_PHASE_STATE
+  }
+
+  if (phase === 0) {
+    // Phase 0 is complete when parentEpisodeId is set
+    return video.parentEpisodeId
+      ? { status: 'completed', data: null, error: null }
+      : DEFAULT_PHASE_STATE
+  }
+
+  if (phase === '5B') {
+    // Phase 5B is complete when shortTitle is set
+    return video.shortTitle
+      ? { status: 'completed', data: null, error: null }
+      : DEFAULT_PHASE_STATE
+  }
+
+  return DEFAULT_PHASE_STATE
+}
+
+/**
+ * Breadcrumb component showing the phases of the wizard.
+ *
+ * For episodes: shows phases 1-8
+ * For cut/reel: shows the appropriate phases (0, 5, 5B, 6, 7, 8 for cut; 0, 5, 6, 7, 8 for reel)
  *
  * Indicators:
  * - ✓ Green: completed
  * - ● Blue pulsing: loading
  * - ○ Gray: pending
- * - ⚠ Yellow: error
+ * - ⚠ Yellow: needs review (phases 2, 3 have data but not confirmed)
+ * - ⚠ Red: error
  */
 export function WizardBreadcrumb({
   state,
+  videoType = 'episode',
+  video,
   onPhaseClick,
   canNavigateToPhase,
 }: WizardBreadcrumbProps) {
+  const phases = getPhasesForVideoType(videoType)
+
   return (
     <nav aria-label="Wizard progress" className="w-full">
       <ol className="flex items-center justify-between gap-1">
-        {WIZARD_PHASES.map((phase, index) => {
-          const phaseState = state.phases[phase]
-          const metadata = PHASE_METADATA[phase]
+        {phases.map((phase, index) => {
+          // Get phase state - use video data for extended phases (0, '5B')
+          const phaseState =
+            typeof phase === 'number' && phase >= 1 && phase <= 8
+              ? state.phases[phase as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8]
+              : getExtendedPhaseState(phase, video)
+          const metadata = EXTENDED_PHASE_METADATA[phase]
           const isCurrent = state.currentPhase === phase
           const canNavigate = canNavigateToPhase(phase)
 
@@ -59,7 +117,8 @@ export function WizardBreadcrumb({
                     'text-xs font-medium truncate',
                     isCurrent && 'text-foreground',
                     !isCurrent && phaseState.status === 'completed' && 'text-green-400',
-                    !isCurrent && phaseState.status === 'error' && 'text-yellow-400',
+                    !isCurrent && phaseState.status === 'error' && 'text-red-400',
+                    !isCurrent && phaseState.status === 'needs_review' && 'text-yellow-400',
                     !isCurrent && phaseState.status === 'pending' && 'text-muted-foreground'
                   )}
                 >
@@ -68,11 +127,13 @@ export function WizardBreadcrumb({
               </button>
 
               {/* Connector line */}
-              {index < WIZARD_PHASES.length - 1 && (
+              {index < phases.length - 1 && (
                 <div
                   className={cn(
                     'h-px flex-1 mx-1 min-w-2',
-                    phaseState.status === 'completed' ? 'bg-green-400/50' : 'bg-border'
+                    phaseState.status === 'completed' && 'bg-green-400/50',
+                    phaseState.status === 'needs_review' && 'bg-yellow-400/50',
+                    phaseState.status !== 'completed' && phaseState.status !== 'needs_review' && 'bg-border'
                   )}
                 />
               )}
@@ -94,6 +155,8 @@ function PhaseIcon({ status }: { status: WizardState['phases'][1]['status'] }) {
     case 'loading':
       return <Loader2 className="h-4 w-4 text-blue-400 animate-spin shrink-0" />
     case 'error':
+      return <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+    case 'needs_review':
       return <AlertCircle className="h-4 w-4 text-yellow-400 shrink-0" />
     case 'pending':
     default:

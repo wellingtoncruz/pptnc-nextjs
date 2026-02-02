@@ -3,9 +3,9 @@
  *
  * POST: Add a phase to the reviewedPhases array.
  *
- * Phases 2 (Edit Check) and 3 (Compliance) require explicit confirmation
- * from the producer before being considered complete. This API persists
- * that confirmation so it's remembered across sessions.
+ * Phases 2 (Edit Check), 3 (Compliance), and 4 (Chapters) require explicit
+ * confirmation from the producer before being considered complete. This API
+ * persists that confirmation so it's remembered across sessions.
  *
  * @see Story 5.3 - Smart Loading de Fases Imutaveis
  */
@@ -27,11 +27,11 @@ import {
 
 /**
  * Schema for validating reviewed phase request body.
- * Only phases 2 and 3 require review confirmation.
+ * Phases 2, 3, and 4 require review confirmation.
  */
 const ReviewedPhaseSchema = z.object({
-  phase: z.union([z.literal(2), z.literal(3)], {
-    errorMap: () => ({ message: 'Fase deve ser 2 ou 3' }),
+  phase: z.union([z.literal(2), z.literal(3), z.literal(4)], {
+    message: 'Fase deve ser 2, 3 ou 4',
   }),
 })
 

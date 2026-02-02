@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SettingsPageClient } from './settings-page-client'
-import type { SerializedPodcast } from '@/app/settings/page'
+import type { SerializedPodcast } from '@/types/podcast'
 
 /**
  * Settings panel for the detail view.

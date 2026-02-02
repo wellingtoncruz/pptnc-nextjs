@@ -25,15 +25,9 @@ describe('PersonasSettingsForm', () => {
     vi.useRealTimers()
   })
 
-  it('renders card with title', () => {
-    render(
-      <PersonasSettingsForm personas={DEFAULT_PERSONAS} onSavePersona={mockOnSavePersona} />
-    )
-
-    expect(screen.getByText('Personas do LLM')).toBeInTheDocument()
-  })
-
   it('renders both persona editors with correct labels', () => {
+    // Note: Title "Personas do LLM" is now rendered by parent AccordionTrigger
+    // in settings-page-client.tsx (Story 8.2 refactor)
     render(
       <PersonasSettingsForm personas={DEFAULT_PERSONAS} onSavePersona={mockOnSavePersona} />
     )

@@ -60,7 +60,8 @@ export function ContextInputsForm({
   }), [defaultValues?.theme, defaultValues?.hasCoHost, defaultValues?.coHost, defaultValues?.guests])
 
   const form = useForm<EpisodeContextFormData>({
-    resolver: zodResolver(EpisodeContextFormSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(EpisodeContextFormSchema) as any,
     defaultValues: initialValues,
   })
 

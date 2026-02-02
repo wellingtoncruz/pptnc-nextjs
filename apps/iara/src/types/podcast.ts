@@ -80,3 +80,12 @@ export type VideoTypeConfig = z.infer<typeof VideoTypeConfigSchema>
  * Firestore Timestamp type.
  */
 export type FirestoreTimestamp = z.infer<typeof TimestampSchema>
+
+/**
+ * Serialized podcast for client components.
+ * Timestamps are converted to ISO strings for JSON serialization.
+ */
+export type SerializedPodcast = Omit<Podcast, 'createdAt' | 'updatedAt'> & {
+  createdAt: string
+  updatedAt: string
+}

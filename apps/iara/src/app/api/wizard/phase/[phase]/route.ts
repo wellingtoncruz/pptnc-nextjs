@@ -24,7 +24,7 @@ import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
-import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase7Response } from '@/lib/llm'
+import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase6Response, Phase7Response } from '@/lib/llm'
 import { callLLMQueued, type PhaseResponse } from '@/lib/llm'
 import { log } from '@/lib/logger'
 import { WizardPhaseSchema } from '@/lib/wizard'
@@ -197,12 +197,33 @@ export async function POST(
 
     if (phase === 4) {
       const phase4Data = result.data as Phase4Response
+      let normalizedChapters = phase4Data.chapters
+
+      // YouTube requires the first chapter to start at 00:00:00
+      // Normalize the first chapter timestamp to ensure compliance
+      if (normalizedChapters.length > 0) {
+        const firstChapter = normalizedChapters[0]
+        if (firstChapter.timestamp !== '00:00:00' && firstChapter.timestamp !== '00:00') {
+          log('INFO', 'Normalizing first chapter timestamp to 00:00:00', {
+            videoId,
+            originalTimestamp: firstChapter.timestamp,
+          })
+          normalizedChapters = [
+            { ...firstChapter, timestamp: '00:00:00' },
+            ...normalizedChapters.slice(1),
+          ]
+        }
+      }
+
+      // Update result data with normalized chapters
+      phase4Data.chapters = normalizedChapters
+
       await updateVideoAdmin(PODCAST_ID, videoId, {
-        chapters: phase4Data.chapters,
+        chapters: normalizedChapters,
       })
       log('INFO', 'Phase 4 chapters persisted to video', {
         videoId,
-        chapterCount: phase4Data.chapters.length,
+        chapterCount: normalizedChapters.length,
       })
     }
 
@@ -214,6 +235,18 @@ export async function POST(
       log('INFO', 'Phase 5 suggested titles persisted to video', {
         videoId,
         titleCount: phase5Data.titles.length,
+      })
+    }
+
+    // Persist description for Phase 6
+    if (phase === 6) {
+      const phase6Data = result.data as Phase6Response
+      await updateVideoAdmin(PODCAST_ID, videoId, {
+        description: phase6Data.description,
+      })
+      log('INFO', 'Phase 6 description persisted to video', {
+        videoId,
+        descriptionLength: phase6Data.description.length,
       })
     }
 
@@ -242,7 +275,12 @@ export async function POST(
       // Update result data with normalized tags
       phase7Data.tags = normalizedTags
 
-      log('INFO', 'Phase 7 tags normalized', {
+      // Persist normalized tags to Firestore
+      await updateVideoAdmin(PODCAST_ID, videoId, {
+        tags: normalizedTags,
+      })
+
+      log('INFO', 'Phase 7 tags normalized and persisted', {
         videoId,
         tagCount: normalizedTags.length,
         totalChars,

@@ -62,6 +62,35 @@ export function classifyVideoType(
 }
 
 // ============================================================================
+// DURATION FORMATTING
+// ============================================================================
+
+/**
+ * Formats duration in seconds to a human-readable string.
+ *
+ * @param seconds - Duration in seconds
+ * @returns Formatted string (e.g., "1:23:45" for hours, "23:45" for minutes)
+ *
+ * @example
+ * formatDuration(3723) // "1:02:03"
+ * formatDuration(300)  // "5:00"
+ * formatDuration(65)   // "1:05"
+ */
+export function formatDuration(seconds: number): string {
+  if (seconds <= 0) return '0:00'
+
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  return `${minutes}:${secs.toString().padStart(2, '0')}`
+}
+
+// ============================================================================
 // THUMBNAIL UTILITIES
 // ============================================================================
 

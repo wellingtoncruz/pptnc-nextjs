@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
 
 import { auth } from '@/lib/auth'
+import { requireAdmin, requireAuth } from '@/lib/auth/require-admin'
 import { getPodcastAdmin, updatePodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { PodcastUpdateSchema } from '@/lib/schemas'
@@ -59,17 +60,24 @@ export async function GET() {
 /**
  * PATCH /api/podcast - Update podcast settings
  *
- * Requires authentication. Updates the current tenant's podcast.
+ * Requires authentication AND admin role.
+ * Updates the current tenant's podcast.
+ *
+ * @see docs/stories/8-1-modelo-roles-permissoes.md
  */
 export async function PATCH(request: NextRequest) {
   const session = await auth()
 
-  // Check for no session or session errors (e.g., UserNotFoundError)
-  if (!session || session.error) {
-    return NextResponse.json(
-      { error: { code: 'AUTH_EXPIRED', message: 'Sessão expirada' } },
-      { status: 401 }
-    )
+  // Check for authentication
+  const authError = requireAuth(session)
+  if (authError) {
+    return authError
+  }
+
+  // Check for admin role
+  const adminCheck = requireAdmin(session!)
+  if (!adminCheck.authorized) {
+    return adminCheck.response
   }
 
   try {
@@ -82,7 +90,7 @@ export async function PATCH(request: NextRequest) {
     await updatePodcastAdmin(PODCAST_ID, validated)
 
     log('INFO', 'Podcast updated via API', {
-      userId: session.user.id,
+      userId: adminCheck.session.user.id,
       podcastId: PODCAST_ID,
       fields: Object.keys(validated),
     })
@@ -97,7 +105,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     log('ERROR', 'Failed to update podcast via API', {
-      userId: session.user.id,
+      userId: session!.user.id,
       podcastId: PODCAST_ID,
       error: error instanceof Error ? error.message : 'Unknown error',
     })

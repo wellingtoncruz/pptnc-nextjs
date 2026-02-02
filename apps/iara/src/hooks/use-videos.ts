@@ -3,12 +3,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 import { log } from '@/lib/logger'
-import type { VideoSummary, VideoTypeFilter } from '@/types/video'
+import type { VideoSummary, VideoTypeFilter, VideoStatus } from '@/types/video'
 
 const PAGE_SIZE = 20
 
+/** Filter for video status. 'all' means no filtering, 'not_sent' means all except 'sent'. */
+export type VideoStatusFilter = VideoStatus | 'all' | 'not_sent'
+
 interface UseVideosOptions {
   typeFilter?: VideoTypeFilter
+  /** Initial status filter. Defaults to 'new' for performance. */
+  statusFilter?: VideoStatusFilter
 }
 
 interface UseVideosResult {
@@ -24,6 +29,9 @@ interface UseVideosResult {
   // Filter
   typeFilter: VideoTypeFilter
   setTypeFilter: (type: VideoTypeFilter) => void
+  // Status filter
+  statusFilter: VideoStatusFilter
+  setStatusFilter: (status: VideoStatusFilter) => void
 }
 
 /**
@@ -42,6 +50,8 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [typeFilter, setTypeFilter] = useState<VideoTypeFilter>(options.typeFilter ?? 'all')
+  // Default to 'not_sent' - shows all videos except sent ones (most common use case)
+  const [statusFilter, setStatusFilter] = useState<VideoStatusFilter>(options.statusFilter ?? 'not_sent')
 
   // AbortController ref for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -66,6 +76,10 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
 
       if (typeFilter !== 'all') {
         params.set('type', typeFilter)
+      }
+
+      if (statusFilter !== 'all') {
+        params.set('status', statusFilter)
       }
 
       const response = await fetch(`/api/videos?${params}`, {
@@ -100,7 +114,7 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
         setIsLoading(false)
       }
     }
-  }, [page, typeFilter])
+  }, [page, typeFilter, statusFilter])
 
   // Fetch on mount and when page/filter changes
   useEffect(() => {
@@ -120,6 +134,12 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
     setPage(1) // Reset to first page when filter changes
   }, [])
 
+  // Reset page when status filter changes
+  const handleStatusFilterChange = useCallback((status: VideoStatusFilter) => {
+    setStatusFilter(status)
+    setPage(1) // Reset to first page when filter changes
+  }, [])
+
   return {
     videos,
     isLoading,
@@ -131,5 +151,7 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
     setPage,
     typeFilter,
     setTypeFilter: handleTypeFilterChange,
+    statusFilter,
+    setStatusFilter: handleStatusFilterChange,
   }
 }

@@ -19,6 +19,7 @@
 
 import { applicationDefault, getApps, initializeApp, type App } from 'firebase-admin/app'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
+import { getStorage, type Storage } from 'firebase-admin/storage'
 
 import { log } from '../logger'
 
@@ -26,6 +27,7 @@ import { FIRESTORE_DATABASE_ID, PROJECT_ID } from './config'
 
 let adminApp: App | undefined
 let adminDb: Firestore | undefined
+let adminStorage: Storage | undefined
 
 /**
  * Gets or initializes the Firebase Admin app.
@@ -62,4 +64,17 @@ export function getAdminDb(): Firestore {
   const app = getAdminApp()
   adminDb = getFirestore(app, FIRESTORE_DATABASE_ID)
   return adminDb
+}
+
+/**
+ * Gets the Firebase Storage admin instance.
+ * Initializes the admin app if not already initialized.
+ *
+ * @returns Storage admin instance
+ */
+export function getAdminStorage(): Storage {
+  if (adminStorage) return adminStorage
+  const app = getAdminApp()
+  adminStorage = getStorage(app)
+  return adminStorage
 }

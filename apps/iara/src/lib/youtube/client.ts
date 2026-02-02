@@ -49,6 +49,26 @@ export class YouTubeAPIError extends Error {
 }
 
 /**
+ * Thumbnail object from YouTube API.
+ */
+export interface YouTubeThumbnail {
+  url: string
+  width?: number
+  height?: number
+}
+
+/**
+ * Thumbnails object with all available resolutions from YouTube API.
+ */
+export interface YouTubeThumbnails {
+  default?: YouTubeThumbnail
+  medium?: YouTubeThumbnail
+  high?: YouTubeThumbnail
+  standard?: YouTubeThumbnail
+  maxres?: YouTubeThumbnail
+}
+
+/**
  * Video data returned from YouTube API, before Firestore storage.
  * Note: publishedAt is ISO 8601 string from API, converted to Timestamp on save.
  */
@@ -56,12 +76,18 @@ export interface YouTubeVideoDataFromAPI {
   id: string
   title: string
   description: string
-  thumbnail: string
+  /** Complete thumbnails object from YouTube API (all available resolutions) */
+  thumbnails: YouTubeThumbnails
   duration: number // seconds (converted from ISO 8601)
   publishedAt: string // ISO 8601 datetime
   privacyStatus: 'public' | 'unlisted' | 'private'
   /** Live broadcast status: 'live', 'upcoming', or 'none' */
   liveBroadcastContent: 'live' | 'upcoming' | 'none'
+  /**
+   * Indicates this video was a finished live stream.
+   * Only populated when liveStreamingDetails.actualEndTime exists.
+   */
+  wasLiveBroadcast: boolean
 }
 
 /**
@@ -286,8 +312,11 @@ export class YouTubeClient {
   /**
    * Gets detailed video information.
    *
+   * Requests liveStreamingDetails to detect finished live broadcasts.
+   * A video is considered a finished live if it has actualEndTime in liveStreamingDetails.
+   *
    * @param videoIds - Array of video IDs
-   * @returns Array of video data with parsed duration and privacy status
+   * @returns Array of video data with parsed duration, privacy status, and live broadcast info
    */
   async getVideoDetails(videoIds: string[]): Promise<YouTubeVideoDataFromAPI[]> {
     if (videoIds.length === 0) {
@@ -296,7 +325,7 @@ export class YouTubeClient {
 
     const ids = videoIds.join(',')
     const data = await this.fetch(
-      `/videos?id=${ids}&part=snippet,contentDetails,status`,
+      `/videos?id=${ids}&part=snippet,contentDetails,status,liveStreamingDetails`,
       YouTubeVideosResponseSchema
     )
 
@@ -304,16 +333,61 @@ export class YouTubeClient {
       id: item.id,
       title: item.snippet.title,
       description: item.snippet.description,
-      thumbnail:
-        item.snippet.thumbnails.high?.url ||
-        item.snippet.thumbnails.medium?.url ||
-        item.snippet.thumbnails.default?.url ||
-        '',
+      thumbnails: item.snippet.thumbnails,
       duration: parseYouTubeDuration(item.contentDetails.duration),
       publishedAt: item.snippet.publishedAt,
       privacyStatus: item.status?.privacyStatus ?? 'public',
       liveBroadcastContent: (item.snippet.liveBroadcastContent as 'live' | 'upcoming' | 'none') ?? 'none',
+      // A video is a finished live broadcast if it has actualEndTime in liveStreamingDetails
+      wasLiveBroadcast: Boolean(item.liveStreamingDetails?.actualEndTime),
     }))
+  }
+
+  /**
+   * Fetches video details with automatic chunking for large ID arrays.
+   *
+   * Handles YouTube API limit of 50 IDs per request by splitting into chunks
+   * and processing them in parallel. Use this when you have more than 50 IDs
+   * or when the count is unknown.
+   *
+   * @param videoIds - Array of video IDs (any size)
+   * @returns Array of video details for all provided IDs
+   *
+   * @example
+   * const client = new YouTubeClient(accessToken)
+   * // Can handle any number of IDs
+   * const videos = await client.getVideoDetailsBatch(['id1', 'id2', ..., 'id100'])
+   */
+  async getVideoDetailsBatch(videoIds: string[]): Promise<YouTubeVideoDataFromAPI[]> {
+    if (videoIds.length === 0) {
+      return []
+    }
+
+    // YouTube API limit is 50 IDs per request
+    const CHUNK_SIZE = 50
+
+    // If within limit, use single request
+    if (videoIds.length <= CHUNK_SIZE) {
+      return this.getVideoDetails(videoIds)
+    }
+
+    // Chunk into batches of 50
+    const chunks: string[][] = []
+    for (let i = 0; i < videoIds.length; i += CHUNK_SIZE) {
+      chunks.push(videoIds.slice(i, i + CHUNK_SIZE))
+    }
+
+    log('INFO', 'Fetching video details in batches', {
+      totalIds: videoIds.length,
+      chunks: chunks.length,
+    })
+
+    // Fetch all chunks in parallel
+    const results = await Promise.all(
+      chunks.map((chunk) => this.getVideoDetails(chunk))
+    )
+
+    return results.flat()
   }
 
   /**

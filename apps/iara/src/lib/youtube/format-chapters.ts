@@ -55,3 +55,85 @@ export function buildDescriptionWithChapters(
   }
   return `${formatChaptersForYouTube(chapters)}\n\n${description}`
 }
+
+/**
+ * Guest information for formatting.
+ */
+export interface Guest {
+  name: string
+  linkedin?: string
+}
+
+/**
+ * Options for building the complete YouTube description.
+ */
+export interface BuildYouTubeDescriptionOptions {
+  /** Main video description */
+  description: string
+  /** Array of guests with name and linkedin */
+  guests?: Guest[]
+  /** Array of chapters with timestamp and title */
+  chapters?: Chapter[]
+  /** Footer text from podcast settings */
+  youtubeFooter?: string
+}
+
+/**
+ * Builds the complete YouTube description with all sections.
+ *
+ * Format:
+ * ```
+ * {description}
+ *
+ * Convidados
+ * {guest.name}
+ * {guest.linkedin}
+ *
+ * {chapters}
+ *
+ * {youtubeFooter}
+ * ```
+ *
+ * @param options - Description building options
+ * @returns Complete formatted description for YouTube
+ */
+export function buildCompleteYouTubeDescription(
+  options: BuildYouTubeDescriptionOptions
+): string {
+  const { description, guests = [], chapters = [], youtubeFooter } = options
+  const sections: string[] = []
+
+  // 1. Main description
+  if (description.trim()) {
+    sections.push(description.trim())
+  }
+
+  // 2. Guests section
+  if (guests.length > 0) {
+    const guestLines = ['Convidados']
+    for (const guest of guests) {
+      guestLines.push(guest.name)
+      if (guest.linkedin) {
+        guestLines.push(guest.linkedin)
+      }
+      guestLines.push('') // Empty line between guests
+    }
+    // Remove trailing empty line
+    if (guestLines[guestLines.length - 1] === '') {
+      guestLines.pop()
+    }
+    sections.push(guestLines.join('\n'))
+  }
+
+  // 3. Chapters section
+  if (chapters.length > 0) {
+    sections.push(formatChaptersForYouTube(chapters))
+  }
+
+  // 4. YouTube footer
+  if (youtubeFooter?.trim()) {
+    sections.push(youtubeFooter.trim())
+  }
+
+  return sections.join('\n\n')
+}

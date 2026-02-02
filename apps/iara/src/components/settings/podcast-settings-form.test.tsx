@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { act, fireEvent, render, screen, waitFor } from '@/test-utils'
 
-import type { SerializedPodcast } from '@/app/settings/page'
+import type { SerializedPodcast } from '@/types/podcast'
 
 // Mock fetch for API calls
 const mockFetch = vi.fn()
@@ -213,12 +213,8 @@ describe('PodcastSettingsForm', () => {
     })
   })
 
-  it('renders card with title', () => {
-    const podcast = createPodcastFixture()
-    render(<PodcastSettingsForm podcast={podcast} />)
-
-    expect(screen.getByText('Informações do Podcast')).toBeInTheDocument()
-  })
+  // Note: Title "Informações do Podcast" is now rendered by parent AccordionTrigger
+  // in settings-page-client.tsx (Story 8.2 refactor)
 
   it('auto-saves channelId on change', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })

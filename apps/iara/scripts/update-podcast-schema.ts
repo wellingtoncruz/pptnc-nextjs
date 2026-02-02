@@ -60,6 +60,7 @@ const DEFAULT_PROMPTS = {
     critique: { ...DEFAULT_PROMPT_FIELD },
     editing: { ...DEFAULT_PROMPT_FIELD },
     compliance: { ...DEFAULT_PROMPT_FIELD },
+    chapters: { ...DEFAULT_PROMPT_FIELD },
     titles: { ...DEFAULT_PROMPT_FIELD },
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },

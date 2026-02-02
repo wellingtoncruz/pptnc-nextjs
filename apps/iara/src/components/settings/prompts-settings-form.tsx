@@ -6,7 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PromptFieldEditor } from './prompt-field-editor'
 import type { Prompts, PromptField, EpisodePrompts, CutPrompts, ReelPrompts } from '@/types/podcast'
 
@@ -57,70 +56,66 @@ const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags']
  * - Each video type has multiple prompt fields
  * - PromptFieldEditor for each field with auto-save
  * - Labels in PT-BR
+ *
+ * Note: Title is rendered by parent AccordionTrigger.
+ * @see docs/stories/8-2-secoes-colapsaveis.md
  */
 export function PromptsSettingsForm({ prompts, onSavePromptField }: PromptsSettingsFormProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Prompts por Tipo de Vídeo</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Accordion type="single" collapsible className="w-full">
-          {/* Episode prompts */}
-          <AccordionItem value="episode">
-            <AccordionTrigger>Episódios</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-4">
-                {EPISODE_FIELDS.map((fieldName) => (
-                  <PromptFieldEditor
-                    key={`episode-${fieldName}`}
-                    fieldKey={`episode-${fieldName}`}
-                    label={FIELD_LABELS[fieldName]}
-                    initialValue={prompts.episode[fieldName]}
-                    onSave={(value) => onSavePromptField('episode', fieldName, value)}
-                  />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+    <Accordion type="single" collapsible className="w-full">
+      {/* Episode prompts */}
+      <AccordionItem value="episode">
+        <AccordionTrigger>Episódios</AccordionTrigger>
+        <AccordionContent forceOverflow>
+          <div className="space-y-4">
+            {EPISODE_FIELDS.map((fieldName) => (
+              <PromptFieldEditor
+                key={`episode-${fieldName}`}
+                fieldKey={`episode-${fieldName}`}
+                label={FIELD_LABELS[fieldName]}
+                initialValue={prompts.episode[fieldName]}
+                onSave={(value) => onSavePromptField('episode', fieldName, value)}
+              />
+            ))}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
 
-          {/* Cut prompts */}
-          <AccordionItem value="cut">
-            <AccordionTrigger>Cortes</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-4">
-                {CUT_FIELDS.map((fieldName) => (
-                  <PromptFieldEditor
-                    key={`cut-${fieldName}`}
-                    fieldKey={`cut-${fieldName}`}
-                    label={FIELD_LABELS[fieldName]}
-                    initialValue={prompts.cut[fieldName]}
-                    onSave={(value) => onSavePromptField('cut', fieldName, value)}
-                  />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+      {/* Cut prompts */}
+      <AccordionItem value="cut">
+        <AccordionTrigger>Cortes</AccordionTrigger>
+        <AccordionContent forceOverflow>
+          <div className="space-y-4">
+            {CUT_FIELDS.map((fieldName) => (
+              <PromptFieldEditor
+                key={`cut-${fieldName}`}
+                fieldKey={`cut-${fieldName}`}
+                label={FIELD_LABELS[fieldName]}
+                initialValue={prompts.cut[fieldName]}
+                onSave={(value) => onSavePromptField('cut', fieldName, value)}
+              />
+            ))}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
 
-          {/* Reel prompts */}
-          <AccordionItem value="reel">
-            <AccordionTrigger>Reels</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-4">
-                {REEL_FIELDS.map((fieldName) => (
-                  <PromptFieldEditor
-                    key={`reel-${fieldName}`}
-                    fieldKey={`reel-${fieldName}`}
-                    label={FIELD_LABELS[fieldName]}
-                    initialValue={prompts.reel[fieldName]}
-                    onSave={(value) => onSavePromptField('reel', fieldName, value)}
-                  />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </CardContent>
-    </Card>
+      {/* Reel prompts */}
+      <AccordionItem value="reel">
+        <AccordionTrigger>Reels</AccordionTrigger>
+        <AccordionContent forceOverflow>
+          <div className="space-y-4">
+            {REEL_FIELDS.map((fieldName) => (
+              <PromptFieldEditor
+                key={`reel-${fieldName}`}
+                fieldKey={`reel-${fieldName}`}
+                label={FIELD_LABELS[fieldName]}
+                initialValue={prompts.reel[fieldName]}
+                onSave={(value) => onSavePromptField('reel', fieldName, value)}
+              />
+            ))}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   )
 }

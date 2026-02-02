@@ -82,7 +82,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
       mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
     })
 
-    it('returns 400 for invalid phase (not 2 or 3)', async () => {
+    it('returns 400 for invalid phase (not 2, 3 or 4)', async () => {
       mockGetVideoAdmin.mockResolvedValue({ id: 'test-video' } as never)
 
       const request = createMockRequest({ phase: 1 })
@@ -91,13 +91,21 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
       expect(response.status).toBe(400)
     })
 
-    it('returns 400 for phase 4', async () => {
+    it('accepts phase 4', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
       mockGetVideoAdmin.mockResolvedValue({ id: 'test-video' } as never)
+
+      const mockUpdate = vi.fn().mockResolvedValue(undefined)
+      const mockDocRef = { update: mockUpdate }
+      const mockCollection = vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue(mockDocRef) })
+      mockGetAdminDb.mockReturnValue({
+        collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
+      } as never)
 
       const request = createMockRequest({ phase: 4 })
       const response = await POST(request, createContext('test-video'))
 
-      expect(response.status).toBe(400)
+      expect(response.status).toBe(200)
     })
 
     it('returns 400 for non-number phase', async () => {

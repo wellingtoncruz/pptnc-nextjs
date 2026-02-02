@@ -46,9 +46,14 @@ export const YouTubePrivacyStatusSchema = z.enum(['public', 'unlisted', 'private
 /**
  * Thumbnail item schema - single thumbnail resolution.
  * From YouTube API snippet.thumbnails.
+ *
+ * Note: url accepts both HTTP URLs and data URIs (base64) for cached thumbnails.
  */
 export const ThumbnailItemSchema = z.object({
-  url: z.string().url(),
+  url: z.string().refine(
+    (val) => val.startsWith('http') || val.startsWith('data:'),
+    { message: 'Must be a valid URL or data URI' }
+  ),
   width: z.number().optional(),
   height: z.number().optional(),
 })
@@ -260,6 +265,8 @@ export const VideoSchema = z.object({
   tags: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
   suggestedTitles: z.array(z.string()).optional(), // Títulos sugeridos pelo LLM (Phase 5)
+  suggestedShortTitles: z.array(z.string()).optional(), // Títulos curtos sugeridos (cut only)
+  shortTitle: z.string().optional(), // Título curto selecionado (cut only)
   compliance: ComplianceSchema.optional(), // Legacy - será substituído por riskAndCompliance
 
   // Context fields for AI processing (flat, not nested)
@@ -272,6 +279,9 @@ export const VideoSchema = z.object({
 
   // Smart loading - phases confirmed by producer (2 and 3 require review)
   reviewedPhases: z.array(z.number()).optional(),
+
+  // Thumbnail stored in Firebase Storage (works for draft/private videos)
+  storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
 }).passthrough() // Allow additional legacy fields
 
 /**
@@ -296,6 +306,9 @@ export const VideoCreateSchema = z.object({
   videoType: VideoTypeSchema,
   youtubePrivacyStatus: YouTubePrivacyStatusSchema,
   visibilityUpdatedAt: TimestampSchema.optional(),
+
+  // Thumbnail stored in Firebase Storage (works for draft/private videos)
+  storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
 })
 
 /**
@@ -327,6 +340,8 @@ export const VideoUpdateSchema = z.object({
   tags: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
   suggestedTitles: z.array(z.string()).optional(),
+  suggestedShortTitles: z.array(z.string()).optional(), // Títulos curtos sugeridos (cut only)
+  shortTitle: z.string().optional(), // Título curto selecionado (cut only)
   compliance: ComplianceSchema.optional(),
 
   // Context fields for AI processing (flat, not nested)
@@ -366,10 +381,15 @@ export const VideoSummarySchema = z.object({
   riskAndCompliance: z.array(RiskAndComplianceItemSchema).optional(),
   chapters: z.array(ChapterSchema).optional(),
   suggestedTitles: z.array(z.string()).optional(),
+  suggestedShortTitles: z.array(z.string()).optional(), // Títulos curtos sugeridos (cut only)
+  shortTitle: z.string().optional(), // Título curto selecionado (cut only)
   tags: z.array(z.string()).optional(),
   reviewedPhases: z.array(z.number()).optional(),
   // Timestamp fields - needed for VideoMetadata display (fix.md item 1.b)
   publishedAt: TimestampSchema.optional(),
   createdAt: TimestampSchema.optional(),
   updatedAt: TimestampSchema.optional(),
+
+  // Thumbnail stored in Firebase Storage (works for draft/private videos)
+  storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
 })

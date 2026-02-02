@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@/test-utils'
 
-import { VideoHeader, VideoMetadata } from './video-header'
+import { VideoHeader, VideoMetadata, VideoShortTitle } from './video-header'
 import type { Video } from '@/types/video'
 
 // Mock video data
@@ -161,6 +161,104 @@ describe('VideoMetadata', () => {
       render(<VideoMetadata video={videoWithISOString} />)
       expect(screen.getByText(/criado em/i)).toBeInTheDocument()
       expect(screen.getByText(/atualizado/i)).toBeInTheDocument()
+    })
+  })
+})
+
+describe('VideoShortTitle', () => {
+  describe('Display rules (Story 4.3 - AC2)', () => {
+    it('shows short title for cut videos with shortTitle', () => {
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: 'IMPACTANTE!',
+      }
+      render(<VideoShortTitle video={cutVideo} />)
+      expect(screen.getByText('Thumb')).toBeInTheDocument()
+      expect(screen.getByText('IMPACTANTE!')).toBeInTheDocument()
+    })
+
+    it('does NOT show short title for cut without shortTitle', () => {
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: undefined,
+      }
+      render(<VideoShortTitle video={cutVideo} />)
+      expect(screen.queryByText('Thumb')).not.toBeInTheDocument()
+    })
+
+    it('does NOT show short title for cut with empty shortTitle', () => {
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: '',
+      }
+      render(<VideoShortTitle video={cutVideo} />)
+      expect(screen.queryByText('Thumb')).not.toBeInTheDocument()
+    })
+
+    it('does NOT show short title for episode', () => {
+      const episodeVideo = {
+        ...mockVideo,
+        videoType: 'episode' as const,
+        shortTitle: 'Should not appear',
+      }
+      render(<VideoShortTitle video={episodeVideo} />)
+      expect(screen.queryByText('Thumb')).not.toBeInTheDocument()
+    })
+
+    it('does NOT show short title for reel', () => {
+      const reelVideo = {
+        ...mockVideo,
+        videoType: 'reel' as const,
+        shortTitle: 'Should not appear',
+      }
+      render(<VideoShortTitle video={reelVideo} />)
+      expect(screen.queryByText('Thumb')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Formatting and styling', () => {
+    it('renders Thumb as attention-grabbing badge', () => {
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: 'SEGREDO REVELADO',
+      }
+      render(<VideoShortTitle video={cutVideo} />)
+
+      const badge = screen.getByText('Thumb')
+      expect(badge).toHaveClass('bg-orange-500/20')
+      expect(badge).toHaveClass('text-orange-600')
+      expect(badge).toHaveClass('font-semibold')
+    })
+
+    it('renders short title text with emphasis', () => {
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: 'SEGREDO REVELADO',
+      }
+      render(<VideoShortTitle video={cutVideo} />)
+
+      const titleText = screen.getByText('SEGREDO REVELADO')
+      expect(titleText).toHaveClass('font-semibold')
+      expect(titleText).toHaveClass('text-foreground')
+    })
+
+    it('applies custom className to container', () => {
+      const cutVideo = {
+        ...mockVideo,
+        videoType: 'cut' as const,
+        shortTitle: 'Test Title',
+      }
+      render(<VideoShortTitle video={cutVideo} className="custom-class" />)
+
+      // Find the container by looking for the flex container with both Thumb badge and title
+      const thumb = screen.getByText('Thumb')
+      const container = thumb.parentElement
+      expect(container).toHaveClass('custom-class')
     })
   })
 })

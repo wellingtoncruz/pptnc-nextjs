@@ -55,6 +55,12 @@ export const MAX_OBJECTIVE_LENGTH = 2000
 export const MAX_RESUME_LENGTH = 5000
 
 /**
+ * Maximum length for YouTube footer field.
+ * This text is appended to video descriptions.
+ */
+export const MAX_YOUTUBE_FOOTER_LENGTH = 5000
+
+/**
  * PromptField schema - individual prompt with description and expected output.
  *
  * Each prompt has:
@@ -233,6 +239,8 @@ export const PodcastSchema = z.object({
   prompts: PromptsSchema,
   personas: PersonasSchema,
   videoTypes: VideoTypesConfigSchema,
+  /** YouTube footer text appended to video descriptions. */
+  youtubeFooter: z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
 })

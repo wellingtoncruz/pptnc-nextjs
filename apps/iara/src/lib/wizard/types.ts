@@ -35,9 +35,32 @@ export const WizardPhaseSchema = z.union([
 export type WizardPhase = z.infer<typeof WizardPhaseSchema>
 
 /**
- * Status of each phase.
+ * Extended wizard phase that includes phase 0 (parent selection) and 5B (short title).
+ * Used for cut and reel video types which have different phase flows.
+ *
+ * - Phase 0: Parent video selection (cut/reel only) - NUMBER type
+ * - Phase 5B: Short title selection (cut only) - STRING type to differentiate from phase 5
+ *
+ * Note: Phase 0 is numeric for consistency with other phases.
+ * Phase '5B' is a string because it's a sub-phase of 5 and needs to be distinguishable.
  */
-export type PhaseStatus = 'pending' | 'loading' | 'completed' | 'error'
+export type ExtendedWizardPhase = 0 | WizardPhase | '5B'
+
+/**
+ * Video types that the wizard can handle.
+ * Each type has a different phase flow.
+ */
+export type VideoTypeForWizard = 'episode' | 'cut' | 'reel'
+
+/**
+ * Status of each phase.
+ * - pending: not started
+ * - loading: processing
+ * - completed: done
+ * - error: failed
+ * - needs_review: has data but needs user confirmation (phases 2, 3)
+ */
+export type PhaseStatus = 'pending' | 'loading' | 'completed' | 'error' | 'needs_review'
 
 /**
  * Type of phase - determines if it can be reprocessed.
@@ -58,6 +81,7 @@ export interface PhaseState<T = unknown> {
  */
 export interface WizardState {
   videoId: string
+  videoType: VideoTypeForWizard
   currentPhase: WizardPhase
   phases: Record<WizardPhase, PhaseState>
 }
@@ -92,9 +116,11 @@ export interface ConsoleMessage {
 
 /**
  * Phase metadata for UI display.
+ * Note: For extended phases (0 and 5B), the `phase` field uses the closest
+ * WizardPhase for compatibility with existing code.
  */
 export interface PhaseMetadata {
-  phase: WizardPhase
+  phase: WizardPhase | 0 // Extended to support phase 0
   label: string
   type: PhaseType
   spinnerText: string
@@ -126,10 +152,15 @@ export interface VideoDataForSync {
   riskAndCompliance?: unknown[]
   chapters?: unknown[]
   suggestedTitles?: string[] // Phase 5 uses LLM suggestions, not user-selected title
+  suggestedShortTitles?: string[] // Phase 5B uses LLM suggestions for short titles (cut only)
+  shortTitle?: string // Selected short title (cut only)
   description?: string
   tags?: string[]
   status?: string
   reviewedPhases?: number[]
+  // For cut/reel videos
+  videoType?: 'episode' | 'cut' | 'reel'
+  parentEpisodeId?: string
 }
 
 /**
@@ -141,7 +172,8 @@ export type WizardAction =
   | { type: 'SET_PHASE_DATA'; phase: WizardPhase; data: unknown }
   | { type: 'SET_PHASE_ERROR'; phase: WizardPhase; error: string }
   | { type: 'INVALIDATE_FROM_PHASE'; phase: WizardPhase }
-  | { type: 'COMPLETE_PHASE_AND_ADVANCE'; phase: WizardPhase; data: unknown }
+  | { type: 'COMPLETE_PHASE_AND_ADVANCE'; phase: ExtendedWizardPhase; data: unknown }
   | { type: 'SYNC_WITH_VIDEO_DATA'; videoData: VideoDataForSync }
   | { type: 'HYDRATE_FROM_VIDEO_DATA'; videoData: VideoDataForSync }
   | { type: 'RESET' }
+  | { type: 'RESET_TO_STATE'; state: WizardState }

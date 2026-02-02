@@ -22,6 +22,16 @@ const nextConfig: NextConfig = {
         hostname: '*.ytimg.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        pathname: '/**',
+      },
     ],
   },
 }

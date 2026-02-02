@@ -172,7 +172,9 @@ describe('YouTubeClient', () => {
         id: 'vid1',
         title: 'Test Video 1',
         description: 'Description 1',
-        thumbnail: 'https://i.ytimg.com/vi/vid1/mqdefault.jpg',
+        thumbnails: {
+          medium: { url: 'https://i.ytimg.com/vi/vid1/mqdefault.jpg' },
+        },
         duration: 5400, // 1h30m in seconds
         publishedAt: '2024-01-01T10:00:00Z',
         privacyStatus: 'public',
@@ -197,6 +199,120 @@ describe('YouTubeClient', () => {
         expect.stringContaining('id=vid1,vid2,vid3'),
         expect.any(Object)
       )
+    })
+  })
+
+  describe('getVideoDetailsBatch', () => {
+    const createVideoResponse = (id: string) => ({
+      id,
+      snippet: {
+        title: `Video ${id}`,
+        description: `Description ${id}`,
+        publishedAt: '2024-01-01T10:00:00Z',
+        channelId: 'UC1',
+        thumbnails: {
+          medium: { url: `https://i.ytimg.com/vi/${id}/mqdefault.jpg` },
+        },
+      },
+      contentDetails: { duration: 'PT10M' },
+      status: { privacyStatus: 'public' },
+    })
+
+    it('returns empty array for empty input', async () => {
+      const result = await client.getVideoDetailsBatch([])
+      expect(result).toEqual([])
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('uses single request for <= 50 IDs', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [createVideoResponse('vid1'), createVideoResponse('vid2')],
+        }),
+      })
+
+      const result = await client.getVideoDetailsBatch(['vid1', 'vid2'])
+
+      expect(result).toHaveLength(2)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('chunks > 50 IDs into multiple requests', async () => {
+      // Create 75 video IDs
+      const videoIds = Array.from({ length: 75 }, (_, i) => `vid${i}`)
+
+      // Mock first batch (50 IDs)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: videoIds.slice(0, 50).map(createVideoResponse),
+        }),
+      })
+
+      // Mock second batch (25 IDs)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: videoIds.slice(50, 75).map(createVideoResponse),
+        }),
+      })
+
+      const result = await client.getVideoDetailsBatch(videoIds)
+
+      expect(result).toHaveLength(75)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+
+      // Verify first call has 50 IDs
+      const firstCall = mockFetch.mock.calls[0][0] as string
+      const firstIds = firstCall.split('id=')[1].split('&')[0].split(',')
+      expect(firstIds).toHaveLength(50)
+
+      // Verify second call has 25 IDs
+      const secondCall = mockFetch.mock.calls[1][0] as string
+      const secondIds = secondCall.split('id=')[1].split('&')[0].split(',')
+      expect(secondIds).toHaveLength(25)
+    })
+
+    it('processes exactly 50 IDs in single batch', async () => {
+      const videoIds = Array.from({ length: 50 }, (_, i) => `vid${i}`)
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: videoIds.map(createVideoResponse),
+        }),
+      })
+
+      const result = await client.getVideoDetailsBatch(videoIds)
+
+      expect(result).toHaveLength(50)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles 100 IDs (2 full batches)', async () => {
+      const videoIds = Array.from({ length: 100 }, (_, i) => `vid${i}`)
+
+      // Mock first batch
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: videoIds.slice(0, 50).map(createVideoResponse),
+        }),
+      })
+
+      // Mock second batch
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: videoIds.slice(50, 100).map(createVideoResponse),
+        }),
+      })
+
+      const result = await client.getVideoDetailsBatch(videoIds)
+
+      expect(result).toHaveLength(100)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
     })
   })
 

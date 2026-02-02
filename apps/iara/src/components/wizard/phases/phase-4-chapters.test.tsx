@@ -139,28 +139,6 @@ describe('Phase4Chapters', () => {
       const timestampButtons = screen.getAllByRole('button', { name: /ir para/i })
       expect(timestampButtons.length).toBe(4)
     })
-
-    it('does not show warning when first chapter starts at 00:00', () => {
-      const wizard = createMockWizard()
-      render(
-        <Phase4Chapters wizard={wizard} video={mockVideo} chaptersResult={mockChaptersWithData} />
-      )
-      expect(screen.queryByText(/primeiro capítulo deve começar em 00:00/i)).not.toBeInTheDocument()
-    })
-
-    it('shows warning when first chapter does not start at 00:00', () => {
-      const wizard = createMockWizard()
-      const chaptersWithoutZero: Phase4Response = {
-        chapters: [
-          { timestamp: '01:30', title: 'Primeiro Capítulo' },
-          { timestamp: '10:00', title: 'Segundo Capítulo' },
-        ],
-      }
-      render(
-        <Phase4Chapters wizard={wizard} video={mockVideo} chaptersResult={chaptersWithoutZero} />
-      )
-      expect(screen.getByText(/primeiro capítulo deve começar em 00:00/i)).toBeInTheDocument()
-    })
   })
 
   describe('Timestamp NO context offset for chapters', () => {

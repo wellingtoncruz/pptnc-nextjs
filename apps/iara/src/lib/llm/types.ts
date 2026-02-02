@@ -105,6 +105,16 @@ export interface Phase5Response {
   titles: string[] // 5 title suggestions
 }
 
+/**
+ * Phase 5B response - Short title suggestions for thumbnails (cut only).
+ *
+ * Short titles are used for YouTube thumbnails where space is limited.
+ * Should be more impactful and concise than full titles.
+ */
+export interface Phase5BResponse {
+  shortTitles: string[] // 5 short title suggestions for thumbnails
+}
+
 export interface Phase6Response {
   description: string
 }
@@ -122,6 +132,7 @@ export type PhaseResponse =
   | Phase3Response
   | Phase4Response
   | Phase5Response
+  | Phase5BResponse
   | Phase6Response
   | Phase7Response
 

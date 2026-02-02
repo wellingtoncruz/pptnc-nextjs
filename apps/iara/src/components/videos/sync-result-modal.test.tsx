@@ -3,11 +3,10 @@ import userEvent from '@testing-library/user-event'
 
 import { SyncResultModal, type SyncResultData } from './sync-result-modal'
 
+// Note: transcription fields removed per Story 5.6 (Transcrição On-Demand)
 const createMockResult = (overrides: Partial<SyncResultData> = {}): SyncResultData => ({
   newVideos: 0,
   reopenedVideos: 0,
-  transcriptionsFetched: 0,
-  transcriptionsUnavailable: 0,
   ...overrides,
 })
 
@@ -103,46 +102,8 @@ describe('SyncResultModal', () => {
       expect(screen.getByText(/nenhum vídeo novo foi encontrado no canal/i)).toBeInTheDocument()
     })
 
-    it('mostra informação de transcrições baixadas', () => {
-      render(
-        <SyncResultModal
-          isOpen={true}
-          onClose={vi.fn()}
-          result={createMockResult({ newVideos: 2, transcriptionsFetched: 2 })}
-        />
-      )
-
-      expect(screen.getByText(/2 transcrições baixadas/i)).toBeInTheDocument()
-    })
-
-    it('mostra aviso de vídeos aguardando transcrição', () => {
-      render(
-        <SyncResultModal
-          isOpen={true}
-          onClose={vi.fn()}
-          result={createMockResult({ newVideos: 3, transcriptionsUnavailable: 2 })}
-        />
-      )
-
-      expect(screen.getByText(/2 vídeos aguardando transcrição/i)).toBeInTheDocument()
-    })
-  })
-
-  describe('quota error', () => {
-    it('mostra mensagem de erro de quota', () => {
-      render(
-        <SyncResultModal
-          isOpen={true}
-          onClose={vi.fn()}
-          result={createMockResult({
-            newVideos: 1,
-            quotaError: 'Limite de requisições excedido.',
-          })}
-        />
-      )
-
-      expect(screen.getByText(/limite de requisições excedido/i)).toBeInTheDocument()
-    })
+    // Note: Transcription tests removed per Story 5.6 (Transcrição On-Demand)
+    // Transcriptions are now fetched on-demand when producer selects a video
   })
 
   describe('error state', () => {

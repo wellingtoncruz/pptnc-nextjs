@@ -76,13 +76,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Persist user document and tokens to Firestore
         try {
-          // Save/update user document (upsert - prevents duplicates)
-          const { saveOrUpdateUser } = await import('./firebase/users')
-          await saveOrUpdateUser(userId, {
+          // Save/update podcast-scoped user document (upsert - prevents duplicates)
+          const { createOrUpdateUserOnLogin } = await import('./firebase/users-admin')
+          const { PODCAST_ID } = await import('./firebase/config')
+          const user = await createOrUpdateUserOnLogin(PODCAST_ID, {
+            oderId: userId,
             email: token.email as string,
-            name: token.name as string | null,
-            picture: token.picture as string | null,
+            displayName: token.name as string | null,
+            photoURL: token.picture as string | null,
           })
+
+          // Store user role in JWT for fast access
+          token.role = user.role
 
           // Save tokens to subcollection
           const { saveUserTokens } = await import('./firebase/tokens')
@@ -208,8 +213,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
           }
 
-          // Add user id to session (using stable Google User ID)
+          // Add user id and role to session (using stable Google User ID)
           session.user.id = userId
+          session.user.role = user.role
         } catch (error) {
           log('ERROR', 'Failed to validate user in Firestore', {
             userId,
@@ -218,6 +224,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // On error, allow session to continue but log for monitoring
           // This prevents Firestore outages from blocking all users
           session.user.id = userId
+          // Use role from JWT token as fallback
+          session.user.role = (token.role as 'admin' | 'user') ?? 'user'
         }
       }
 
@@ -239,7 +247,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   debug: process.env.NODE_ENV === 'development',
 })
 
-// Extend the Session type to include user.id and error types
+// Extend the Session type to include user.id, role and error types
 declare module 'next-auth' {
   interface Session {
     user: {
@@ -247,6 +255,7 @@ declare module 'next-auth' {
       name?: string | null
       email?: string | null
       image?: string | null
+      role: 'admin' | 'user' // User role for authorization
     }
     error?: 'RefreshAccessTokenError' | 'UserNotFoundError'
   }
@@ -256,6 +265,7 @@ declare module 'next-auth' {
     refreshToken?: string
     expiresAt?: number
     userId?: string // Google User ID (providerAccountId) - stable across sessions
+    role?: 'admin' | 'user' // User role from Firestore
     error?: 'RefreshAccessTokenError'
   }
 }

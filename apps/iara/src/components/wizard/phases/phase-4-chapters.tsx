@@ -22,6 +22,7 @@ import type { Phase4Response } from '@/lib/llm/types'
 
 import { ClickableTimestamp } from './clickable-timestamp'
 import { ProcessingSpinner } from '../processing-spinner'
+import { ReviewConfirmationAlert } from '../review-confirmation-alert'
 
 interface Phase4ChaptersProps {
   wizard: UseWizardReturn
@@ -32,6 +33,14 @@ interface Phase4ChaptersProps {
   error?: string | null
   /** Callback to retry processing after error */
   onRetry?: () => void
+  /** If true, data was loaded from cache (not fresh LLM call) */
+  isFromCache?: boolean
+  /** If true, producer has already confirmed review of cached data */
+  isReviewed?: boolean
+  /** Callback to confirm review when data is from cache */
+  onConfirmReview?: () => void
+  /** If true, review confirmation is in progress */
+  isConfirmingReview?: boolean
   className?: string
 }
 
@@ -57,15 +66,18 @@ export function Phase4Chapters({
   chaptersResult,
   error,
   onRetry,
+  isFromCache = false,
+  isReviewed = false,
+  onConfirmReview,
+  isConfirmingReview = false,
   className,
 }: Phase4ChaptersProps) {
   const chapters = chaptersResult?.chapters ?? []
   const hasChapters = chapters.length > 0
   const hasError = !!error
 
-  // Check if first chapter starts at 00:00 (YouTube requirement)
-  const firstChapterIsZero = chapters[0]?.timestamp === '00:00'
-  const hasFirstChapterWarning = hasChapters && !firstChapterIsZero
+  // Show review confirmation if data is from cache and not yet reviewed
+  const needsReviewConfirmation = isFromCache && !isReviewed
 
   // State for confirmation dialog
   const [showApprovalDialog, setShowApprovalDialog] = useState(false)
@@ -73,8 +85,8 @@ export function Phase4Chapters({
   // State for advancing to next phase (prevents double clicks)
   const [isAdvancing, setIsAdvancing] = useState(false)
 
-  // Check if can advance: result must exist with chapters
-  const canAdvance = chaptersResult !== null && hasChapters && !hasError && !isAdvancing
+  // Check if can advance: result must exist with chapters, no error, and (not from cache OR already reviewed)
+  const canAdvance = chaptersResult !== null && hasChapters && !hasError && !needsReviewConfirmation && !isAdvancing
 
   const handleAdvanceClick = () => {
     if (!canAdvance) return
@@ -135,15 +147,6 @@ export function Phase4Chapters({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {/* Warning if first chapter doesn't start at 00:00 */}
-              {hasFirstChapterWarning && (
-                <div className="flex items-center gap-2 p-3 mb-2 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md">
-                  <AlertTriangleIcon className="size-4 text-amber-600 shrink-0" />
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
-                    O primeiro capítulo deve começar em 00:00 para o YouTube aceitar.
-                  </p>
-                </div>
-              )}
               {chapters.map((chapter, index) => (
                 <div
                   key={`${chapter.timestamp}-${index}`}
@@ -183,6 +186,15 @@ export function Phase4Chapters({
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Review confirmation alert when data is from cache */}
+        {needsReviewConfirmation && chaptersResult && hasChapters && onConfirmReview && (
+          <ReviewConfirmationAlert
+            phaseName="capitulos"
+            onConfirm={onConfirmReview}
+            isConfirming={isConfirmingReview}
+          />
         )}
 
         {/* Advance button */}
