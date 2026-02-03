@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { Play, Loader2, AlertTriangle } from 'lucide-react'
+import { Play, Loader2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { log } from '@/lib/logger'
@@ -59,7 +59,6 @@ export function YouTubeEmbed({
 }: YouTubeEmbedProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<YT.Player | null>(null)
   const startTimeRef = useRef<number | undefined>(undefined)
@@ -137,42 +136,17 @@ export function YouTubeEmbed({
           },
           onError: (event: YT.OnErrorEvent) => {
             if (!isMounted) return
+
+            // Log error for debugging but don't show overlay
+            // YouTube IFrame API fires error code 5 for draft videos even when they play successfully
+            // The portal-web implementation ignores these errors silently
+            const errorCode = event.data as number
+            log('WARN', 'YouTube player error (ignored)', { youtubeId, errorCode })
+
             setIsLoading(false)
             pendingSeekRef.current = undefined
-
-            // YouTube IFrame API error codes:
-            // 2: Invalid video ID
-            // 5: HTML5 player error
-            // 100: Video not found (removed or private)
-            // 101/150: Embedding disabled by video owner
-            // 151: Same Origin Policy / CORS error (common with draft videos)
-            // Note: Cast to number because YT.PlayerError enum doesn't include 151
-            const errorCode = event.data as number
-            log('ERROR', 'YouTube player error', { youtubeId, errorCode })
-
-            let errorMessage: string
-            switch (errorCode) {
-              case 2:
-                errorMessage = 'ID de vídeo inválido'
-                break
-              case 5:
-                errorMessage = 'Erro no player HTML5'
-                break
-              case 100:
-                errorMessage = 'Vídeo não encontrado ou privado'
-                break
-              case 101:
-              case 150:
-                errorMessage = 'Incorporação desabilitada pelo proprietário'
-                break
-              case 151:
-                errorMessage =
-                  'Vídeo em rascunho não pode ser incorporado. Publique como "não listado" no YouTube primeiro.'
-                break
-              default:
-                errorMessage = 'Não foi possível carregar o vídeo'
-            }
-            setError(errorMessage)
+            // Note: We intentionally don't setError() here to match portal-web behavior
+            // Draft videos trigger error 5 but continue playing - showing an overlay would block the working video
           },
         },
       })
@@ -246,7 +220,6 @@ export function YouTubeEmbed({
     if (startTime !== undefined) {
       startTimeRef.current = startTime
     }
-    setError(null) // Reset error on retry
     setIsPlaying(true)
     setIsLoading(true)
   }, [])
@@ -306,24 +279,9 @@ export function YouTubeEmbed({
             />
           </div>
           {/* Loading state while iframe loads */}
-          {isLoading && !error && (
+          {isLoading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
               <Loader2 className="h-12 w-12 animate-spin text-white" />
-            </div>
-          )}
-          {/* Error state - video cannot be embedded */}
-          {error && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/90 p-4 text-center">
-              <AlertTriangle className="h-12 w-12 text-yellow-500" />
-              <p className="text-sm text-white">{error}</p>
-              <a
-                href={`https://www.youtube.com/watch?v=${youtubeId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-400 hover:underline"
-              >
-                Abrir no YouTube →
-              </a>
             </div>
           )}
         </div>
