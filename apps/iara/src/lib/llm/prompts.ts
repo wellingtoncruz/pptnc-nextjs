@@ -26,16 +26,27 @@ Procure por:
 - Cortes abruptos ou transições estranhas
 - Problemas de áudio mencionados na transcrição
 
-Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+## FORMATO DE RESPOSTA
+
+Responda APENAS com JSON válido dentro das tags <json_response>. Não inclua markdown, explicações ou texto fora das tags.
+
+Estrutura obrigatória:
 {
-  "hasIssues": true/false,
-  "issues": [
-    {
-      "timestamp": "00:05:30",
-      "description": "Descrição do problema"
-    }
-  ]
+  "hasIssues": boolean,
+  "issues": [{"timestamp": "HH:MM:SS", "description": "string"}]
 }
+
+## EXEMPLOS DE RESPOSTA CORRETA
+
+Exemplo 1 - Com problemas encontrados:
+<json_response>
+{"hasIssues": true, "issues": [{"timestamp": "00:12:45", "description": "Pausa longa de 5 segundos entre falas"}, {"timestamp": "00:25:30", "description": "Repetição da palavra 'então' três vezes seguidas"}]}
+</json_response>
+
+Exemplo 2 - Sem problemas:
+<json_response>
+{"hasIssues": false, "issues": []}
+</json_response>
 
 IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
 
@@ -50,20 +61,31 @@ Procure por:
 - Conteúdo que pode gerar processos ou reclamações
 - Conteúdo que pode violar políticas do YouTube
 
-Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+## FORMATO DE RESPOSTA
+
+Responda APENAS com JSON válido dentro das tags <json_response>. Não inclua markdown, explicações ou texto fora das tags.
+
+Estrutura obrigatória:
 {
-  "hasRisks": true/false,
-  "risks": [
-    {
-      "timestamp": "00:05:30",
-      "risk": "tipo_do_risco",
-      "description": "Descrição do risco identificado"
-    }
-  ]
+  "hasRisks": boolean,
+  "risks": [{"timestamp": "HH:MM:SS", "risk": "tipo", "description": "string"}]
 }
 
-IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".
-Os tipos de risco válidos são: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.`,
+Tipos de risco válidos: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.
+
+## EXEMPLOS DE RESPOSTA CORRETA
+
+Exemplo 1 - Com riscos encontrados:
+<json_response>
+{"hasRisks": true, "risks": [{"timestamp": "00:08:20", "risk": "brand_mention", "description": "Menção à marca Apple sem autorização"}, {"timestamp": "00:45:10", "risk": "medical_claim", "description": "Afirmação sobre benefícios de suplemento sem evidência científica"}]}
+</json_response>
+
+Exemplo 2 - Sem riscos:
+<json_response>
+{"hasRisks": false, "risks": []}
+</json_response>
+
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
 
   4: `Você é um especialista em estruturação de conteúdo de vídeo.
 Analise a transcrição e sugira capítulos que dividam o conteúdo por assuntos.
@@ -114,7 +136,10 @@ A descrição deve:
 - Incluir palavras-chave relevantes naturalmente
 - Ter seções claras com quebras de linha
 - Incluir call-to-action para inscrição no canal
-- Listar convidados com seus cargos e links
+- OBRIGATÓRIO: Listar TODOS os convidados informados, com seus respectivos cargos e links do LinkedIn
+- Cada convidado deve ter uma linha dedicada no formato: Nome - Cargo - LinkedIn
+
+IMPORTANTE: Você DEVE incluir TODOS os convidados listados na seção "Convidados" do contexto. Não omita nenhum convidado.
 
 Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
@@ -310,33 +335,55 @@ export const PHASE_JSON_SCHEMAS: Record<WizardPhase, string> = {
 
 IMPORTANTE: O campo "critique" DEVE ser uma STRING única com parágrafos separados por \\n\\n, NÃO um array.`,
 
-  2: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+  2: `## FORMATO DE RESPOSTA
+
+Responda APENAS com JSON válido dentro das tags <json_response>. Não inclua markdown, explicações ou texto fora das tags.
+
+Estrutura obrigatória:
 {
-  "hasIssues": true/false,
-  "issues": [
-    {
-      "timestamp": "00:05:30",
-      "description": "Descrição do problema"
-    }
-  ]
+  "hasIssues": boolean,
+  "issues": [{"timestamp": "HH:MM:SS", "description": "string"}]
 }
+
+## EXEMPLOS DE RESPOSTA CORRETA
+
+Exemplo 1 - Com problemas:
+<json_response>
+{"hasIssues": true, "issues": [{"timestamp": "00:12:45", "description": "Pausa longa de 5 segundos"}]}
+</json_response>
+
+Exemplo 2 - Sem problemas:
+<json_response>
+{"hasIssues": false, "issues": []}
+</json_response>
 
 IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
 
-  3: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+  3: `## FORMATO DE RESPOSTA
+
+Responda APENAS com JSON válido dentro das tags <json_response>. Não inclua markdown, explicações ou texto fora das tags.
+
+Estrutura obrigatória:
 {
-  "hasRisks": true/false,
-  "risks": [
-    {
-      "timestamp": "00:12:45",
-      "risk": "tipo_do_risco",
-      "description": "Descrição detalhada do risco identificado"
-    }
-  ]
+  "hasRisks": boolean,
+  "risks": [{"timestamp": "HH:MM:SS", "risk": "tipo", "description": "string"}]
 }
 
-IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".
-Os tipos de risco válidos são: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.`,
+Tipos de risco válidos: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.
+
+## EXEMPLOS DE RESPOSTA CORRETA
+
+Exemplo 1 - Com riscos:
+<json_response>
+{"hasRisks": true, "risks": [{"timestamp": "00:08:20", "risk": "brand_mention", "description": "Menção à marca sem autorização"}]}
+</json_response>
+
+Exemplo 2 - Sem riscos:
+<json_response>
+{"hasRisks": false, "risks": []}
+</json_response>
+
+IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
 
   4: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {

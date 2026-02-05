@@ -27,6 +27,10 @@ interface WizardLayoutProps {
   video: Video
   /** Content for the interactive panel (right side of top half) */
   interactivePanel: React.ReactNode
+  /** Callback when title is changed. If provided, title becomes editable. */
+  onTitleChange?: (newTitle: string) => Promise<void>
+  /** Callback when short title is changed. If provided, short title becomes editable. */
+  onShortTitleChange?: (newShortTitle: string) => Promise<void>
   className?: string
 }
 
@@ -55,6 +59,8 @@ export function WizardLayout({
   wizard,
   video,
   interactivePanel,
+  onTitleChange,
+  onShortTitleChange,
   className,
 }: WizardLayoutProps) {
   // Wrapper to handle ExtendedWizardPhase in navigation
@@ -107,14 +113,14 @@ export function WizardLayout({
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
           {/* Video Preview (left) */}
           <div className="lg:w-1/2 p-4 flex flex-col">
-            <VideoHeader video={video} className="mb-3" />
+            <VideoHeader video={video} onTitleChange={onTitleChange} className="mb-3" />
             <VideoPreview
               videoId={wizard.state.videoId}
               thumbnailUrl={getBestThumbnailUrl(video.thumbnails)}
               className="max-w-2xl w-full flex-1"
             />
             {/* Short title display for cut videos - Story 4.3 AC2 */}
-            <VideoShortTitle video={video} className="mt-2" />
+            <VideoShortTitle video={video} onShortTitleChange={onShortTitleChange} className="mt-2" />
             <VideoMetadata video={video} className="mt-3" />
           </div>
 

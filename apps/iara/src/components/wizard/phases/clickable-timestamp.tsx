@@ -10,9 +10,9 @@ import { useYouTubeOptional } from '../youtube-context'
  * the actual timestamp. This gives reviewers context to understand
  * what was happening before the flagged moment.
  *
- * @pattern TIMESTAMP_CONTEXT_OFFSET - Always seek 30s before the flagged timestamp
+ * @pattern TIMESTAMP_CONTEXT_OFFSET - Always seek 15s before the flagged timestamp
  */
-export const TIMESTAMP_CONTEXT_OFFSET_SECONDS = 30
+export const TIMESTAMP_CONTEXT_OFFSET_SECONDS = 15
 
 interface ClickableTimestampProps {
   /** YouTube video ID (kept for backwards compatibility, not used with in-page player) */
@@ -23,7 +23,7 @@ interface ClickableTimestampProps {
   className?: string
   /**
    * Whether to apply context offset when seeking.
-   * When true (default), seeks to timestamp - 30s for context.
+   * When true (default), seeks to timestamp - 15s for context.
    * When false, seeks to exact timestamp (useful for chapters).
    */
   applyContextOffset?: boolean
@@ -81,12 +81,12 @@ export function getYouTubeTimestampUrl(videoId: string, timestamp: string): stri
  * on the same page.
  *
  * When clicked:
- * 1. Seeks the video to the specified timestamp (with optional -30s context offset)
+ * 1. Seeks the video to the specified timestamp (with optional -15s context offset)
  * 2. Scrolls the video player into view if needed
  *
  * ## Context Offset Pattern
  *
- * By default, timestamps seek to 30 seconds BEFORE the flagged moment.
+ * By default, timestamps seek to 15 seconds BEFORE the flagged moment.
  * This gives reviewers audio/video context to understand what was happening
  * before the issue. The displayed timestamp remains unchanged.
  *
@@ -94,12 +94,12 @@ export function getYouTubeTimestampUrl(videoId: string, timestamp: string): stri
  * positions (e.g., chapter markers).
  *
  * @pattern TIMESTAMP_SEEK_IN_PAGE - Timestamps control in-page player, not external links
- * @pattern TIMESTAMP_CONTEXT_OFFSET - Seek 30s before flagged timestamp for context
+ * @pattern TIMESTAMP_CONTEXT_OFFSET - Seek 15s before flagged timestamp for context
  * @see youtube-context.tsx - Context provider for player state
  * @see portal-web/timestamp-link.tsx - Original implementation
  *
  * @example
- * // With context offset (default) - seeks to 5:00 when clicked
+ * // With context offset (default) - seeks to 05:15 when clicked
  * <ClickableTimestamp videoId="abc123" timestamp="05:30" />
  *
  * @example
@@ -115,7 +115,7 @@ export function ClickableTimestamp({
   const youtube = useYouTubeOptional()
   const seconds = parseTimestampToSeconds(timestamp)
 
-  // Apply context offset: seek 30s before the flagged timestamp for context
+  // Apply context offset: seek 15s before the flagged timestamp for context
   // Never go below 0 seconds
   const seekSeconds = applyContextOffset
     ? Math.max(0, seconds - TIMESTAMP_CONTEXT_OFFSET_SECONDS)

@@ -12,8 +12,9 @@ import { log } from '@/lib/logger'
  *
  * Tries multiple strategies in order:
  * 1. Direct JSON.parse (fastest path)
- * 2. Extract from markdown code blocks (```json ... ```)
- * 3. Find JSON object/array in the text
+ * 2. Extract from <json_response>...</json_response> tags (hardened prompts)
+ * 3. Extract from markdown code blocks (```json ... ```)
+ * 4. Find JSON object/array in the text
  *
  * @param text - Raw text from LLM response
  * @returns Parsed JSON object or null if parsing fails
@@ -26,7 +27,18 @@ export function parseJSONFromLLM<T>(text: string): T | null {
     // Continue to next strategy
   }
 
-  // Strategy 2: Extract from markdown code block
+  // Strategy 2: Extract from <json_response> tags (hardened prompts for phases 2, 3)
+  // This is the preferred format for complex responses
+  const jsonResponseMatch = text.match(/<json_response>\s*([\s\S]*?)\s*<\/json_response>/)
+  if (jsonResponseMatch) {
+    try {
+      return JSON.parse(jsonResponseMatch[1].trim()) as T
+    } catch {
+      // Continue to next strategy
+    }
+  }
+
+  // Strategy 3: Extract from markdown code block
   const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
   if (codeBlockMatch) {
     try {
@@ -36,7 +48,7 @@ export function parseJSONFromLLM<T>(text: string): T | null {
     }
   }
 
-  // Strategy 3: Find JSON object or array in text
+  // Strategy 4: Find JSON object or array in text
   // Look for first { or [ and match to closing } or ]
   const jsonMatch = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/)
   if (jsonMatch) {

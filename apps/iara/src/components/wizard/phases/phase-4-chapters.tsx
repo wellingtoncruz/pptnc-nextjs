@@ -20,6 +20,8 @@ import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 import type { Phase4Response } from '@/lib/llm/types'
 
+import { EditableText } from '@/components/ui/editable-text'
+
 import { ClickableTimestamp } from './clickable-timestamp'
 import { ProcessingSpinner } from '../processing-spinner'
 import { ReviewConfirmationAlert } from '../review-confirmation-alert'
@@ -41,6 +43,8 @@ interface Phase4ChaptersProps {
   onConfirmReview?: () => void
   /** If true, review confirmation is in progress */
   isConfirmingReview?: boolean
+  /** Callback when a chapter title is changed */
+  onChapterChange?: (index: number, newTitle: string) => Promise<void>
   className?: string
 }
 
@@ -70,6 +74,7 @@ export function Phase4Chapters({
   isReviewed = false,
   onConfirmReview,
   isConfirmingReview = false,
+  onChapterChange,
   className,
 }: Phase4ChaptersProps) {
   const chapters = chaptersResult?.chapters ?? []
@@ -158,7 +163,16 @@ export function Phase4Chapters({
                     className="shrink-0 font-mono"
                     applyContextOffset={false}
                   />
-                  <span className="text-sm">{chapter.title}</span>
+                  {onChapterChange ? (
+                    <EditableText
+                      value={chapter.title}
+                      onSave={(newTitle) => onChapterChange(index, newTitle)}
+                      className="flex-1"
+                      placeholder="Titulo do capitulo"
+                    />
+                  ) : (
+                    <span className="text-sm">{chapter.title}</span>
+                  )}
                 </div>
               ))}
             </CardContent>

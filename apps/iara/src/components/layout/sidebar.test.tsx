@@ -143,4 +143,15 @@ describe('Sidebar', () => {
     // In expanded state, logout text should be visible
     expect(screen.getByText('Sair')).toBeInTheDocument()
   })
+
+  it('mostra a versão da aplicação no footer', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    // Version should be displayed (defaults to 'dev' in test environment)
+    expect(screen.getByText('dev')).toBeInTheDocument()
+  })
 })

@@ -8,6 +8,7 @@ import { PanelLeftClose, PanelLeftOpen, Video, Users, Settings, LogOut } from 'l
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
+import { APP_VERSION } from '@/lib/version'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -208,6 +209,13 @@ export function Sidebar({ userName }: SidebarProps) {
               </button>
             </>
           )}
+          {/* Version */}
+          <div className={cn(
+            'mt-2 text-[10px] text-muted-foreground/60 text-center',
+            isCollapsed && 'text-[8px]'
+          )}>
+            {APP_VERSION}
+          </div>
         </div>
       </aside>
     </TooltipProvider>

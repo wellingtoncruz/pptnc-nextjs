@@ -1890,6 +1890,188 @@ export function WizardOrchestrator({
   }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.tags, processPhase7Tags, enqueueLLMCall])
 
   /**
+   * Handle chapter title change from Phase 4.
+   * Persists the updated chapters to the video document.
+   */
+  const handleChapterChange = useCallback(async (index: number, newTitle: string) => {
+    log('INFO', 'Chapter title changed', { videoId: video.id, index, newTitle })
+
+    // Get current chapters from chaptersResult or videoData
+    const currentChapters = chaptersResult?.chapters ?? videoData.chapters ?? []
+    if (index < 0 || index >= currentChapters.length) {
+      log('ERROR', 'Invalid chapter index', { videoId: video.id, index, total: currentChapters.length })
+      throw new Error('Indice de capitulo invalido')
+    }
+
+    // Create updated chapters array
+    const updatedChapters = currentChapters.map((ch, i) =>
+      i === index ? { ...ch, title: newTitle } : ch
+    )
+
+    try {
+      // Persist the chapters via API
+      const response = await fetch(`/api/videos/${video.id}/chapters`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chapters: updatedChapters }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao salvar capitulo')
+      }
+
+      // Update local video data and chaptersResult
+      setVideoData(prev => ({ ...prev, chapters: updatedChapters }))
+      setChaptersResult(prev => prev ? { ...prev, chapters: updatedChapters } : null)
+
+      log('INFO', 'Chapter persisted successfully', { videoId: video.id, index })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar capitulo'
+      log('ERROR', 'Failed to persist chapter', { videoId: video.id, index, error: message })
+      throw error // Re-throw to let EditableText handle rollback
+    }
+  }, [video.id, chaptersResult, videoData.chapters])
+
+  /**
+   * Handle title change from VideoHeader (editable title).
+   * Persists the updated title to the video document.
+   *
+   * @see Story 10-7 - Editable title
+   */
+  const handleTitleChange = useCallback(async (newTitle: string) => {
+    log('INFO', 'Title changed', { videoId: video.id, newTitle })
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/title`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao salvar titulo')
+      }
+
+      // Update local video data
+      setVideoData(prev => ({ ...prev, title: newTitle }))
+
+      log('INFO', 'Title persisted successfully', { videoId: video.id })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar titulo'
+      log('ERROR', 'Failed to persist title', { videoId: video.id, error: message })
+      throw error // Re-throw to let EditableText handle rollback
+    }
+  }, [video.id])
+
+  /**
+   * Handle short title change from VideoShortTitle (editable short title).
+   * Persists the updated short title to the video document.
+   *
+   * @see Story 10-7 - Editable short title
+   */
+  const handleShortTitleChange = useCallback(async (newShortTitle: string) => {
+    log('INFO', 'Short title changed', { videoId: video.id, newShortTitle })
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/short-title`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shortTitle: newShortTitle }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao salvar titulo curto')
+      }
+
+      // Update local video data
+      setVideoData(prev => ({ ...prev, shortTitle: newShortTitle }))
+
+      log('INFO', 'Short title persisted successfully', { videoId: video.id })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar titulo curto'
+      log('ERROR', 'Failed to persist short title', { videoId: video.id, error: message })
+      throw error // Re-throw to let EditableText handle rollback
+    }
+  }, [video.id])
+
+  /**
+   * Handle suggested title edit from Phase 5.
+   * Persists the updated suggested title to the video document.
+   *
+   * @see Story 10-7 - Editable suggested titles
+   */
+  const handleSuggestedTitleEdit = useCallback(async (index: number, newTitle: string) => {
+    log('INFO', 'Suggested title edited', { videoId: video.id, index, newTitle })
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/suggested-titles`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index, title: newTitle }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao salvar titulo sugerido')
+      }
+
+      const result = await response.json()
+
+      // Update local video data with the new suggestedTitles array
+      setVideoData(prev => ({
+        ...prev,
+        suggestedTitles: result.data.suggestedTitles,
+      }))
+
+      log('INFO', 'Suggested title persisted successfully', { videoId: video.id, index })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar titulo sugerido'
+      log('ERROR', 'Failed to persist suggested title', { videoId: video.id, index, error: message })
+      throw error // Re-throw to let EditableText handle rollback
+    }
+  }, [video.id])
+
+  /**
+   * Handle suggested short title edit from Phase 5B.
+   * Persists the updated suggested short title to the video document.
+   *
+   * @see Story 10-7 - Editable suggested short titles
+   */
+  const handleSuggestedShortTitleEdit = useCallback(async (index: number, newShortTitle: string) => {
+    log('INFO', 'Suggested short title edited', { videoId: video.id, index, newShortTitle })
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/suggested-short-titles`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index, shortTitle: newShortTitle }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao salvar titulo curto sugerido')
+      }
+
+      const result = await response.json()
+
+      // Update local video data with the new suggestedShortTitles array
+      setVideoData(prev => ({
+        ...prev,
+        suggestedShortTitles: result.data.suggestedShortTitles,
+      }))
+
+      log('INFO', 'Suggested short title persisted successfully', { videoId: video.id, index })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao salvar titulo curto sugerido'
+      log('ERROR', 'Failed to persist suggested short title', { videoId: video.id, index, error: message })
+      throw error // Re-throw to let EditableText handle rollback
+    }
+  }, [video.id])
+
+  /**
    * Handle tags change from Phase 7.
    * Persists the tags to the video document.
    */
@@ -2194,6 +2376,7 @@ export function WizardOrchestrator({
           }}
           onRevalidate={handleRevalidatePhase5B}
           onShortTitleSelect={handleShortTitleSelect}
+          onSuggestedShortTitleEdit={handleSuggestedShortTitleEdit}
         />
       )
     }
@@ -2260,6 +2443,7 @@ export function WizardOrchestrator({
             isReviewed={videoData.reviewedPhases?.includes(4) ?? false}
             onConfirmReview={() => handleConfirmReview(4)}
             isConfirmingReview={isConfirmingReview}
+            onChapterChange={handleChapterChange}
           />
         )
       case 5:
@@ -2276,6 +2460,7 @@ export function WizardOrchestrator({
             }}
             onRevalidate={handleRevalidatePhase5}
             onTitleSelect={handleTitleSelect}
+            onSuggestedTitleEdit={handleSuggestedTitleEdit}
           />
         )
       case 6:
@@ -2359,6 +2544,7 @@ export function WizardOrchestrator({
     handleParentSelected,
     handleContextChange,
     handleConfirmReview,
+    handleChapterChange,
     handleRevalidatePhase5,
     handleTitleSelect,
     handleRevalidatePhase5B,
@@ -2414,6 +2600,8 @@ export function WizardOrchestrator({
       wizard={wizard}
       video={videoData}
       interactivePanel={interactivePanel}
+      onTitleChange={handleTitleChange}
+      onShortTitleChange={handleShortTitleChange}
       className={className}
     />
   )

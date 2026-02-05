@@ -93,21 +93,21 @@ describe('ClickableTimestamp', () => {
   })
 
   describe('context offset', () => {
-    it('exports context offset constant as 30 seconds', () => {
-      expect(TIMESTAMP_CONTEXT_OFFSET_SECONDS).toBe(30)
+    it('exports context offset constant as 15 seconds', () => {
+      expect(TIMESTAMP_CONTEXT_OFFSET_SECONDS).toBe(15)
     })
 
-    it('applies 30s context offset by default when seeking', () => {
-      // 05:30 = 330 seconds, with -30s offset = 300 seconds
+    it('applies 15s context offset by default when seeking', () => {
+      // 05:30 = 330 seconds, with -15s offset = 315 seconds
       render(<ClickableTimestamp videoId="abc123" timestamp="05:30" />)
       const button = screen.getByRole('button')
       fireEvent.click(button)
-      expect(mockSeekTo).toHaveBeenCalledWith(300)
+      expect(mockSeekTo).toHaveBeenCalledWith(315)
     })
 
     it('does not seek below 0 seconds for early timestamps', () => {
-      // 00:20 = 20 seconds, with -30s offset should clamp to 0
-      render(<ClickableTimestamp videoId="abc123" timestamp="00:20" />)
+      // 00:10 = 10 seconds, with -15s offset should clamp to 0
+      render(<ClickableTimestamp videoId="abc123" timestamp="00:10" />)
       const button = screen.getByRole('button')
       fireEvent.click(button)
       expect(mockSeekTo).toHaveBeenCalledWith(0)

@@ -426,6 +426,139 @@ describe('Phase7Tags', () => {
     })
   })
 
+  describe('Race condition prevention', () => {
+    it('disables remove buttons while saving', async () => {
+      const wizard = createMockWizard()
+      // Create a promise that we control
+      let resolvePromise: () => void
+      const onTagsChange = vi.fn().mockImplementation(
+        () => new Promise<void>((resolve) => { resolvePromise = resolve })
+      )
+
+      render(
+        <Phase7Tags
+          wizard={wizard}
+          video={mockVideo}
+          tagsResult={mockTagsWithData}
+          onTagsChange={onTagsChange}
+        />
+      )
+
+      // Click remove on first tag
+      const removeButton = screen.getByRole('button', { name: /remover tag podcast/i })
+      fireEvent.click(removeButton)
+
+      // All remove buttons should be disabled while saving
+      await waitFor(() => {
+        const allRemoveButtons = screen.getAllByRole('button', { name: /remover tag/i })
+        allRemoveButtons.forEach((btn) => {
+          expect(btn).toBeDisabled()
+        })
+      })
+
+      // Resolve the save
+      resolvePromise!()
+
+      // After save completes, buttons should be enabled again
+      await waitFor(() => {
+        const allRemoveButtons = screen.getAllByRole('button', { name: /remover tag/i })
+        allRemoveButtons.forEach((btn) => {
+          expect(btn).not.toBeDisabled()
+        })
+      })
+    })
+
+    it('disables add input and button while saving', async () => {
+      const wizard = createMockWizard()
+      let resolvePromise: () => void
+      const onTagsChange = vi.fn().mockImplementation(
+        () => new Promise<void>((resolve) => { resolvePromise = resolve })
+      )
+
+      render(
+        <Phase7Tags
+          wizard={wizard}
+          video={mockVideo}
+          tagsResult={mockTagsWithData}
+          onTagsChange={onTagsChange}
+        />
+      )
+
+      // Add a tag
+      const input = screen.getByPlaceholderText(/adicionar nova tag/i)
+      fireEvent.change(input, { target: { value: 'new-tag' } })
+      const addButton = screen.getByRole('button', { name: /adicionar/i })
+      fireEvent.click(addButton)
+
+      // Input and button should be disabled while saving
+      await waitFor(() => {
+        expect(input).toBeDisabled()
+        expect(addButton).toBeDisabled()
+      })
+
+      // Resolve the save
+      resolvePromise!()
+
+      // After save completes, input and button should be enabled again
+      await waitFor(() => {
+        expect(input).not.toBeDisabled()
+      })
+    })
+
+    it('rolls back tag removal on error', async () => {
+      const wizard = createMockWizard()
+      const onTagsChange = vi.fn().mockRejectedValue(new Error('Network error'))
+
+      render(
+        <Phase7Tags
+          wizard={wizard}
+          video={mockVideo}
+          tagsResult={mockTagsWithData}
+          onTagsChange={onTagsChange}
+        />
+      )
+
+      // Verify podcast tag exists initially
+      expect(screen.getByText('podcast')).toBeInTheDocument()
+
+      // Click remove
+      const removeButton = screen.getByRole('button', { name: /remover tag podcast/i })
+      fireEvent.click(removeButton)
+
+      // Wait for the error and rollback
+      await waitFor(() => {
+        // Tag should be restored after error
+        expect(screen.getByText('podcast')).toBeInTheDocument()
+      })
+    })
+
+    it('rolls back tag addition on error', async () => {
+      const wizard = createMockWizard()
+      const onTagsChange = vi.fn().mockRejectedValue(new Error('Network error'))
+
+      render(
+        <Phase7Tags
+          wizard={wizard}
+          video={mockVideo}
+          tagsResult={mockTagsWithData}
+          onTagsChange={onTagsChange}
+        />
+      )
+
+      // Add a new tag
+      const input = screen.getByPlaceholderText(/adicionar nova tag/i)
+      fireEvent.change(input, { target: { value: 'failing-tag' } })
+      const addButton = screen.getByRole('button', { name: /adicionar/i })
+      fireEvent.click(addButton)
+
+      // Wait for the error and rollback
+      await waitFor(() => {
+        // New tag should NOT be in the document after rollback
+        expect(screen.queryByText('failing-tag')).not.toBeInTheDocument()
+      })
+    })
+  })
+
   describe('Character limit', () => {
     it('shows warning color when approaching character limit', () => {
       const wizard = createMockWizard()

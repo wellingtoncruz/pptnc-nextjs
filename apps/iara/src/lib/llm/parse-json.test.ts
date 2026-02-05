@@ -24,6 +24,62 @@ describe('parseJSONFromLLM', () => {
     })
   })
 
+  describe('<json_response> tag extraction (hardened prompts)', () => {
+    it('extracts JSON from <json_response> tags', () => {
+      const text = '<json_response>\n{"hasIssues": true, "issues": []}\n</json_response>'
+      const result = parseJSONFromLLM(text)
+      expect(result).toEqual({ hasIssues: true, issues: [] })
+    })
+
+    it('extracts JSON from <json_response> tags with surrounding text', () => {
+      const text = 'Here is my analysis:\n<json_response>\n{"hasRisks": false, "risks": []}\n</json_response>\nLet me know if you need more details.'
+      const result = parseJSONFromLLM(text)
+      expect(result).toEqual({ hasRisks: false, risks: [] })
+    })
+
+    it('extracts JSON from <json_response> tags without newlines', () => {
+      const text = '<json_response>{"hasIssues": true, "issues": [{"timestamp": "00:12:45", "description": "Test"}]}</json_response>'
+      const result = parseJSONFromLLM(text)
+      expect(result).toEqual({
+        hasIssues: true,
+        issues: [{ timestamp: '00:12:45', description: 'Test' }],
+      })
+    })
+
+    it('handles whitespace inside <json_response> tags', () => {
+      const text = '<json_response>  \n  {"name": "test"}  \n  </json_response>'
+      const result = parseJSONFromLLM(text)
+      expect(result).toEqual({ name: 'test' })
+    })
+
+    it('extracts complex Phase 2 response', () => {
+      const text = `Based on my analysis of the transcription:
+<json_response>
+{"hasIssues": true, "issues": [{"timestamp": "00:12:45", "description": "Pausa longa de 5 segundos"}, {"timestamp": "00:25:30", "description": "Repetição da palavra então"}]}
+</json_response>
+Please review these issues.`
+      const result = parseJSONFromLLM<{ hasIssues: boolean; issues: unknown[] }>(text)
+      expect(result).toEqual({
+        hasIssues: true,
+        issues: [
+          { timestamp: '00:12:45', description: 'Pausa longa de 5 segundos' },
+          { timestamp: '00:25:30', description: 'Repetição da palavra então' },
+        ],
+      })
+    })
+
+    it('extracts complex Phase 3 response', () => {
+      const text = `<json_response>
+{"hasRisks": true, "risks": [{"timestamp": "00:08:20", "risk": "brand_mention", "description": "Menção à marca Apple"}]}
+</json_response>`
+      const result = parseJSONFromLLM<{ hasRisks: boolean; risks: unknown[] }>(text)
+      expect(result).toEqual({
+        hasRisks: true,
+        risks: [{ timestamp: '00:08:20', risk: 'brand_mention', description: 'Menção à marca Apple' }],
+      })
+    })
+  })
+
   describe('markdown code block extraction', () => {
     it('extracts JSON from ```json code block', () => {
       const text = '```json\n{"name": "test"}\n```'

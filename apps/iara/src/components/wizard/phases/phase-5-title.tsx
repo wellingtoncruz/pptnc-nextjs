@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   ArrowRightIcon,
   CheckCircleIcon,
@@ -12,6 +12,7 @@ import {
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { EditableText } from '@/components/ui/editable-text'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
@@ -46,6 +47,8 @@ interface Phase5TitleProps {
   onRevalidate?: (additionalContext: string) => void
   /** Callback when title is selected */
   onTitleSelect?: (title: string) => void
+  /** Callback when a suggested title is edited inline */
+  onSuggestedTitleEdit?: (index: number, newTitle: string) => Promise<void>
   className?: string
 }
 
@@ -74,11 +77,18 @@ export function Phase5Title({
   onRetry,
   onRevalidate,
   onTitleSelect,
+  onSuggestedTitleEdit,
   className,
 }: Phase5TitleProps) {
   const titles = titlesResult?.titles ?? []
   const hasTitles = titles.length > 0
   const hasError = !!error
+
+  // State for tracking locally edited titles (index -> edited value)
+  const [editedTitles, setEditedTitles] = useState<Record<number, string>>({})
+
+  // Get display title (edited or original)
+  const getDisplayTitle = (index: number) => editedTitles[index] ?? titles[index]
 
   // Selected title state - initialize from video.title if it exists in the current titles list
   const getInitialTitle = () => {
@@ -88,15 +98,35 @@ export function Phase5Title({
     return ''
   }
   const [selectedTitle, setSelectedTitle] = useState<string>(getInitialTitle())
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1)
 
-  // Reset selected title when titles result changes and current selection is not in list
+  // Track previous titles to detect when new suggestions arrive
+  const prevTitlesRef = useRef<string[] | null>(null)
+
+  // Reset state only when titles array actually changes (new LLM response)
   useEffect(() => {
-    if (titlesResult?.titles && titlesResult.titles.length > 0) {
-      // If current selection is not in the new titles list, reset
-      if (selectedTitle && !titlesResult.titles.includes(selectedTitle)) {
+    const currentTitles = titlesResult?.titles
+    const prevTitles = prevTitlesRef.current
+
+    // Check if titles array actually changed (not just a re-render)
+    const titlesChanged = currentTitles && (
+      !prevTitles ||
+      prevTitles.length !== currentTitles.length ||
+      prevTitles.some((t, i) => t !== currentTitles[i])
+    )
+
+    if (titlesChanged) {
+      // Clear edited titles when new suggestions arrive
+      setEditedTitles({})
+      // Reset selection if current selection is not in new list
+      if (selectedTitle && !currentTitles.includes(selectedTitle)) {
         setSelectedTitle('')
+        setSelectedIndex(-1)
       }
     }
+
+    // Update ref for next comparison
+    prevTitlesRef.current = currentTitles ?? null
   }, [titlesResult?.titles, selectedTitle])
 
   // Additional context for revalidation
@@ -111,9 +141,26 @@ export function Phase5Title({
   // State for advance confirmation (not needed for Phase 5, but keeping pattern)
   const canAdvance = titlesResult !== null && hasTitles && !!selectedTitle && !hasError && !isAdvancing
 
-  const handleTitleSelect = (title: string) => {
-    setSelectedTitle(title)
-    onTitleSelect?.(title)
+  const handleTitleSelect = (index: number) => {
+    const displayTitle = getDisplayTitle(index)
+    setSelectedIndex(index)
+    setSelectedTitle(displayTitle)
+    onTitleSelect?.(displayTitle)
+  }
+
+  // Handle editing a suggested title - optimistic update then persist
+  const handleSuggestedTitleEdit = async (index: number, newValue: string) => {
+    // Update local state FIRST (optimistic update for immediate UI feedback)
+    setEditedTitles(prev => ({ ...prev, [index]: newValue }))
+
+    // If this was the selected title, update selection too
+    if (selectedIndex === index) {
+      setSelectedTitle(newValue)
+      onTitleSelect?.(newValue)
+    }
+
+    // Then persist to Firestore via callback
+    await onSuggestedTitleEdit?.(index, newValue)
   }
 
   const handleAdvanceClick = () => {
@@ -181,28 +228,33 @@ export function Phase5Title({
             </CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup
-                value={selectedTitle}
-                onValueChange={handleTitleSelect}
+                value={selectedIndex >= 0 ? String(selectedIndex) : ''}
+                onValueChange={(value) => handleTitleSelect(parseInt(value, 10))}
                 className="space-y-3"
               >
-                {titles.map((title, index) => (
-                  <div
-                    key={`title-${index}`}
-                    className="flex items-start space-x-3 p-3 rounded-md border hover:bg-accent/50 transition-colors"
-                  >
-                    <RadioGroupItem
-                      value={title}
-                      id={`title-${index}`}
-                      className="mt-0.5"
-                    />
-                    <Label
-                      htmlFor={`title-${index}`}
-                      className="flex-1 cursor-pointer text-sm leading-relaxed"
+                {titles.map((title, index) => {
+                  const displayTitle = getDisplayTitle(index)
+                  return (
+                    <div
+                      key={`title-${index}`}
+                      className="flex items-start space-x-3 p-3 rounded-md border hover:bg-accent/50 transition-colors"
                     >
-                      {title}
-                    </Label>
-                  </div>
-                ))}
+                      <RadioGroupItem
+                        value={String(index)}
+                        id={`title-${index}`}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <EditableText
+                          value={displayTitle}
+                          onSave={(newValue) => handleSuggestedTitleEdit(index, newValue)}
+                          textClassName="text-sm leading-relaxed cursor-text"
+                          placeholder="Titulo vazio"
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
               </RadioGroup>
 
               {/* Additional context input for revalidation */}

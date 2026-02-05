@@ -5,10 +5,13 @@ import { ptBR } from 'date-fns/locale'
 import { CalendarIcon, ClockIcon, RefreshCwIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { EditableText } from '@/components/ui/editable-text'
 import type { Video } from '@/types/video'
 
 interface VideoHeaderProps {
   video: Video
+  /** Callback when title is changed. If provided, title becomes editable. */
+  onTitleChange?: (newTitle: string) => Promise<void>
   className?: string
 }
 
@@ -78,15 +81,29 @@ function formatTimestamp(
 /**
  * VideoHeader component displays video title above the player.
  *
+ * When `onTitleChange` is provided, the title becomes editable inline.
+ * Visual cue: dashed border on hover indicates editability.
+ *
  * @see Story 5.1 - AC1
+ * @see Story 10-7 - Editable title
  */
-export function VideoHeader({ video, className }: VideoHeaderProps) {
+export function VideoHeader({ video, onTitleChange, className }: VideoHeaderProps) {
   return (
     <div className={cn('space-y-2', className)}>
       {/* Video Title */}
-      <h2 className="text-lg font-semibold text-foreground line-clamp-2">
-        {video.title || 'Vídeo sem título'}
-      </h2>
+      {onTitleChange ? (
+        <EditableText
+          value={video.title || ''}
+          onSave={onTitleChange}
+          placeholder="Clique para definir o titulo"
+          className="w-full"
+          textClassName="text-lg font-semibold text-foreground border-b border-dashed border-transparent hover:border-muted-foreground/30"
+        />
+      ) : (
+        <h2 className="text-lg font-semibold text-foreground line-clamp-2">
+          {video.title || 'Video sem titulo'}
+        </h2>
+      )}
     </div>
   )
 }
@@ -144,6 +161,8 @@ export function VideoMetadata({ video, className }: VideoMetadataProps) {
 
 interface VideoShortTitleProps {
   video: Video
+  /** Callback when short title is changed. If provided, short title becomes editable. */
+  onShortTitleChange?: (newShortTitle: string) => Promise<void>
   className?: string
 }
 
@@ -153,9 +172,12 @@ interface VideoShortTitleProps {
  * Only renders for videos with videoType === 'cut' and a defined shortTitle.
  * Displays format: "Thumb: {shortTitle}" with attention-grabbing styling.
  *
+ * When `onShortTitleChange` is provided, the short title becomes editable inline.
+ *
  * @see Story 4.3 - AC2 (Display do título curto no player)
+ * @see Story 10-7 - Editable short title
  */
-export function VideoShortTitle({ video, className }: VideoShortTitleProps) {
+export function VideoShortTitle({ video, onShortTitleChange, className }: VideoShortTitleProps) {
   // Only show for cut videos with a shortTitle defined
   if (video.videoType !== 'cut' || !video.shortTitle) {
     return null
@@ -166,9 +188,18 @@ export function VideoShortTitle({ video, className }: VideoShortTitleProps) {
       <span className="inline-flex items-center rounded-md bg-orange-500/20 px-2 py-1 text-xs font-semibold text-orange-600 ring-1 ring-inset ring-orange-500/30">
         Thumb
       </span>
-      <span className="text-sm font-semibold text-foreground">
-        {video.shortTitle}
-      </span>
+      {onShortTitleChange ? (
+        <EditableText
+          value={video.shortTitle}
+          onSave={onShortTitleChange}
+          placeholder="Titulo curto"
+          textClassName="text-sm font-semibold text-foreground border-b border-dashed border-transparent hover:border-muted-foreground/30"
+        />
+      ) : (
+        <span className="text-sm font-semibold text-foreground">
+          {video.shortTitle}
+        </span>
+      )}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   ArrowRightIcon,
   CheckCircleIcon,
@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { EditableText } from '@/components/ui/editable-text'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
@@ -45,6 +46,8 @@ interface Phase5BShortTitleProps {
   onRevalidate?: (additionalContext: string) => void
   /** Callback when short title is selected */
   onShortTitleSelect?: (shortTitle: string) => void
+  /** Callback when a suggested short title is edited inline */
+  onSuggestedShortTitleEdit?: (index: number, newShortTitle: string) => Promise<void>
   className?: string
 }
 
@@ -74,11 +77,18 @@ export function Phase5BShortTitle({
   onRetry,
   onRevalidate,
   onShortTitleSelect,
+  onSuggestedShortTitleEdit,
   className,
 }: Phase5BShortTitleProps) {
   const shortTitles = shortTitlesResult?.shortTitles ?? []
   const hasShortTitles = shortTitles.length > 0
   const hasError = !!error
+
+  // State for tracking locally edited short titles (index -> edited value)
+  const [editedShortTitles, setEditedShortTitles] = useState<Record<number, string>>({})
+
+  // Get display short title (edited or original)
+  const getDisplayShortTitle = (index: number) => editedShortTitles[index] ?? shortTitles[index]
 
   // Selected short title state - initialize from video.shortTitle if it exists in the current list
   const getInitialShortTitle = () => {
@@ -88,15 +98,35 @@ export function Phase5BShortTitle({
     return ''
   }
   const [selectedShortTitle, setSelectedShortTitle] = useState<string>(getInitialShortTitle())
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1)
 
-  // Reset selected short title when result changes and current selection is not in list
+  // Track previous short titles to detect when new suggestions arrive
+  const prevShortTitlesRef = useRef<string[] | null>(null)
+
+  // Reset state only when short titles array actually changes (new LLM response)
   useEffect(() => {
-    if (shortTitlesResult?.shortTitles && shortTitlesResult.shortTitles.length > 0) {
-      // If current selection is not in the new list, reset
-      if (selectedShortTitle && !shortTitlesResult.shortTitles.includes(selectedShortTitle)) {
+    const currentShortTitles = shortTitlesResult?.shortTitles
+    const prevShortTitles = prevShortTitlesRef.current
+
+    // Check if short titles array actually changed (not just a re-render)
+    const shortTitlesChanged = currentShortTitles && (
+      !prevShortTitles ||
+      prevShortTitles.length !== currentShortTitles.length ||
+      prevShortTitles.some((t, i) => t !== currentShortTitles[i])
+    )
+
+    if (shortTitlesChanged) {
+      // Clear edited short titles when new suggestions arrive
+      setEditedShortTitles({})
+      // Reset selection if current selection is not in new list
+      if (selectedShortTitle && !currentShortTitles.includes(selectedShortTitle)) {
         setSelectedShortTitle('')
+        setSelectedIndex(-1)
       }
     }
+
+    // Update ref for next comparison
+    prevShortTitlesRef.current = currentShortTitles ?? null
   }, [shortTitlesResult?.shortTitles, selectedShortTitle])
 
   // Additional context for revalidation
@@ -110,9 +140,26 @@ export function Phase5BShortTitle({
 
   const canAdvance = shortTitlesResult !== null && hasShortTitles && !!selectedShortTitle && !hasError && !isAdvancing
 
-  const handleShortTitleSelect = (shortTitle: string) => {
-    setSelectedShortTitle(shortTitle)
-    onShortTitleSelect?.(shortTitle)
+  const handleShortTitleSelect = (index: number) => {
+    const displayShortTitle = getDisplayShortTitle(index)
+    setSelectedIndex(index)
+    setSelectedShortTitle(displayShortTitle)
+    onShortTitleSelect?.(displayShortTitle)
+  }
+
+  // Handle editing a suggested short title - optimistic update then persist
+  const handleSuggestedShortTitleEdit = async (index: number, newValue: string) => {
+    // Update local state FIRST (optimistic update for immediate UI feedback)
+    setEditedShortTitles(prev => ({ ...prev, [index]: newValue }))
+
+    // If this was the selected short title, update selection too
+    if (selectedIndex === index) {
+      setSelectedShortTitle(newValue)
+      onShortTitleSelect?.(newValue)
+    }
+
+    // Then persist to Firestore via callback
+    await onSuggestedShortTitleEdit?.(index, newValue)
   }
 
   const handleAdvanceClick = () => {
@@ -186,36 +233,41 @@ export function Phase5BShortTitle({
             </CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup
-                value={selectedShortTitle}
-                onValueChange={handleShortTitleSelect}
+                value={selectedIndex >= 0 ? String(selectedIndex) : ''}
+                onValueChange={(value) => handleShortTitleSelect(parseInt(value, 10))}
                 className="space-y-3"
               >
-                {shortTitles.map((shortTitle, index) => (
-                  <div
-                    key={`short-title-${index}`}
-                    className="flex items-start space-x-3 p-3 rounded-md border hover:bg-accent/50 transition-colors"
-                  >
-                    <RadioGroupItem
-                      value={shortTitle}
-                      id={`short-title-${index}`}
-                      className="mt-0.5"
-                    />
-                    <Label
-                      htmlFor={`short-title-${index}`}
-                      className="flex-1 cursor-pointer text-sm leading-relaxed font-medium"
+                {shortTitles.map((shortTitle, index) => {
+                  const displayShortTitle = getDisplayShortTitle(index)
+                  return (
+                    <div
+                      key={`short-title-${index}`}
+                      className="flex items-start space-x-3 p-3 rounded-md border hover:bg-accent/50 transition-colors"
                     >
-                      {shortTitle}
-                    </Label>
-                    <span className={cn(
-                      "text-xs",
-                      shortTitle.length >= 15 && shortTitle.length <= 35
-                        ? "text-green-500"
-                        : "text-amber-500"
-                    )}>
-                      {shortTitle.length} chars
-                    </span>
-                  </div>
-                ))}
+                      <RadioGroupItem
+                        value={String(index)}
+                        id={`short-title-${index}`}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <EditableText
+                          value={displayShortTitle}
+                          onSave={(newValue) => handleSuggestedShortTitleEdit(index, newValue)}
+                          textClassName="text-sm leading-relaxed cursor-text font-medium"
+                          placeholder="Titulo curto vazio"
+                        />
+                      </div>
+                      <span className={cn(
+                        "text-xs",
+                        displayShortTitle.length >= 15 && displayShortTitle.length <= 35
+                          ? "text-green-500"
+                          : "text-amber-500"
+                      )}>
+                        {displayShortTitle.length} chars
+                      </span>
+                    </div>
+                  )
+                })}
               </RadioGroup>
 
               {/* Additional context input for revalidation */}

@@ -153,14 +153,18 @@ describe('PHASE_JSON_SCHEMAS', () => {
     expect(PHASE_JSON_SCHEMAS[8]).toBe('')
   })
 
-  it('phase 2 schema uses string timestamp format', () => {
-    expect(PHASE_JSON_SCHEMAS[2]).toContain('"timestamp": "00:05:30"')
+  it('phase 2 schema uses string timestamp format with json_response tags', () => {
+    expect(PHASE_JSON_SCHEMAS[2]).toContain('"timestamp": "00:12:45"')
     expect(PHASE_JSON_SCHEMAS[2]).toContain('STRING no formato "HH:MM:SS"')
+    expect(PHASE_JSON_SCHEMAS[2]).toContain('<json_response>')
+    expect(PHASE_JSON_SCHEMAS[2]).toContain('</json_response>')
   })
 
-  it('phase 3 schema uses string timestamp format', () => {
-    expect(PHASE_JSON_SCHEMAS[3]).toContain('"timestamp": "00:12:45"')
+  it('phase 3 schema uses string timestamp format with json_response tags', () => {
+    expect(PHASE_JSON_SCHEMAS[3]).toContain('"timestamp": "00:08:20"')
     expect(PHASE_JSON_SCHEMAS[3]).toContain('STRING no formato "HH:MM:SS"')
+    expect(PHASE_JSON_SCHEMAS[3]).toContain('<json_response>')
+    expect(PHASE_JSON_SCHEMAS[3]).toContain('</json_response>')
   })
 
   it('phase 4 schema uses string timestamp format', () => {

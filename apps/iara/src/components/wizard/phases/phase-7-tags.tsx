@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   ArrowRightIcon,
   RefreshCwIcon,
@@ -80,8 +80,20 @@ export function Phase7Tags({
   // New tag input state
   const [newTag, setNewTag] = useState('')
 
+  // State for tracking save operations (prevents race conditions)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Ref to block external sync while local editing is in progress
+  const isLocalEditingRef = useRef(false)
+
   // Update tags when result changes or when video.tags changes externally
+  // BUT only if we're not currently editing locally (prevents race condition)
   useEffect(() => {
+    // Skip sync if local editing is in progress to prevent overwriting user changes
+    if (isLocalEditingRef.current) {
+      return
+    }
+
     if (tagsResult?.tags) {
       setTags(tagsResult.tags)
     } else if (video.tags && video.tags.length > 0) {
@@ -105,9 +117,9 @@ export function Phase7Tags({
   const canAdvance = hasResult && tags.length > 0 && !hasError && !isAdvancing
 
   // Handle adding a new tag
-  const handleAddTag = useCallback(() => {
+  const handleAddTag = useCallback(async () => {
     const trimmedTag = newTag.trim()
-    if (!trimmedTag) return
+    if (!trimmedTag || isSaving) return
 
     // Check if tag already exists
     if (tags.includes(trimmedTag)) {
@@ -122,19 +134,67 @@ export function Phase7Tags({
     }
 
     const newTags = [...tags, trimmedTag]
+
+    // Optimistic update
     setTags(newTags)
     setNewTag('')
-    onTagsChange?.(newTags)
-  }, [newTag, tags, totalChars, onTagsChange])
+
+    // Block external sync and persist
+    isLocalEditingRef.current = true
+    setIsSaving(true)
+
+    try {
+      await onTagsChange?.(newTags)
+      log('INFO', 'Tag added successfully', { tag: trimmedTag })
+    } catch (error) {
+      // Rollback on error
+      setTags(tags)
+      log('ERROR', 'Failed to add tag', {
+        tag: trimmedTag,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    } finally {
+      setIsSaving(false)
+      // Release sync lock after a short delay to ensure Firestore has updated
+      setTimeout(() => {
+        isLocalEditingRef.current = false
+      }, 500)
+    }
+  }, [newTag, tags, totalChars, onTagsChange, isSaving])
 
   // Handle removing a tag
   const handleRemoveTag = useCallback(
-    (tagToRemove: string) => {
+    async (tagToRemove: string) => {
+      if (isSaving) return
+
       const newTags = tags.filter((tag) => tag !== tagToRemove)
+
+      // Optimistic update
       setTags(newTags)
-      onTagsChange?.(newTags)
+
+      // Block external sync and persist
+      isLocalEditingRef.current = true
+      setIsSaving(true)
+
+      try {
+        await onTagsChange?.(newTags)
+        log('INFO', 'Tag removed successfully', { tag: tagToRemove })
+      } catch (error) {
+        // Rollback on error - restore the removed tag
+        setTags(tags)
+        log('ERROR', 'Failed to remove tag', {
+          tag: tagToRemove,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
+      } finally {
+        setIsSaving(false)
+        // Release sync lock after a short delay to ensure Firestore has updated
+        setTimeout(() => {
+          isLocalEditingRef.current = false
+        }, 500)
+      }
     },
-    [tags, onTagsChange]
+    [tags, onTagsChange, isSaving]
   )
 
   // Handle Enter key in new tag input
@@ -221,13 +281,14 @@ export function Phase7Tags({
                   <Badge
                     key={tag}
                     variant="secondary"
-                    className="flex items-center gap-1 px-3 py-1"
+                    className={`flex items-center gap-1 px-3 py-1 ${isSaving ? 'opacity-70' : ''}`}
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 hover:text-destructive transition-colors"
+                      disabled={isSaving}
+                      className="ml-1 hover:text-destructive transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={`Remover tag ${tag}`}
                     >
                       <XIcon className="size-3" />
@@ -248,14 +309,19 @@ export function Phase7Tags({
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  disabled={isSaving}
                   className="flex-1"
                 />
                 <Button
                   variant="outline"
                   onClick={handleAddTag}
-                  disabled={!newTag.trim() || remainingChars < newTag.trim().length + 1}
+                  disabled={!newTag.trim() || remainingChars < newTag.trim().length + 1 || isSaving}
                 >
-                  <PlusIcon className="size-4 mr-1" />
+                  {isSaving ? (
+                    <Loader2Icon className="size-4 mr-1 animate-spin" />
+                  ) : (
+                    <PlusIcon className="size-4 mr-1" />
+                  )}
                   Adicionar
                 </Button>
               </div>
