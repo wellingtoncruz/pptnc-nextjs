@@ -23,6 +23,8 @@ steps:
       - 'build'
       - '-f'
       - 'apps/iara/Dockerfile'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_APP_VERSION=${_TAG}'
       - '-t'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
       - '-t'
@@ -56,6 +58,8 @@ steps:
       - '1Gi'
       - '--timeout'
       - '300'
+      - '--update-env-vars'
+      - 'NEXT_PUBLIC_APP_VERSION=${_TAG}'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'

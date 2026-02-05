@@ -18,6 +18,10 @@ RUN pnpm install --frozen-lockfile --filter iara...
 # Copy source code
 COPY apps/iara ./apps/iara
 
+# Build argument for app version (embedded at build time)
+ARG NEXT_PUBLIC_APP_VERSION=dev
+ENV NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION}
+
 # Build the application
 ENV NODE_ENV=production
 RUN pnpm --filter iara build
