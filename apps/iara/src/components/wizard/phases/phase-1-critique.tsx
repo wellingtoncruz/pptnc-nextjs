@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRightIcon, PlusIcon, Loader2Icon } from 'lucide-react'
@@ -134,6 +134,9 @@ export function Phase1Critique({
     setValue('hasCoHost', hasCoHostData)
   }, [hasCoHostData, setValue])
 
+  // Track which LinkedIn URLs have already been scraped to avoid redundant API calls
+  const scrapedLinkedInUrlsRef = useRef<Set<string>>(new Set())
+
   /**
    * Save context to API.
    * Only sends guests that have ALL required fields filled (name, role, linkedin).
@@ -160,6 +163,21 @@ export function Phase1Critique({
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.error?.message || 'Falha ao salvar contexto')
+    }
+
+    // Fire-and-forget: scrape LinkedIn profiles for guests (only new URLs)
+    const linkedinUrls = guests.map(g => g.linkedin).filter(Boolean) as string[]
+    const newUrls = linkedinUrls.filter(url => !scrapedLinkedInUrlsRef.current.has(url))
+
+    if (newUrls.length > 0) {
+      // Mark as scraped before firing to prevent duplicates from rapid saves
+      newUrls.forEach(url => scrapedLinkedInUrlsRef.current.add(url))
+
+      fetch('/api/guests/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId: video.id }),
+      }).catch(() => {})
     }
 
     // Notify parent of context change so video data stays in sync

@@ -6,7 +6,7 @@
  * Uses Auth.js v5 middleware helper for session verification.
  * Handles:
  * - Protected routes: /videos, /settings, /api/* (except /api/auth)
- * - Public routes: /login, /api/auth/*, /_next/*, assets
+ * - Public routes: /login, /report/*, /api/auth/*, /_next/*, assets
  * - SSE endpoints: /api/process/* (no buffering, auth check returns 401)
  *
  * @see https://authjs.dev/getting-started/session-management/protecting
@@ -85,6 +85,7 @@ export const proxy = auth((req) => {
  * - /_next/* (Next.js internals)
  * - /favicon.ico, /robots.txt, etc (static assets)
  * - /login (login page - must be public)
+ * - /report/* (public editorial report pages)
  *
  * Protects everything else.
  */
@@ -100,6 +101,6 @@ export const config = {
      * - auth/error (auth error page)
      * - Public assets with extensions
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

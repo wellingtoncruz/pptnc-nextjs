@@ -160,8 +160,8 @@ describe('Phase5Title', () => {
         />
       )
 
-      const firstTitle = screen.getByText('Titulo 1 - Conservador e profissional')
-      fireEvent.click(firstTitle)
+      const radioButton = screen.getByRole('radio', { name: /titulo 1 - conservador/i })
+      fireEvent.click(radioButton)
 
       expect(onTitleSelect).toHaveBeenCalledWith('Titulo 1 - Conservador e profissional')
     })
@@ -177,8 +177,8 @@ describe('Phase5Title', () => {
       expect(advanceButton).toBeDisabled()
 
       // Select a title
-      const firstTitle = screen.getByText('Titulo 1 - Conservador e profissional')
-      fireEvent.click(firstTitle)
+      const radioButton = screen.getByRole('radio', { name: /titulo 1 - conservador/i })
+      fireEvent.click(radioButton)
 
       // Now should be enabled
       expect(advanceButton).not.toBeDisabled()
@@ -191,8 +191,8 @@ describe('Phase5Title', () => {
       )
 
       // Select a title
-      const firstTitle = screen.getByText('Titulo 1 - Conservador e profissional')
-      fireEvent.click(firstTitle)
+      const radioButton = screen.getByRole('radio', { name: /titulo 1 - conservador/i })
+      fireEvent.click(radioButton)
 
       // Click advance
       const advanceButton = screen.getByRole('button', { name: /avançar para descri/i })

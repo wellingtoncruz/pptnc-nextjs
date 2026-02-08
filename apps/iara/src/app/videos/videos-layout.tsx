@@ -11,6 +11,7 @@ import { VideoDetailPanel } from '@/components/videos/video-detail-panel'
 import { SyncOverlay } from '@/components/videos/sync-overlay'
 import { SyncResultModal, type SyncResultData } from '@/components/videos/sync-result-modal'
 import { SettingsPanel } from '@/components/settings/settings-panel'
+import { EditorialPanel } from '@/components/editorial/editorial-panel'
 import { UserListPanel } from '@/components/users/user-list-panel'
 import { useVideos } from '@/hooks/use-videos'
 import { useCurrentUser } from '@/hooks/use-current-user'
@@ -142,6 +143,20 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     )
   }
 
+  // When in editorial view, show sidebar and editorial panel (full width)
+  if (currentView === 'editorial') {
+    return (
+      <div className="flex h-screen">
+        <div className="shrink-0">
+          <Sidebar userName={userName} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <EditorialPanel />
+        </div>
+      </div>
+    )
+  }
+
   // When in users view, show only sidebar and user list panel
   // Redirect non-admin users to /videos
   if (currentView === 'users') {
@@ -220,6 +235,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
             onTypeFilterChange={setTypeFilter}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
+            onVideoReopened={refresh}
           />
         }
         detail={<VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} />}

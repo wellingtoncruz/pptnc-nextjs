@@ -273,7 +273,7 @@ describe('VideoListPanel', () => {
       expect(onVideoSelect).toHaveBeenCalledWith('video-1')
     })
 
-    it('pula vídeo sent ao navegar com ArrowDown', async () => {
+    it('abre reopen dialog ao navegar para vídeo sent com ArrowDown (Story 11-2)', async () => {
       const user = userEvent.setup()
       const onVideoSelect = vi.fn()
       const videos = [
@@ -293,11 +293,12 @@ describe('VideoListPanel', () => {
       listbox.focus()
       await user.keyboard('{ArrowDown}')
 
-      // Should skip video-2 (sent) and select video-3
-      expect(onVideoSelect).toHaveBeenCalledWith('video-3')
+      // Sent videos open reopen dialog instead of selecting
+      expect(onVideoSelect).not.toHaveBeenCalled()
+      expect(screen.getByText('Deseja reabrir esse vídeo para edição dos metadados?')).toBeInTheDocument()
     })
 
-    it('pula vídeo sent ao navegar com ArrowUp', async () => {
+    it('abre reopen dialog ao navegar para vídeo sent com ArrowUp (Story 11-2)', async () => {
       const user = userEvent.setup()
       const onVideoSelect = vi.fn()
       const videos = [
@@ -317,11 +318,12 @@ describe('VideoListPanel', () => {
       listbox.focus()
       await user.keyboard('{ArrowUp}')
 
-      // Should skip video-2 (sent) and select video-1
-      expect(onVideoSelect).toHaveBeenCalledWith('video-1')
+      // Sent videos open reopen dialog instead of selecting
+      expect(onVideoSelect).not.toHaveBeenCalled()
+      expect(screen.getByText('Deseja reabrir esse vídeo para edição dos metadados?')).toBeInTheDocument()
     })
 
-    it('não navega quando todos os vídeos abaixo são sent', async () => {
+    it('abre reopen dialog ao navegar quando vídeos abaixo são sent (Story 11-2)', async () => {
       const user = userEvent.setup()
       const onVideoSelect = vi.fn()
       const videos = [
@@ -341,11 +343,12 @@ describe('VideoListPanel', () => {
       listbox.focus()
       await user.keyboard('{ArrowDown}')
 
-      // Should not select any video since all below are sent
+      // Sent videos open reopen dialog
       expect(onVideoSelect).not.toHaveBeenCalled()
+      expect(screen.getByText('Deseja reabrir esse vídeo para edição dos metadados?')).toBeInTheDocument()
     })
 
-    it('seleciona primeiro vídeo não-sent com ArrowDown quando nenhum selecionado', async () => {
+    it('abre reopen dialog com ArrowDown quando nenhum selecionado e primeiro é sent (Story 11-2)', async () => {
       const user = userEvent.setup()
       const onVideoSelect = vi.fn()
       const videos = [
@@ -365,8 +368,9 @@ describe('VideoListPanel', () => {
       listbox.focus()
       await user.keyboard('{ArrowDown}')
 
-      // Should skip video-1 (sent) and select video-2
-      expect(onVideoSelect).toHaveBeenCalledWith('video-2')
+      // Sent videos open reopen dialog instead of selecting
+      expect(onVideoSelect).not.toHaveBeenCalled()
+      expect(screen.getByText('Deseja reabrir esse vídeo para edição dos metadados?')).toBeInTheDocument()
     })
   })
 })

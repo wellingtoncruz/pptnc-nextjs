@@ -101,7 +101,7 @@ export function VideoHeader({ video, onTitleChange, className }: VideoHeaderProp
         />
       ) : (
         <h2 className="text-lg font-semibold text-foreground line-clamp-2">
-          {video.title || 'Video sem titulo'}
+          {video.title || 'Vídeo sem título'}
         </h2>
       )}
     </div>

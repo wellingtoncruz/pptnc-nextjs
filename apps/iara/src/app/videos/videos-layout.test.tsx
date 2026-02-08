@@ -70,6 +70,10 @@ vi.mock('@/components/settings/settings-panel', () => ({
   SettingsPanel: () => <div data-testid="settings-panel">SettingsPanel</div>,
 }))
 
+vi.mock('@/components/editorial/editorial-panel', () => ({
+  EditorialPanel: () => <div data-testid="editorial-panel">EditorialPanel</div>,
+}))
+
 // Mock useVideos hook
 vi.mock('@/hooks/use-videos', () => ({
   useVideos: vi.fn(() => ({
@@ -77,6 +81,14 @@ vi.mock('@/hooks/use-videos', () => ({
     isLoading: false,
     error: null,
     refresh: vi.fn(),
+  })),
+}))
+
+// Mock useCurrentUser hook
+vi.mock('@/hooks/use-current-user', () => ({
+  useCurrentUser: vi.fn(() => ({
+    isAdmin: false,
+    isLoading: false,
   })),
 }))
 
@@ -158,5 +170,31 @@ describe('VideosLayout', () => {
     await user.click(screen.getByRole('button', { name: /select video/i }))
 
     expect(mockPush).toHaveBeenCalledWith('/videos?selected=test-video')
+  })
+
+  it('renderiza EditorialPanel quando view=editorial', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'view') return 'editorial'
+      return null
+    })
+
+    render(<VideosLayout />)
+
+    expect(screen.getByTestId('editorial-panel')).toBeInTheDocument()
+    expect(screen.getByTestId('sidebar')).toBeInTheDocument()
+    expect(screen.queryByTestId('master-detail-layout')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('video-list-panel')).not.toBeInTheDocument()
+  })
+
+  it('mostra Sidebar com userName em view=editorial', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'view') return 'editorial'
+      return null
+    })
+
+    render(<VideosLayout userName="Test User" />)
+
+    expect(screen.getByTestId('sidebar')).toBeInTheDocument()
+    expect(screen.getByText(/Test User/)).toBeInTheDocument()
   })
 })

@@ -31,6 +31,7 @@ describe('SettingsPageClient', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers({ shouldAdvanceTime: true })
+    localStorage.clear()
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: { success: true } }),
@@ -62,10 +63,12 @@ describe('SettingsPageClient', () => {
 
     render(<SettingsPageClient podcast={mockPodcast} />)
 
-    // Find the accordion trigger in PromptsSettingsForm (there are multiple 'Episódios' on the page)
+    // Open the Prompts accordion section first (collapsed by default)
+    await user.click(screen.getByText('Prompts por Tipo de Vídeo'))
+
+    // Find the accordion trigger in PromptsSettingsForm
     const accordionTriggers = screen.getAllByText('Episódios')
-    // The second one is in the PromptsSettingsForm
-    await user.click(accordionTriggers[1])
+    await user.click(accordionTriggers[0])
 
     // Find the first 'Descrição do Prompt' textarea (for critique field)
     const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
@@ -95,6 +98,9 @@ describe('SettingsPageClient', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
     render(<SettingsPageClient podcast={mockPodcast} />)
+
+    // Open the Duration accordion section first (collapsed by default)
+    await user.click(screen.getByText('Duração por Tipo de Vídeo'))
 
     const episodeMinInput = screen.getByLabelText('Duração mínima de Episódios em segundos')
     await user.clear(episodeMinInput)
@@ -131,10 +137,12 @@ describe('SettingsPageClient', () => {
 
     render(<SettingsPageClient podcast={mockPodcast} />)
 
-    // Find the accordion trigger in PromptsSettingsForm (there are multiple 'Episódios' on the page)
+    // Open the Prompts accordion section first (collapsed by default)
+    await user.click(screen.getByText('Prompts por Tipo de Vídeo'))
+
+    // Find the accordion trigger in PromptsSettingsForm
     const accordionTriggers = screen.getAllByText('Episódios')
-    // The second one is in the PromptsSettingsForm
-    await user.click(accordionTriggers[1])
+    await user.click(accordionTriggers[0])
 
     const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
     await user.clear(descriptionTextareas[0])
@@ -157,6 +165,9 @@ describe('SettingsPageClient', () => {
     })
 
     render(<SettingsPageClient podcast={mockPodcast} />)
+
+    // Open the Duration accordion section first (collapsed by default)
+    await user.click(screen.getByText('Duração por Tipo de Vídeo'))
 
     const episodeMinInput = screen.getByLabelText('Duração mínima de Episódios em segundos')
     await user.clear(episodeMinInput)

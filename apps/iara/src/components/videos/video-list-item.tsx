@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, AlertCircle } from 'lucide-react'
+import { Check } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { VideoThumbnail } from '@/components/ui/video-thumbnail'
@@ -13,6 +13,7 @@ interface VideoListItemProps {
   video: VideoSummary
   isSelected: boolean
   onSelect: (videoId: string) => void
+  onReopenRequest?: (videoId: string) => void
 }
 
 const statusColors: Record<VideoStatus, string> = {
@@ -46,79 +47,67 @@ const typeLabels: Record<VideoType, string> = {
 }
 
 /**
- * Gets the message for why a sent video is blocked.
- */
-function getBlockedMessage(): { title: string; description: string } {
-  return {
-    title: 'Vídeo já publicado',
-    description: 'Para trabalhar nesse vídeo, torne ele Privado ou Não Listado no YouTube.',
-  }
-}
-
-/**
  * Individual video item for display in the video list.
  * Shows thumbnail, title, status badge, and type badge.
  *
- * Sent videos are dimmed and non-interactive. They show a hover card
- * over the thumbnail explaining that the video must be made Private or Unlisted to edit.
+ * Sent videos are clickable and open a reopen dialog.
  *
  * Note: Videos without transcription are NOT blocked. Transcription is
  * fetched on-demand when the producer selects a video in the Wizard.
  * @see Story 5.6 - Transcrição On-Demand
+ * @see Story 11-2 - Reabrir Episódio (sent videos clickable)
  */
-export function VideoListItem({ video, isSelected, onSelect }: VideoListItemProps) {
+export function VideoListItem({ video, isSelected, onSelect, onReopenRequest }: VideoListItemProps) {
   const { isProcessing: isLLMProcessing } = useLLMProcessing()
   // Prefer storageThumbnailUrl (works for draft/private videos), fall back to YouTube URL
   const thumbnailUrl = video.storageThumbnailUrl || getBestThumbnailUrl(video.thumbnails)
   const isSent = video.status === 'sent'
 
-  // Bloqueia seleção se:
-  // 1. Vídeo já foi enviado (sent)
-  // 2. Uma chamada LLM está em andamento (bloqueio suave, sem mensagem)
-  const isDisabled = isSent
+  // Bloqueio suave: apenas durante processamento LLM
   const isSelectionBlocked = isLLMProcessing && !isSelected
 
   const handleClick = () => {
-    // Vídeos desabilitados ou bloqueados não podem ser selecionados
-    if (isDisabled || isSelectionBlocked) return
+    if (isSelectionBlocked) return
+
+    // Sent videos open reopen dialog instead of selecting
+    if (isSent) {
+      onReopenRequest?.(video.id)
+      return
+    }
+
     onSelect(video.id)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Vídeos desabilitados ou bloqueados não podem ser selecionados via teclado
-    if (isDisabled || isSelectionBlocked) return
+    if (isSelectionBlocked) return
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
+      if (isSent) {
+        onReopenRequest?.(video.id)
+        return
+      }
       onSelect(video.id)
     }
   }
-
-  const blockedMessage = isDisabled ? getBlockedMessage() : null
 
   return (
     <div
       role="option"
       aria-selected={isSelected}
-      aria-disabled={isDisabled}
-      aria-label={
-        isDisabled && blockedMessage
-          ? `${video.title} - ${blockedMessage.title}: ${blockedMessage.description}`
-          : video.title
-      }
-      tabIndex={isDisabled ? -1 : 0}
+      aria-label={video.title}
+      tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={cn(
         'group flex gap-3 rounded-lg p-2 transition-colors overflow-hidden',
-        isDisabled
-          ? 'cursor-not-allowed opacity-50'
-          : isSelectionBlocked
-            ? 'cursor-wait opacity-70' // Bloqueio suave durante processamento LLM
-            : 'cursor-pointer hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        isSelected && !isDisabled && 'ring-2 ring-blue-400 bg-accent'
+        isSelectionBlocked
+          ? 'cursor-wait opacity-70'
+          : 'cursor-pointer hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        isSent && 'opacity-60',
+        isSelected && !isSent && 'ring-2 ring-blue-400 bg-accent'
       )}
     >
-      {/* Thumbnail with overlay for blocked videos - uses VideoThumbnail with YouTube fallback */}
+      {/* Thumbnail - uses VideoThumbnail with YouTube fallback */}
       <div className="relative aspect-video w-24 shrink-0 overflow-hidden rounded-md bg-muted">
         <VideoThumbnail
           youtubeId={video.id}
@@ -128,27 +117,6 @@ export function VideoListItem({ video, isSelected, onSelect }: VideoListItemProp
           height={54}
           className="w-full h-full"
         />
-
-        {/* Hover overlay for blocked videos */}
-        {isDisabled && blockedMessage && (
-          <>
-            {/* Screen reader accessible text */}
-            <span className="sr-only">
-              {blockedMessage.title}: {blockedMessage.description}
-            </span>
-            {/* Visual overlay (mouse users) */}
-            <div
-              data-testid="blocked-overlay"
-              aria-hidden="true"
-              className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <AlertCircle className="h-4 w-4 text-yellow-400 mb-1" />
-              <span className="text-[10px] font-medium text-white text-center px-1 leading-tight">
-                {blockedMessage.title}
-              </span>
-            </div>
-          </>
-        )}
       </div>
 
       {/* Content */}

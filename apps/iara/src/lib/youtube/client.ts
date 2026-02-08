@@ -15,6 +15,7 @@ import {
   YouTubeChannelsResponseSchema,
   YouTubePlaylistItemsResponseSchema,
   YouTubeVideosResponseSchema,
+  YouTubeVideoStatusCheckResponseSchema,
   YouTubeVideoUpdateResponseSchema,
 } from '@/lib/schemas/youtube-api'
 import { parseYouTubeDuration } from '@/lib/video-utils'
@@ -96,6 +97,16 @@ export interface YouTubeVideoDataFromAPI {
 export interface ListVideosResult {
   videos: YouTubeVideoDataFromAPI[]
   nextPageToken?: string
+}
+
+/**
+ * Result from checkVideoEligibility() method.
+ * Indicates whether a sent video can be reopened for editing.
+ */
+export interface VideoEligibilityResult {
+  privacyStatus: 'public' | 'unlisted' | 'private'
+  publishAt?: string
+  eligible: boolean
 }
 
 /**
@@ -388,6 +399,40 @@ export class YouTubeClient {
     )
 
     return results.flat()
+  }
+
+  /**
+   * Checks if a video is eligible to be reopened for editing.
+   *
+   * Lightweight YouTube API call (part=status only) to verify:
+   * - privacyStatus: must be 'private' (without publishAt) or 'unlisted'
+   * - publishAt: if present with private status, video is scheduled (not eligible)
+   *
+   * @param videoId - YouTube video ID
+   * @returns Eligibility result with privacyStatus and eligible flag
+   * @throws YouTubeAPIError on API errors
+   */
+  async checkVideoEligibility(videoId: string): Promise<VideoEligibilityResult> {
+    const data = await this.fetch(
+      `/videos?id=${videoId}&part=status`,
+      YouTubeVideoStatusCheckResponseSchema
+    )
+
+    if (data.items.length === 0) {
+      throw new YouTubeAPIError('YOUTUBE_NOT_FOUND', `Video ${videoId} not found on YouTube`)
+    }
+
+    const status = data.items[0].status
+    const privacyStatus = status.privacyStatus
+    const publishAt = status.publishAt
+
+    // Eligible: private (without scheduled publish) or unlisted
+    // Not eligible: public, or private with publishAt (scheduled)
+    const eligible =
+      (privacyStatus === 'private' && !publishAt) ||
+      privacyStatus === 'unlisted'
+
+    return { privacyStatus, publishAt, eligible }
   }
 
   /**

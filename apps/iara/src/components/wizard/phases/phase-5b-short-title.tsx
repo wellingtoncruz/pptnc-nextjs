@@ -97,8 +97,15 @@ export function Phase5BShortTitle({
     }
     return ''
   }
+  const getInitialIndex = () => {
+    if (video.shortTitle) {
+      const idx = shortTitles.indexOf(video.shortTitle)
+      if (idx >= 0) return idx
+    }
+    return -1
+  }
   const [selectedShortTitle, setSelectedShortTitle] = useState<string>(getInitialShortTitle())
-  const [selectedIndex, setSelectedIndex] = useState<number>(-1)
+  const [selectedIndex, setSelectedIndex] = useState<number>(getInitialIndex())
 
   // Track previous short titles to detect when new suggestions arrive
   const prevShortTitlesRef = useRef<string[] | null>(null)
@@ -247,6 +254,7 @@ export function Phase5BShortTitle({
                       <RadioGroupItem
                         value={String(index)}
                         id={`short-title-${index}`}
+                        aria-label={displayShortTitle}
                         className="mt-0.5"
                       />
                       <div className="flex-1">

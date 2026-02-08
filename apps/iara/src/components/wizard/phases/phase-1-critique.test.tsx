@@ -194,6 +194,118 @@ describe('Phase1Critique', () => {
     })
   })
 
+  describe('Guest scrape fire-and-forget', () => {
+    it('triggers guest scrape after context save when guests have LinkedIn', async () => {
+      const wizard = createMockWizard()
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: {} }),
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
+      )
+
+      // Change theme to trigger auto-save
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
+      fireEvent.change(themeInput, { target: { value: 'Tema atualizado para scrape' } })
+
+      // Wait for auto-save + fire-and-forget scrape call
+      await waitFor(() => {
+        const scrapeCalls = mockFetch.mock.calls.filter(
+          (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
+        )
+        expect(scrapeCalls.length).toBeGreaterThan(0)
+      }, { timeout: 3000 })
+
+      // Verify scrape call body
+      const scrapeCall = mockFetch.mock.calls.find(
+        (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
+      )
+      const body = JSON.parse(scrapeCall[1].body)
+      expect(body.videoId).toBe(mockVideo.id)
+    })
+
+    it('does not trigger duplicate scrape on subsequent auto-saves with same LinkedIn URLs', async () => {
+      const wizard = createMockWizard()
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: {} }),
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
+      )
+
+      // First change triggers auto-save + scrape
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
+      fireEvent.change(themeInput, { target: { value: 'Primeiro tema' } })
+
+      await waitFor(() => {
+        const scrapeCalls = mockFetch.mock.calls.filter(
+          (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
+        )
+        expect(scrapeCalls.length).toBe(1)
+      }, { timeout: 3000 })
+
+      // Second change triggers auto-save but NOT scrape (same LinkedIn URLs)
+      fireEvent.change(themeInput, { target: { value: 'Segundo tema' } })
+
+      await waitFor(() => {
+        // Should have 2+ context saves but still only 1 scrape call
+        const contextCalls = mockFetch.mock.calls.filter(
+          (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/videos/')
+        )
+        expect(contextCalls.length).toBeGreaterThanOrEqual(2)
+      }, { timeout: 3000 })
+
+      const scrapeCalls = mockFetch.mock.calls.filter(
+        (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
+      )
+      expect(scrapeCalls).toHaveLength(1)
+    })
+
+    it('does not trigger guest scrape when no guests have LinkedIn', async () => {
+      const wizard = createMockWizard()
+      const videoWithoutLinkedin: Video = {
+        ...mockVideoNoContext,
+        theme: 'Existing theme',
+        guests: [
+          { name: 'John', role: 'Dev', company: 'Co', linkedin: '' },
+        ],
+      }
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: {} }),
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={videoWithoutLinkedin} critique={null} />
+      )
+
+      // Change theme to trigger auto-save
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
+      fireEvent.change(themeInput, { target: { value: 'Tema sem LinkedIn guest' } })
+
+      // Wait for auto-save
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining('/api/videos/'),
+          expect.objectContaining({ method: 'PUT' })
+        )
+      }, { timeout: 3000 })
+
+      // Verify NO scrape call was made
+      const scrapeCalls = mockFetch.mock.calls.filter(
+        (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
+      )
+      expect(scrapeCalls).toHaveLength(0)
+    })
+  })
+
   describe('Critique display', () => {
     it('does not render critique display when critique is null', () => {
       const wizard = createMockWizard()

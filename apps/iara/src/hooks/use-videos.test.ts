@@ -62,7 +62,7 @@ describe('useVideos', () => {
     expect(result.current.page).toBe(1)
     expect(result.current.totalPages).toBe(1)
     expect(result.current.totalCount).toBe(2)
-    expect(mockFetch).toHaveBeenCalledWith('/api/videos?page=1&limit=20', expect.objectContaining({ signal: expect.any(AbortSignal) }))
+    expect(mockFetch).toHaveBeenCalledWith('/api/videos?page=1&limit=20&status=not_sent', expect.objectContaining({ signal: expect.any(AbortSignal) }))
   })
 
   it('trata erro de carregamento', async () => {
@@ -139,7 +139,7 @@ describe('useVideos', () => {
       expect(result.current.page).toBe(2)
     })
 
-    expect(mockFetch).toHaveBeenLastCalledWith('/api/videos?page=2&limit=20', expect.objectContaining({ signal: expect.any(AbortSignal) }))
+    expect(mockFetch).toHaveBeenLastCalledWith('/api/videos?page=2&limit=20&status=not_sent', expect.objectContaining({ signal: expect.any(AbortSignal) }))
   })
 
   it('filtra por tipo quando setTypeFilter é chamado', async () => {
@@ -164,7 +164,7 @@ describe('useVideos', () => {
       expect(result.current.typeFilter).toBe('episode')
     })
 
-    expect(mockFetch).toHaveBeenLastCalledWith('/api/videos?page=1&limit=20&type=episode', expect.objectContaining({ signal: expect.any(AbortSignal) }))
+    expect(mockFetch).toHaveBeenLastCalledWith('/api/videos?page=1&limit=20&type=episode&status=not_sent', expect.objectContaining({ signal: expect.any(AbortSignal) }))
   })
 
   it('reseta página para 1 quando filtro muda', async () => {

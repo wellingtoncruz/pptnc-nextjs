@@ -208,21 +208,22 @@ describe('VideoListItem', () => {
     })
   })
 
-  describe('sent videos behavior', () => {
+  describe('sent videos behavior (Story 11-2)', () => {
     it('renderiza vídeo sent com opacidade reduzida', () => {
       const video = createMockVideo({ status: 'sent' })
       render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
 
       const item = screen.getByRole('option')
-      expect(item).toHaveClass('opacity-50')
+      expect(item).toHaveClass('opacity-60')
     })
 
-    it('renderiza vídeo sent com cursor-not-allowed', () => {
+    it('renderiza vídeo sent como clicável (cursor-pointer)', () => {
       const video = createMockVideo({ status: 'sent' })
       render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
 
       const item = screen.getByRole('option')
-      expect(item).toHaveClass('cursor-not-allowed')
+      expect(item).toHaveClass('cursor-pointer')
+      expect(item).not.toHaveClass('cursor-not-allowed')
     })
 
     it('não chama onSelect ao clicar em vídeo sent', async () => {
@@ -233,6 +234,38 @@ describe('VideoListItem', () => {
 
       await user.click(screen.getByRole('option'))
 
+      expect(onSelect).not.toHaveBeenCalled()
+    })
+
+    it('chama onReopenRequest ao clicar em vídeo sent', async () => {
+      const onSelect = vi.fn()
+      const onReopenRequest = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({ status: 'sent' })
+      render(
+        <VideoListItem video={video} isSelected={false} onSelect={onSelect} onReopenRequest={onReopenRequest} />
+      )
+
+      await user.click(screen.getByRole('option'))
+
+      expect(onReopenRequest).toHaveBeenCalledWith(video.id)
+      expect(onSelect).not.toHaveBeenCalled()
+    })
+
+    it('chama onReopenRequest ao pressionar Enter em vídeo sent', async () => {
+      const onSelect = vi.fn()
+      const onReopenRequest = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({ status: 'sent' })
+      render(
+        <VideoListItem video={video} isSelected={false} onSelect={onSelect} onReopenRequest={onReopenRequest} />
+      )
+
+      const item = screen.getByRole('option')
+      item.focus()
+      await user.keyboard('{Enter}')
+
+      expect(onReopenRequest).toHaveBeenCalledWith(video.id)
       expect(onSelect).not.toHaveBeenCalled()
     })
 
@@ -249,20 +282,12 @@ describe('VideoListItem', () => {
       expect(onSelect).not.toHaveBeenCalled()
     })
 
-    it('tem aria-disabled="true" para vídeo sent', () => {
+    it('tem tabIndex=0 para vídeo sent (interativo)', () => {
       const video = createMockVideo({ status: 'sent' })
       render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
 
       const item = screen.getByRole('option')
-      expect(item).toHaveAttribute('aria-disabled', 'true')
-    })
-
-    it('tem tabIndex=-1 para vídeo sent', () => {
-      const video = createMockVideo({ status: 'sent' })
-      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
-
-      const item = screen.getByRole('option')
-      expect(item).toHaveAttribute('tabIndex', '-1')
+      expect(item).toHaveAttribute('tabIndex', '0')
     })
 
     it('não aplica ring de seleção em vídeo sent mesmo se isSelected=true', () => {
@@ -272,21 +297,6 @@ describe('VideoListItem', () => {
       const item = screen.getByRole('option')
       expect(item).not.toHaveClass('ring-2')
       expect(item).not.toHaveClass('ring-blue-400')
-    })
-
-    it('exibe overlay ao passar mouse sobre vídeo sent', async () => {
-      const user = userEvent.setup()
-      const video = createMockVideo({ status: 'sent' })
-      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} />)
-
-      // Overlay is shown on group hover
-      const item = screen.getByRole('option')
-      await user.hover(item)
-
-      // Overlay shows title
-      const overlay = screen.getByTestId('blocked-overlay')
-      expect(overlay).toBeInTheDocument()
-      expect(overlay).toHaveTextContent('Vídeo já publicado')
     })
   })
 

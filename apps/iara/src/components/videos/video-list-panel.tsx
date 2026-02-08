@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useEffect } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react'
 import { RefreshCw, Inbox, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { VideoSummary, VideoTypeFilter } from '@/types/video'
 import type { VideoStatusFilter } from '@/hooks/use-videos'
 
+import { ReopenVideoDialog } from './reopen-video-dialog'
 import { VideoListItem } from './video-list-item'
 
 interface VideoListPanelProps {
@@ -31,6 +32,8 @@ interface VideoListPanelProps {
   // Status filter
   statusFilter?: VideoStatusFilter
   onStatusFilterChange?: (status: VideoStatusFilter) => void
+  // Reopen callback (refreshes list after sent → draft)
+  onVideoReopened?: () => void
 }
 
 const typeLabels: Record<VideoTypeFilter, string> = {
@@ -41,14 +44,12 @@ const typeLabels: Record<VideoTypeFilter, string> = {
 }
 
 /**
- * Checks if a video is disabled (cannot be selected).
- * A video is disabled if:
- * - It has status 'sent'
- * - It has status 'new' or 'draft' and is pending transcription (no transcriptionSRT/TXT)
+ * Checks if a video is disabled (cannot be selected or interacted with).
+ *
+ * Note: Sent videos are NOT disabled - they open the reopen dialog.
+ * @see Story 11-2 - Reabrir Episódio
  */
 function isVideoDisabled(video: VideoSummary): boolean {
-  if (video.status === 'sent') return true
-
   // Check for pending transcription (only for new/draft videos)
   if (video.status === 'new' || video.status === 'draft') {
     return !video.transcriptionSRT && !video.transcriptionTXT
@@ -77,6 +78,7 @@ export function VideoListPanel({
   onTypeFilterChange,
   statusFilter = 'not_sent',
   onStatusFilterChange,
+  onVideoReopened,
 }: VideoListPanelProps) {
   // Derive "only new" from statusFilter (not_sent means all except sent)
   const onlyNewVideos = statusFilter === 'not_sent'
@@ -87,13 +89,26 @@ export function VideoListPanel({
   const hasVideos = videos && videos.length > 0
   const listRef = useRef<HTMLDivElement>(null)
 
-  // Handle keyboard navigation (skips disabled videos: sent or pending transcription)
+  // Reopen dialog state
+  const [reopenVideoId, setReopenVideoId] = useState<string | null>(null)
+  const [isReopenDialogOpen, setIsReopenDialogOpen] = useState(false)
+
+  const handleReopenRequest = useCallback((videoId: string) => {
+    setReopenVideoId(videoId)
+    setIsReopenDialogOpen(true)
+  }, [])
+
+  const handleReopenSuccess = useCallback(() => {
+    onVideoReopened?.()
+  }, [onVideoReopened])
+
+  // Handle keyboard navigation (skips disabled videos, triggers reopen for sent)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!videos || videos.length === 0 || !onVideoSelect) return
 
-      // Helper to find next selectable (non-disabled) video
-      const findNextSelectable = (startIndex: number, direction: 1 | -1): number => {
+      // Helper to find next navigable (non-disabled) video
+      const findNextNavigable = (startIndex: number, direction: 1 | -1): number => {
         let index = startIndex + direction
         while (index >= 0 && index < videos.length) {
           if (!isVideoDisabled(videos[index])) {
@@ -101,7 +116,16 @@ export function VideoListPanel({
           }
           index += direction
         }
-        return -1 // No selectable video found
+        return -1 // No navigable video found
+      }
+
+      // Navigate to video: select if normal, open reopen dialog if sent
+      const navigateToVideo = (video: VideoSummary) => {
+        if (video.status === 'sent') {
+          handleReopenRequest(video.id)
+        } else {
+          onVideoSelect(video.id)
+        }
       }
 
       if (e.key === 'ArrowDown') {
@@ -112,14 +136,14 @@ export function VideoListPanel({
 
         if (currentIndex === -1) {
           // Find first non-disabled video
-          const firstSelectable = videos.findIndex((v) => !isVideoDisabled(v))
-          if (firstSelectable !== -1) {
-            onVideoSelect(videos[firstSelectable].id)
+          const firstNavigable = videos.findIndex((v) => !isVideoDisabled(v))
+          if (firstNavigable !== -1) {
+            navigateToVideo(videos[firstNavigable])
           }
         } else {
-          const nextIndex = findNextSelectable(currentIndex, 1)
+          const nextIndex = findNextNavigable(currentIndex, 1)
           if (nextIndex !== -1) {
-            onVideoSelect(videos[nextIndex].id)
+            navigateToVideo(videos[nextIndex])
           }
         }
       } else if (e.key === 'ArrowUp') {
@@ -129,14 +153,14 @@ export function VideoListPanel({
           : -1
 
         if (currentIndex > 0) {
-          const prevIndex = findNextSelectable(currentIndex, -1)
+          const prevIndex = findNextNavigable(currentIndex, -1)
           if (prevIndex !== -1) {
-            onVideoSelect(videos[prevIndex].id)
+            navigateToVideo(videos[prevIndex])
           }
         }
       }
     },
-    [videos, selectedVideoId, onVideoSelect]
+    [videos, selectedVideoId, onVideoSelect, handleReopenRequest]
   )
 
   // Auto-scroll to selected item
@@ -153,6 +177,7 @@ export function VideoListPanel({
   }, [selectedVideoId])
 
   return (
+    <>
     <div data-testid="video-list-panel" className="flex h-full w-full flex-col overflow-hidden bg-background">
       {/* Header */}
       <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4 overflow-hidden">
@@ -229,6 +254,7 @@ export function VideoListPanel({
                 video={video}
                 isSelected={selectedVideoId === video.id}
                 onSelect={onVideoSelect ?? (() => {})}
+                onReopenRequest={handleReopenRequest}
               />
             ))}
           </div>
@@ -262,6 +288,14 @@ export function VideoListPanel({
         </div>
       )}
     </div>
+
+    <ReopenVideoDialog
+      videoId={reopenVideoId}
+      open={isReopenDialogOpen}
+      onOpenChange={setIsReopenDialogOpen}
+      onSuccess={handleReopenSuccess}
+    />
+    </>
   )
 }
 

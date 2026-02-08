@@ -52,6 +52,7 @@ describe('Sidebar', () => {
       expect(screen.getByText('IAra')).toBeInTheDocument()
     })
     expect(screen.getByText('Vídeos')).toBeInTheDocument()
+    expect(screen.getByText('Editorial')).toBeInTheDocument()
     expect(screen.getByText('Configurações')).toBeInTheDocument()
   })
 
@@ -153,5 +154,59 @@ describe('Sidebar', () => {
 
     // Version should be displayed (defaults to 'dev' in test environment)
     expect(screen.getByText('dev')).toBeInTheDocument()
+  })
+
+  it('exibe item Editorial com link correto', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Editorial')).toBeInTheDocument()
+    })
+
+    const editorialLink = screen.getByText('Editorial').closest('a')
+    expect(editorialLink).toHaveAttribute('href', '/videos?view=editorial')
+  })
+
+  it('destaca Editorial quando view=editorial está ativo', async () => {
+    const { useSearchParams } = await import('next/navigation')
+    vi.mocked(useSearchParams).mockReturnValue({
+      get: vi.fn((key: string) => (key === 'view' ? 'editorial' : null)),
+    } as any)
+
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Editorial')).toBeInTheDocument()
+    })
+
+    const editorialLink = screen.getByText('Editorial').closest('a')
+    expect(editorialLink).toHaveClass('bg-accent')
+
+    // Vídeos should NOT be active when editorial is active
+    const videosLink = screen.getByText('Vídeos').closest('a')
+    expect(videosLink).not.toHaveClass('bg-accent')
+  })
+
+  it('exibe Editorial para usuários não-admin', async () => {
+    // Mock non-admin user
+    const { useSession } = await import('next-auth/react')
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { id: 'user1', name: 'Test User', email: 'test@example.com', role: 'viewer' },
+        expires: '2026-12-31',
+      },
+      status: 'authenticated',
+    } as any)
+
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Editorial')).toBeInTheDocument()
+    })
+
+    // Editorial is visible for non-admin
+    expect(screen.getByText('Editorial')).toBeInTheDocument()
+    // Admin-only items should be hidden
+    expect(screen.queryByText('Configurações')).not.toBeInTheDocument()
   })
 })

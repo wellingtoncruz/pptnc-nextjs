@@ -97,8 +97,15 @@ export function Phase5Title({
     }
     return ''
   }
+  const getInitialIndex = () => {
+    if (video.title) {
+      const idx = titles.indexOf(video.title)
+      if (idx >= 0) return idx
+    }
+    return -1
+  }
   const [selectedTitle, setSelectedTitle] = useState<string>(getInitialTitle())
-  const [selectedIndex, setSelectedIndex] = useState<number>(-1)
+  const [selectedIndex, setSelectedIndex] = useState<number>(getInitialIndex())
 
   // Track previous titles to detect when new suggestions arrive
   const prevTitlesRef = useRef<string[] | null>(null)
@@ -242,6 +249,7 @@ export function Phase5Title({
                       <RadioGroupItem
                         value={String(index)}
                         id={`title-${index}`}
+                        aria-label={displayTitle}
                         className="mt-0.5"
                       />
                       <div className="flex-1">

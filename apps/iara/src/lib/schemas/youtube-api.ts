@@ -59,6 +59,7 @@ export const YouTubeStatusSchema = z.object({
   embeddable: z.boolean().optional(),
   publicStatsViewable: z.boolean().optional(),
   madeForKids: z.boolean().optional(),
+  publishAt: z.string().optional(), // ISO 8601 datetime - scheduled publish time
 })
 
 /**
@@ -256,6 +257,22 @@ export const YouTubeCaptionsResponseSchema = z.object({
   kind: z.literal('youtube#captionListResponse').optional(),
   etag: z.string().optional(),
   items: z.array(YouTubeCaptionItemSchema),
+})
+
+/**
+ * YouTube Video Status Check Response schema - lightweight response for status-only queries.
+ *
+ * Used by checkVideoEligibility() to verify privacy status and scheduled publishing.
+ * Only requests part=status, so snippet/contentDetails are not present.
+ *
+ * @see https://developers.google.com/youtube/v3/docs/videos/list
+ */
+export const YouTubeVideoStatusCheckResponseSchema = z.object({
+  kind: z.literal('youtube#videoListResponse').optional(),
+  items: z.array(z.object({
+    id: z.string(),
+    status: YouTubeStatusSchema,
+  })),
 })
 
 /**

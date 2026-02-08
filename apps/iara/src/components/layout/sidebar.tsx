@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, Users, Settings, LogOut } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Video, FileText, Users, Settings, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
@@ -49,18 +49,25 @@ export function Sidebar({ userName }: SidebarProps) {
   // Filter nav items based on user role
   // Settings is only visible to admins
   const navItems = useMemo(() => {
-    // Check if settings view is active via URL param
+    // Check if specific views are active via URL param
     const isSettingsView = searchParams.get('view') === 'settings'
-
-    // Check if users view is active via URL param
     const isUsersView = searchParams.get('view') === 'users'
+    const isEditorialView = searchParams.get('view') === 'editorial'
 
     const items = [
       {
         href: '/videos',
         label: 'Vídeos',
         icon: Video,
-        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView,
+        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView,
+        adminOnly: false,
+      },
+      {
+        // Use ?view=editorial to show editorial section
+        href: '/videos?view=editorial',
+        label: 'Editorial',
+        icon: FileText,
+        isActive: isEditorialView,
         adminOnly: false,
       },
       {

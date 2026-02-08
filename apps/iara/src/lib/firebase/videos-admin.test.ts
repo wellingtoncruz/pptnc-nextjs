@@ -61,6 +61,7 @@ import {
   softDeleteVideoAdmin,
   batchWriteVideos,
   getExistingVideoIds,
+  getChildVideos,
 } from './videos-admin'
 
 describe('videos-admin.ts - Admin SDK operations', () => {
@@ -267,11 +268,11 @@ describe('videos-admin.ts - Admin SDK operations', () => {
       expect(mockCommit).not.toHaveBeenCalled()
     })
 
-    it('splits operations into batches of 500', async () => {
+    it('splits operations into batches of 20', async () => {
       mockCommit.mockResolvedValue(undefined)
 
-      // Create 600 items (should require 2 batches)
-      const creates = Array.from({ length: 600 }, (_, i) => ({
+      // Create 40 items (should require 2 batches with MAX_BATCH_SIZE=20)
+      const creates = Array.from({ length: 40 }, (_, i) => ({
         id: `video-${i}`,
         podcastId: 'pptnc',
         title: `Video ${i}`,
@@ -292,7 +293,7 @@ describe('videos-admin.ts - Admin SDK operations', () => {
         deletes: [],
       })
 
-      // Should have called commit at least twice (600 items / 500 per batch = 2 batches)
+      // Should have called commit twice (40 items / 20 per batch = 2 batches)
       expect(mockCommit).toHaveBeenCalledTimes(2)
     })
   })
@@ -337,6 +338,88 @@ describe('videos-admin.ts - Admin SDK operations', () => {
 
       // Verify select() was called (optimized query without fetching data)
       expect(mockSelect).toHaveBeenCalled()
+    })
+  })
+
+  describe('getChildVideos', () => {
+    const cutVideo = {
+      podcastId: 'pptnc',
+      title: 'Cut 1',
+      videoType: 'cut',
+      parentEpisodeId: 'episode-1',
+      duration: 60,
+      status: 'draft',
+      publishedAt: mockTimestamp,
+    }
+
+    const reelVideo = {
+      podcastId: 'pptnc',
+      title: 'Reel 1',
+      videoType: 'reel',
+      parentEpisodeId: 'episode-1',
+      duration: 30,
+      status: 'draft',
+      publishedAt: mockTimestamp,
+    }
+
+    it('returns cuts and reels for a given parent episode', async () => {
+      const mockWhereResult = {
+        get: vi.fn().mockResolvedValueOnce({
+          empty: false,
+          docs: [
+            { id: 'cut-1', data: () => cutVideo },
+            { id: 'reel-1', data: () => reelVideo },
+          ],
+        }),
+      }
+      mockWhere.mockReturnValueOnce(mockWhereResult)
+
+      const result = await getChildVideos('pptnc', 'episode-1')
+
+      expect(result).toHaveLength(2)
+      expect(mockWhere).toHaveBeenCalledWith('parentEpisodeId', '==', 'episode-1')
+    })
+
+    it('returns empty array when no children found', async () => {
+      const mockWhereResult = {
+        get: vi.fn().mockResolvedValueOnce({
+          empty: true,
+          docs: [],
+        }),
+      }
+      mockWhere.mockReturnValueOnce(mockWhereResult)
+
+      const result = await getChildVideos('pptnc', 'episode-1')
+
+      expect(result).toEqual([])
+    })
+
+    it('throws on Firestore error', async () => {
+      const mockWhereResult = {
+        get: vi.fn().mockRejectedValueOnce(new Error('Firestore error')),
+      }
+      mockWhere.mockReturnValueOnce(mockWhereResult)
+
+      await expect(getChildVideos('pptnc', 'episode-1')).rejects.toThrow('Firestore error')
+    })
+
+    it('skips documents that fail validation', async () => {
+      const invalidDoc = { title: 123 } // Invalid: title must be string
+      const mockWhereResult = {
+        get: vi.fn().mockResolvedValueOnce({
+          empty: false,
+          docs: [
+            { id: 'cut-1', data: () => cutVideo },
+            { id: 'invalid-1', data: () => invalidDoc },
+          ],
+        }),
+      }
+      mockWhere.mockReturnValueOnce(mockWhereResult)
+
+      const result = await getChildVideos('pptnc', 'episode-1')
+
+      expect(result).toHaveLength(1)
+      expect(result[0].title).toBe('Cut 1')
     })
   })
 })

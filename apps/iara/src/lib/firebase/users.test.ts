@@ -89,7 +89,7 @@ describe('users', () => {
           email: userInput.email,
           name: userInput.name,
           picture: userInput.picture,
-          role: 'viewer',
+          role: 'user',
         })
       )
     })

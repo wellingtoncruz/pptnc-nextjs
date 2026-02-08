@@ -63,3 +63,10 @@ export {
   YouTubeStatusSchema,
   YouTubeChannelContentDetailsSchema,
 } from './youtube-api'
+
+export {
+  LinkedInGuestSchema,
+  GuestDocSchema,
+  GuestDocCreateSchema,
+  GuestScrapeRequestSchema,
+} from './guest'

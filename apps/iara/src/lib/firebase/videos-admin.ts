@@ -702,3 +702,57 @@ export async function getEpisodesWithContext(
     throw error
   }
 }
+
+/**
+ * Gets all child videos (cuts and reels) for a given parent episode.
+ *
+ * Queries by parentEpisodeId field. Validates each document with VideoSchema,
+ * skipping invalid documents.
+ *
+ * Path: podcasts/{podcastId}/videos where parentEpisodeId == parentEpisodeId
+ *
+ * @param podcastId - The podcast document ID (enforcement rule #8)
+ * @param parentEpisodeId - The parent episode video ID
+ * @returns Array of validated child video documents
+ */
+export async function getChildVideos(
+  podcastId: string,
+  parentEpisodeId: string
+): Promise<Video[]> {
+  const db = getAdminDb()
+  const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
+
+  const snapshot = await videosRef.where('parentEpisodeId', '==', parentEpisodeId).get()
+
+  if (snapshot.empty) {
+    log('INFO', 'No child videos found for episode', { podcastId, parentEpisodeId })
+    return []
+  }
+
+  const videos: Video[] = []
+
+  for (const docSnap of snapshot.docs) {
+    const rawData = docSnap.data()
+    const data = { id: docSnap.id, ...rawData } as Record<string, unknown>
+
+    const parsed = VideoSchema.safeParse(data)
+    if (parsed.success) {
+      videos.push(parsed.data)
+    } else {
+      log('WARN', 'Child video validation failed, skipping', {
+        podcastId,
+        parentEpisodeId,
+        videoId: docSnap.id,
+        issues: parsed.error.issues,
+      })
+    }
+  }
+
+  log('INFO', 'Child videos fetched', {
+    podcastId,
+    parentEpisodeId,
+    count: videos.length,
+  })
+
+  return videos
+}

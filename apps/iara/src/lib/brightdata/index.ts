@@ -1,0 +1,1 @@
+export { scrapeLinkedInProfile } from './client'

@@ -20,6 +20,7 @@ const mockGet = vi.fn()
 const mockSet = vi.fn()
 const mockUpdate = vi.fn()
 const mockWhere = vi.fn()
+const mockCollectionGet = vi.fn()
 
 // Create a proper nested mock structure for Firestore
 const createMockDb = () => {
@@ -32,6 +33,7 @@ const createMockDb = () => {
   const mockUsersCollectionRef = {
     doc: vi.fn(() => mockUserDocRef),
     where: mockWhere,
+    get: mockCollectionGet,
   }
 
   const mockPodcastDocRef = {
@@ -275,53 +277,54 @@ describe('users-admin', () => {
     it('returns non-deleted users', async () => {
       const mockSnapshot = {
         docs: [
-          { data: () => mockUser },
-          { data: () => mockAdminUser },
+          { data: () => mockUser, id: 'user-1' },
+          { data: () => mockAdminUser, id: 'user-2' },
         ],
       }
 
-      mockWhere.mockReturnValueOnce({
-        get: vi.fn().mockResolvedValueOnce(mockSnapshot),
-      })
+      mockCollectionGet.mockResolvedValueOnce(mockSnapshot)
 
       const result = await listPodcastUsers(podcastId)
 
       expect(result).toHaveLength(2)
-      expect(mockWhere).toHaveBeenCalledWith('deleted', '==', false)
     })
 
-    it('skips invalid documents', async () => {
+    it('skips soft-deleted users and invalid documents', async () => {
+      const deletedUser = { ...mockUser, deleted: true }
       const mockSnapshot = {
         docs: [
           { data: () => mockUser, id: 'valid' },
+          { data: () => deletedUser, id: 'deleted' },
           { data: () => ({ invalid: 'data' }), id: 'invalid' },
         ],
       }
 
-      mockWhere.mockReturnValueOnce({
-        get: vi.fn().mockResolvedValueOnce(mockSnapshot),
-      })
+      mockCollectionGet.mockResolvedValueOnce(mockSnapshot)
 
       const result = await listPodcastUsers(podcastId)
 
-      // Should only return valid users (Zod validation will fail for invalid)
+      // Should only return valid, non-deleted users
       expect(result).toHaveLength(1)
     })
   })
 
   describe('countAdmins', () => {
     it('counts admin users', async () => {
-      const mockSnapshot = { size: 2 }
+      const mockSnapshot = {
+        docs: [
+          { data: () => ({ ...mockAdminUser, deleted: false }) },
+          { data: () => ({ ...mockAdminUser, deleted: false }) },
+        ],
+      }
 
       mockWhere.mockReturnValueOnce({
-        where: vi.fn().mockReturnValueOnce({
-          get: vi.fn().mockResolvedValueOnce(mockSnapshot),
-        }),
+        get: vi.fn().mockResolvedValueOnce(mockSnapshot),
       })
 
       const result = await countAdmins(podcastId)
 
       expect(result).toBe(2)
+      expect(mockWhere).toHaveBeenCalledWith('role', '==', 'admin')
     })
   })
 })
