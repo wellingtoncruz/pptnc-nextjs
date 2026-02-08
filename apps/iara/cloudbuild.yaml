@@ -14,7 +14,6 @@ substitutions:
   _REGION: us-east1
   _REPOSITORY: pptnc
   _SERVICE_ACCOUNT: pptnc-build@pptnc-stage.iam.gserviceaccount.com
-  _TAG: ${TAG_NAME}
 
 steps:
   # Step 1: Build Docker image (multi-stage build includes deps + Next.js build)
@@ -24,9 +23,9 @@ steps:
       - '-f'
       - 'apps/iara/Dockerfile'
       - '--build-arg'
-      - 'NEXT_PUBLIC_APP_VERSION=${_TAG}'
+      - 'NEXT_PUBLIC_APP_VERSION=$TAG_NAME'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$TAG_NAME'
       - '-t'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
       - '.'
@@ -58,11 +57,9 @@ steps:
       - '1Gi'
       - '--timeout'
       - '300'
-      - '--update-env-vars'
-      - 'NEXT_PUBLIC_APP_VERSION=${_TAG}'
 
 images:
-  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$TAG_NAME'
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
 
 options:
