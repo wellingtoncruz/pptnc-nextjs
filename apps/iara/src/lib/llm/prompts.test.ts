@@ -153,11 +153,10 @@ describe('PHASE_JSON_SCHEMAS', () => {
     expect(PHASE_JSON_SCHEMAS[8]).toBe('')
   })
 
-  it('phase 2 schema uses string timestamp format with json_response tags', () => {
-    expect(PHASE_JSON_SCHEMAS[2]).toContain('"timestamp": "00:12:45"')
+  it('phase 2 schema uses string timestamp format with compact JSON instructions', () => {
+    expect(PHASE_JSON_SCHEMAS[2]).toContain('"timestamp": "HH:MM:SS"')
     expect(PHASE_JSON_SCHEMAS[2]).toContain('STRING no formato "HH:MM:SS"')
-    expect(PHASE_JSON_SCHEMAS[2]).toContain('<json_response>')
-    expect(PHASE_JSON_SCHEMAS[2]).toContain('</json_response>')
+    expect(PHASE_JSON_SCHEMAS[2]).toContain('JSON COMPACTO')
   })
 
   it('phase 3 schema uses string timestamp format with json_response tags', () => {
@@ -253,8 +252,10 @@ describe('buildPhasePrompt', () => {
     expect(result).toContain('Seu papel: Crítico de conteúdo digital')
     expect(result).toContain('Seu objetivo: Analisar conteúdo e fornecer feedback construtivo')
     expect(result).toContain('Seu contexto: Especialista em análise de conteúdo')
-    expect(result).toContain('Sua tarefa: Analise criticamente o episódio')
-    expect(result).toContain('Seu retorno deve ser estritamente: Um JSON com critique')
+    expect(result).toContain('## TAREFA')
+    expect(result).toContain('Analise criticamente o episódio')
+    // expectedOutput is NOT included when PHASE_JSON_SCHEMAS has content (avoids format conflicts)
+    expect(result).not.toContain('Seu retorno deve ser estritamente')
   })
 
   it('appends JSON schema to built prompt', () => {
@@ -267,20 +268,20 @@ describe('buildPhasePrompt', () => {
     const result = buildPhasePrompt(5, validWriterPersona, validPrompts, videoType)
 
     expect(result).toContain('Seu papel: Redator de conteúdo')
-    expect(result).toContain('Sua tarefa: Gere títulos SEO')
+    expect(result).toContain('Gere títulos SEO')
     expect(result).toContain(PHASE_JSON_SCHEMAS[5])
   })
 
   it('builds prompt for cut video type', () => {
     const result = buildPhasePrompt(5, validWriterPersona, validPrompts, 'cut')
 
-    expect(result).toContain('Sua tarefa: Gere títulos para corte')
+    expect(result).toContain('Gere títulos para corte')
   })
 
   it('builds prompt for reel video type', () => {
     const result = buildPhasePrompt(5, validWriterPersona, validPrompts, 'reel')
 
-    expect(result).toContain('Sua tarefa: Gere títulos para reel')
+    expect(result).toContain('Gere títulos para reel')
   })
 
   describe('episode fallback for reel/cut', () => {
@@ -296,7 +297,7 @@ describe('buildPhasePrompt', () => {
       const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyReel, 'reel')
 
       // Should use episode titles prompt as fallback
-      expect(result).toContain('Sua tarefa: Gere títulos SEO')
+      expect(result).toContain('Gere títulos SEO')
       expect(result).not.toContain('Gere títulos para reel')
     })
 
@@ -313,7 +314,7 @@ describe('buildPhasePrompt', () => {
       const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyCut, 'cut')
 
       // Should use episode titles prompt as fallback
-      expect(result).toContain('Sua tarefa: Gere títulos SEO')
+      expect(result).toContain('Gere títulos SEO')
       expect(result).not.toContain('Gere títulos para corte')
     })
 
@@ -339,7 +340,7 @@ describe('buildPhasePrompt', () => {
       const result = buildPhasePrompt(5, validWriterPersona, validPrompts, 'reel')
 
       // Should use reel-specific prompt, not episode fallback
-      expect(result).toContain('Sua tarefa: Gere títulos para reel')
+      expect(result).toContain('Gere títulos para reel')
       expect(result).not.toContain('Gere títulos SEO')
     })
 

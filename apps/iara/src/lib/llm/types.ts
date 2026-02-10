@@ -262,13 +262,14 @@ export const RETRY_DELAY_MS = 1000
 
 /**
  * Timeout per phase (in ms).
- * Standardized to 120s (2 min) for all phases to handle larger transcriptions.
+ * Phases 1-4 use SRT transcription as input (can be 100K+ tokens for long episodes).
+ * Gemini 2.5 Flash thinking tokens increase processing time for large inputs.
  */
 export const PHASE_TIMEOUTS: Record<WizardPhase, number> = {
-  1: 120000, // Critique (2 min)
-  2: 120000, // Editing check (2 min)
-  3: 120000, // Compliance (2 min)
-  4: 120000, // Chapters (2 min)
+  1: 0, // No timeout - let model work (thinking tokens can be slow for large SRT)
+  2: 0, // No timeout
+  3: 0, // No timeout
+  4: 0, // No timeout
   5: 120000, // Titles (2 min)
   6: 120000, // Description (2 min)
   7: 120000, // Tags (2 min)

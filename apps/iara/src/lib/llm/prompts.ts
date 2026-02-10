@@ -26,29 +26,9 @@ Procure por:
 - Cortes abruptos ou transições estranhas
 - Problemas de áudio mencionados na transcrição
 
-## FORMATO DE RESPOSTA
+Responda com JSON compacto (uma linha, sem indentação). Descriptions curtas (máx 80 chars), sem transcrever diálogos.
 
-Responda APENAS com JSON válido dentro das tags <json_response>. Não inclua markdown, explicações ou texto fora das tags.
-
-Estrutura obrigatória:
-{
-  "hasIssues": boolean,
-  "issues": [{"timestamp": "HH:MM:SS", "description": "string"}]
-}
-
-## EXEMPLOS DE RESPOSTA CORRETA
-
-Exemplo 1 - Com problemas encontrados:
-<json_response>
-{"hasIssues": true, "issues": [{"timestamp": "00:12:45", "description": "Pausa longa de 5 segundos entre falas"}, {"timestamp": "00:25:30", "description": "Repetição da palavra 'então' três vezes seguidas"}]}
-</json_response>
-
-Exemplo 2 - Sem problemas:
-<json_response>
-{"hasIssues": false, "issues": []}
-</json_response>
-
-IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
+Exemplo: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"Pausa longa de 5s entre falas"}]}`,
 
   3: `Você é um especialista em compliance de conteúdo de mídia.
 Analise a transcrição (SRT) procurando por possíveis riscos de compliance.
@@ -337,27 +317,25 @@ IMPORTANTE: O campo "critique" DEVE ser uma STRING única com parágrafos separa
 
   2: `## FORMATO DE RESPOSTA
 
-Responda APENAS com JSON válido dentro das tags <json_response>. Não inclua markdown, explicações ou texto fora das tags.
+Responda APENAS com JSON válido. A resposta será parseada diretamente como JSON.
+NÃO use tags, NÃO use markdown, NÃO inclua texto fora do JSON.
 
 Estrutura obrigatória:
-{
-  "hasIssues": boolean,
-  "issues": [{"timestamp": "HH:MM:SS", "description": "string"}]
-}
+{"hasIssues": boolean, "issues": [{"timestamp": "HH:MM:SS", "description": "string"}]}
 
-## EXEMPLOS DE RESPOSTA CORRETA
+## REGRAS OBRIGATÓRIAS DE OUTPUT
 
-Exemplo 1 - Com problemas:
-<json_response>
-{"hasIssues": true, "issues": [{"timestamp": "00:12:45", "description": "Pausa longa de 5 segundos"}]}
-</json_response>
+1. JSON COMPACTO: sem indentação, sem quebras de linha, uma única linha.
+2. DESCRIPTIONS CURTAS: máximo 80 caracteres. Descreva o tipo do problema, NÃO transcreva o diálogo.
+3. TIMESTAMPS válidos: formato "HH:MM:SS", dentro da duração do vídeo.
 
-Exemplo 2 - Sem problemas:
-<json_response>
-{"hasIssues": false, "issues": []}
-</json_response>
+## EXEMPLOS
 
-IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
+CORRETO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"Pausa longa de 5s entre falas"},{"timestamp":"00:25:30","description":"Instrução de edição: apresentador pede corte"}]}
+CORRETO: {"hasIssues":false,"issues":[]}
+ERRADO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"O apresentador falou: \\"vamos cortar essa parte aqui porque ficou ruim e eu acho que a gente deveria regravar essa cena toda\\" - Remover imediatamente do corte final."}]}
+
+IMPORTANTE: O campo "timestamp" DEVE ser STRING no formato "HH:MM:SS".`,
 
   3: `## FORMATO DE RESPOSTA
 
@@ -547,14 +525,27 @@ export function buildPhasePrompt(
   }
 
   // Build prompt following processamento_video.md template
-  // Always append JSON schema to ensure correct response format
+  // PHASE_JSON_SCHEMAS is the authoritative format specification.
+  // When present, it REPLACES the Firestore expectedOutput to avoid conflicting
+  // format instructions that force the model to waste thinking tokens reconciling.
   const jsonSchema = PHASE_JSON_SCHEMAS[phase]
 
+  if (jsonSchema) {
+    // JSON schema defines the output format — skip expectedOutput to avoid conflicts
+    return `Seu papel: ${persona.role}
+Seu objetivo: ${persona.objective}
+Seu contexto: ${persona.resume}
+
+## TAREFA
+${phasePrompt.description}
+
+${jsonSchema}`
+  }
+
+  // No JSON schema (e.g. phase 8) — use expectedOutput from Firestore
   return `Seu papel: ${persona.role}
 Seu objetivo: ${persona.objective}
 Seu contexto: ${persona.resume}
 Sua tarefa: ${phasePrompt.description}
-Seu retorno deve ser estritamente: ${phasePrompt.expectedOutput}
-
-${jsonSchema}`
+Seu retorno deve ser estritamente: ${phasePrompt.expectedOutput}`
 }

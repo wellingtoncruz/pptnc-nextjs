@@ -111,6 +111,9 @@ importers:
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
+      undici:
+        specifier: ^7.21.0
+        version: 7.21.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -4726,6 +4729,10 @@ packages:
 
   undici@7.19.0:
     resolution: {integrity: sha512-Heho1hJD81YChi+uS2RkSjcVO+EQLmLSyUlHyp7Y/wFbxQaGb4WXVKD073JytrjXJVkSZVzoE2MCSOKugFGtOQ==}
+    engines: {node: '>=20.18.1'}
+
+  undici@7.21.0:
+    resolution: {integrity: sha512-Hn2tCQpoDt1wv23a68Ctc8Cr/BHpUSfaPYrkajTXOS9IKpxVRx/X5m1K2YkbK2ipgZgxXSgsUinl3x+2YdSSfg==}
     engines: {node: '>=20.18.1'}
 
   unrs-resolver@1.11.1:
@@ -9955,6 +9962,8 @@ snapshots:
   undici-types@6.21.0: {}
 
   undici@7.19.0: {}
+
+  undici@7.21.0: {}
 
   unrs-resolver@1.11.1:
     dependencies:

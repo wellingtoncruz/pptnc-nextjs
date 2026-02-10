@@ -460,8 +460,10 @@ describe('buildPhasePrompt', () => {
     expect(result).toContain('Seu papel: Você é um crítico experiente de podcasts')
     expect(result).toContain('Seu objetivo: Analisar e fornecer feedback construtivo')
     expect(result).toContain('Seu contexto: Mais de 10 anos analisando conteúdo audiovisual')
-    expect(result).toContain('Sua tarefa: Analise o episódio identificando pontos fortes e fracos')
-    expect(result).toContain('Seu retorno deve ser estritamente: JSON com critique, highlights e suggestions')
+    expect(result).toContain('## TAREFA')
+    expect(result).toContain('Analise o episódio identificando pontos fortes e fracos')
+    // expectedOutput is NOT included when PHASE_JSON_SCHEMAS has content (avoids format conflicts)
+    expect(result).not.toContain('Seu retorno deve ser estritamente')
   })
 
   it('returns fallback prompt when persona is undefined', () => {
@@ -524,7 +526,7 @@ describe('buildPhasePrompt', () => {
     const result = buildPhasePrompt(5, writerPersona, cutPrompts, 'cut')
 
     expect(result).toContain('Seu papel: Especialista em títulos virais')
-    expect(result).toContain('Sua tarefa: Gere títulos para o corte')
+    expect(result).toContain('Gere títulos para o corte')
   })
 
   it('logs fallback mode when using base prompts', () => {

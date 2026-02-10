@@ -4,6 +4,13 @@ import * as path from 'path'
 
 import { GenerativeModel, VertexAI } from '@google-cloud/vertexai'
 import type { Part } from '@google-cloud/vertexai'
+import { Agent, setGlobalDispatcher } from 'undici'
+
+// Node.js built-in fetch uses undici with a default headersTimeout of 300s (5 min).
+// Gemini 2.5 Flash "thinking" phase can exceed 5 min for large inputs (e.g. 131K-token SRT)
+// without sending any response headers, causing "UND_ERR_HEADERS_TIMEOUT".
+// Configure a global dispatcher with no headers timeout to allow long-running inference.
+setGlobalDispatcher(new Agent({ headersTimeout: 0, bodyTimeout: 0 }))
 
 import { GCP_REGION, PROJECT_ID, VERTEX_AI_MODEL } from '@/lib/firebase/config'
 import { log } from '@/lib/logger'
@@ -87,9 +94,16 @@ function getModel(): GenerativeModel {
     model: modelName,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 8192,
+      maxOutputTokens: 65536,
       responseMimeType: 'application/json',
-    },
+      // Gemini 2.5 Flash thinking tokens share the maxOutputTokens budget (65K).
+      // Without a cap, the model non-deterministically consumes 60K+ on thinking,
+      // leaving insufficient room for output → MAX_TOKENS truncation.
+      // API max for thinking_budget is 24576. Leaves ~41K for visible output.
+      // Note: 8K caused hallucinations, 24K produced quality results with prompt fix.
+      // SDK @1.10.0 lacks the type — API accepts it inside generationConfig.
+      thinkingConfig: { thinkingBudget: 24576 },
+    } as Record<string, unknown>,
   })
   currentModelName = modelName
 
@@ -209,27 +223,45 @@ async function callVertexAIWithAttachment<T>(
     let timeoutId: ReturnType<typeof setTimeout> | undefined
 
     try {
-      // Create timeout promise for race condition (fresh for each attempt)
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new LLMError('TIMEOUT', 'A requisição demorou demais. Tente novamente.', true))
-        }, timeout)
+      // Use streaming API to avoid Vertex AI server-side timeout on unary calls.
+      // We MUST consume the stream iterator to keep the SSE connection alive —
+      // just awaiting .response without reading chunks can cause idle timeouts.
+      const streamingResult = await model.generateContentStream({
+        contents: [{ role: 'user', parts }],
+        systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
       })
 
-      // Race between the API call and timeout
-      const result = await Promise.race([
-        model.generateContent({
-          contents: [{ role: 'user', parts }],
-          systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
-        }),
-        timeoutPromise,
-      ])
+      // Consume stream chunks to keep connection alive during model thinking.
+      // Each chunk keeps the HTTP connection active, preventing idle timeouts.
+      let chunkCount = 0
+      for await (const chunk of streamingResult.stream) {
+        chunkCount++
+        if (chunkCount === 1) {
+          log('INFO', 'First stream chunk received', { attempt })
+        }
+      }
+      log('INFO', `Stream completed (${chunkCount} chunks)`, { attempt })
+
+      // Get aggregated response (already fully received via stream consumption)
+      const response = await streamingResult.response
 
       // Clear timeout since we got a response
       if (timeoutId) clearTimeout(timeoutId)
+      const candidate = response.candidates?.[0]
+      const finishReason = candidate?.finishReason
+      const safetyRatings = candidate?.safetyRatings
+      const text = candidate?.content?.parts?.[0]?.text
 
-      const response = result.response
-      const text = response.candidates?.[0]?.content?.parts?.[0]?.text
+      // Diagnostic logging for every attempt
+      const usageMetadata = response.usageMetadata
+      log('INFO', `LLM response received (attempt ${attempt}/${MAX_PARSE_RETRIES})`, {
+        finishReason,
+        safetyRatings,
+        promptTokens: usageMetadata?.promptTokenCount,
+        outputTokens: usageMetadata?.candidatesTokenCount,
+        totalTokens: usageMetadata?.totalTokenCount,
+        responseLength: text?.length ?? 0,
+      })
 
       if (!text) {
         throw new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
@@ -238,10 +270,17 @@ async function callVertexAIWithAttachment<T>(
       // Parse JSON with robust extraction (handles markdown code blocks, extra text, etc.)
       const data = parseJSONFromLLM<T>(text)
       if (data === null) {
+        // Dump full raw response to file for debugging
+        const dumpPath = path.join(os.tmpdir(), `iara-parse-error-attempt${attempt}-${Date.now()}.txt`)
+        await fs.writeFile(dumpPath, text, 'utf-8')
+
         // Log parse failure with attempt info
         log('WARN', `PARSE_ERROR on attempt ${attempt}/${MAX_PARSE_RETRIES}`, {
+          finishReason,
           rawResponseLength: text.length,
           rawResponsePreview: text.substring(0, 300),
+          rawResponseEnd: text.length > 300 ? text.substring(text.length - 200) : undefined,
+          dumpPath,
         })
 
         // Check if we should retry
@@ -268,8 +307,7 @@ async function callVertexAIWithAttachment<T>(
         log('INFO', `LLM call succeeded on attempt ${attempt}/${MAX_PARSE_RETRIES}`)
       }
 
-      // Extract usage metadata
-      const usageMetadata = response.usageMetadata
+      // Extract usage metadata (usageMetadata already extracted above for diagnostics)
       const usage = {
         promptTokens: usageMetadata?.promptTokenCount || 0,
         completionTokens: usageMetadata?.candidatesTokenCount || 0,
@@ -281,8 +319,20 @@ async function callVertexAIWithAttachment<T>(
       // Always clear timeout on error to prevent memory leaks
       if (timeoutId) clearTimeout(timeoutId)
 
-      // All errors except internal PARSE_ERROR (from null parse) are thrown immediately
-      // Note: PARSE_ERROR from null parse is handled via 'continue' above, not here
+      // Log full error details before converting
+      if (!(error instanceof LLMError)) {
+        const err = error as Error & { status?: number; statusText?: string; cause?: unknown }
+        log('ERROR', 'Raw API error details', {
+          attempt,
+          name: err?.name,
+          message: err?.message,
+          status: err?.status,
+          statusText: err?.statusText,
+          cause: err?.cause ? String(err.cause) : undefined,
+          stack: err?.stack?.split('\n').slice(0, 5).join('\n'),
+        })
+      }
+
       if (error instanceof LLMError) {
         throw error
       }

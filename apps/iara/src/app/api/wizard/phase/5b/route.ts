@@ -92,7 +92,7 @@ function getModel(): GenerativeModel {
     model: VERTEX_AI_MODEL || DEFAULT_MODEL,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 8192,
+      maxOutputTokens: 65536,
       responseMimeType: 'application/json',
     },
   })
@@ -124,8 +124,9 @@ function buildPhase5BPrompt(
       systemPrompt = `Seu papel: ${persona.role}
 Seu objetivo: ${persona.objective}
 Seu contexto: ${persona.resume || ''}
-Sua tarefa: ${podcast.prompts.cut.thumbs.description}
-Seu retorno deve ser estritamente: ${podcast.prompts.cut.thumbs.expectedOutput}
+
+## TAREFA
+${podcast.prompts.cut.thumbs.description}
 
 Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
