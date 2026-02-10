@@ -105,9 +105,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body = await request.json()
-    const { videoId } = GuestScrapeRequestSchema.parse(body)
+    const { videoId, linkedinUrls } = GuestScrapeRequestSchema.parse(body)
 
-    log('INFO', 'Guest scrape started', { videoId })
+    log('INFO', 'Guest scrape started', { videoId, filterUrls: linkedinUrls?.length })
 
     // Fetch the video
     const video = await getVideoAdmin(PODCAST_ID, videoId)
@@ -126,9 +126,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })
     }
 
-    // No guests or no guests with LinkedIn URLs
+    // Filter guests: if linkedinUrls provided, only scrape those specific URLs
     const guests = video.guests ?? []
-    const guestsWithLinkedin = guests.filter((g) => g.linkedin)
+    const guestsWithLinkedin = linkedinUrls
+      ? guests.filter((g) => g.linkedin && linkedinUrls.includes(g.linkedin))
+      : guests.filter((g) => g.linkedin)
 
     if (guestsWithLinkedin.length === 0) {
       log('INFO', 'No guests with LinkedIn URLs, skipping', { videoId })
@@ -143,9 +145,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Clone guests array for photo updates
     const updatedGuests = guests.map((g) => ({ ...g }))
 
+    // Build a Set of URLs to scrape for O(1) lookup in the loop
+    const urlsToScrape = new Set(guestsWithLinkedin.map((g) => g.linkedin))
+
     for (let i = 0; i < updatedGuests.length; i++) {
       const guest = updatedGuests[i]
-      if (!guest.linkedin) continue
+      if (!guest.linkedin || !urlsToScrape.has(guest.linkedin)) continue
 
       log('INFO', 'Scraping guest LinkedIn profile', {
         videoId,

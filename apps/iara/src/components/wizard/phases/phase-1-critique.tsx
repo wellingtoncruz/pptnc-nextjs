@@ -134,8 +134,16 @@ export function Phase1Critique({
     setValue('hasCoHost', hasCoHostData)
   }, [hasCoHostData, setValue])
 
-  // Track which LinkedIn URLs have already been scraped to avoid redundant API calls
-  const scrapedLinkedInUrlsRef = useRef<Set<string>>(new Set())
+  // Track which LinkedIn URLs have already been scraped to avoid redundant API calls.
+  // Initialize with existing URLs from the video — these were either already scraped
+  // in a previous session or will be scraped on first save. Only truly NEW URLs
+  // added during this session should trigger scraping.
+  const scrapedLinkedInUrlsRef = useRef<Set<string>>(
+    new Set(video.guests?.map(g => g.linkedin).filter(Boolean) as string[] ?? [])
+  )
+
+  // Track scraping state to block advancement while LinkedIn profiles are being fetched
+  const [isScraping, setIsScraping] = useState(false)
 
   /**
    * Save context to API.
@@ -165,7 +173,8 @@ export function Phase1Critique({
       throw new Error(errorData.error?.message || 'Falha ao salvar contexto')
     }
 
-    // Fire-and-forget: scrape LinkedIn profiles for guests (only new URLs)
+    // Scrape LinkedIn profiles for guests (only new URLs)
+    // Awaited so we can track loading state and block advancement during scraping
     const linkedinUrls = guests.map(g => g.linkedin).filter(Boolean) as string[]
     const newUrls = linkedinUrls.filter(url => !scrapedLinkedInUrlsRef.current.has(url))
 
@@ -173,11 +182,18 @@ export function Phase1Critique({
       // Mark as scraped before firing to prevent duplicates from rapid saves
       newUrls.forEach(url => scrapedLinkedInUrlsRef.current.add(url))
 
-      fetch('/api/guests/scrape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: video.id }),
-      }).catch(() => {})
+      setIsScraping(true)
+      try {
+        await fetch('/api/guests/scrape', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videoId: video.id, linkedinUrls: newUrls }),
+        })
+      } catch {
+        // Scraping failure doesn't block the producer — they continue with manual data
+      } finally {
+        setIsScraping(false)
+      }
     }
 
     // Notify parent of context change so video data stays in sync
@@ -218,7 +234,7 @@ export function Phase1Critique({
   // State for advancing to next phase (prevents double clicks)
   const [isAdvancing, setIsAdvancing] = useState(false)
 
-  const canAdvance = hasCritique && hasTheme && hasCompleteGuest && !isAdvancing
+  const canAdvance = hasCritique && hasTheme && hasCompleteGuest && !isAdvancing && !isScraping
 
   const handleAdvance = () => {
     if (canAdvance && critique) {
@@ -343,6 +359,11 @@ export function Phase1Critique({
                 Avançando...
                 <Loader2Icon className="size-4 ml-2 animate-spin" />
               </>
+            ) : isScraping ? (
+              <>
+                Buscando LinkedIn...
+                <Loader2Icon className="size-4 ml-2 animate-spin" />
+              </>
             ) : (
               <>
                 Avançar para {getNextPhaseName(1)}
@@ -352,9 +373,10 @@ export function Phase1Critique({
           </Button>
           {!canAdvance && !isAdvancing && (
             <p className="text-xs text-muted-foreground text-center">
-              {!hasCritique && 'Aguardando processamento da crítica...'}
-              {hasCritique && !hasTheme && 'Preencha o tema do episódio para avançar.'}
-              {hasCritique && hasTheme && !hasCompleteGuest && 'Preencha pelo menos um convidado completo para avançar.'}
+              {isScraping && 'Buscando dados do LinkedIn, aguarde...'}
+              {!isScraping && !hasCritique && 'Aguardando processamento da crítica...'}
+              {!isScraping && hasCritique && !hasTheme && 'Preencha o tema do episódio para avançar.'}
+              {!isScraping && hasCritique && hasTheme && !hasCompleteGuest && 'Preencha pelo menos um convidado completo para avançar.'}
             </p>
           )}
         </div>

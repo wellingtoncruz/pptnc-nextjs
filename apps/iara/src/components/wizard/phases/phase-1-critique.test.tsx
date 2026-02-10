@@ -195,7 +195,7 @@ describe('Phase1Critique', () => {
   })
 
   describe('Guest scrape fire-and-forget', () => {
-    it('triggers guest scrape after context save when guests have LinkedIn', async () => {
+    it('triggers guest scrape when a new LinkedIn URL is added', async () => {
       const wizard = createMockWizard()
 
       mockFetch.mockResolvedValue({
@@ -207,11 +207,11 @@ describe('Phase1Critique', () => {
         <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
       )
 
-      // Change theme to trigger auto-save
-      const themeInput = screen.getByLabelText(/tema do episódio/i)
-      fireEvent.change(themeInput, { target: { value: 'Tema atualizado para scrape' } })
+      // Change LinkedIn URL to a NEW one (original joaosilva is already tracked in ref)
+      const linkedinInput = document.getElementById('guests.0.linkedin') as HTMLInputElement
+      fireEvent.change(linkedinInput, { target: { value: 'https://linkedin.com/in/newguest' } })
 
-      // Wait for auto-save + fire-and-forget scrape call
+      // Wait for auto-save + scrape call for the new URL
       await waitFor(() => {
         const scrapeCalls = mockFetch.mock.calls.filter(
           (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
@@ -219,12 +219,13 @@ describe('Phase1Critique', () => {
         expect(scrapeCalls.length).toBeGreaterThan(0)
       }, { timeout: 3000 })
 
-      // Verify scrape call body
+      // Verify scrape call body — should only contain the new URL
       const scrapeCall = mockFetch.mock.calls.find(
         (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
       )
       const body = JSON.parse(scrapeCall[1].body)
       expect(body.videoId).toBe(mockVideo.id)
+      expect(body.linkedinUrls).toEqual(['https://linkedin.com/in/newguest'])
     })
 
     it('does not trigger duplicate scrape on subsequent auto-saves with same LinkedIn URLs', async () => {
@@ -239,9 +240,9 @@ describe('Phase1Critique', () => {
         <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
       )
 
-      // First change triggers auto-save + scrape
-      const themeInput = screen.getByLabelText(/tema do episódio/i)
-      fireEvent.change(themeInput, { target: { value: 'Primeiro tema' } })
+      // Add a new LinkedIn URL → triggers scrape
+      const linkedinInput = document.getElementById('guests.0.linkedin') as HTMLInputElement
+      fireEvent.change(linkedinInput, { target: { value: 'https://linkedin.com/in/newguest' } })
 
       await waitFor(() => {
         const scrapeCalls = mockFetch.mock.calls.filter(
@@ -250,7 +251,8 @@ describe('Phase1Critique', () => {
         expect(scrapeCalls.length).toBe(1)
       }, { timeout: 3000 })
 
-      // Second change triggers auto-save but NOT scrape (same LinkedIn URLs)
+      // Change theme → triggers auto-save but NOT scrape (same LinkedIn URL already tracked)
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
       fireEvent.change(themeInput, { target: { value: 'Segundo tema' } })
 
       await waitFor(() => {
@@ -303,6 +305,84 @@ describe('Phase1Critique', () => {
         (call: unknown[]) => typeof call[0] === 'string' && call[0].includes('/api/guests/scrape')
       )
       expect(scrapeCalls).toHaveLength(0)
+    })
+  })
+
+  describe('Scraping state blocks advancement', () => {
+    it('disables button and shows feedback while scraping is in progress', async () => {
+      const wizard = createMockWizard()
+
+      // Make context save resolve immediately, but scrape hangs (never resolves)
+      let resolveScrape: () => void
+      const scrapePromise = new Promise<void>(resolve => { resolveScrape = resolve })
+
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes('/api/guests/scrape')) {
+          return scrapePromise.then(() => ({ ok: true, json: async () => ({}) }))
+        }
+        return Promise.resolve({ ok: true, json: async () => ({ data: {} }) })
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      // Button should be enabled initially
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      expect(button).toBeEnabled()
+
+      // Change LinkedIn URL to a NEW one to trigger scraping
+      const linkedinInput = document.getElementById('guests.0.linkedin') as HTMLInputElement
+      fireEvent.change(linkedinInput, { target: { value: 'https://linkedin.com/in/newguest' } })
+
+      // Wait for scraping to start — button should be disabled with LinkedIn text
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /buscando linkedin/i })).toBeDisabled()
+      }, { timeout: 3000 })
+
+      // Helper text should show scraping message
+      expect(screen.getByText(/buscando dados do linkedin/i)).toBeInTheDocument()
+
+      // Resolve scraping — button should re-enable
+      resolveScrape!()
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /avançar para an.?lise/i })).toBeEnabled()
+      }, { timeout: 3000 })
+    })
+
+    it('re-enables button after scraping fails', async () => {
+      const wizard = createMockWizard()
+
+      let rejectScrape: () => void
+      const scrapePromise = new Promise<void>((_, reject) => { rejectScrape = reject })
+
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes('/api/guests/scrape')) {
+          return scrapePromise.then(() => ({ ok: true, json: async () => ({}) }))
+        }
+        return Promise.resolve({ ok: true, json: async () => ({ data: {} }) })
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      // Change LinkedIn URL to a NEW one to trigger scraping
+      const linkedinInput = document.getElementById('guests.0.linkedin') as HTMLInputElement
+      fireEvent.change(linkedinInput, { target: { value: 'https://linkedin.com/in/newguest' } })
+
+      // Wait for scraping to start
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /buscando linkedin/i })).toBeDisabled()
+      }, { timeout: 3000 })
+
+      // Reject scraping — button should re-enable (failure doesn't block)
+      rejectScrape!()
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /avançar para an.?lise/i })).toBeEnabled()
+      }, { timeout: 3000 })
     })
   })
 

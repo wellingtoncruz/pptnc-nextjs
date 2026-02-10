@@ -76,4 +76,6 @@ export const GuestDocCreateSchema = z.object({
  */
 export const GuestScrapeRequestSchema = z.object({
   videoId: z.string().min(1),
+  /** When provided, only scrape these specific LinkedIn URLs (instead of all guests) */
+  linkedinUrls: z.array(z.string().url()).optional(),
 })
