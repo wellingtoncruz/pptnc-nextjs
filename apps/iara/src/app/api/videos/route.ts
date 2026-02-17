@@ -21,6 +21,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-admin'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getVideosForDisplayAdmin } from '@/lib/firebase/videos-admin'
 import { log } from '@/lib/logger'
@@ -30,15 +31,8 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   const session = await auth()
 
-  if (!session || session.error) {
-    return NextResponse.json(
-      { error: { code: 'AUTH_EXPIRED', message: 'Sessão expirada' } },
-      { status: 401 }
-    )
-  }
-
-  // TODO: Add authorization check to verify user has access to PODCAST_ID
-  // Currently any authenticated user can access any podcast's videos
+  const authError = requireAuth(session)
+  if (authError) return authError
 
   try {
     const searchParams = request.nextUrl.searchParams
@@ -74,7 +68,7 @@ export async function GET(request: NextRequest) {
     const errorStack = error instanceof Error ? error.stack : undefined
 
     log('ERROR', 'Failed to get videos via API', {
-      userId: session.user.id,
+      userId: session!.user.id,
       podcastId: PODCAST_ID,
       error: errorMessage,
       stack: errorStack,

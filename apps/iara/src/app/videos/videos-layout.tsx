@@ -13,6 +13,7 @@ import { SyncResultModal, type SyncResultData } from '@/components/videos/sync-r
 import { SettingsPanel } from '@/components/settings/settings-panel'
 import { EditorialPanel } from '@/components/editorial/editorial-panel'
 import { UserListPanel } from '@/components/users/user-list-panel'
+import { NewsPanel } from '@/components/news/news-panel'
 import { useVideos } from '@/hooks/use-videos'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { log } from '@/lib/logger'
@@ -152,6 +153,20 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         </div>
         <div className="flex-1 overflow-hidden">
           <EditorialPanel />
+        </div>
+      </div>
+    )
+  }
+
+  // When in news view, show sidebar and news panel
+  if (currentView === 'news') {
+    return (
+      <div className="flex h-screen">
+        <div className="shrink-0">
+          <Sidebar userName={userName} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <NewsPanel />
         </div>
       </div>
     )

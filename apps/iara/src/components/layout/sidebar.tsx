@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, FileText, Users, Settings, LogOut } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Users, Settings, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
@@ -53,13 +53,14 @@ export function Sidebar({ userName }: SidebarProps) {
     const isSettingsView = searchParams.get('view') === 'settings'
     const isUsersView = searchParams.get('view') === 'users'
     const isEditorialView = searchParams.get('view') === 'editorial'
+    const isNewsView = searchParams.get('view') === 'news'
 
     const items = [
       {
         href: '/videos',
         label: 'Vídeos',
         icon: Video,
-        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView,
+        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView,
         adminOnly: false,
       },
       {
@@ -68,6 +69,14 @@ export function Sidebar({ userName }: SidebarProps) {
         label: 'Editorial',
         icon: FileText,
         isActive: isEditorialView,
+        adminOnly: false,
+      },
+      {
+        // Use ?view=news to show news section
+        href: '/videos?view=news',
+        label: 'Notícias',
+        icon: Newspaper,
+        isActive: isNewsView,
         adminOnly: false,
       },
       {
