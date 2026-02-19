@@ -1,31 +1,31 @@
 /**
  * GCP and tenant configuration.
  *
- * These values are hardcoded per tenant deployment.
- * For white-label, each podcast has its own deploy with different PODCAST_ID.
+ * All values are read from environment variables at runtime with fallback
+ * to hardcoded defaults. This allows the same Docker image to serve any
+ * podcast without rebuild — just set env vars in the Cloud Run service.
  *
  * To deploy a new tenant:
- * 1. Clone the codebase
- * 2. Update PODCAST_ID to the new podcast's ID
- * 3. Deploy to Cloud Run
+ * 1. Set PODCAST_ID, GCP_PROJECT_ID, FIRESTORE_DATABASE_ID env vars
+ * 2. Deploy the same image to a new Cloud Run service
  */
 
 /** GCP project ID */
-export const PROJECT_ID = 'pptnc-stage'
+export const PROJECT_ID = process.env.GCP_PROJECT_ID || 'pptnc-stage'
 
 /** GCP region (Cloud Run, Vertex AI, Artifact Registry) */
-export const GCP_REGION = 'us-east1'
+export const GCP_REGION = process.env.GCP_REGION || 'us-east1'
 
 /** Firestore database ID */
-export const FIRESTORE_DATABASE_ID = 'pptnc-stage'
+export const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'pptnc-stage'
 
 /**
- * Vertex AI model for LLM calls.
+ * Gemini model for LLM calls.
  * If not defined, defaults to 'gemini-2.5-flash' in the LLM client.
  *
  * @see https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
  */
-export const VERTEX_AI_MODEL: string | undefined = undefined
+export const VERTEX_AI_MODEL: string | undefined = process.env.VERTEX_AI_MODEL || undefined
 
 /**
  * Podcast ID for this tenant deployment.
@@ -33,7 +33,29 @@ export const VERTEX_AI_MODEL: string | undefined = undefined
  * This is the root of all Firestore paths for this tenant:
  * - podcasts/{PODCAST_ID}/users/{userId}/tokens/oauth
  * - podcasts/{PODCAST_ID}/videos/{videoId}
- *
- * CRITICAL: Change this value when deploying a new tenant.
  */
-export const PODCAST_ID = 'pptnc'
+export const PODCAST_ID = process.env.PODCAST_ID || 'pptnc'
+
+// =============================================================================
+// STARTUP VALIDATION — fail-fast if required config is empty
+// =============================================================================
+
+if (!PODCAST_ID) {
+  throw new Error('[CONFIG] PODCAST_ID is required but empty. Set PODCAST_ID env var.')
+}
+if (!PROJECT_ID) {
+  throw new Error('[CONFIG] PROJECT_ID is required but empty. Set GCP_PROJECT_ID env var.')
+}
+if (!FIRESTORE_DATABASE_ID) {
+  throw new Error('[CONFIG] FIRESTORE_DATABASE_ID is required but empty. Set FIRESTORE_DATABASE_ID env var.')
+}
+
+// Startup log (server-side only — skip in browser and test environments)
+if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
+  console.log(JSON.stringify({
+    severity: 'INFO',
+    message: `[STARTUP] Tenant: ${PODCAST_ID} | Project: ${PROJECT_ID} | Region: ${GCP_REGION} | DB: ${FIRESTORE_DATABASE_ID}`,
+    timestamp: new Date().toISOString(),
+    podcastId: PODCAST_ID,
+  }))
+}

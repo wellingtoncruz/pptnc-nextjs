@@ -8,12 +8,19 @@
 #    - Branch: ^main$
 #    - Included files: apps/iara/**
 #    - Cloud Build configuration file: apps/iara/cloudbuild.yaml
+#
+# For a new podcast, create a separate trigger with substitution overrides:
+#   _SERVICE_NAME=iara-novo-podcast
+#   _PODCAST_ID=novo-podcast
+#   _FIRESTORE_DATABASE_ID=pptnc-stage
 
 substitutions:
   _SERVICE_NAME: iara-prod
   _REGION: us-east1
   _REPOSITORY: pptnc
   _SERVICE_ACCOUNT: pptnc-build@pptnc-stage.iam.gserviceaccount.com
+  _PODCAST_ID: pptnc
+  _FIRESTORE_DATABASE_ID: pptnc-stage
 
 steps:
   # Step 1: Build Docker image (multi-stage build includes deps + Next.js build)
@@ -37,7 +44,7 @@ steps:
       - '--all-tags'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}'
 
-  # Step 3: Deploy to Cloud Run
+  # Step 3: Deploy to Cloud Run with tenant env vars
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -57,6 +64,8 @@ steps:
       - '1Gi'
       - '--timeout'
       - '300'
+      - '--set-env-vars'
+      - 'PODCAST_ID=${_PODCAST_ID},GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=${_REGION},FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID}'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$TAG_NAME'

@@ -230,23 +230,6 @@ export interface LLMContext {
 }
 
 /**
- * Vertex AI configuration.
- * Uses Application Default Credentials (ADC) for authentication.
- *
- * Configuration values are in src/lib/firebase/config.ts:
- * - PROJECT_ID: GCP project
- * - GCP_REGION: Vertex AI location
- * - VERTEX_AI_MODEL: Model to use
- */
-export interface VertexAIConfig {
-  project: string
-  location: string
-  model: string
-  maxOutputTokens: number
-  temperature: number
-}
-
-/**
  * Maximum number of retry attempts for PARSE_ERROR.
  * Only PARSE_ERROR triggers retry - other errors (TIMEOUT, RATE_LIMIT, etc.) fail immediately.
  *

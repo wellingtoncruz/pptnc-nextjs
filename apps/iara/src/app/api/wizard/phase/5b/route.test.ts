@@ -19,59 +19,33 @@ vi.mock('@/lib/firebase/videos-admin', () => ({
 
 vi.mock('@/lib/firebase/config', () => ({
   PODCAST_ID: 'test-podcast-id',
-  PROJECT_ID: 'test-project',
-  GCP_REGION: 'us-central1',
-  VERTEX_AI_MODEL: 'gemini-2.5-flash',
 }))
 
 vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
-// Mock Vertex AI
-const mockGenerateContent = vi.fn()
-vi.mock('@google-cloud/vertexai', () => {
-  return {
-    VertexAI: class MockVertexAI {
-      constructor() {}
-      getGenerativeModel() {
-        return {
-          generateContent: mockGenerateContent,
-        }
-      }
-    },
-  }
-})
-
-// Mock LLM utilities
+// Mock LLM module — callGenAI is now the sole LLM entry point for Phase 5B
 vi.mock('@/lib/llm', async () => {
   const actual = await vi.importActual('@/lib/llm')
   return {
     ...actual,
+    callGenAI: vi.fn(),
     createTranscriptionFile: vi.fn().mockResolvedValue('/tmp/test-transcription.txt'),
     cleanupTranscriptionFile: vi.fn().mockResolvedValue(undefined),
-    parseJSONFromLLM: vi.fn(),
   }
 })
-
-// Mock fs for file reading
-vi.mock('fs/promises', () => ({
-  default: {
-    readFile: vi.fn().mockResolvedValue(Buffer.from('test transcription content')),
-  },
-  readFile: vi.fn().mockResolvedValue(Buffer.from('test transcription content')),
-}))
 
 import { auth } from '@/lib/auth'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
-import { parseJSONFromLLM } from '@/lib/llm'
+import { callGenAI, LLMError } from '@/lib/llm'
 
 const mockAuth = vi.mocked(auth)
 const mockGetVideoAdmin = vi.mocked(getVideoAdmin)
 const mockUpdateVideoAdmin = vi.mocked(updateVideoAdmin)
 const mockGetPodcastAdmin = vi.mocked(getPodcastAdmin)
-const mockParseJSONFromLLM = vi.mocked(parseJSONFromLLM)
+const mockCallGenAI = vi.mocked(callGenAI)
 
 // Helper to create mock request
 function createMockRequest(body: unknown): NextRequest {
@@ -192,23 +166,9 @@ describe('POST /api/wizard/phase/5b', () => {
         guests: [{ name: 'John', role: 'Expert' }],
       } as never)
 
-      mockGenerateContent.mockResolvedValue({
-        response: {
-          candidates: [{
-            content: {
-              parts: [{ text: '{"shortTitles": ["Short 1", "Short 2", "Short 3", "Short 4", "Short 5"]}' }],
-            },
-          }],
-          usageMetadata: {
-            promptTokenCount: 100,
-            candidatesTokenCount: 50,
-            totalTokenCount: 150,
-          },
-        },
-      })
-
-      mockParseJSONFromLLM.mockReturnValue({
-        shortTitles: ['Short 1', 'Short 2', 'Short 3', 'Short 4', 'Short 5'],
+      mockCallGenAI.mockResolvedValue({
+        data: { shortTitles: ['Short 1', 'Short 2', 'Short 3', 'Short 4', 'Short 5'] },
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
     })
 
@@ -233,6 +193,18 @@ describe('POST /api/wizard/phase/5b', () => {
       )
     })
 
+    it('calls callGenAI with system prompt, user prompt, timeout, and attachment path', async () => {
+      const request = createMockRequest({ videoId: 'cut-video' })
+      await POST(request)
+
+      expect(mockCallGenAI).toHaveBeenCalledWith(
+        expect.stringContaining('títulos curtos'),
+        expect.stringContaining('Contexto do Corte'),
+        120000,
+        '/tmp/test-transcription.txt'
+      )
+    })
+
     it('accepts additionalContext for revalidation', async () => {
       const request = createMockRequest({
         videoId: 'cut-video',
@@ -241,6 +213,13 @@ describe('POST /api/wizard/phase/5b', () => {
       const response = await POST(request)
 
       expect(response.status).toBe(200)
+      // additionalContext is appended to the system prompt
+      expect(mockCallGenAI).toHaveBeenCalledWith(
+        expect.stringContaining('Focus on the main guest'),
+        expect.any(String),
+        expect.any(Number),
+        expect.any(String)
+      )
     })
 
     it('uses podcast.prompt.cut.thumbs when configured', async () => {
@@ -266,6 +245,13 @@ describe('POST /api/wizard/phase/5b', () => {
       const response = await POST(request)
 
       expect(response.status).toBe(200)
+      // Verify the configured prompt was used
+      expect(mockCallGenAI).toHaveBeenCalledWith(
+        expect.stringContaining('Thumbnail Expert'),
+        expect.any(String),
+        expect.any(Number),
+        expect.any(String)
+      )
     })
   })
 
@@ -278,15 +264,10 @@ describe('POST /api/wizard/phase/5b', () => {
       } as never)
     })
 
-    it('returns 500 when LLM returns invalid response', async () => {
-      mockGenerateContent.mockResolvedValue({
-        response: {
-          candidates: [{
-            content: { parts: [{ text: 'not json' }] },
-          }],
-        },
-      })
-      mockParseJSONFromLLM.mockReturnValue(null)
+    it('returns 500 when LLM returns parse error', async () => {
+      mockCallGenAI.mockRejectedValue(
+        new LLMError('PARSE_ERROR', 'Erro ao parsear resposta', false)
+      )
 
       const request = createMockRequest({ videoId: 'cut-video' })
       const response = await POST(request)
@@ -297,18 +278,44 @@ describe('POST /api/wizard/phase/5b', () => {
     })
 
     it('returns 500 when LLM returns no text', async () => {
-      mockGenerateContent.mockResolvedValue({
-        response: {
-          candidates: [{
-            content: { parts: [] },
-          }],
-        },
+      mockCallGenAI.mockRejectedValue(
+        new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
+      )
+
+      const request = createMockRequest({ videoId: 'cut-video' })
+      const response = await POST(request)
+
+      expect(response.status).toBe(500)
+      const json = await response.json()
+      expect(json.error.code).toBe('INVALID_RESPONSE')
+    })
+
+    it('returns 429 when rate limited', async () => {
+      mockCallGenAI.mockRejectedValue(
+        new LLMError('RATE_LIMIT', 'Rate limit exceeded', true)
+      )
+
+      const request = createMockRequest({ videoId: 'cut-video' })
+      const response = await POST(request)
+
+      expect(response.status).toBe(429)
+      const json = await response.json()
+      expect(json.error.code).toBe('RATE_LIMIT')
+      expect(json.error.retryable).toBe(true)
+    })
+
+    it('returns 500 when callGenAI returns data without shortTitles', async () => {
+      mockCallGenAI.mockResolvedValue({
+        data: { notShortTitles: [] } as never,
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
       const request = createMockRequest({ videoId: 'cut-video' })
       const response = await POST(request)
 
       expect(response.status).toBe(500)
+      const json = await response.json()
+      expect(json.error.code).toBe('PARSE_ERROR')
     })
   })
 })

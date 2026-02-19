@@ -1,3 +1,5 @@
+import { PODCAST_ID } from '@/lib/firebase/config'
+
 type LogLevel = 'INFO' | 'WARN' | 'ERROR'
 
 interface LogPayload {
@@ -6,7 +8,8 @@ interface LogPayload {
 
 /**
  * Structured logging function for Cloud Logging compatibility.
- * Outputs JSON format with severity, message, timestamp, and optional payload.
+ * Outputs JSON format with severity, message, timestamp, podcastId, and optional payload.
+ * The podcastId field is included automatically for cross-pod traceability.
  *
  * @param level - Log level: INFO, WARN, or ERROR
  * @param message - Human-readable log message
@@ -14,13 +17,14 @@ interface LogPayload {
  *
  * @example
  * log('INFO', 'User authenticated', { userId: 'abc123' })
- * log('ERROR', 'Failed to fetch videos', { error: err.message, podcastId })
+ * log('ERROR', 'Failed to fetch videos', { error: err.message })
  */
 export function log(level: LogLevel, message: string, payload?: LogPayload): void {
   const entry = {
     severity: level,
     message,
     timestamp: new Date().toISOString(),
+    podcastId: PODCAST_ID,
     ...payload,
   }
 

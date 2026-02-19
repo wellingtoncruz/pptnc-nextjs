@@ -751,7 +751,7 @@ describe('PARSE_ERROR retry configuration', () => {
 describe('PARSE_ERROR retry behavior', () => {
   it('PARSE_ERROR is marked as non-retryable in LLMError', async () => {
     // PARSE_ERROR has retryable=false because the retry logic is internal
-    // to callVertexAIWithAttachment, not exposed to callers
+    // to callGenAI, not exposed to callers
     const { LLMError } = await import('./errors')
     const parseError = new LLMError('PARSE_ERROR', 'Parse failed', false)
 

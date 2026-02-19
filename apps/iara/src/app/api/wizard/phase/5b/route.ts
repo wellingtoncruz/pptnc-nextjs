@@ -21,18 +21,14 @@ import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import {
+  callGenAI,
   createTranscriptionFile,
   cleanupTranscriptionFile,
-  parseJSONFromLLM,
   LLMError,
   createLLMError,
 } from '@/lib/llm'
 import type { Phase5BResponse } from '@/lib/llm'
 import { log } from '@/lib/logger'
-
-import { GenerativeModel, VertexAI } from '@google-cloud/vertexai'
-import type { Part } from '@google-cloud/vertexai'
-import { GCP_REGION, PROJECT_ID, VERTEX_AI_MODEL } from '@/lib/firebase/config'
 
 export const runtime = 'nodejs'
 
@@ -68,44 +64,6 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
     "Título Curto 5"
   ]
 }`
-
-/**
- * Timeout for phase 5B (2 minutes).
- */
-const PHASE_5B_TIMEOUT = 120000
-
-/**
- * Default model if VERTEX_AI_MODEL is not configured.
- */
-const DEFAULT_MODEL = 'gemini-2.5-flash'
-
-/**
- * Get Vertex AI model for phase 5B.
- */
-function getModel(): GenerativeModel {
-  const vertexAI = new VertexAI({
-    project: PROJECT_ID,
-    location: GCP_REGION,
-  })
-
-  return vertexAI.getGenerativeModel({
-    model: VERTEX_AI_MODEL || DEFAULT_MODEL,
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 65536,
-      responseMimeType: 'application/json',
-    },
-  })
-}
-
-/**
- * Read file content and encode as base64.
- */
-async function readFileAsBase64(filePath: string): Promise<string> {
-  const fs = await import('fs/promises')
-  const content = await fs.readFile(filePath)
-  return content.toString('base64')
-}
 
 /**
  * Build system prompt for phase 5B.
@@ -221,57 +179,20 @@ ${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') ||
 
 [Transcrição anexada como arquivo]`
 
-    // Create transcription file
+    // Create transcription file and call LLM via shared infrastructure
     const transcriptionFilePath = await createTranscriptionFile(transcription, 5)
 
     try {
-      const model = getModel()
-      const base64Content = await readFileAsBase64(transcriptionFilePath)
+      const { data, usage } = await callGenAI<Phase5BResponse>(
+        systemPrompt,
+        userPrompt,
+        120000,
+        transcriptionFilePath
+      )
 
-      const parts: Part[] = [
-        { text: userPrompt },
-        {
-          inlineData: {
-            mimeType: 'text/plain',
-            data: base64Content,
-          },
-        },
-      ]
-
-      // Call LLM with timeout
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(new LLMError('TIMEOUT', 'A requisição demorou demais. Tente novamente.', true))
-        }, PHASE_5B_TIMEOUT)
-      })
-
-      const result = await Promise.race([
-        model.generateContent({
-          contents: [{ role: 'user', parts }],
-          systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
-        }),
-        timeoutPromise,
-      ])
-
-      const response = result.response
-      const text = response.candidates?.[0]?.content?.parts?.[0]?.text
-
-      if (!text) {
-        throw new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
-      }
-
-      // Parse JSON response
-      const data = parseJSONFromLLM<Phase5BResponse>(text)
+      // Validate response structure
       if (!data || !Array.isArray(data.shortTitles)) {
-        throw new LLMError('PARSE_ERROR', 'Erro ao parsear resposta do LLM', false)
-      }
-
-      // Extract usage metadata
-      const usageMetadata = response.usageMetadata
-      const usage = {
-        promptTokens: usageMetadata?.promptTokenCount || 0,
-        completionTokens: usageMetadata?.candidatesTokenCount || 0,
-        totalTokens: usageMetadata?.totalTokenCount || 0,
+        throw new LLMError('PARSE_ERROR', 'Resposta do LLM não contém shortTitles válido', false)
       }
 
       // Persist suggestedShortTitles to Firestore

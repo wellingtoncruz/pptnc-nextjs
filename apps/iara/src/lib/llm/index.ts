@@ -1,16 +1,18 @@
 /**
- * LLM module for Gemini API integration.
+ * LLM module for Google GenAI (Vertex AI backend) integration.
  *
  * Provides synchronous calls to the Gemini API for each wizard phase.
  */
 
 // Client
 export {
+  callGenAI,
   callLLM,
   callLLMQueued,
   cleanupTranscriptionFile,
   createTranscriptionFile,
   isLLMConfigured,
+  resetGenAIClient,
   resetVertexAIClient,
 } from './client'
 
@@ -66,7 +68,6 @@ export type {
   Phase7Response,
   PhaseResponse,
   PromptVariables,
-  VertexAIConfig,
 } from './types'
 
 export { PHASE_TIMEOUTS } from './types'

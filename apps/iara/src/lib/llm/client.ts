@@ -2,15 +2,7 @@ import * as fs from 'fs/promises'
 import * as os from 'os'
 import * as path from 'path'
 
-import { GenerativeModel, VertexAI } from '@google-cloud/vertexai'
-import type { Part } from '@google-cloud/vertexai'
-import { Agent, setGlobalDispatcher } from 'undici'
-
-// Node.js built-in fetch uses undici with a default headersTimeout of 300s (5 min).
-// Gemini 2.5 Flash "thinking" phase can exceed 5 min for large inputs (e.g. 131K-token SRT)
-// without sending any response headers, causing "UND_ERR_HEADERS_TIMEOUT".
-// Configure a global dispatcher with no headers timeout to allow long-running inference.
-setGlobalDispatcher(new Agent({ headersTimeout: 0, bodyTimeout: 0 }))
+import { GoogleGenAI } from '@google/genai'
 
 import { GCP_REGION, PROJECT_ID, VERTEX_AI_MODEL } from '@/lib/firebase/config'
 import { log } from '@/lib/logger'
@@ -42,73 +34,39 @@ import type {
 const DEFAULT_MODEL = 'gemini-2.5-flash'
 
 /**
- * Vertex AI client singleton.
- * Uses Application Default Credentials (ADC) automatically.
+ * Google GenAI client singleton.
+ * Uses Vertex AI backend with Application Default Credentials (ADC).
  *
  * - Local: Run `gcloud auth application-default login`
  * - Cloud Run: Automatically uses the service account assigned to the service
  */
-let vertexAI: VertexAI | undefined
-let generativeModel: GenerativeModel | undefined
-let currentModelName: string | undefined
+let ai: GoogleGenAI | undefined
 
 /**
- * Resets the Vertex AI client singleton.
- * Useful for testing or when configuration changes.
+ * Gets or initializes the Google GenAI client.
  */
-export function resetVertexAIClient(): void {
-  vertexAI = undefined
-  generativeModel = undefined
-  currentModelName = undefined
-}
+function getAI(): GoogleGenAI {
+  if (ai) return ai
 
-/**
- * Gets or initializes the Vertex AI client.
- * Uses Application Default Credentials (ADC) for authentication.
- */
-function getVertexAI(): VertexAI {
-  if (vertexAI) return vertexAI
-
-  vertexAI = new VertexAI({
+  ai = new GoogleGenAI({
+    vertexai: true,
     project: PROJECT_ID,
     location: GCP_REGION,
   })
 
-  return vertexAI
+  return ai
 }
 
 /**
- * Gets or initializes the generative model.
- * Recreates the model if the configured model name changed.
+ * Resets the GenAI client singleton.
+ * Useful for testing or when configuration changes.
  */
-function getModel(): GenerativeModel {
-  const modelName = VERTEX_AI_MODEL || DEFAULT_MODEL
-
-  // Recreate model if config changed
-  if (generativeModel && currentModelName === modelName) {
-    return generativeModel
-  }
-
-  const client = getVertexAI()
-  generativeModel = client.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 65536,
-      responseMimeType: 'application/json',
-      // Gemini 2.5 Flash thinking tokens share the maxOutputTokens budget (65K).
-      // Without a cap, the model non-deterministically consumes 60K+ on thinking,
-      // leaving insufficient room for output → MAX_TOKENS truncation.
-      // API max for thinking_budget is 24576. Leaves ~41K for visible output.
-      // Note: 8K caused hallucinations, 24K produced quality results with prompt fix.
-      // SDK @1.10.0 lacks the type — API accepts it inside generationConfig.
-      thinkingConfig: { thinkingBudget: 24576 },
-    } as Record<string, unknown>,
-  })
-  currentModelName = modelName
-
-  return generativeModel
+export function resetGenAIClient(): void {
+  ai = undefined
 }
+
+// Backward-compatible alias
+export { resetGenAIClient as resetVertexAIClient }
 
 // =============================================================================
 // FILE ATTACHMENT SUPPORT (per llm.md specification)
@@ -149,7 +107,7 @@ export async function cleanupTranscriptionFile(filePath: string): Promise<void> 
 }
 
 /**
- * Read file content and encode as base64 for Vertex AI inlineData.
+ * Read file content and encode as base64 for inlineData.
  *
  * @param filePath - Path to file
  * @returns Base64 encoded content
@@ -160,23 +118,7 @@ async function readFileAsBase64(filePath: string): Promise<string> {
 }
 
 /**
- * Call Vertex AI with the given prompts (legacy - without attachment).
- *
- * Note: The Vertex AI SDK doesn't support AbortController/signal for cancellation.
- * We implement timeout using Promise.race with a timeout promise.
- *
- * @deprecated Use callVertexAIWithAttachment for new implementations
- */
-async function callVertexAI<T>(
-  systemPrompt: string,
-  userPrompt: string,
-  timeout: number
-): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
-  return callVertexAIWithAttachment<T>(systemPrompt, userPrompt, timeout, undefined)
-}
-
-/**
- * Call Vertex AI with the given prompts and optional file attachment.
+ * Call GenAI with the given prompts and optional file attachment.
  *
  * Per llm.md specification:
  * - Transcription MUST be saved as temporary file and passed as attachment
@@ -187,21 +129,24 @@ async function callVertexAI<T>(
  *
  * @param systemPrompt - System instruction for the model
  * @param userPrompt - User prompt with context (without transcription)
- * @param timeout - Timeout in milliseconds
+ * @param _timeout - Timeout in milliseconds (reserved for future use)
  * @param attachmentPath - Optional path to transcription file to attach
  *
  * @see Story 5.4 - Auto-Retry em PARSE_ERROR
  */
-async function callVertexAIWithAttachment<T>(
+export async function callGenAI<T>(
   systemPrompt: string,
   userPrompt: string,
-  timeout: number,
+  _timeout: number,
   attachmentPath: string | undefined
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
-  const model = getModel()
+  const client = getAI()
+  const modelName = VERTEX_AI_MODEL || DEFAULT_MODEL
 
   // Build parts array once - reused across retry attempts
-  const parts: Part[] = [{ text: userPrompt }]
+  const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
+    { text: userPrompt },
+  ]
 
   if (attachmentPath) {
     const base64Content = await readFileAsBase64(attachmentPath)
@@ -219,41 +164,46 @@ async function callVertexAIWithAttachment<T>(
 
   // Retry loop for PARSE_ERROR only
   for (let attempt = 1; attempt <= MAX_PARSE_RETRIES; attempt++) {
-    // Track timeout timer for cleanup
-    let timeoutId: ReturnType<typeof setTimeout> | undefined
-
     try {
-      // Use streaming API to avoid Vertex AI server-side timeout on unary calls.
-      // We MUST consume the stream iterator to keep the SSE connection alive —
-      // just awaiting .response without reading chunks can cause idle timeouts.
-      const streamingResult = await model.generateContentStream({
-        contents: [{ role: 'user', parts }],
-        systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
+      // Use streaming API to keep the connection alive during model thinking.
+      // Each chunk keeps the HTTP connection active, preventing idle timeouts.
+      const stream = await client.models.generateContentStream({
+        model: modelName,
+        contents: parts,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          temperature: 0.7,
+          maxOutputTokens: 65536,
+          // Gemini 2.5 Flash thinking tokens share the maxOutputTokens budget (65K).
+          // Without a cap, the model non-deterministically consumes 60K+ on thinking,
+          // leaving insufficient room for output → MAX_TOKENS truncation.
+          // API max for thinking_budget is 24576. Leaves ~41K for visible output.
+          thinkingConfig: { thinkingBudget: 24576 },
+        },
       })
 
       // Consume stream chunks to keep connection alive during model thinking.
-      // Each chunk keeps the HTTP connection active, preventing idle timeouts.
       let chunkCount = 0
-      for await (const chunk of streamingResult.stream) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chunk type inferred from stream
+      let lastChunk: any
+      for await (const chunk of stream) {
         chunkCount++
+        lastChunk = chunk
         if (chunkCount === 1) {
           log('INFO', 'First stream chunk received', { attempt })
         }
       }
       log('INFO', `Stream completed (${chunkCount} chunks)`, { attempt })
 
-      // Get aggregated response (already fully received via stream consumption)
-      const response = await streamingResult.response
-
-      // Clear timeout since we got a response
-      if (timeoutId) clearTimeout(timeoutId)
-      const candidate = response.candidates?.[0]
+      // Extract response from last chunk (contains accumulated data)
+      const text = lastChunk!.text
+      const candidate = lastChunk!.candidates?.[0]
       const finishReason = candidate?.finishReason
       const safetyRatings = candidate?.safetyRatings
-      const text = candidate?.content?.parts?.[0]?.text
+      const usageMetadata = lastChunk!.usageMetadata
 
       // Diagnostic logging for every attempt
-      const usageMetadata = response.usageMetadata
       log('INFO', `LLM response received (attempt ${attempt}/${MAX_PARSE_RETRIES})`, {
         finishReason,
         safetyRatings,
@@ -307,7 +257,7 @@ async function callVertexAIWithAttachment<T>(
         log('INFO', `LLM call succeeded on attempt ${attempt}/${MAX_PARSE_RETRIES}`)
       }
 
-      // Extract usage metadata (usageMetadata already extracted above for diagnostics)
+      // Extract usage metadata
       const usage = {
         promptTokens: usageMetadata?.promptTokenCount || 0,
         completionTokens: usageMetadata?.candidatesTokenCount || 0,
@@ -316,9 +266,6 @@ async function callVertexAIWithAttachment<T>(
 
       return { data, usage }
     } catch (error) {
-      // Always clear timeout on error to prevent memory leaks
-      if (timeoutId) clearTimeout(timeoutId)
-
       // Log full error details before converting
       if (!(error instanceof LLMError)) {
         const err = error as Error & { status?: number; statusText?: string; cause?: unknown }
@@ -361,7 +308,7 @@ type PhaseResponseMap = {
 /**
  * Call LLM for a specific wizard phase.
  *
- * Uses Vertex AI with Application Default Credentials (ADC).
+ * Uses Google GenAI SDK with Vertex AI backend and Application Default Credentials (ADC).
  *
  * Per llm.md specification:
  * - Prompts are built using podcast.personas and podcast.prompts
@@ -468,7 +415,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
     // Create transcription file and call API with attachment
     transcriptionFilePath = await createTranscriptionFile(transcription, phase)
 
-    const { data, usage } = await callVertexAIWithAttachment<PhaseResponseMap[P]>(
+    const { data, usage } = await callGenAI<PhaseResponseMap[P]>(
       systemPrompt,
       userPrompt,
       timeout,
@@ -503,8 +450,8 @@ function getPhaseTimeout(phase: WizardPhase): number {
 }
 
 /**
- * Check if Vertex AI is available.
- * Vertex AI uses ADC, so it's always "configured" if running in GCP
+ * Check if LLM is available.
+ * Uses ADC, so it's always "configured" if running in GCP
  * or locally with `gcloud auth application-default login`.
  */
 export function isLLMConfigured(): boolean {
