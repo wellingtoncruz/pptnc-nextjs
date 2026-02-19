@@ -305,4 +305,64 @@ describe('PodcastSettingsForm', () => {
     // API should not be called for invalid data
     expect(mockFetch).not.toHaveBeenCalled()
   })
+
+  it('renders hostName field with existing value', () => {
+    const podcast = createPodcastFixture({ hostName: 'Wellington' } as Partial<SerializedPodcast>)
+    render(<PodcastSettingsForm podcast={podcast} />)
+
+    const hostNameInput = screen.getByLabelText('Nome do Host/Apresentador')
+    expect(hostNameInput).toHaveValue('Wellington')
+  })
+
+  it('renders hostName field empty when not set', () => {
+    const podcast = createPodcastFixture()
+    render(<PodcastSettingsForm podcast={podcast} />)
+
+    const hostNameInput = screen.getByLabelText('Nome do Host/Apresentador')
+    expect(hostNameInput).toHaveValue('')
+  })
+
+  it('auto-saves hostName on change', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcast = createPodcastFixture()
+    render(<PodcastSettingsForm podcast={podcast} />)
+
+    const hostNameInput = screen.getByLabelText('Nome do Host/Apresentador')
+    await user.type(hostNameInput, 'João Silva')
+
+    // Advance timers to trigger debounced save
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ hostName: 'João Silva' }),
+      }))
+    })
+  })
+
+  it('triggers immediate save on hostName blur', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcast = createPodcastFixture()
+    render(<PodcastSettingsForm podcast={podcast} />)
+
+    const hostNameInput = screen.getByLabelText('Nome do Host/Apresentador')
+    await user.type(hostNameInput, 'Maria')
+
+    // Blur without waiting for debounce
+    await act(async () => {
+      fireEvent.blur(hostNameInput)
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ hostName: 'Maria' }),
+      }))
+    })
+  })
 })

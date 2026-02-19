@@ -42,11 +42,14 @@ describe('SettingsPageClient', () => {
     vi.useRealTimers()
   })
 
-  it('renders all four settings forms', () => {
+  it('renders all settings sections', () => {
     render(<SettingsPageClient podcast={mockPodcast} />)
 
     // PodcastSettingsForm
     expect(screen.getByText('Informações do Podcast')).toBeInTheDocument()
+
+    // FeaturesSettingsForm
+    expect(screen.getByText('Recursos')).toBeInTheDocument()
 
     // DurationSettingsForm
     expect(screen.getByText('Duração por Tipo de Vídeo')).toBeInTheDocument()

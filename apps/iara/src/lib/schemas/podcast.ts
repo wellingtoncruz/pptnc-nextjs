@@ -239,8 +239,15 @@ export const PodcastSchema = z.object({
   prompts: PromptsSchema,
   personas: PersonasSchema,
   videoTypes: VideoTypesConfigSchema,
+  /** Name of the podcast host/presenter. Included in Phase 6 (description) prompts. */
+  hostName: z.string().max(200, 'Nome do host deve ter no máximo 200 caracteres').optional(),
   /** YouTube footer text appended to video descriptions. */
   youtubeFooter: z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional(),
+  /** Feature toggles for optional sections (Editorial, News). Defaults to all enabled. */
+  features: z.object({
+    editorial: z.boolean().default(true),
+    news: z.boolean().default(true),
+  }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
 })

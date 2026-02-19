@@ -187,6 +187,63 @@ describe('WizardOrchestrator reel flow', () => {
   })
 })
 
+describe('AUTO-READY: Phase 7 → Phase 8 transition for reel', () => {
+  /**
+   * Story 13.10: Same fix applies to reels.
+   * CLIENT-SIDE AUTO-DRAFT mirrors server new → draft when wizard advances past phase 0.
+   * AUTO-READY then correctly transitions draft → ready at Phase 8.
+   */
+  it('COMPLETE_PHASE_AND_ADVANCE for phase 7 sets currentPhase to 8', () => {
+    const state = createInitialWizardState('reel-video', 'reel', 'parent-id')
+    state.currentPhase = 7 as 7
+
+    const newState = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 7,
+      data: { tags: ['tag1'] },
+    })
+
+    expect(newState.currentPhase).toBe(8)
+    expect(newState.phases[7].status).toBe('completed')
+  })
+
+  it('full reel phase flow reaches phase 8', () => {
+    let state = createInitialWizardState('reel-video', 'reel', undefined)
+
+    // Phase 0: select parent
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 0,
+      data: { parentEpisodeId: 'ep-123' },
+    })
+    expect(state.currentPhase).toBe(5)
+
+    // Phase 5: title
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 5,
+      data: { selectedTitle: 'My Reel Title' },
+    })
+    expect(state.currentPhase).toBe(6)
+
+    // Phase 6: description
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 6,
+      data: { description: 'A great reel' },
+    })
+    expect(state.currentPhase).toBe(7)
+
+    // Phase 7: tags → should reach Phase 8
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 7,
+      data: { tags: ['tag1'] },
+    })
+    expect(state.currentPhase).toBe(8)
+  })
+})
+
 describe('Reel-specific prompts fallback', () => {
   // These tests verify the prompt fallback chain:
   // reel prompts → episode prompts → BASE_SYSTEM_PROMPTS

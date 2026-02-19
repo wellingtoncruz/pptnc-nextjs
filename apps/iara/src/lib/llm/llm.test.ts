@@ -188,6 +188,18 @@ describe('extractVariables', () => {
     expect(variables.previousPhaseData).toContain('critique')
     expect(variables.previousPhaseData).toContain('Good content')
   })
+
+  it('includes hostName when provided', () => {
+    const variables = extractVariables(mockVideo, undefined, undefined, 'Wellington')
+
+    expect(variables.hostName).toBe('Wellington')
+  })
+
+  it('defaults hostName to "Não informado" when not provided', () => {
+    const variables = extractVariables(mockVideo)
+
+    expect(variables.hostName).toBe('Não informado')
+  })
 })
 
 // =============================================================================
@@ -205,6 +217,7 @@ describe('interpolatePrompt', () => {
       guests: '',
       previousPhaseData: '',
       videoType: 'episode',
+      hostName: '',
     }
 
     const result = interpolatePrompt(template, variables)
@@ -222,6 +235,7 @@ describe('interpolatePrompt', () => {
       guests: '',
       previousPhaseData: '',
       videoType: '',
+      hostName: '',
     }
 
     const result = interpolatePrompt(template, variables, 'Extra info')
@@ -240,6 +254,7 @@ describe('interpolatePrompt', () => {
       guests: '',
       previousPhaseData: '',
       videoType: '',
+      hostName: '',
     }
 
     const result = interpolatePrompt(template, variables)

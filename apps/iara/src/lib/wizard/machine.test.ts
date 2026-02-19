@@ -331,6 +331,38 @@ describe('wizardReducer', () => {
         expect(newState.phases).toEqual(state.phases)
       })
 
+      it('cut: phase 7 advances to 8 (AUTO-READY target)', () => {
+        const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+        state.currentPhase = 7 as 7
+        const data = { tags: ['tag1', 'tag2'] }
+
+        const newState = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 7,
+          data,
+        })
+
+        expect(newState.phases[7].status).toBe('completed')
+        expect(newState.phases[7].data).toEqual(data)
+        expect(newState.currentPhase).toBe(8)
+      })
+
+      it('reel: phase 7 advances to 8 (AUTO-READY target)', () => {
+        const state = createInitialWizardState('video-123', 'reel', 'parent-id')
+        state.currentPhase = 7 as 7
+        const data = { tags: ['tag1'] }
+
+        const newState = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 7,
+          data,
+        })
+
+        expect(newState.phases[7].status).toBe('completed')
+        expect(newState.phases[7].data).toEqual(data)
+        expect(newState.currentPhase).toBe(8)
+      })
+
       it('extended phases (0 and 5B) do not modify phases record', () => {
         // Phase 0
         const state0 = createInitialWizardState('video-123', 'cut')

@@ -84,7 +84,8 @@ export function truncateTranscript(transcript: string, maxChars = 50000): string
 export function extractVariables(
   video: Video,
   previousPhaseData?: Record<string, unknown>,
-  additionalContext?: string
+  additionalContext?: string,
+  hostName?: string
 ): PromptVariables {
   return {
     title: video.title,
@@ -94,6 +95,7 @@ export function extractVariables(
     guests: formatGuests(video.guests),
     previousPhaseData: previousPhaseData ? JSON.stringify(previousPhaseData, null, 2) : '',
     videoType: video.videoType || 'episode',
+    hostName: hostName || 'Não informado',
   }
 }
 

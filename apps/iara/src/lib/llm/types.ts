@@ -212,6 +212,8 @@ export interface PromptVariables {
   previousPhaseData: string
   /** Video type (episode, cut, reel) */
   videoType: string
+  /** Podcast host/presenter name */
+  hostName: string
 }
 
 /**

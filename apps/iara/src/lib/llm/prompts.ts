@@ -116,6 +116,7 @@ A descrição deve:
 - Incluir palavras-chave relevantes naturalmente
 - Ter seções claras com quebras de linha
 - Incluir call-to-action para inscrição no canal
+- OBRIGATÓRIO: Mencionar o host/apresentador quando informado na seção "Host/Apresentador"
 - OBRIGATÓRIO: Listar TODOS os convidados informados, com seus respectivos cargos e links do LinkedIn
 - Cada convidado deve ter uma linha dedicada no formato: Nome - Cargo - LinkedIn
 
@@ -226,6 +227,8 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 **Duração:** {duration}
 **Tipo:** {videoType}
 **Tema:** {theme}
+
+**Host/Apresentador:** {hostName}
 
 **Convidados:**
 {guests}

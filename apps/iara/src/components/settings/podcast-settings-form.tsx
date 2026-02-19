@@ -17,12 +17,13 @@ import type { SerializedPodcast } from '@/types/podcast'
  */
 const NameSchema = z.string().min(1, 'Nome é obrigatório')
 const ChannelIdSchema = z.string().min(1, 'Channel ID é obrigatório')
+const HostNameSchema = z.string().max(200, 'Nome do host deve ter no máximo 200 caracteres').optional()
 const YoutubeFooterSchema = z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional()
 
 /**
  * Updates podcast via API route (server-side).
  */
-async function updatePodcastViaApi(data: { name?: string; channelId?: string; youtubeFooter?: string }): Promise<void> {
+async function updatePodcastViaApi(data: { name?: string; channelId?: string; hostName?: string; youtubeFooter?: string }): Promise<void> {
   const response = await fetch('/api/podcast', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -54,9 +55,11 @@ interface PodcastSettingsFormProps {
 export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
   const [name, setName] = useState(podcast.name)
   const [channelId, setChannelId] = useState(podcast.channelId)
+  const [hostName, setHostName] = useState(podcast.hostName ?? '')
   const [youtubeFooter, setYoutubeFooter] = useState(podcast.youtubeFooter ?? '')
   const [nameError, setNameError] = useState<string | null>(null)
   const [channelIdError, setChannelIdError] = useState<string | null>(null)
+  const [hostNameError, setHostNameError] = useState<string | null>(null)
   const [youtubeFooterError, setYoutubeFooterError] = useState<string | null>(null)
 
   const {
@@ -108,6 +111,34 @@ export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
         const message = err instanceof Error ? err.message : 'Erro ao salvar'
         setChannelIdError(message)
         log('ERROR', 'Failed to save podcast channelId', {
+          podcastId: podcast.id,
+          error: message,
+        })
+        throw err
+      }
+    },
+    1500
+  )
+
+  const {
+    saveStatus: hostNameSaveStatus,
+    save: saveHostName,
+  } = useAutoSave(
+    hostName,
+    async (value) => {
+      setHostNameError(null)
+      const result = HostNameSchema.safeParse(value)
+      if (!result.success) {
+        const message = result.error.issues[0]?.message || 'Valor inválido'
+        setHostNameError(message)
+        throw new Error(message)
+      }
+      try {
+        await updatePodcastViaApi({ hostName: value || undefined })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao salvar'
+        setHostNameError(message)
+        log('ERROR', 'Failed to save podcast hostName', {
           podcastId: podcast.id,
           error: message,
         })
@@ -200,6 +231,31 @@ export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
         />
         <p className="text-xs text-muted-foreground">
           O Owner ID é definido automaticamente
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="hostName">Nome do Host/Apresentador</Label>
+        <Input
+          id="hostName"
+          value={hostName}
+          onChange={(e) => setHostName(e.target.value)}
+          onBlur={() => saveHostName()}
+          placeholder="Nome do apresentador do podcast"
+          aria-invalid={!!hostNameError}
+          aria-describedby={hostNameError ? 'hostName-error' : 'hostName-description'}
+        />
+        <div className="flex items-center justify-between">
+          {hostNameError ? (
+            <p id="hostName-error" className="text-xs text-destructive">
+              {hostNameError}
+            </p>
+          ) : (
+            <SaveStatusIndicator status={hostNameSaveStatus} />
+          )}
+        </div>
+        <p id="hostName-description" className="text-xs text-muted-foreground">
+          O nome do host será incluído nas descrições geradas pela IA.
         </p>
       </div>
 

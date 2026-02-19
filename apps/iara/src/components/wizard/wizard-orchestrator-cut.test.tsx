@@ -255,6 +255,81 @@ describe('WizardOrchestrator cut flow', () => {
   })
 })
 
+describe('AUTO-READY: Phase 7 → Phase 8 transition for cut', () => {
+  /**
+   * Story 13.10: When a cut video with status 'new' completes all phases,
+   * the wizard reaches Phase 8 where the AUTO-READY effect should transition
+   * the video to 'ready' status.
+   *
+   * Root cause: The server-side AUTO-DRAFT (videos-admin.ts:449-458) transitions
+   * new → draft when any phase saves data, but the client never receives this
+   * status update. The AUTO-READY guard requires 'draft' status.
+   *
+   * Fix: Added CLIENT-SIDE AUTO-DRAFT effect that mirrors the server behavior —
+   * when the wizard advances past the first phase, the client transitions
+   * videoData.status from 'new' to 'draft'. This ensures AUTO-READY fires
+   * correctly at Phase 8.
+   */
+  it('COMPLETE_PHASE_AND_ADVANCE for phase 7 sets currentPhase to 8', () => {
+    const state = createInitialWizardState('cut-video', 'cut', 'parent-id')
+    state.currentPhase = 7 as 7
+
+    const newState = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 7,
+      data: { tags: ['tag1', 'tag2'] },
+    })
+
+    // currentPhase = 8 is what triggers the AUTO-READY useEffect
+    expect(newState.currentPhase).toBe(8)
+    expect(newState.phases[7].status).toBe('completed')
+  })
+
+  it('full cut phase flow reaches phase 8', () => {
+    let state = createInitialWizardState('cut-video', 'cut', undefined)
+
+    // Phase 0: select parent
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 0,
+      data: { parentEpisodeId: 'ep-123' },
+    })
+    expect(state.currentPhase).toBe(5)
+
+    // Phase 5: title
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 5,
+      data: { selectedTitle: 'My Cut Title' },
+    })
+    expect(state.currentPhase as string).toBe('5B')
+
+    // Phase 5B: short title
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: '5B',
+      data: { shortTitle: 'SHORT!' },
+    })
+    expect(state.currentPhase).toBe(6)
+
+    // Phase 6: description
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 6,
+      data: { description: 'A great cut' },
+    })
+    expect(state.currentPhase).toBe(7)
+
+    // Phase 7: tags → should reach Phase 8
+    state = wizardReducer(state, {
+      type: 'COMPLETE_PHASE_AND_ADVANCE',
+      phase: 7,
+      data: { tags: ['tag1'] },
+    })
+    expect(state.currentPhase).toBe(8)
+  })
+})
+
 describe('Cut-specific prompts fallback', () => {
   // These tests verify the prompt fallback chain:
   // cut prompts → episode prompts → BASE_SYSTEM_PROMPTS

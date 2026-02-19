@@ -35,6 +35,15 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
 
   const currentView = searchParams.get('view')
 
+  // Podcast feature toggles (editorial, news)
+  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean }>()
+  useEffect(() => {
+    fetch('/api/podcast')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.data?.features) setPodcastFeatures(d.data.features) })
+      .catch(() => { /* features default to enabled on error */ })
+  }, [])
+
   // Track if initial mount check has been done
   const hasCheckedInitialUrl = useRef(false)
 
@@ -135,7 +144,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} />
+          <Sidebar userName={userName} features={podcastFeatures} />
         </div>
         <div className="flex-1">
           <SettingsPanel />
@@ -145,11 +154,16 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   }
 
   // When in editorial view, show sidebar and editorial panel (full width)
+  // Redirect if feature is disabled; wait for features to load before rendering
   if (currentView === 'editorial') {
+    if (podcastFeatures?.editorial === false) {
+      router.replace('/videos')
+      return null
+    }
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} />
+          <Sidebar userName={userName} features={podcastFeatures} />
         </div>
         <div className="flex-1 overflow-hidden">
           <EditorialPanel />
@@ -159,11 +173,16 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   }
 
   // When in news view, show sidebar and news panel
+  // Redirect if feature is disabled; wait for features to load before rendering
   if (currentView === 'news') {
+    if (podcastFeatures?.news === false) {
+      router.replace('/videos')
+      return null
+    }
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} />
+          <Sidebar userName={userName} features={podcastFeatures} />
         </div>
         <div className="flex-1 overflow-hidden">
           <NewsPanel />
@@ -180,7 +199,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} />
+            <Sidebar userName={userName} features={podcastFeatures} />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -195,7 +214,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} />
+            <Sidebar userName={userName} features={podcastFeatures} />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -207,7 +226,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} />
+          <Sidebar userName={userName} features={podcastFeatures} />
         </div>
         <div className="flex-1">
           <UserListPanel />
@@ -233,7 +252,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         error={syncError}
       />
       <MasterDetailLayout
-        sidebar={<Sidebar userName={userName} />}
+        sidebar={<Sidebar userName={userName} features={podcastFeatures} />}
         list={
           <VideoListPanel
             videos={videos}
@@ -253,7 +272,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
             onVideoReopened={refresh}
           />
         }
-        detail={<VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} />}
+        detail={<VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} onVideoStatusChange={refresh} />}
       />
     </LLMProcessingProvider>
   )

@@ -9,6 +9,8 @@ interface VideoDetailPanelProps {
   videoId?: string | null
   /** Video data for display (from selected video) */
   video?: VideoDetail | VideoSummary | null
+  /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
+  onVideoStatusChange?: () => void
 }
 
 /**
@@ -25,6 +27,7 @@ interface VideoDetailPanelProps {
 export function VideoDetailPanel({
   videoId,
   video,
+  onVideoStatusChange,
 }: VideoDetailPanelProps) {
   if (!videoId) {
     return <VideoDetailEmptyState />
@@ -51,6 +54,7 @@ export function VideoDetailPanel({
         key={video.id}
         video={video as Video}
         className="flex flex-col h-full"
+        onVideoStatusChange={onVideoStatusChange}
       />
     </div>
   )

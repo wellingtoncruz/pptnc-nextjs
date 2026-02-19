@@ -9,6 +9,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { PodcastSettingsForm } from './podcast-settings-form'
+import { FeaturesSettingsForm } from './features-settings-form'
 import { PromptsSettingsForm } from './prompts-settings-form'
 import { PersonasSettingsForm } from './personas-settings-form'
 import { DurationSettingsForm } from './duration-settings-form'
@@ -22,6 +23,7 @@ import type { SerializedPodcast, PromptField, Persona, Prompts, Personas } from 
  */
 const SECTION_IDS = {
   PODCAST: 'podcast',
+  FEATURES: 'features',
   DURATION: 'duration',
   PERSONAS: 'personas',
   PROMPTS: 'prompts',
@@ -167,6 +169,19 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
         </AccordionTrigger>
         <AccordionContent className="px-6 pb-6">
           <PodcastSettingsForm podcast={podcast} />
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Features Settings */}
+      <AccordionItem value={SECTION_IDS.FEATURES} className="border rounded-lg">
+        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+          Recursos
+        </AccordionTrigger>
+        <AccordionContent className="px-6 pb-6">
+          <FeaturesSettingsForm features={{
+            editorial: podcast.features?.editorial ?? true,
+            news: podcast.features?.news ?? true,
+          }} />
         </AccordionContent>
       </AccordionItem>
 

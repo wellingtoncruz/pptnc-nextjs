@@ -187,6 +187,39 @@ describe('Sidebar', () => {
     expect(videosLink).not.toHaveClass('bg-accent')
   })
 
+  it('hides Editorial when features.editorial is false', async () => {
+    render(<Sidebar features={{ editorial: false, news: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Editorial')).not.toBeInTheDocument()
+    expect(screen.getByText('Notícias')).toBeInTheDocument()
+  })
+
+  it('hides Notícias when features.news is false', async () => {
+    render(<Sidebar features={{ editorial: true, news: false }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Editorial')).toBeInTheDocument()
+    expect(screen.queryByText('Notícias')).not.toBeInTheDocument()
+  })
+
+  it('shows both sections when features is undefined (backward-compatible)', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Editorial')).toBeInTheDocument()
+    expect(screen.getByText('Notícias')).toBeInTheDocument()
+  })
+
   it('exibe Editorial para usuários não-admin', async () => {
     // Mock non-admin user
     const { useSession } = await import('next-auth/react')

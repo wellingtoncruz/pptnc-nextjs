@@ -15,15 +15,21 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 
 const STORAGE_KEY = 'sidebar-collapsed'
 
+interface PodcastFeatures {
+  editorial?: boolean
+  news?: boolean
+}
+
 interface SidebarProps {
   userName?: string
+  features?: PodcastFeatures
 }
 
 /**
  * Collapsible sidebar with navigation links.
  * Collapsed state is persisted to localStorage.
  */
-export function Sidebar({ userName }: SidebarProps) {
+export function Sidebar({ userName, features }: SidebarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -63,22 +69,22 @@ export function Sidebar({ userName }: SidebarProps) {
         isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView,
         adminOnly: false,
       },
-      {
+      ...(features?.editorial !== false ? [{
         // Use ?view=editorial to show editorial section
         href: '/videos?view=editorial',
         label: 'Editorial',
         icon: FileText,
         isActive: isEditorialView,
         adminOnly: false,
-      },
-      {
+      }] : []),
+      ...(features?.news !== false ? [{
         // Use ?view=news to show news section
         href: '/videos?view=news',
         label: 'Notícias',
         icon: Newspaper,
         isActive: isNewsView,
         adminOnly: false,
-      },
+      }] : []),
       {
         // Use ?view=users to show users management
         href: '/videos?view=users',
@@ -99,7 +105,7 @@ export function Sidebar({ userName }: SidebarProps) {
 
     // Filter out admin-only items for non-admin users
     return items.filter((item) => !item.adminOnly || isAdmin)
-  }, [pathname, searchParams, isAdmin])
+  }, [pathname, searchParams, isAdmin, features])
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {

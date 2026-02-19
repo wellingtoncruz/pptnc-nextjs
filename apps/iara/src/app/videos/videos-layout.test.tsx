@@ -97,6 +97,11 @@ describe('VideosLayout', () => {
     vi.clearAllMocks()
     mockGet.mockReturnValue(null)
     mockReplace.mockClear()
+    // Mock fetch for podcast features
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { features: { editorial: true, news: true } } }),
+    })
   })
 
   it('renderiza MasterDetailLayout por padrão', () => {

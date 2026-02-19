@@ -26,6 +26,8 @@ import { Phase8Publish } from './phases/phase-8-publish'
 interface WizardOrchestratorProps {
   video: Video
   className?: string
+  /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
+  onVideoStatusChange?: () => void
 }
 
 /**
@@ -45,6 +47,7 @@ interface WizardOrchestratorProps {
 export function WizardOrchestrator({
   video,
   className,
+  onVideoStatusChange,
 }: WizardOrchestratorProps) {
   const router = useRouter()
   const { startProcessing, stopProcessing } = useLLMProcessing()
@@ -609,14 +612,46 @@ export function WizardOrchestrator({
   const readyTransitionRef = useRef<string | null>(null)
 
   /**
+   * CLIENT-SIDE AUTO-DRAFT: Mirror the server-side AUTO-DRAFT behavior.
+   *
+   * The server (videos-admin.ts:449-458) automatically transitions new → draft
+   * when any phase saves data to Firestore. However, the phase save API responses
+   * don't return the updated status, so videoData.status stays 'new' in the client.
+   *
+   * This effect detects when the wizard has advanced past the first phase (meaning
+   * data was saved to the server, triggering server-side AUTO-DRAFT) and mirrors
+   * the transition locally. This ensures the AUTO-READY effect below can properly
+   * detect 'draft' status and transition to 'ready' at Phase 8.
+   */
+  useEffect(() => {
+    if (videoData.status !== 'new') return
+    if (videoDataReadyFor !== video.id) return
+
+    // First phase: episode starts at 1, cut/reel start at 0
+    const firstPhase = video.videoType === 'episode' ? 1 : 0
+
+    // If wizard has advanced past the first phase, data was saved → server did AUTO-DRAFT
+    if (wizard.currentPhase === firstPhase) return
+
+    log('INFO', 'Client-side AUTO-DRAFT: mirroring server new → draft transition', {
+      videoId: video.id,
+      currentPhase: wizard.currentPhase,
+    })
+    setVideoData(prev => prev.status === 'new' ? { ...prev, status: 'draft' } : prev)
+  }, [wizard.currentPhase, videoData.status, videoDataReadyFor, video.id, video.videoType])
+
+  /**
    * AUTO-READY: When the wizard reaches Phase 8, automatically transition
-   * the video status from 'draft' to 'ready' if not already ready/sending/sent.
+   * the video status to 'ready' if not already ready/sending/sent.
    *
    * This runs when:
    * - Current phase is 8
    * - Video data is ready
-   * - Status is 'draft' (meaning phases have been processed)
+   * - Status is 'draft' (eligible for transition)
    * - We haven't already transitioned this video
+   *
+   * Depends on CLIENT-SIDE AUTO-DRAFT above to ensure videoData.status is
+   * properly synced to 'draft' before this effect evaluates the guard.
    */
   useEffect(() => {
     // Only run when on Phase 8
@@ -642,8 +677,9 @@ export function WizardOrchestrator({
 
     readyTransitionRef.current = video.id
 
-    log('INFO', 'Auto-transitioning video status from draft to ready (Phase 8 reached)', {
+    log('INFO', 'Auto-transitioning video status to ready (Phase 8 reached)', {
       videoId: video.id,
+      previousStatus: videoData.status,
     })
 
     // Update status to 'ready' via API
@@ -655,6 +691,7 @@ export function WizardOrchestrator({
       .then((response) => {
         if (response.ok) {
           setVideoData((prev) => ({ ...prev, status: 'ready' }))
+          onVideoStatusChange?.()
           log('INFO', 'Video status updated to ready', { videoId: video.id })
         } else {
           log('WARN', 'Failed to update video status to ready', { videoId: video.id })
@@ -666,7 +703,7 @@ export function WizardOrchestrator({
           error: error instanceof Error ? error.message : String(error),
         })
       })
-  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.status])
+  }, [wizard.currentPhase, video.id, videoDataReadyFor, videoData.status, onVideoStatusChange])
 
   /**
    * Handle context changes from Phase1Critique.
@@ -2235,8 +2272,9 @@ export function WizardOrchestrator({
         'success'
       )
 
-      // Update local video data status
+      // Update local video data status and refresh video list
       setVideoData(prev => ({ ...prev, status: 'sent' }))
+      onVideoStatusChange?.()
 
       // Open YouTube Studio in a new tab
       window.open(`https://studio.youtube.com/video/${video.id}/edit`, '_blank')
@@ -2250,7 +2288,7 @@ export function WizardOrchestrator({
       wizard.addAlert(8, 'Erro', message, 'error')
       log('ERROR', 'Failed to send video to YouTube', { videoId: video.id, error: message })
     }
-  }, [video.id, video.editingIssues, video.riskAndCompliance, videoData, wizard])
+  }, [video.id, video.editingIssues, video.riskAndCompliance, videoData, wizard, onVideoStatusChange])
 
   /**
    * Handle retry after Phase 8 error.
