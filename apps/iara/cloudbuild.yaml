@@ -64,7 +64,7 @@ steps:
       - '1Gi'
       - '--timeout'
       - '300'
-      - '--set-env-vars'
+      - '--update-env-vars'
       - 'PODCAST_ID=${_PODCAST_ID},GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=${_REGION},FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID}'
 
 images:
