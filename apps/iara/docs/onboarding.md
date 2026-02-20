@@ -298,9 +298,21 @@ Em **Configurações > Features**, habilite/desabilite seções opcionais:
 - **Editorial** — seção de acompanhamento editorial
 - **Notícias** — seção de notícias curadas
 
-### 9.4 Usuários
+### 9.4 Promover primeiro usuário a admin
 
-O primeiro usuário que fizer login será o proprietário. Para adicionar administradores:
+O primeiro usuário que fizer login é criado com role `user` (padrão). Para ter acesso às configurações, é necessário promovê-lo a admin **manualmente no Firestore**:
+
+1. Faça o primeiro login no IAra (isso cria o documento do usuário)
+2. Acesse o [Firestore Console](https://console.firebase.google.com) > database `SEU_DATABASE_ID`
+3. Navegue para: `podcasts/{podcastId}/users/{googleUserId}`
+4. Edite o campo `role` de `"user"` para `"admin"`
+5. Faça logout e login novamente para que a sessão reflita o novo role
+
+> **Nota**: O Google User ID é o ID numérico da conta Google (ex: `117853...`). Será o único documento na subcollection `users` neste momento.
+
+### 9.5 Adicionar outros usuários
+
+Para adicionar mais usuários após o primeiro admin:
 1. O novo usuário faz login normalmente
 2. O admin acessa **Usuários** e altera o role para "admin"
 
