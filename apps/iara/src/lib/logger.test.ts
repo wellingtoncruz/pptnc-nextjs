@@ -25,6 +25,7 @@ describe('log', () => {
         severity: 'INFO',
         message: 'Test message',
         timestamp: '2026-01-24T12:00:00.000Z',
+        podcastId: 'pptnc',
       })
     )
   })
@@ -37,6 +38,7 @@ describe('log', () => {
         severity: 'WARN',
         message: 'Warning message',
         timestamp: '2026-01-24T12:00:00.000Z',
+        podcastId: 'pptnc',
       })
     )
   })
@@ -49,6 +51,7 @@ describe('log', () => {
         severity: 'ERROR',
         message: 'Error occurred',
         timestamp: '2026-01-24T12:00:00.000Z',
+        podcastId: 'pptnc',
       })
     )
   })
@@ -61,6 +64,7 @@ describe('log', () => {
         severity: 'INFO',
         message: 'User action',
         timestamp: '2026-01-24T12:00:00.000Z',
+        podcastId: 'pptnc',
         userId: 'abc123',
         action: 'login',
       })
@@ -75,6 +79,7 @@ describe('log', () => {
         severity: 'ERROR',
         message: 'API error',
         timestamp: '2026-01-24T12:00:00.000Z',
+        podcastId: 'pptnc',
         error: { code: 'NOT_FOUND', details: { id: '123' } },
       })
     )
