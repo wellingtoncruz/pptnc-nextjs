@@ -183,7 +183,8 @@ cp .env.example .env.local
 | `AUTH_SECRET` | Segredo do Auth.js (gere com `openssl rand -base64 32`) | `K7x...` |
 | `AUTH_GOOGLE_ID` | Client ID do OAuth (passo 3.2) | `123...apps.googleusercontent.com` |
 | `AUTH_GOOGLE_SECRET` | Client Secret do OAuth (passo 3.2) | `GOCSPX-...` |
-| `AUTH_TRUST_HOST` | Necessário para localhost | `true` |
+| `AUTH_TRUST_HOST` | Confiar no header X-Forwarded-Host do proxy | `true` |
+| `AUTH_URL` | URL pública do serviço (obrigatória em Cloud Run) | `https://iara.meudominio.com.br` |
 | `NEXT_PUBLIC_FIREBASE_API_KEY` | API key do Firebase | `AIzaSy...` |
 | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Auth domain | `projeto.firebaseapp.com` |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Project ID | `meu-projeto` |
@@ -250,14 +251,14 @@ Após o primeiro deploy, configure as variáveis de auth no serviço Cloud Run:
 ```bash
 gcloud run services update iara-meu-podcast \
   --region=us-east1 \
-  --set-env-vars="AUTH_SECRET=$(openssl rand -base64 32)" \
-  --set-env-vars="AUTH_GOOGLE_ID=seu-client-id" \
-  --set-env-vars="AUTH_GOOGLE_SECRET=seu-client-secret" \
-  --set-env-vars="AUTH_TRUST_HOST=true" \
+  --update-env-vars="AUTH_SECRET=$(openssl rand -base64 32),AUTH_GOOGLE_ID=seu-client-id,AUTH_GOOGLE_SECRET=seu-client-secret,AUTH_TRUST_HOST=true,AUTH_URL=https://URL_PUBLICA_DO_SERVICO" \
   --project=SEU_PROJETO
 ```
 
-> **Importante**: Cada deploy deve ter seu próprio `AUTH_SECRET`. Sessões não devem vazar entre pods.
+> **Importante**:
+> - Use `--update-env-vars` (NÃO `--set-env-vars`) para não apagar variáveis existentes.
+> - `AUTH_URL` deve ser a URL pública do serviço Cloud Run (ou domínio custom). Sem ela, o Auth.js usa o endereço interno do container e o OAuth falha.
+> - Cada deploy deve ter seu próprio `AUTH_SECRET`. Sessões não devem vazar entre pods.
 
 ### 8.3 Disparar deploy
 
@@ -331,6 +332,9 @@ Execute `gcloud auth application-default login --project=SEU_PROJETO`.
 
 ### OAuth: "redirect_uri_mismatch"
 A URI de callback não está cadastrada nas credenciais OAuth. Adicione a URL exata em [GCP Console > Credentials](https://console.cloud.google.com/apis/credentials).
+
+### OAuth: "doesn't comply with Google's OAuth 2.0 policy"
+A env var `AUTH_URL` não está configurada no Cloud Run. Sem ela, o Auth.js constrói o `redirect_uri` usando o endereço interno do container (`0.0.0.0:8080`), causando mismatch com a URL pública. Configure `AUTH_URL=https://SEU_DOMINIO` no serviço Cloud Run.
 
 ### Wizard trava na Fase 1
 Verifique se a **Vertex AI API** está ativada e se o service account tem role `aiplatform.user`.
