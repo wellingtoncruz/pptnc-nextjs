@@ -183,25 +183,31 @@ export async function callGenAI<T>(
         },
       })
 
-      // Consume stream chunks to keep connection alive during model thinking.
+      // Consume stream chunks and accumulate text.
+      // The SDK sends incremental chunks (deltas) — each chunk.text only
+      // contains the NEW text since the last chunk, not the full response.
+      // We must concatenate all chunks to reconstruct the complete response.
       let chunkCount = 0
+      let fullText = ''
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chunk type inferred from stream
       let lastChunk: any
       for await (const chunk of stream) {
         chunkCount++
         lastChunk = chunk
+        const chunkText = chunk.text
+        if (chunkText) fullText += chunkText
         if (chunkCount === 1) {
           log('INFO', 'First stream chunk received', { attempt })
         }
       }
-      log('INFO', `Stream completed (${chunkCount} chunks)`, { attempt })
+      log('INFO', `Stream completed (${chunkCount} chunks)`, { attempt, fullTextLength: fullText.length })
 
-      // Extract response from last chunk (contains accumulated data)
-      const text = lastChunk!.text
+      // Extract metadata from last chunk (finishReason, usageMetadata arrive in the final SSE event)
       const candidate = lastChunk!.candidates?.[0]
       const finishReason = candidate?.finishReason
       const safetyRatings = candidate?.safetyRatings
       const usageMetadata = lastChunk!.usageMetadata
+      const text = fullText || undefined
 
       // Diagnostic logging for every attempt
       log('INFO', `LLM response received (attempt ${attempt}/${MAX_PARSE_RETRIES})`, {
