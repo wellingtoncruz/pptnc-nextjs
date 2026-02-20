@@ -243,10 +243,12 @@ export const PodcastSchema = z.object({
   hostName: z.string().max(200, 'Nome do host deve ter no máximo 200 caracteres').optional(),
   /** YouTube footer text appended to video descriptions. */
   youtubeFooter: z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional(),
-  /** Feature toggles for optional sections (Editorial, News). Defaults to all enabled. */
+  /** Feature toggles for optional sections and sync behavior. */
   features: z.object({
     editorial: z.boolean().default(true),
     news: z.boolean().default(true),
+    /** Include videos generated from livestreams in sync. Default: false (skip lives). */
+    includeLivestreams: z.boolean().default(false),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

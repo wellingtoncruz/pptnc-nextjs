@@ -328,9 +328,11 @@ export async function syncVideos(
   const client = new YouTubeClient(accessToken)
   const newYoutubeVideos = await fetchNewYouTubeVideos(client, podcast.channelId, existingIds)
 
-  // 4. Filter out live broadcasts from new videos
-  const { videos: filteredNewVideos, excludedCount: liveBroadcastsExcluded } =
-    filterLiveBroadcasts(newYoutubeVideos)
+  // 4. Filter out live broadcasts (unless podcast config includes them)
+  const includeLivestreams = podcast.features?.includeLivestreams ?? false
+  const { videos: filteredNewVideos, excludedCount: liveBroadcastsExcluded } = includeLivestreams
+    ? { videos: newYoutubeVideos, excludedCount: 0 }
+    : filterLiveBroadcasts(newYoutubeVideos)
 
   log('INFO', 'New YouTube videos fetched (delta sync)', {
     podcastId,

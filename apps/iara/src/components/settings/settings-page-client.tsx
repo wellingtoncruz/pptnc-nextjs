@@ -181,6 +181,7 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
           <FeaturesSettingsForm features={{
             editorial: podcast.features?.editorial ?? true,
             news: podcast.features?.news ?? true,
+            includeLivestreams: podcast.features?.includeLivestreams ?? false,
           }} />
         </AccordionContent>
       </AccordionItem>

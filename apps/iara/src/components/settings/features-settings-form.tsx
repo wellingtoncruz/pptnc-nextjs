@@ -9,6 +9,7 @@ import { log } from '@/lib/logger'
 interface PodcastFeatures {
   editorial: boolean
   news: boolean
+  includeLivestreams: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -36,14 +37,20 @@ async function updateFeaturesViaApi(features: PodcastFeatures): Promise<void> {
 export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [editorial, setEditorial] = useState(features.editorial)
   const [news, setNews] = useState(features.news)
+  const [includeLivestreams, setIncludeLivestreams] = useState(features.includeLivestreams)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleToggle(key: 'editorial' | 'news', value: boolean) {
-    const updated = { editorial, news, [key]: value }
+  const setters: Record<string, (v: boolean) => void> = {
+    editorial: setEditorial,
+    news: setNews,
+    includeLivestreams: setIncludeLivestreams,
+  }
 
-    if (key === 'editorial') setEditorial(value)
-    else setNews(value)
+  async function handleToggle(key: 'editorial' | 'news' | 'includeLivestreams', value: boolean) {
+    const updated = { editorial, news, includeLivestreams, [key]: value }
+
+    setters[key](value)
 
     setError(null)
     setSaving(true)
@@ -52,8 +59,7 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
       await updateFeaturesViaApi(updated)
     } catch (err) {
       // Revert on failure
-      if (key === 'editorial') setEditorial(!value)
-      else setNews(!value)
+      setters[key](!value)
       const message = err instanceof Error ? err.message : 'Erro ao salvar'
       setError(message)
       log('ERROR', 'Failed to save features', { key, error: message })
@@ -95,6 +101,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-news"
             checked={news}
             onCheckedChange={(value) => handleToggle('news', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-includeLivestreams">Incluir vídeos de lives</Label>
+            <p className="text-xs text-muted-foreground">
+              Incluir na sincronização vídeos gerados a partir de transmissões ao vivo
+            </p>
+          </div>
+          <Switch
+            id="feature-includeLivestreams"
+            checked={includeLivestreams}
+            onCheckedChange={(value) => handleToggle('includeLivestreams', value)}
             disabled={saving}
           />
         </div>

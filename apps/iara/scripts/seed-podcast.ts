@@ -109,6 +109,11 @@ async function seedPodcast() {
     prompts: DEFAULT_PROMPTS,
     personas: DEFAULT_PERSONAS,
     videoTypes: DEFAULT_VIDEO_TYPES,
+    features: {
+      editorial: true,
+      news: true,
+      includeLivestreams: false,
+    },
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   }
