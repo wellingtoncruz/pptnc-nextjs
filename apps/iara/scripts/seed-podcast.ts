@@ -57,6 +57,38 @@ const DEFAULT_VIDEO_TYPES = {
   reel: { minDuration: 0, maxDuration: 179 },
 }
 
+const DEFAULT_PROMPT_FIELD = { description: '', expectedOutput: '' }
+
+const DEFAULT_PROMPTS = {
+  episode: {
+    critique: { ...DEFAULT_PROMPT_FIELD },
+    editing: { ...DEFAULT_PROMPT_FIELD },
+    compliance: { ...DEFAULT_PROMPT_FIELD },
+    chapters: { ...DEFAULT_PROMPT_FIELD },
+    titles: { ...DEFAULT_PROMPT_FIELD },
+    description: { ...DEFAULT_PROMPT_FIELD },
+    tags: { ...DEFAULT_PROMPT_FIELD },
+  },
+  cut: {
+    titles: { ...DEFAULT_PROMPT_FIELD },
+    thumbs: { ...DEFAULT_PROMPT_FIELD },
+    description: { ...DEFAULT_PROMPT_FIELD },
+    tags: { ...DEFAULT_PROMPT_FIELD },
+  },
+  reel: {
+    titles: { ...DEFAULT_PROMPT_FIELD },
+    description: { ...DEFAULT_PROMPT_FIELD },
+    tags: { ...DEFAULT_PROMPT_FIELD },
+  },
+}
+
+const DEFAULT_PERSONA = { role: '', objective: '', resume: '' }
+
+const DEFAULT_PERSONAS = {
+  critic: { ...DEFAULT_PERSONA },
+  writer: { ...DEFAULT_PERSONA },
+}
+
 async function seedPodcast() {
   console.log(`Seeding podcast "${podcastId}" in project ${PROJECT_ID} (db: ${FIRESTORE_DATABASE_ID})`)
 
@@ -73,12 +105,9 @@ async function seedPodcast() {
   const podcastData = {
     name: podcastName,
     channelId,
-    ownerId: 'seed-script', // Will be updated when real user logs in
-    prompts: {
-      episode: 'Você é um assistente especializado em criar metadados para episódios completos de podcast sobre tecnologia e negócios.',
-      cut: 'Você é um assistente especializado em criar metadados para cortes de podcast - trechos de 3-20 minutos extraídos de episódios.',
-      reel: 'Você é um assistente especializado em criar metadados para reels/shorts - vídeos verticais de até 3 minutos.',
-    },
+    ownerId: 'seed-script',
+    prompts: DEFAULT_PROMPTS,
+    personas: DEFAULT_PERSONAS,
     videoTypes: DEFAULT_VIDEO_TYPES,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
