@@ -2217,20 +2217,24 @@ export function WizardOrchestrator({
     const spinnerId = wizard.addSpinner(8, 'Enviando metadados para o YouTube...')
 
     try {
-      // Fetch podcast settings to get youtubeFooter
+      // Fetch podcast settings to get youtubeFooter and podcast name
       let youtubeFooter = ''
+      let podcastName = ''
       try {
         const podcastResponse = await fetch('/api/podcast')
         if (podcastResponse.ok) {
           const podcastData = await podcastResponse.json()
           youtubeFooter = podcastData.data?.youtubeFooter || ''
+          podcastName = podcastData.data?.name || ''
         }
       } catch {
-        // Silently ignore - youtubeFooter is optional
+        // Silently ignore - podcast settings are optional for publish
       }
 
       // Build title with podcast suffix
-      const finalTitle = `${videoData.title} | PPT Não Compila Podcast`
+      const finalTitle = podcastName
+        ? `${videoData.title} | ${podcastName}`
+        : videoData.title
 
       // Build complete description with all sections
       const finalDescription = buildCompleteYouTubeDescription({
