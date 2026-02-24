@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.4 Configuração de Prompts por Tipo de Vídeo — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 2 — Configuração de Podcast</nav><h1>Story 2.4: Configuracao de Prompts por Tipo de Video</h1>
+<p>Status: done</p>
+<hr>
+<h2>Story</h2>
+<p>Como um <strong>usuario</strong>,
+Eu quero configurar prompts diferentes para cada tipo de video,
+Para que a IA gere metadados otimizados para episodios, cortes e reels.</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Visualizacao de Prompts</h3>
+<p><strong>Given</strong> a tela de configuracoes
+<strong>When</strong> o usuario expande a secao &quot;Prompts&quot;
+<strong>Then</strong> ve tres areas de texto:</p>
+<ul>
+<li>Prompt para Episodios</li>
+<li>Prompt para Cortes</li>
+<li>Prompt para Reels</li>
+</ul>
+<h3>AC2: Informacoes do Prompt</h3>
+<p><strong>Given</strong> cada area de prompt
+<strong>When</strong> o usuario visualiza
+<strong>Then</strong> ve o prompt atual (ou placeholder se vazio)
+<strong>And</strong> ve contador de caracteres
+<strong>And</strong> ve dica sobre variaveis disponiveis: <code>{title}</code>, <code>{transcript}</code>, <code>{duration}</code></p>
+<h3>AC3: Auto-Save de Prompts</h3>
+<p><strong>Given</strong> o usuario edita um prompt
+<strong>When</strong> ele modifica o texto
+<strong>Then</strong> o auto-save e acionado apos 1.5s de inatividade
+<strong>And</strong> ve indicador &quot;Salvando...&quot; durante a operacao
+<strong>And</strong> ve indicador &quot;Salvo&quot; apos sucesso</p>
+<h3>AC4: Validacao de Tamanho</h3>
+<p><strong>Given</strong> um prompt muito longo (&gt; 10000 caracteres)
+<strong>When</strong> o usuario tenta salvar
+<strong>Then</strong> ve erro de validacao inline
+<strong>And</strong> a operacao de save e bloqueada</p>
+<h3>AC5: Visualizacao de Duracao</h3>
+<p><strong>Given</strong> a configuracao de duracao por tipo
+<strong>When</strong> o usuario visualiza
+<strong>Then</strong> ve os ranges de duracao para classificacao:</p>
+<ul>
+<li>Episodio: &gt; 20 minutos (1200s)</li>
+<li>Corte: 3-20 minutos (180s - 1199s)</li>
+<li>Reel: &lt; 3 minutos (0s - 179s)
+<strong>And</strong> pode editar os limites de duracao</li>
+</ul>
+<h3>AC6: Validacao de Duracao</h3>
+<p><strong>Given</strong> o usuario edita limites de duracao
+<strong>When</strong> valores invalidos sao inseridos (negativos, sobrepostos)
+<strong>Then</strong> ve erro de validacao inline
+<strong>And</strong> a operacao de save e bloqueada</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Instalar componentes shadcn/ui</strong> (AC: 1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Instalar <code>textarea</code> do shadcn/ui</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Instalar <code>accordion</code> do shadcn/ui (para organizar prompts)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Atualizar schemas</strong> (AC: 4, 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Adicionar validacao de tamanho maximo (10000 chars) em <code>PromptsSchema</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Criar <code>PromptUpdateSchema</code> para updates parciais com validacao</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Criar testes para validacao de tamanho</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 3: Criar PromptEditor component</strong> (AC: 1, 2, 3, 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/components/settings/prompt-editor.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Implementar Textarea com resize vertical</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Implementar contador de caracteres (X / 10000)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Implementar dica de variaveis disponiveis</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Integrar com <code>useAutoSave</code> hook (ja existente)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 Implementar validacao client-side antes de salvar</li>
+<li><input checked="" disabled="" type="checkbox"> 3.7 Criar testes <code>prompt-editor.test.tsx</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 4: Criar PromptsSettingsForm component</strong> (AC: 1, 2, 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/components/settings/prompts-settings-form.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Usar Accordion para organizar os 3 tipos de prompt</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Renderizar 3 PromptEditor (episode, cut, reel)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Labels em PT-BR: &quot;Episodios&quot;, &quot;Cortes&quot;, &quot;Reels&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 4.5 Criar testes <code>prompts-settings-form.test.tsx</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 5: Criar DurationSettingsForm component</strong> (AC: 5, 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Criar <code>src/components/settings/duration-settings-form.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Exibir duracao em segundos na UI (padrao do schema videos)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Inputs para min/max de cada tipo</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Validacao de valores (nao negativos, nao sobrepostos)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Integrar com <code>useAutoSave</code> hook</li>
+<li><input checked="" disabled="" type="checkbox"> 5.6 Criar testes <code>duration-settings-form.test.tsx</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 6: Integrar na pagina de Settings</strong> (AC: 1-6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 Adicionar PromptsSettingsForm em <code>src/app/settings/page.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Adicionar DurationSettingsForm em <code>src/app/settings/page.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Atualizar serialization para incluir prompts e videoTypes</li>
+<li><input checked="" disabled="" type="checkbox"> 6.4 Atualizar loading skeleton (N/A - using SettingsPageClient wrapper)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 7: Atualizar API route</strong> (AC: 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1 Garantir que <code>PATCH /api/podcast</code> aceita <code>prompts</code> e <code>videoTypes</code></li>
+<li><input checked="" disabled="" type="checkbox"> 7.2 Adicionar testes para update de prompts via API</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Estrutura de Arquivos</h3>
+<pre><code>src/
+├── app/
+│   └── settings/
+│       └── page.tsx           # MODIFICAR - Adicionar novos forms
+├── components/
+│   ├── settings/
+│   │   ├── podcast-settings-form.tsx      # EXISTENTE
+│   │   ├── prompts-settings-form.tsx      # CRIAR
+│   │   ├── prompts-settings-form.test.tsx # CRIAR
+│   │   ├── prompt-editor.tsx              # CRIAR
+│   │   ├── prompt-editor.test.tsx         # CRIAR
+│   │   ├── duration-settings-form.tsx     # CRIAR
+│   │   └── duration-settings-form.test.tsx # CRIAR
+│   └── ui/
+│       ├── textarea.tsx       # INSTALAR via shadcn
+│       └── accordion.tsx      # INSTALAR via shadcn
+├── lib/
+│   └── schemas/
+│       └── podcast.ts         # MODIFICAR - Adicionar validacao de tamanho
+</code></pre>
+<h3>Componentes Existentes para Reusar</h3>
+<ol>
+<li><p><strong>useAutoSave hook</strong> (<code>src/hooks/use-auto-save.ts</code>)</p>
+<ul>
+<li>Ja implementado na Story 2-3</li>
+<li>Debounce de 1.5s</li>
+<li>Retorna <code>saveStatus</code>, <code>error</code>, <code>save()</code></li>
+</ul>
+</li>
+<li><p><strong>SaveStatusIndicator</strong> (em <code>podcast-settings-form.tsx</code>)</p>
+<ul>
+<li>Pode ser extraido para componente compartilhado</li>
+<li>Ou replicado nos novos componentes</li>
+</ul>
+</li>
+<li><p><strong>updatePodcastViaApi</strong> (em <code>podcast-settings-form.tsx</code>)</p>
+<ul>
+<li>Funcao ja existente para chamar API</li>
+<li>Pode ser reutilizada ou extraida para lib</li>
+</ul>
+</li>
+</ol>
+<h3>Schema Updates</h3>
+<pre><code class="language-typescript">// src/lib/schemas/podcast.ts
+
+// Atualizar PromptsSchema com validacao de tamanho
+export const PromptsSchema = z.object({
+  episode: z.string().max(10000, &#39;Prompt deve ter no maximo 10000 caracteres&#39;),
+  cut: z.string().max(10000, &#39;Prompt deve ter no maximo 10000 caracteres&#39;),
+  reel: z.string().max(10000, &#39;Prompt deve ter no maximo 10000 caracteres&#39;),
+})
+
+// Schema para update de prompt individual
+export const PromptUpdateSchema = z.object({
+  type: z.enum([&#39;episode&#39;, &#39;cut&#39;, &#39;reel&#39;]),
+  value: z.string().max(10000, &#39;Prompt deve ter no maximo 10000 caracteres&#39;),
+})
+</code></pre>
+<h3>PromptEditor Component Pattern</h3>
+<pre><code class="language-typescript">// src/components/settings/prompt-editor.tsx
+&#39;use client&#39;
+
+import { useState } from &#39;react&#39;
+import { z } from &#39;zod&#39;
+
+import { Textarea } from &#39;@/components/ui/textarea&#39;
+import { Label } from &#39;@/components/ui/label&#39;
+import { useAutoSave } from &#39;@/hooks/use-auto-save&#39;
+import { MAX_PROMPT_LENGTH } from &#39;@/lib/schemas/podcast&#39;
+import { SaveStatusIndicator } from &#39;./save-status-indicator&#39;
+
+const PromptSchema = z.string().max(MAX_PROMPT_LENGTH)
+
+interface PromptEditorProps {
+  type: &#39;episode&#39; | &#39;cut&#39; | &#39;reel&#39;
+  label: string
+  initialValue: string
+  onSave: (value: string) =&gt; Promise&lt;void&gt;
+}
+
+export function PromptEditor({ type, label, initialValue, onSave }: PromptEditorProps) {
+  const [value, setValue] = useState(initialValue)
+  const [validationError, setValidationError] = useState&lt;string | null&gt;(null)
+
+  const { saveStatus, save } = useAutoSave(
+    value,
+    async (val) =&gt; {
+      setValidationError(null)
+      const result = PromptSchema.safeParse(val)
+      if (!result.success) {
+        setValidationError(result.error.issues[0]?.message || &#39;Valor invalido&#39;)
+        // Return early - validation errors are expected, not save failures
+        return
+      }
+      await onSave(val)
+    },
+    1500
+  )
+  // ... render
+}
+</code></pre>
+<h3>Duration Display Pattern</h3>
+<pre><code class="language-typescript">// Duracao em segundos (padrao do schema videos)
+// Sem conversao - valores armazenados e exibidos em segundos
+// episode: minDuration 1200s (sem limite maximo)
+// cut: 180s - 1199s
+// reel: 0s - 179s
+</code></pre>
+<h3>Accordion Pattern</h3>
+<pre><code class="language-typescript">// src/components/settings/prompts-settings-form.tsx
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from &#39;@/components/ui/accordion&#39;
+
+export function PromptsSettingsForm({ prompts, onSavePrompt }) {
+  return (
+    &lt;Card&gt;
+      &lt;CardHeader&gt;
+        &lt;CardTitle&gt;Prompts por Tipo de Video&lt;/CardTitle&gt;
+      &lt;/CardHeader&gt;
+      &lt;CardContent&gt;
+        &lt;Accordion type=&quot;single&quot; collapsible className=&quot;w-full&quot;&gt;
+          &lt;AccordionItem value=&quot;episode&quot;&gt;
+            &lt;AccordionTrigger&gt;Episodios&lt;/AccordionTrigger&gt;
+            &lt;AccordionContent&gt;
+              &lt;PromptEditor type=&quot;episode&quot; label=&quot;Prompt para Episodios&quot; ... /&gt;
+            &lt;/AccordionContent&gt;
+          &lt;/AccordionItem&gt;
+          &lt;AccordionItem value=&quot;cut&quot;&gt;
+            &lt;AccordionTrigger&gt;Cortes&lt;/AccordionTrigger&gt;
+            &lt;AccordionContent&gt;
+              &lt;PromptEditor type=&quot;cut&quot; label=&quot;Prompt para Cortes&quot; ... /&gt;
+            &lt;/AccordionContent&gt;
+          &lt;/AccordionItem&gt;
+          &lt;AccordionItem value=&quot;reel&quot;&gt;
+            &lt;AccordionTrigger&gt;Reels&lt;/AccordionTrigger&gt;
+            &lt;AccordionContent&gt;
+              &lt;PromptEditor type=&quot;reel&quot; label=&quot;Prompt para Reels&quot; ... /&gt;
+            &lt;/AccordionContent&gt;
+          &lt;/AccordionItem&gt;
+        &lt;/Accordion&gt;
+      &lt;/CardContent&gt;
+    &lt;/Card&gt;
+  )
+}
+</code></pre>
+<h3>Enforcement Rules Aplicaveis</h3>
+<ol>
+<li><strong>Rule #2 (Zod Validation)</strong>: Validar prompts com Zod ANTES de salvar</li>
+<li><strong>Rule #4 (Field-Level Updates)</strong>: Usar <code>prompts.episode</code>, <code>prompts.cut</code>, etc.</li>
+<li><strong>Rule #6 (File Naming)</strong>: kebab-case para arquivos</li>
+<li><strong>Rule #9 (Structured Logging)</strong>: Usar <code>log()</code> para erros</li>
+<li><strong>Rule #11 (Import Type)</strong>: Usar <code>import type</code> quando aplicavel</li>
+</ol>
+<h3>Learnings from Story 2-3</h3>
+<ol>
+<li><strong>Serialization</strong>: Timestamps precisam ser convertidos para ISO strings antes de passar para Client Components</li>
+<li><strong>API Route Pattern</strong>: Usar <code>/api/podcast</code> com PATCH para updates</li>
+<li><strong>Zod v4</strong>: Usar <code>err.issues[0]?.message</code> (nao <code>err.errors</code>)</li>
+<li><strong>Test Utils</strong>: Importar de <code>@/test-utils</code>, nao <code>@testing-library/react</code></li>
+<li><strong>act() Warnings</strong>: Envolver operacoes async em <code>act()</code> nos testes</li>
+</ol>
+<hr>
+<h2>References</h2>
+<ul>
+<li>[Source: epics-iara.md#Story 2.4]</li>
+<li>[Source: architecture-iara.md#Data Architecture]</li>
+<li>[Source: project-context-iara.md#Enforcement Rules]</li>
+<li>[Dependency: Story 2-3 (useAutoSave, settings page)]</li>
+<li>[Dependency: Story 2-2 (PodcastSchema, PromptsSchema)]</li>
+</ul>
+<hr>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Schemas: <code>src/lib/schemas/podcast.ts</code></li>
+<li>useAutoSave: <code>src/hooks/use-auto-save.ts</code></li>
+<li>API Route: <code>src/app/api/podcast/route.ts</code></li>
+</ul>
+<h3>Completion Notes List</h3>
+<ol>
+<li><strong>Task 1 (shadcn/ui)</strong>: Installed textarea and accordion components via shadcn CLI</li>
+<li><strong>Task 2 (Schemas)</strong>: Added MAX_PROMPT_LENGTH constant, PromptStringSchema, VideoTypeEnum, and PromptUpdateSchema to podcast.ts with 47 passing tests</li>
+<li><strong>Task 3 (PromptEditor)</strong>: Created component with textarea, character counter, variable hints, auto-save integration, and client-side validation - 12 tests passing</li>
+<li><strong>Task 4 (PromptsSettingsForm)</strong>: Created accordion-based form with 3 PromptEditor instances - 8 tests passing</li>
+<li><strong>Task 5 (DurationSettingsForm)</strong>: Created form with minutes-to-seconds conversion, validation for non-overlapping ranges - 10 tests passing</li>
+<li><strong>Task 6 (Integration)</strong>: Created SettingsPageClient wrapper component that integrates all 3 forms (PodcastSettingsForm, DurationSettingsForm, PromptsSettingsForm) - 5 tests passing</li>
+<li><strong>Task 7 (API)</strong>: Verified PATCH /api/podcast already supports prompts and videoTypes updates, added 3 new tests (prompts update, videoTypes update, prompt max length validation)</li>
+</ol>
+<p><strong>Total: 287 tests passing, build successful</strong></p>
+<h3>File List</h3>
+<p><strong>Arquivos criados:</strong></p>
+<ul>
+<li>src/components/settings/prompt-editor.tsx</li>
+<li>src/components/settings/prompt-editor.test.tsx</li>
+<li>src/components/settings/prompts-settings-form.tsx</li>
+<li>src/components/settings/prompts-settings-form.test.tsx</li>
+<li>src/components/settings/duration-settings-form.tsx</li>
+<li>src/components/settings/duration-settings-form.test.tsx</li>
+<li>src/components/settings/settings-page-client.tsx</li>
+<li>src/components/settings/settings-page-client.test.tsx</li>
+<li>src/components/settings/save-status-indicator.tsx</li>
+<li>src/components/ui/textarea.tsx (via shadcn)</li>
+<li>src/components/ui/accordion.tsx (via shadcn)</li>
+<li>src/proxy.ts (migrado de middleware.ts para Next.js 16)</li>
+<li>src/proxy.test.ts (migrado de middleware.test.ts)</li>
+</ul>
+<p><strong>Arquivos modificados:</strong></p>
+<ul>
+<li>src/lib/schemas/podcast.ts (adicionar validacao de tamanho)</li>
+<li>src/lib/schemas/podcast.test.ts (adicionar testes para prompts)</li>
+<li>src/app/settings/page.tsx (usar SettingsPageClient wrapper)</li>
+<li>src/app/api/podcast/route.test.ts (adicionar testes para prompts e videoTypes)</li>
+<li>src/hooks/use-auto-save.ts (fix: deep comparison com JSON.stringify, fix: error logging)</li>
+<li>src/hooks/use-auto-save.test.ts (atualizar expectativas de teste)</li>
+</ul>
+<p><strong>Arquivos deletados:</strong></p>
+<ul>
+<li>src/middleware.ts (migrado para proxy.ts)</li>
+<li>src/middleware.test.ts (migrado para proxy.test.ts)</li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-01-25: Story criada com status ready-for-dev</li>
+<li>2026-01-25: Story implementada com todos os tasks completos. 287 tests passing, build successful. Status atualizado para done.</li>
+<li>2026-01-25: Code review adversarial executado. 5 issues corrigidas:<ul>
+<li>[HIGH] ESLint error: unescaped entities em page.tsx</li>
+<li>[HIGH] React Hook missing dependency em settings-page-client.tsx</li>
+<li>[MEDIUM] File List atualizado com arquivos faltantes</li>
+<li>[MEDIUM] Import não utilizado removido de prompts-settings-form.test.tsx</li>
+<li>[MEDIUM] SaveStatusIndicator extraído para componente compartilhado (DRY)</li>
+</ul>
+</li>
+<li>2026-01-26: Bug fixes aplicados:<ul>
+<li>[HIGH] Fix: auto-save salvando constantemente (adicionado JSON.stringify para deep comparison)</li>
+<li>[HIGH] Fix: duracao alterada de minutos para segundos (padrao do schema videos)</li>
+<li>[HIGH] Fix: erros de validacao nao devem ser logados como ERROR (usar return ao inves de throw)</li>
+<li>[HIGH] Fix: error logging com objeto Error vazio (usar error.message)</li>
+<li>[HIGH] Migracao: middleware.ts → proxy.ts para Next.js 16</li>
+</ul>
+</li>
+<li>2026-01-26: Code review adversarial #2. 5 issues corrigidas:<ul>
+<li>[HIGH] Task 5.2 atualizado para refletir segundos ao inves de minutos</li>
+<li>[HIGH] Dev Notes codigo atualizado para usar return ao inves de throw</li>
+<li>[HIGH] File List atualizado com arquivos modificados faltantes</li>
+<li>[HIGH] File List atualizado com arquivos deletados (middleware.ts/test.ts)</li>
+<li>[MEDIUM] ESLint warning: variavel nao utilizada removida em use-auto-save.test.ts</li>
+</ul>
+</li>
+</ul>
+
+  </main>
+</body>
+</html>

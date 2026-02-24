@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.0b Entradas de Contexto para Processamento — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 4 — Wizard de Processamento</nav><h1>Story 4.0b: Inputs de Contexto para Processamento</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor de conteúdo</strong>,
+I want <strong>informar contexto adicional sobre o episódio antes do processamento de IA</strong>,
+so that <strong>a IA tenha informações relevantes sobre tema, co-host e convidados para gerar metadados de qualidade</strong>.</p>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Formulário de Contexto para Episodes</h3>
+<ol>
+<li><p><strong>Given</strong> um vídeo do tipo <code>episode</code> selecionado para processamento
+<strong>When</strong> eu clico no botão &quot;Processar&quot; no painel de detalhes
+<strong>Then</strong> um modal/drawer abre solicitando inputs de contexto
+<strong>And</strong> vejo o formulário com os campos:</p>
+<ul>
+<li>Tema geral do Episódio (textarea, obrigatório)</li>
+<li>Seção Co-host (opcional, colapsável)</li>
+<li>Seção Convidados (1-3 obrigatórios)</li>
+</ul>
+</li>
+<li><p><strong>Given</strong> o formulário de contexto aberto
+<strong>When</strong> eu visualizo a seção de Co-host
+<strong>Then</strong> vejo campos para:</p>
+<ul>
+<li>Nome (text input)</li>
+<li>Cargo (text input)</li>
+<li>Empresa (text input)</li>
+<li>LinkedIn URL (text input com validação de URL)
+<strong>And</strong> a seção é opcional (pode ficar vazia)</li>
+</ul>
+</li>
+<li><p><strong>Given</strong> o formulário de contexto aberto
+<strong>When</strong> eu visualizo a seção de Convidados
+<strong>Then</strong> vejo um convidado já expandido com campos:</p>
+<ul>
+<li>Nome (obrigatório)</li>
+<li>Cargo (obrigatório)</li>
+<li>Empresa (obrigatório)</li>
+<li>LinkedIn URL (obrigatório, validação de URL)
+<strong>And</strong> botão &quot;Adicionar convidado&quot; visível (máximo 3)
+<strong>And</strong> pelo menos 1 convidado é obrigatório</li>
+</ul>
+</li>
+<li><p><strong>Given</strong> tenho 1 convidado preenchido
+<strong>When</strong> clico em &quot;Adicionar convidado&quot;
+<strong>Then</strong> novo formulário de convidado aparece (até limite de 3)
+<strong>And</strong> cada convidado pode ser removido (exceto se for o último)</p>
+</li>
+<li><p><strong>Given</strong> formulário com campos obrigatórios não preenchidos
+<strong>When</strong> clico em &quot;Iniciar Processamento&quot;
+<strong>Then</strong> validação inline mostra erros nos campos faltantes
+<strong>And</strong> o processamento NÃO inicia</p>
+</li>
+</ol>
+<h3>AC2: Seleção de Episode Origem para Cut/Reel</h3>
+<ol start="6">
+<li><p><strong>Given</strong> um vídeo do tipo <code>cut</code> ou <code>reel</code> selecionado para processamento
+<strong>When</strong> eu clico no botão &quot;Processar&quot;
+<strong>Then</strong> um modal/drawer abre com seletor de &quot;Episode Origem&quot;
+<strong>And</strong> vejo dropdown com lista de episodes do mesmo podcast
+<strong>And</strong> apenas episodes com contexto definido (campo <code>theme</code> preenchido) aparecem
+<strong>And</strong> seleção é obrigatória</p>
+</li>
+<li><p><strong>Given</strong> o seletor de Episode Origem
+<strong>When</strong> eu seleciono um episode
+<strong>Then</strong> os dados do episode (tema, co-host, convidados) são exibidos como preview
+<strong>And</strong> esses dados serão herdados automaticamente</p>
+</li>
+<li><p><strong>Given</strong> nenhum episode com contexto disponível
+<strong>When</strong> eu tento processar um cut/reel
+<strong>Then</strong> mensagem informa: &quot;Nenhum episódio com contexto disponível. Processe um episódio primeiro.&quot;
+<strong>And</strong> link para a lista de episodes é oferecido</p>
+</li>
+</ol>
+<h3>AC3: Persistência de Contexto</h3>
+<ol start="9">
+<li><p><strong>Given</strong> os inputs de contexto preenchidos corretamente
+<strong>When</strong> eu clico em &quot;Iniciar Processamento&quot;
+<strong>Then</strong> os dados são salvos no documento do vídeo em campos flat (<code>theme</code>, <code>guests</code>, <code>parentEpisodeId</code>)
+<strong>And</strong> o processamento SSE inicia (funcionalidade da próxima story)</p>
+</li>
+<li><p><strong>Given</strong> um episode com contexto já salvo (campo <code>theme</code> definido)
+<strong>When</strong> eu visualizo seus detalhes
+<strong>Then</strong> vejo badge/indicador &quot;Contexto definido&quot;
+<strong>And</strong> posso editar o contexto antes de reprocessar</p>
+</li>
+<li><p><strong>Given</strong> um cut/reel com parentEpisodeId
+<strong>When</strong> os dados são salvos
+<strong>Then</strong> o campo <code>parentEpisodeId</code> (root level) referencia o episode origem
+<strong>And</strong> os dados do episode NÃO são duplicados no cut/reel</p>
+</li>
+</ol>
+<h3>AC4: Schema do Contexto (Legacy Compatible)</h3>
+<ol start="12">
+<li><strong>Given</strong> o schema de Video no Firestore
+<strong>When</strong> contexto é salvo
+<strong>Then</strong> segue a estrutura flat (compatível com portal-web):<pre><code class="language-typescript">// Root level fields (NOT nested in contextInputs)
+theme?: string              // Tema do episódio
+parentEpisodeId?: string    // Para cut/reel - referência ao episode
+guests?: Array&lt;{            // Legacy portal-web structure
+  name: string              // Co-host when present is guests[0]
+  role: string
+  company: string
+  linkedin: string          // Note: &#39;linkedin&#39; not &#39;linkedinUrl&#39;
+  photo?: string
+}&gt;
+</code></pre>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Adicionar Schema de Contexto (Legacy Compatible)</strong> (AC: #12)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>GuestSchema</code> em <code>src/lib/schemas/video.ts</code> (legacy: name, role, company, linkedin, photo)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Criar <code>EpisodeContextFormSchema</code> para validação de formulário UI</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Adicionar campos flat <code>theme</code>, <code>parentEpisodeId</code>, e atualizar <code>guests</code> no <code>VideoSchema</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Criar types em <code>src/types/video.ts</code>: <code>Guest</code>, <code>EpisodeContextFormData</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.5 Escrever testes para validação do schema</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Componente ContextInputsModal</strong> (AC: #1, #2, #3, #4, #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar <code>src/components/processing/context-inputs-modal.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Implementar Dialog/Drawer usando shadcn/ui</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Criar formulário para tema (textarea com validação)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Criar seção Co-host com Accordion colapsável</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5 Criar seção Convidados com lista dinâmica (1-3)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.6 Implementar validação com Zod + react-hook-form</li>
+<li><input checked="" disabled="" type="checkbox"> 2.7 Implementar botão &quot;Adicionar/Remover convidado&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 2.8 Escrever testes para modal e validações</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 3: Componente EpisodeOriginSelector</strong> (AC: #6, #7, #8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/components/processing/episode-origin-selector.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Implementar Select/Combobox com lista de episodes</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Filtrar apenas episodes com contextInputs definidos</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Criar preview dos dados do episode selecionado</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Tratar caso de nenhum episode disponível</li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 Escrever testes para selector</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 4: Integração com VideoDetailPanel</strong> (AC: #9, #10, #11)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Modificar botão &quot;Processar&quot; para abrir modal de contexto</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Detectar tipo do vídeo (episode vs cut/reel) para mostrar formulário correto</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Adicionar badge &quot;Contexto definido&quot; para vídeos com contextInputs</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Criar função para salvar contextInputs no Firestore</li>
+<li><input checked="" disabled="" type="checkbox"> 4.5 Implementar callback onSubmit que salva e inicia processamento</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 5: API e Persistência</strong> (AC: #9, #11)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Usar <code>updateVideoAdmin</code> existente para atualizar contextInputs</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Criar endpoint <code>PUT /api/videos/[videoId]/context</code> para salvar contextInputs</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Implementar <code>getEpisodesWithContext</code> em videos-admin.ts</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Testes cobertos pelos testes de componentes</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Decisões de Implementação</h3>
+<ul>
+<li><strong>Modal vs Drawer</strong>: Usar <code>Dialog</code> do shadcn/ui para formulário de contexto (melhor UX para formulários complexos)</li>
+<li><strong>Validação</strong>: Usar <code>react-hook-form</code> + <code>zod</code> para validação do formulário</li>
+<li><strong>URL de LinkedIn</strong>: Validar formato básico de URL, não precisa validar se é LinkedIn real</li>
+<li><strong>Episode Origem</strong>: Buscar apenas episodes do mesmo <code>podcastId</code> que tenham <code>contextInputs</code> definido</li>
+</ul>
+<h3>Arquitetura de Componentes</h3>
+<pre><code>src/components/processing/
+├── context-inputs-modal.tsx      # Modal principal
+├── context-inputs-form.tsx       # Formulário de episode (tema, co-host, guests)
+├── person-form.tsx               # Formulário reutilizável para co-host/guest
+├── episode-origin-selector.tsx   # Selector para cut/reel
+└── context-inputs-preview.tsx    # Preview dos dados (read-only)
+</code></pre>
+<h3>Schema Zod (referência)</h3>
+<pre><code class="language-typescript">// Legacy-compatible guest schema (portal-web structure)
+const GuestSchema = z.object({
+  name: z.string().min(1, &#39;Nome é obrigatório&#39;),
+  role: z.string().min(1, &#39;Cargo é obrigatório&#39;),
+  company: z.string().min(1, &#39;Empresa é obrigatória&#39;),
+  linkedin: z.string().url(&#39;URL inválida&#39;),  // Note: &#39;linkedin&#39; not &#39;linkedinUrl&#39;
+  photo: z.string().optional(),
+})
+
+// UI form validation schema (not for persistence)
+const EpisodeContextFormSchema = z.object({
+  theme: z.string().min(1, &#39;Tema é obrigatório&#39;),
+  hasCoHost: z.boolean().default(false),
+  coHost: GuestSchema.optional(),
+  guests: z.array(GuestSchema).min(1, &#39;Pelo menos 1 convidado é obrigatório&#39;).max(3),
+})
+
+// On save, coHost is merged into guests[0] and saved flat:
+// - theme: string (root level)
+// - guests: Guest[] (root level, coHost as guests[0] if present)
+// - parentEpisodeId: string (root level, for cuts/reels)
+</code></pre>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ul>
+<li><strong>Rule #4</strong>: Usar <code>updateDoc</code> com fields explícitos para salvar contextInputs</li>
+<li><strong>Rule #8</strong>: Incluir <code>podcastId</code> em queries de episodes</li>
+<li><strong>Rule #2</strong>: Validar com Zod ANTES de persistir</li>
+<li><strong>Rule #9</strong>: Usar structured logging via <code>log()</code></li>
+<li><strong>Rule #17</strong>: Não alterar campos existentes do EpisodeEntity</li>
+</ul>
+<h3>Project Structure Notes</h3>
+<ul>
+<li>Componentes de processing vão em <code>src/components/processing/</code></li>
+<li>Modal usa Dialog do shadcn/ui (já instalado)</li>
+<li>Formulário usa react-hook-form (precisa instalar se não tiver)</li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: epics-iara.md#Story 4.0: Inputs de Contexto para Processamento]</li>
+<li>[Source: architecture-iara.md#Data Architecture]</li>
+<li>[Source: project-context-iara.md#18 Enforcement Rules]</li>
+</ul>
+<h2>Previous Story Learnings</h2>
+<p>Da Story 4.0 (Correções de Navegação e Sync):</p>
+<ul>
+<li><strong>Fix crítico</strong>: Campos adicionados ao schema devem ser incluídos no <code>getVideosForDisplayAdmin</code> summary</li>
+<li><strong>Hooks placement</strong>: Todos os <code>useCallback</code>/<code>useState</code> devem vir ANTES de qualquer return condicional</li>
+<li><strong>Testes passando</strong>: 659 testes no projeto, garantir que novos não quebrem existentes</li>
+<li><strong>toMillis() em testes</strong>: Usar conversão segura de Timestamps, não depender de métodos do Firestore em mocks</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>All 684 tests passing</li>
+<li>Radix UI dialog and select components installed</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>Created GuestSchema matching legacy portal-web structure: <code>{name, role, company, linkedin, photo}</code></li>
+<li>Created EpisodeContextFormSchema for UI form validation only</li>
+<li>Implemented ContextInputsModal with two modes: episode form and cut/reel selector</li>
+<li>Created reusable PersonForm component using <code>linkedin</code> field (not <code>linkedinUrl</code>) for legacy compatibility</li>
+<li>Implemented EpisodeOriginSelector with empty state handling</li>
+<li>Added <code>theme</code>, <code>parentEpisodeId</code>, and updated <code>guests</code> fields at root level of VideoSchema (NOT nested in contextInputs)</li>
+<li>Created API endpoint for context CRUD operations with flat structure</li>
+<li>Added getEpisodesWithContext query function (filters by <code>theme</code> field presence)</li>
+<li>Integrated modal with VideoDetailPanel including &quot;Contexto definido&quot; badge</li>
+<li><strong>REFACTORED</strong>: Changed from nested <code>contextInputs</code> object to flat legacy-compatible structure</li>
+<li>Co-host when present is stored as <code>guests[0]</code> following legacy convention</li>
+<li>All 684 tests passing</li>
+</ul>
+<p><strong>Code Review Fixes (2026-01-27):</strong></p>
+<ul>
+<li>Removed unused <code>VideoUpdate</code> import from context-inputs-modal.tsx</li>
+<li>Added AbortController for fetch cleanup in context-inputs-preview.tsx</li>
+<li>Fixed Zod error check to use <code>instanceof z.ZodError</code> in route.ts</li>
+<li>Improved getFormDefaults edge case handling for empty co-host names</li>
+<li>Updated all story documentation to match legacy-compatible implementation</li>
+</ul>
+<h3>File List</h3>
+<p><strong>Created:</strong></p>
+<ul>
+<li><code>src/components/ui/dialog.tsx</code> - shadcn/ui Dialog component</li>
+<li><code>src/components/ui/select.tsx</code> - shadcn/ui Select component</li>
+<li><code>src/components/processing/index.ts</code> - Processing components barrel export</li>
+<li><code>src/components/processing/context-inputs-modal.tsx</code> - Main modal component</li>
+<li><code>src/components/processing/context-inputs-form.tsx</code> - Episode context form (theme, cohost, guests)</li>
+<li><code>src/components/processing/person-form.tsx</code> - Reusable person form component (uses <code>linkedin</code> field for legacy compat)</li>
+<li><code>src/components/processing/episode-origin-selector.tsx</code> - Cut/reel episode selector</li>
+<li><code>src/components/processing/context-inputs-preview.tsx</code> - Context preview component</li>
+<li><code>src/components/processing/context-inputs-modal.test.tsx</code> - 11 tests</li>
+<li><code>src/app/api/videos/[videoId]/context/route.ts</code> - API route for context CRUD</li>
+</ul>
+<p><strong>Modified:</strong></p>
+<ul>
+<li><code>src/lib/schemas/video.ts</code> - Added GuestSchema (legacy: name, role, company, linkedin, photo), EpisodeContextFormSchema (for UI forms only), theme/parentEpisodeId at root level</li>
+<li><code>src/lib/schemas/video.test.ts</code> - Updated tests for new schemas</li>
+<li><code>src/types/video.ts</code> - Added Guest, EpisodeContextFormData types</li>
+<li><code>src/lib/firebase/videos-admin.ts</code> - Added getEpisodesWithContext function, updated getVideosForDisplayAdmin to include theme/guests</li>
+<li><code>src/components/videos/video-detail-panel.tsx</code> - Integrated ContextInputsModal, added process button and badge</li>
+<li><code>package.json</code> - Added react-hook-form, @hookform/resolvers, @radix-ui/react-dialog, @radix-ui/react-select</li>
+</ul>
+<h3>Legacy Schema Compatibility (REFACTOR)</h3>
+<p>Refactored to use legacy schema structure instead of nested <code>contextInputs</code> object:</p>
+<p><strong>Before (WRONG):</strong></p>
+<pre><code class="language-typescript">contextInputs?: {
+  theme?: string
+  coHost?: Person
+  guests: Person[]
+  parentEpisodeId?: string
+}
+</code></pre>
+<p><strong>After (CORRECT - Legacy compatible):</strong></p>
+<pre><code class="language-typescript">// Root level fields
+theme?: string              // Episode theme
+parentEpisodeId?: string    // For cuts/reels
+guests?: Guest[]            // Legacy structure: {name, role, company, linkedin, photo}
+                           // Co-host when present is guests[0]
+</code></pre>
+<p>The <code>GuestSchema</code> matches the legacy portal-web structure:</p>
+<ul>
+<li><code>name</code>: string (required)</li>
+<li><code>role</code>: string (required)</li>
+<li><code>company</code>: string (required)</li>
+<li><code>linkedin</code>: string URL (required) - note: NOT <code>linkedinUrl</code></li>
+<li><code>photo</code>: string (optional)</li>
+</ul>
+<p>Form uses <code>EpisodeContextFormSchema</code> for UI validation only, then transforms to flat structure on save.</p>
+
+  </main>
+</body>
+</html>

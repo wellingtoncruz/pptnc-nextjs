@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retrospectiva Épico 2 — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 2 — Configuração de Podcast</nav><h1>Retrospective - Epic 2: Configuracao de Podcast</h1>
+<p><strong>Project:</strong> IAra
+<strong>Epic:</strong> 2 - Configuracao de Podcast
+<strong>Date:</strong> 2026-01-26
+<strong>Facilitator:</strong> Bob (Scrum Master)
+<strong>Participants:</strong> Wellington (PO/User), Charlie (Senior Dev), Dana (QA Lead)</p>
+<hr>
+<h2>Executive Summary</h2>
+<p>Epic 2 foi completado tecnicamente (5/5 stories done, 287 testes), mas a retrospectiva identificou um <strong>padrao recorrente critico</strong>: o agente fazendo suposicoes autonomas em vez de escalar duvidas. Este mesmo problema ocorreu no Epic 1 e se repetiu no Epic 2, resultando em retrabalho. Uma nova enforcement rule (#16) foi adicionada ao project-context para prevenir recorrencia.</p>
+<p>Adicionalmente, foram identificadas <strong>divergencias significativas</strong> entre a especificacao e a implementacao de prompts, resultando na criacao da Story 2.6 para correcoes antes do Epic 3.</p>
+<hr>
+<h2>Metrics</h2>
+<table>
+<thead>
+<tr>
+<th>Metrica</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stories Completadas</td>
+<td>6/6 (100%)</td>
+</tr>
+<tr>
+<td>Testes</td>
+<td>329 passando</td>
+</tr>
+<tr>
+<td>Build Status</td>
+<td>Passing</td>
+</tr>
+<tr>
+<td>Lint</td>
+<td>Passing</td>
+</tr>
+<tr>
+<td>Enforcement Rules</td>
+<td>15 → 16 (+1)</td>
+</tr>
+<tr>
+<td>Stories Adicionais</td>
+<td>+1 (Story 2.6)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>What Went Well</h2>
+<h3>1. Autenticacao IAM/GCP Transparente</h3>
+<ul>
+<li>ADC (Application Default Credentials) funcionou sem friccao</li>
+<li>Scripts de migracao conectaram ao Firestore sem configuracao adicional</li>
+<li>Zero secrets em variaveis de ambiente</li>
+<li>Decisao arquitetural do Epic 1 pagou dividendos</li>
+</ul>
+<h3>2. Migracao de Dados Robusta</h3>
+<ul>
+<li>2293 documentos principais migrados</li>
+<li>8510 chunks de subcollections migrados</li>
+<li>Script idempotente (pode ser executado multiplas vezes)</li>
+<li>Relatorio estruturado de migracao</li>
+</ul>
+<h3>3. Code Review Adversarial</h3>
+<ul>
+<li>Encontrou issues reais em todas as stories</li>
+<li>Auto-save salvando constantemente → fix com JSON.stringify</li>
+<li>Unidades de tempo incorretas → padronizado em segundos</li>
+<li>Next.js 16 middleware deprecation → migrado para proxy.ts</li>
+</ul>
+<h3>4. Cobertura de Testes</h3>
+<ul>
+<li>287 testes ao final do epic</li>
+<li>Testes co-localizados com arquivos fonte</li>
+<li>Fake timers para hooks de auto-save</li>
+</ul>
+<hr>
+<h2>What Didn&#39;t Go Well</h2>
+<h3>1. CRITICO: Agente Assumindo Sem Perguntar (RECORRENTE)</h3>
+<p><strong>Epic 1:</strong></p>
+<ul>
+<li>Arquitetura especificava: <code>podcasts/{podcastId}/users/{userId}/tokens/oauth</code></li>
+<li>Agente implementou: <code>users/{userId}/tokens</code> (diferente)</li>
+<li>Justificativa: &quot;documentacao nao era precisa&quot;</li>
+<li>Custo: Retrabalho de Story 1.5 completa</li>
+</ul>
+<p><strong>Epic 2:</strong></p>
+<ul>
+<li>Documentacao nao especificava unidade de tempo</li>
+<li>Agente assumiu minutos em vez de segundos</li>
+<li>Descoberto no code review</li>
+<li>Custo: Refatoracao de UI e testes</li>
+</ul>
+<p><strong>Nesta Retrospectiva:</strong></p>
+<ul>
+<li>Workflow especificava interacao com usuario</li>
+<li>Agente gerou documento sozinho sem perguntar</li>
+<li>Descoberto pelo usuario</li>
+</ul>
+<p><strong>Root Cause:</strong> Agente trata ambiguidade como licenca para decidir autonomamente, em vez de escalar a duvida.</p>
+<h3>2. Divergencia Arquitetural de Prompts</h3>
+<p><strong>Especificado:</strong> Multiplos prompts por tipo de video</p>
+<ul>
+<li>Episode: critica, edicao, compliance, titulos, descricao, tags</li>
+<li>Cut: titulo, thumbs, descricao, tags</li>
+<li>Reel: titulo, descricao, tags</li>
+<li>Cada prompt com: description + expectedOutput</li>
+</ul>
+<p><strong>Implementado:</strong> 1 prompt generico por tipo</p>
+<pre><code class="language-typescript">prompts: { episode: string, cut: string, reel: string }
+</code></pre>
+<p><strong>Ausente:</strong> Personas (critic, writer) com role, objective, resume</p>
+<p><strong>Custo:</strong> Story 2.6 criada para correcoes</p>
+<h3>3. Bug de Autenticacao (RESOLVIDO)</h3>
+<p><strong>Problema Original:</strong> Login/logoff cria novo usuario ao inves de atualizar existente</p>
+<p><strong>Root Cause Descoberto:</strong> O <code>token.sub</code> do Auth.js v5 (sem database adapter) e um UUID gerado pelo framework que muda a cada sessao - NAO e o Google User ID.</p>
+<p><strong>Solucao Final:</strong> Usar <code>account.providerAccountId</code> (Google User ID estavel) como identificador do usuario, nao <code>token.sub</code>.</p>
+<p><strong>Correcao em <code>src/lib/auth.ts</code>:</strong></p>
+<pre><code class="language-typescript">// ANTES (bugado):
+const userId = token.sub // UUID que muda a cada login
+
+// DEPOIS (correto):
+const userId = account.providerAccountId // Google ID - imutavel
+</code></pre>
+<hr>
+<h2>Action Items Implementados</h2>
+<h3>Rule #16 Adicionada ao project-context-iara.md</h3>
+<pre><code class="language-markdown">16. **Escalar Ambiguidade** — Se documentacao nao especifica algo explicitamente
+    (unidades, formatos, paths, convencoes), PERGUNTAR ao usuario ANTES de implementar.
+    NUNCA assumir. NUNCA justificar com &quot;documentacao nao era precisa&quot;
+</code></pre>
+<h3>Story 2.6 Criada</h3>
+<p><strong>Arquivo:</strong> <code>2-6-correcoes-schema-podcast-e-autenticacao.md</code></p>
+<p><strong>Escopo:</strong></p>
+<ol>
+<li>Fix bug de usuario duplicado + persistir nome/avatar</li>
+<li>Novo schema de prompts (multiplos por tipo)</li>
+<li>Novo schema de personas (critic, writer)</li>
+<li>UI de prompts e personas atualizada</li>
+<li>Script de atualizacao do Firestore</li>
+</ol>
+<h3>Epic 4 Atualizado</h3>
+<p><strong>Arquivo:</strong> <code>epics-iara.md</code></p>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Story 4.0: Inputs de Contexto para Processamento<ul>
+<li>Episode requer: tema, co-host (opcional), convidados (1-3)</li>
+<li>Cut/Reel requerem: selecao de episode origem</li>
+<li>Heranca automatica de metadados do episode pai</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Lessons Learned</h2>
+<h3>LL1: Enforcement Rules Sao Criticas (REFORCO)</h3>
+<blockquote>
+<p>Action items de retrospectiva NAO sao suficientes. Se o comportamento deve ser obrigatorio, DEVE estar nas enforcement rules do project-context. O agente le as rules a cada sessao.</p>
+</blockquote>
+<h3>LL2: Perguntar NAO e Fraqueza</h3>
+<blockquote>
+<p>Escalar duvidas antes de implementar NAO e sinal de incompetencia. E o comportamento correto que previne retrabalho exponencial. Divergencia silenciosa causa mais dano que uma pergunta.</p>
+</blockquote>
+<h3>LL3: Retrospectivas Devem Ser Interativas</h3>
+<blockquote>
+<p>O workflow de retrospectiva especifica interacao com o usuario. Gerar documentos unilateralmente ignora insights valiosos e viola o proposito do processo.</p>
+</blockquote>
+<h3>LL4: Validar Especificacao vs Implementacao</h3>
+<blockquote>
+<p>Mesmo com stories detalhadas, divergencias acontecem. Code reviews devem verificar nao apenas qualidade do codigo, mas aderencia a especificacao.</p>
+</blockquote>
+<h3>LL5: Auth.js v5 token.sub NAO e Estavel Sem Adapter</h3>
+<blockquote>
+<p>Sem um database adapter, o Auth.js v5 gera UUIDs internos para <code>token.sub</code> a cada sessao. Para identificadores estaveis de usuarios externos (Google, etc), usar <code>account.providerAccountId</code>.</p>
+</blockquote>
+<hr>
+<h2>Preparacao para Epic 3</h2>
+<h3>Dependencias Resolvidas</h3>
+<ul>
+<li>✅ Subcollection <code>podcasts/{podcastId}/videos</code> (Story 2-0)</li>
+<li>✅ Schemas de Podcast e VideoTypes (Story 2-1)</li>
+<li>✅ Operacoes CRUD de podcast (Story 2-2)</li>
+<li>✅ Schema de prompts e personas (Story 2-6 - COMPLETA)</li>
+<li>✅ Bug de autenticacao corrigido (providerAccountId)</li>
+</ul>
+<h3>Bloqueador</h3>
+<p><del>Story 2.6 deve ser completada antes de iniciar Epic 3</del> - <strong>RESOLVIDO</strong></p>
+<p>Epic 2 esta 100% completo. Pronto para iniciar Epic 3.</p>
+<h3>Stories do Epic 3</h3>
+<ul>
+<li>3-1: Schema e types do video</li>
+<li>3-2: Integracao YouTube Data API</li>
+<li>3-3: Persistencia de videos no Firestore</li>
+<li>3-4: Layout master-detail</li>
+<li>3-5: Componente VideoListItem</li>
+</ul>
+<hr>
+<h2>Sign-off</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Problemas identificados e documentados</li>
+<li><input checked="" disabled="" type="checkbox"> Action items implementados (Rule #16, Story 2.6)</li>
+<li><input checked="" disabled="" type="checkbox"> Lessons learned capturadas</li>
+<li><input checked="" disabled="" type="checkbox"> Documentacao do Epic 4 atualizada</li>
+<li><input checked="" disabled="" type="checkbox"> Bloqueador para Epic 3 identificado</li>
+</ul>
+<p><strong>Status:</strong> Complete
+<strong>Proximo Passo:</strong> Iniciar Epic 3 - Deteccao de Videos</p>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-01-26: Retrospectiva conduzida de forma interativa com Wellington</li>
+<li>2026-01-26: Rule #16 adicionada ao project-context</li>
+<li>2026-01-26: Story 2.6 criada para correcoes</li>
+<li>2026-01-26: Epic 4 atualizado com Story 4.0 e inputs de contexto</li>
+</ul>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11.2 Reabrir Episódio para Edição — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 11 — Melhorias v2.1.0</nav><h1>Story 11.2: Reabrir Episódio para Edição</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor de conteúdo</strong>,
+I want <strong>reabrir manualmente um vídeo já enviado (status <code>sent</code>) para editar seus metadados</strong>,
+so that <strong>eu possa corrigir erros ou atualizar informações sem depender do sync automático</strong>.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1 - AlertDialog ao clicar em vídeo sent</strong>: Given um vídeo com status <code>sent</code> na lista, When o produtor clica nele, Then exibe AlertDialog com título &quot;Deseja reabrir esse vídeo para edição dos metadados?&quot; e feedback visual &quot;Para o vídeo ser reaberto, é necessário que ele esteja como Privado, Rascunho ou Não listado no YouTube&quot;.</p>
+</li>
+<li><p><strong>AC2 - Verificação YouTube API e reopen bem-sucedido</strong>: Given o produtor confirma no AlertDialog, When o sistema verifica via YouTube Data API v3 e o vídeo tem <code>privacyStatus: private</code> (sem <code>publishAt</code>) ou <code>privacyStatus: unlisted</code>, Then o status muda de <code>sent</code> para <code>draft</code> via <code>transition(status, &#39;reopen&#39;)</code>, a lista de vídeos é atualizada, e toast mostra &quot;Vídeo reaberto para edição&quot;.</p>
+</li>
+<li><p><strong>AC3 - Bloqueio para vídeo público</strong>: Given o vídeo no YouTube com <code>privacyStatus: public</code>, When a verificação completa, Then exibe mensagem de erro dentro do AlertDialog: &quot;O vídeo não está com o status adequado no YouTube. Não é possível reabrir. Altere o vídeo para Não Listado.&quot;</p>
+</li>
+<li><p><strong>AC4 - Bloqueio para vídeo programado</strong>: Given o vídeo no YouTube com <code>privacyStatus: private</code> E <code>publishAt</code> preenchido (agendado/programado), When a verificação completa, Then exibe a mesma mensagem de erro (vídeo programado não pode ser reaberto).</p>
+</li>
+<li><p><strong>AC5 - Erro na chamada YouTube API</strong>: Given erro na chamada à YouTube API, When a verificação falha, Then exibe mensagem de erro no AlertDialog: &quot;Erro ao verificar status do vídeo no YouTube. Tente novamente.&quot; e erro logado via structured logging.</p>
+</li>
+<li><p><strong>AC6 - Loading state</strong>: Given o produtor confirma no AlertDialog, When a verificação YouTube está em andamento, Then o botão de confirmar mostra loading state (spinner) e fica desabilitado.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar Route Handler <code>POST /api/videos/[videoId]/reopen</code> (AC: #2, #3, #4, #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>src/app/api/videos/[videoId]/reopen/route.ts</code> seguindo o padrão existente</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Autenticar sessão via <code>auth()</code> (padrão do projeto)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Buscar vídeo no Firestore e validar que status atual é <code>sent</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Obter token YouTube via <code>getUserTokensWithExpiry()</code> e criar <code>YouTubeClient</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.5 Chamar YouTube API <code>videos.list?part=status&amp;id={videoId}</code> via <code>checkVideoEligibility()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.6 Validar elegibilidade: <code>private</code> (sem <code>publishAt</code>) ou <code>unlisted</code> → OK; <code>public</code> ou <code>private</code> com <code>publishAt</code> → BLOQUEIA</li>
+<li><input checked="" disabled="" type="checkbox"> 1.7 Se elegível: <code>transition(&#39;sent&#39;, &#39;reopen&#39;)</code> → <code>updateVideoAdmin(PODCAST_ID, videoId, { status: &#39;draft&#39;, youtubePrivacyStatus, visibilityUpdatedAt: FieldValue.serverTimestamp() })</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.8 Retornar response padronizada: <code>{ data: { videoId, status: &#39;draft&#39; } }</code> ou <code>{ error: { code, message } }</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.9 Structured logging para todas as operações</li>
+<li><input checked="" disabled="" type="checkbox"> 1.10 18 testes escritos (auth, validation, tokens, eligibility, YouTube errors)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Modificar <code>video-list-item.tsx</code> para permitir click em vídeos <code>sent</code> (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Remover bloqueio de click para vídeos <code>sent</code> (removido <code>isDisabled = isSent</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Ao clicar em vídeo <code>sent</code>, chama <code>onReopenRequest</code> em vez de <code>onSelect</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Visual de vídeo <code>sent</code> com <code>opacity-60</code> e <code>cursor-pointer</code> (sem <code>cursor-not-allowed</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Removido hover overlay &quot;Vídeo já publicado&quot; e função <code>getBlockedMessage()</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar componente <code>ReopenVideoDialog</code> (AC: #1, #2, #3, #4, #5, #6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criado <code>src/components/videos/reopen-video-dialog.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 AlertDialog com título, descrição explicativa e botões Cancelar/Verificar e Reabrir</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Loading state com spinner no botão durante chamada API</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Mensagem de erro exibida DENTRO do AlertDialog via Alert variant=&quot;destructive&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Após sucesso: fechar dialog e disparar onSuccess (sem toast — projeto não usa toast lib)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 9 testes escritos (render, success, error states, network failure, state reset)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Integrar no fluxo de seleção de vídeos (AC: #1, #2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Integrado <code>ReopenVideoDialog</code> no <code>video-list-panel.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Após reopen, <code>onVideoReopened</code> chama <code>refresh()</code> para recarregar lista</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Lista atualiza via refetch (não otimista)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Testes de keyboard navigation atualizados (sent videos não são mais pulados)</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+Task 5: Testes de integração e regressão (AC: todos)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 212 testes passando nos 7 arquivos relacionados (26 falhas pre-existentes não relacionadas)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Reopen automático via sync não foi tocado — sem regressão</li>
+<li><input disabled="" type="checkbox"> 5.3 Teste manual pendente: clicar em vídeo sent → AlertDialog → confirmar → vídeo volta a draft</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>DESCOBERTA CRÍTICA: Reopen já parcialmente implementado</h3>
+<p>A transição <code>sent → draft</code> via ação <code>reopen</code> <strong>já existe</strong> na state machine e é usada pelo sync automático:</p>
+<ul>
+<li><strong>State machine</strong> (<code>transitions.ts:21</code>): <code>sent: { reopen: &#39;draft&#39; }</code> ✅ Já implementado</li>
+<li><strong>VideoAction type</strong> (<code>types.ts:28</code>): <code>&#39;reopen&#39;</code> ✅ Já no type</li>
+<li><strong>Sync automático</strong> (<code>sync-videos.ts:443-476</code>): Detecta mudança de privacyStatus durante sync e faz <code>transition(&#39;sent&#39;, &#39;reopen&#39;)</code> ✅ Já funciona</li>
+<li><strong>Testes da state machine</strong> (<code>transitions.test.ts:248-264</code>): Testes para reopen flow ✅ Já existem</li>
+</ul>
+<p><strong>O que FALTA (escopo desta story)</strong>: Interface manual para o produtor reabrir sem depender do sync.</p>
+<h3>Comportamento atual de vídeos <code>sent</code></h3>
+<p>No <code>video-list-item.tsx</code> (linhas 74-78, 51-56):</p>
+<pre><code class="language-typescript">const isSent = video.status === &#39;sent&#39;
+const isDisabled = isSent // BLOQUEIA click
+
+// Mensagem do hover overlay:
+// title: &#39;Vídeo já publicado&#39;
+// description: &#39;Para trabalhar nesse vídeo, torne ele Privado ou Não Listado no YouTube.&#39;
+</code></pre>
+<p><strong>Mudança necessária</strong>: Remover o bloqueio e substituir pelo AlertDialog de reopen.</p>
+<h3>YouTube API - Verificação de Status</h3>
+<p>O <code>YouTubeClient.getVideoDetails()</code> já busca <code>part=status</code> e retorna <code>privacyStatus</code>. Porém <strong>NÃO retorna <code>publishAt</code></strong> (campo de agendamento). Opções:</p>
+<ol>
+<li><strong>Criar método dedicado</strong> <code>checkVideoEligibility(videoId)</code> no <code>YouTubeClient</code> que retorna <code>{ privacyStatus, publishAt?: string, eligible: boolean }</code> — <strong>RECOMENDADO</strong></li>
+<li>Estender <code>getVideoDetails</code> para incluir <code>publishAt</code> no mapeamento</li>
+</ol>
+<p>O campo <code>publishAt</code> está em <code>item.status.publishAt</code> na response da YouTube Data API quando <code>part=status</code> é incluído. O <code>getVideoDetails</code> já pede <code>part=snippet,contentDetails,status,liveStreamingDetails</code> (client.ts:328), então os dados já vêm na response — só falta extraí-los no mapeamento.</p>
+<p><strong>Importante</strong>: O sync automático (<code>sync-videos.ts:466-467</code>) atualiza os campos <code>youtubePrivacyStatus</code> e <code>visibilityUpdatedAt</code> ao fazer reopen. O Route Handler manual DEVE atualizar os mesmos campos para manter consistência.</p>
+<h3>AlertDialog Pattern do Projeto</h3>
+<p>Referência: <code>src/components/settings/resync-section.tsx</code> (linhas 10-19, 97-155)</p>
+<pre><code class="language-typescript">const [isDialogOpen, setIsDialogOpen] = useState(false)
+// AlertDialog com controlled open/onOpenChange
+// Botões: AlertDialogCancel + AlertDialogAction
+</code></pre>
+<h3>Fluxo de erro dentro do AlertDialog</h3>
+<p>Diferente do pattern existente que fecha o dialog antes de agir, aqui o dialog deve <strong>permanecer aberto</strong> durante a verificação e mostrar erro inline se necessário:</p>
+<pre><code class="language-typescript">const [error, setError] = useState&lt;string | null&gt;(null)
+const [isLoading, setIsLoading] = useState(false)
+
+// No AlertDialog: {error &amp;&amp; &lt;Alert variant=&quot;destructive&quot;&gt;{error}&lt;/Alert&gt;}
+</code></pre>
+<h3>Toast Pattern</h3>
+<p>O projeto usa toasts do shadcn/ui. Verificar o padrão existente para mensagens de sucesso.</p>
+<h3>Project Structure Notes</h3>
+<ul>
+<li>Source code: <code>/home/wellington/Documentos/PPTNC/pptnc/apps/iara/src/</code></li>
+<li>Testes co-localizados (ex: <code>transitions.test.ts</code> ao lado de <code>transitions.ts</code>)</li>
+<li>Route Handlers em <code>src/app/api/videos/[videoId]/</code></li>
+<li>Componentes de vídeo em <code>src/components/videos/</code></li>
+<li>YouTube client em <code>src/lib/youtube/client.ts</code></li>
+<li>State machine em <code>src/lib/video-state-machine/</code></li>
+<li>API utilities em <code>src/lib/api/video-field-handler.ts</code></li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ol>
+<li>✅ Usar <code>transition()</code> para mudança de <code>VideoStatus</code> — NUNCA atribuir direto</li>
+<li>✅ Validar dados externos com Zod antes de persistir</li>
+<li>✅ <code>export const runtime = &#39;nodejs&#39;</code> em todos os Route Handlers</li>
+<li>✅ <code>updateDoc</code> com fields explícitos — NUNCA <code>setDoc</code> sem merge</li>
+<li>✅ Structured logging via <code>log()</code> — NUNCA <code>console.log</code></li>
+<li>✅ <code>podcastId</code> em todas as queries Firestore</li>
+<li>✅ Testes co-localizados com pattern <code>it(&#39;verb + behavior&#39;)</code></li>
+<li>✅ <code>FieldValue.serverTimestamp()</code> em Route Handlers (admin SDK)</li>
+</ol>
+<h3>References</h3>
+<ul>
+<li>[Source: architecture-iara.md#State-Machine] — Definição da state machine</li>
+<li>[Source: architecture-iara.md#Route-Handlers] — Template de Route Handler</li>
+<li>[Source: architecture-iara.md#Enforcement-Rules] — 18 regras obrigatórias</li>
+<li>[Source: epic-11-melhorias-v2.1.0.md#Story-11-2] — Acceptance criteria originais</li>
+<li>[Source: pptnc/apps/iara/src/lib/video-state-machine/transitions.ts] — State machine (reopen já existe)</li>
+<li>[Source: pptnc/apps/iara/src/lib/youtube/client.ts:321-344] — getVideoDetails com privacyStatus</li>
+<li>[Source: pptnc/apps/iara/src/components/videos/video-list-item.tsx:74-78] — Bloqueio atual de vídeos sent</li>
+<li>[Source: pptnc/apps/iara/src/lib/sync/sync-videos.ts:443-476] — Reopen automático no sync</li>
+<li>[Source: pptnc/apps/iara/src/components/settings/resync-section.tsx] — AlertDialog pattern</li>
+<li>[Source: pptnc/apps/iara/src/lib/api/video-field-handler.ts] — Error handling utilities</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6</p>
+<h3>Debug Log References</h3>
+<p>N/A</p>
+<h3>Completion Notes List</h3>
+<ol>
+<li>Added <code>publishAt</code> field to <code>YouTubeStatusSchema</code> in youtube-api.ts</li>
+<li>Created <code>YouTubeVideoStatusCheckResponseSchema</code> for lightweight status-only queries</li>
+<li>Added <code>VideoEligibilityResult</code> interface and <code>checkVideoEligibility()</code> method to <code>YouTubeClient</code></li>
+<li>Created Route Handler <code>POST /api/videos/[videoId]/reopen</code> with full auth, token refresh, YouTube verification, and state machine transition</li>
+<li>Created <code>ReopenVideoDialog</code> component with AlertDialog, loading state, inline error display</li>
+<li>Modified <code>video-list-item.tsx</code>: sent videos are now clickable and trigger <code>onReopenRequest</code> callback</li>
+<li>Modified <code>video-list-panel.tsx</code>: integrated <code>ReopenVideoDialog</code>, added <code>onVideoReopened</code> prop</li>
+<li>Modified <code>videos-layout.tsx</code>: passes <code>refresh</code> as <code>onVideoReopened</code> to refresh list after reopen</li>
+<li>Updated keyboard navigation: sent videos trigger reopen dialog on ArrowUp/ArrowDown (matching click behavior)</li>
+<li>Toast was not implemented (sonner not installed in project) — success feedback is the video appearing as <code>draft</code> in the refreshed list. AC2 toast is an intentional deviation.</li>
+<li>All 212 tests pass across 7 related test files (18 new tests for route handler, 9 new tests for dialog)</li>
+<li>26 pre-existing test failures unrelated to this story (SessionProvider, batch size, etc.)</li>
+</ol>
+<h3>Code Review (AI) - 2026-02-07</h3>
+<p><strong>Reviewer:</strong> Claude Opus 4.6 (adversarial code review)</p>
+<p><strong>Issues Found:</strong> 1 High, 3 Medium, 2 Low</p>
+<p><strong>Fixes Applied:</strong></p>
+<ol>
+<li><strong>[H1] FIXED</strong> — Keyboard navigation (ArrowUp/ArrowDown) was selecting sent videos via URL instead of opening reopen dialog. Fixed <code>handleKeyDown</code> in <code>video-list-panel.tsx</code> to call <code>handleReopenRequest()</code> for sent videos. Updated 4 keyboard nav tests.</li>
+<li><strong>[M1] FIXED</strong> — Stale comment in <code>handleKeyDown</code> said &quot;skips disabled videos: sent&quot; — updated to reflect new behavior.</li>
+<li><strong>[M2] DOCUMENTED</strong> — AC2 specifies toast &quot;Vídeo reaberto para edição&quot; but sonner is not installed. Documented as intentional deviation.</li>
+<li><strong>[M3] FIXED</strong> — <code>reopen-video-dialog.test.tsx</code> imported from <code>@testing-library/react</code> instead of <code>@/test-utils</code>. Fixed to follow project convention.</li>
+<li><strong>[L1] FIXED</strong> — Task 5 was marked <code>[x]</code> but subtask 5.3 (manual test) was <code>[ ]</code>. Corrected to <code>[ ]</code>.</li>
+<li><strong>[L2] VERIFIED</strong> — <code>aria-selected</code> for sent videos is consistent after H1 fix (keyboard no longer selects sent videos).</li>
+</ol>
+<h3>File List</h3>
+<p><strong>New files:</strong></p>
+<ul>
+<li><code>src/app/api/videos/[videoId]/reopen/route.ts</code> — Route handler for POST reopen</li>
+<li><code>src/app/api/videos/[videoId]/reopen/route.test.ts</code> — 18 tests for route handler</li>
+<li><code>src/components/videos/reopen-video-dialog.tsx</code> — AlertDialog component</li>
+<li><code>src/components/videos/reopen-video-dialog.test.tsx</code> — 9 tests for dialog</li>
+</ul>
+<p><strong>Modified files:</strong></p>
+<ul>
+<li><code>src/lib/schemas/youtube-api.ts</code> — Added <code>publishAt</code> to status schema, new <code>YouTubeVideoStatusCheckResponseSchema</code></li>
+<li><code>src/lib/youtube/client.ts</code> — Added <code>VideoEligibilityResult</code> interface, <code>checkVideoEligibility()</code> method</li>
+<li><code>src/lib/youtube/index.ts</code> — Export new type</li>
+<li><code>src/components/videos/video-list-item.tsx</code> — Sent videos clickable, <code>onReopenRequest</code> callback</li>
+<li><code>src/components/videos/video-list-item.test.tsx</code> — Updated tests for new sent behavior</li>
+<li><code>src/components/videos/video-list-panel.tsx</code> — Integrated <code>ReopenVideoDialog</code>, <code>onVideoReopened</code> prop</li>
+<li><code>src/components/videos/video-list-panel.test.tsx</code> — Updated keyboard nav tests</li>
+<li><code>src/app/videos/videos-layout.tsx</code> — Added <code>onVideoReopened={refresh}</code></li>
+</ul>
+
+  </main>
+</body>
+</html>

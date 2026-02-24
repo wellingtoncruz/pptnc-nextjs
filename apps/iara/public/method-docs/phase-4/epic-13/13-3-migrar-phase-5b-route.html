@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13.3 Migrar Rota da Fase 5B — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 13 — Hardening v2.2.0</nav><h1>Story 13.3: Refatorar Phase 5B route — eliminar SDK duplicado</h1>
+<p>Status: done</p>
+<hr>
+<h2>Story</h2>
+<p>Como <strong>tech lead do IAra</strong>,
+Eu quero refatorar a route <code>phase/5b/route.ts</code> para usar a infraestrutura compartilhada do <code>client.ts</code>,
+Para que a dependência do SDK <code>@google-cloud/vertexai</code> seja eliminada da route e o código LLM fique centralizado.</p>
+<hr>
+<h2>Contexto</h2>
+<h3>Situação Atual</h3>
+<ul>
+<li><code>src/app/api/wizard/phase/5b/route.ts</code> é a ÚNICA route que importa <code>@google-cloud/vertexai</code> diretamente</li>
+<li>Duplica init do SDK: <code>new VertexAI({ project, location })</code> + <code>getGenerativeModel()</code></li>
+<li>Duplica <code>readFileAsBase64()</code> (já existe em <code>client.ts</code>)</li>
+<li>Usa <code>model.generateContent()</code> (unary, não streaming) — sem retry automático</li>
+<li>Implementa timeout via <code>Promise.race</code> manual</li>
+<li>Phase 5B é exclusiva para vídeos do tipo <code>cut</code> — gera <code>shortTitles</code> para thumbnails</li>
+<li>Prompt building usa <code>podcast.prompt.cut.thumbs</code> (lógica específica, não genérica)</li>
+</ul>
+<h3>Abordagem</h3>
+<p>Exportar <code>callGenAI</code> do <code>client.ts</code> como função de baixo nível. A route 5B mantém sua própria lógica de prompt building (é específica de cut/thumbs) mas delega a chamada LLM para <code>callGenAI</code>, que já oferece:</p>
+<ul>
+<li>Streaming (mantém conexão ativa durante thinking)</li>
+<li>Retry automático para PARSE_ERROR (3 tentativas)</li>
+<li>thinkingConfig tipado</li>
+<li>Extração de usage metadata</li>
+<li>Logging de diagnóstico</li>
+</ul>
+<p>Isso elimina:</p>
+<ul>
+<li>Import de <code>@google-cloud/vertexai</code> na route</li>
+<li>Função <code>getModel()</code> duplicada</li>
+<li>Função <code>readFileAsBase64()</code> duplicada</li>
+<li>Timeout manual via <code>Promise.race</code></li>
+<li>Constantes <code>DEFAULT_MODEL</code>, <code>PHASE_5B_TIMEOUT</code> duplicadas</li>
+</ul>
+<h3>Arquivos Envolvidos</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Mudança</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/llm/client.ts</code></td>
+<td><strong>Minor</strong> — Exportar <code>callGenAI</code></td>
+</tr>
+<tr>
+<td><code>src/lib/llm/index.ts</code></td>
+<td><strong>Minor</strong> — Re-exportar <code>callGenAI</code></td>
+</tr>
+<tr>
+<td><code>src/app/api/wizard/phase/5b/route.ts</code></td>
+<td><strong>Major</strong> — Refatorar para usar <code>callGenAI</code></td>
+</tr>
+</tbody></table>
+<p><strong>NOTA</strong>: Testes NÃO são modificados nesta story (será Story 13.4).</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: SDK deprecated removido da route</h3>
+<p><strong>Given</strong> o arquivo <code>route.ts</code> de Phase 5B
+<strong>When</strong> o dev revisa os imports
+<strong>Then</strong> não existe nenhum import de <code>@google-cloud/vertexai</code>
+<strong>And</strong> não existe <code>VertexAI</code>, <code>GenerativeModel</code>, nem <code>Part</code> no arquivo
+<strong>And</strong> não existe <code>getModel()</code> nem <code>readFileAsBase64()</code> no arquivo</p>
+<h3>AC2: callGenAI exportado e usado</h3>
+<p><strong>Given</strong> a function <code>callGenAI</code> em <code>client.ts</code>
+<strong>When</strong> a route 5B faz uma chamada LLM
+<strong>Then</strong> usa <code>callGenAI&lt;Phase5BResponse&gt;(systemPrompt, userPrompt, timeout, attachmentPath)</code>
+<strong>And</strong> <code>callGenAI</code> é exportado de <code>client.ts</code> e re-exportado em <code>index.ts</code></p>
+<h3>AC3: Prompt building preservado</h3>
+<p><strong>Given</strong> a lógica de prompt de Phase 5B
+<strong>When</strong> um cut video é processado
+<strong>Then</strong> <code>buildPhase5BPrompt()</code> continua construindo o system prompt usando <code>podcast.prompt.cut.thumbs</code>
+<strong>And</strong> o fallback <code>BASE_SYSTEM_PROMPT_5B</code> continua funcionando quando podcast não está configurado
+<strong>And</strong> <code>additionalContext</code> continua sendo adicionado ao system prompt</p>
+<h3>AC4: Streaming e retry automáticos</h3>
+<p><strong>Given</strong> uma chamada LLM via Phase 5B
+<strong>When</strong> o modelo processa com streaming
+<strong>Then</strong> usa streaming (via <code>callGenAI</code>) ao invés de unary <code>generateContent</code>
+<strong>And</strong> retry automático para PARSE_ERROR funciona (3 tentativas)
+<strong>And</strong> o timeout manual via <code>Promise.race</code> é removido</p>
+<h3>AC5: Response e persistência preservados</h3>
+<p><strong>Given</strong> uma resposta bem-sucedida do LLM
+<strong>When</strong> os short titles são gerados
+<strong>Then</strong> <code>data.shortTitles</code> é validado como array
+<strong>And</strong> <code>suggestedShortTitles</code> é persistido no Firestore via <code>updateVideoAdmin</code>
+<strong>And</strong> a response JSON tem o mesmo formato: <code>{ data, usage }</code></p>
+<h3>AC6: Error handling preservado</h3>
+<p><strong>Given</strong> um erro durante processamento
+<strong>When</strong> a route trata o erro
+<strong>Then</strong> erros de validação (Zod) retornam 400
+<strong>And</strong> erros LLM retornam 500 (ou 429 para RATE_LIMIT)
+<strong>And</strong> o formato da response de erro é preservado: <code>{ error: { code, message, retryable? } }</code></p>
+<h3>AC7: API pública preservada</h3>
+<p><strong>Given</strong> o frontend chamando <code>POST /api/wizard/phase/5b</code>
+<strong>When</strong> o request é enviado com <code>{ videoId, additionalContext? }</code>
+<strong>Then</strong> o contrato de request e response é idêntico ao anterior
+<strong>And</strong> nenhuma mudança é necessária no frontend</p>
+<h3>AC8: Build passa</h3>
+<p><strong>Given</strong> a refatoração completa
+<strong>When</strong> <code>tsc --noEmit</code> roda no escopo de <code>apps/iara</code>
+<strong>Then</strong> compila sem novos erros de tipo</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 1: Exportar callGenAI</strong> (AC: 2)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 1.1 Adicionar <code>export</code> à function <code>callGenAI</code> em <code>client.ts</code></li>
+<li><input disabled="" type="checkbox"> 1.2 Re-exportar <code>callGenAI</code> em <code>index.ts</code></li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 2: Refatorar route 5B</strong> (AC: 1, 2, 3, 4, 5, 6, 7)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.1 Remover imports de <code>@google-cloud/vertexai</code> (<code>VertexAI</code>, <code>GenerativeModel</code>, <code>Part</code>)</li>
+<li><input disabled="" type="checkbox"> 2.2 Remover <code>getModel()</code>, <code>readFileAsBase64()</code>, <code>DEFAULT_MODEL</code>, <code>PHASE_5B_TIMEOUT</code></li>
+<li><input disabled="" type="checkbox"> 2.3 Importar <code>callGenAI</code> de <code>@/lib/llm</code></li>
+<li><input disabled="" type="checkbox"> 2.4 Importar <code>createTranscriptionFile</code>, <code>cleanupTranscriptionFile</code> (já importados)</li>
+<li><input disabled="" type="checkbox"> 2.5 Substituir bloco de chamada SDK direto por <code>callGenAI&lt;Phase5BResponse&gt;(systemPrompt, userPrompt, timeout, transcriptionFilePath)</code></li>
+<li><input disabled="" type="checkbox"> 2.6 Usar <code>PHASE_TIMEOUTS[5]</code> como timeout (ou 120000 fixo — mesma semântica)</li>
+<li><input disabled="" type="checkbox"> 2.7 Validar <code>data.shortTitles</code> como array</li>
+<li><input disabled="" type="checkbox"> 2.8 Persistir <code>suggestedShortTitles</code> no Firestore</li>
+<li><input disabled="" type="checkbox"> 2.9 Preservar formato de response <code>{ data, usage }</code></li>
+<li><input disabled="" type="checkbox"> 2.10 Manter <code>buildPhase5BPrompt()</code> e <code>BASE_SYSTEM_PROMPT_5B</code> inalterados</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 3: Verificar build</strong> (AC: 8)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 3.1 Rodar <code>tsc --noEmit</code> e verificar erros de tipo no escopo da route</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Antes (route 5B):</h3>
+<pre><code class="language-typescript">import { GenerativeModel, VertexAI } from &#39;@google-cloud/vertexai&#39;
+import type { Part } from &#39;@google-cloud/vertexai&#39;
+
+// Duplicated SDK init
+function getModel(): GenerativeModel {
+  const vertexAI = new VertexAI({ project: PROJECT_ID, location: GCP_REGION })
+  return vertexAI.getGenerativeModel({ model, generationConfig })
+}
+
+// Duplicated file reading
+async function readFileAsBase64(filePath: string): Promise&lt;string&gt; { ... }
+
+// Unary call + manual timeout
+const result = await Promise.race([
+  model.generateContent({ contents, systemInstruction }),
+  timeoutPromise,
+])
+const text = response.candidates?.[0]?.content?.parts?.[0]?.text
+</code></pre>
+<h3>Depois (route 5B):</h3>
+<pre><code class="language-typescript">import { callGenAI, createTranscriptionFile, cleanupTranscriptionFile } from &#39;@/lib/llm&#39;
+
+// Shared infrastructure — streaming, retry, parsing
+const transcriptionFilePath = await createTranscriptionFile(transcription, 5)
+try {
+  const { data, usage } = await callGenAI&lt;Phase5BResponse&gt;(
+    systemPrompt,
+    userPrompt,
+    120000,
+    transcriptionFilePath
+  )
+  // validate + persist + return
+} finally {
+  await cleanupTranscriptionFile(transcriptionFilePath)
+}
+</code></pre>
+<h3>callGenAI já faz:</h3>
+<ol>
+<li>Streaming com chunks (keep-alive durante thinking)</li>
+<li>Retry automático para PARSE_ERROR (3 tentativas)</li>
+<li>thinkingConfig com budget 24576</li>
+<li>Extração de usage metadata</li>
+<li>Logging diagnóstico completo</li>
+<li>Parsing JSON robusto (via <code>parseJSONFromLLM</code>)</li>
+</ol>
+<h3>O que a route 5B MANTÉM:</h3>
+<ul>
+<li><code>buildPhase5BPrompt()</code> — lógica específica de cut/thumbs</li>
+<li><code>BASE_SYSTEM_PROMPT_5B</code> — fallback prompt</li>
+<li>Validação de videoType === &#39;cut&#39;</li>
+<li>Validação de transcription</li>
+<li>Persistência de <code>suggestedShortTitles</code></li>
+</ul>
+<h3>Esforço Estimado</h3>
+<p>1-2h</p>
+<hr>
+<h2>References</h2>
+<ul>
+<li><a href="13-2-migrar-client-ts.html">Story 13.2 — Migrar client.ts</a> — Migração já feita</li>
+<li><a href="epic-13-hardening-v3.html">Epic 13 Doc</a> — Story 13.3 detalhamento</li>
+<li>Arquivo principal: <code>src/app/api/wizard/phase/5b/route.ts</code> (320 linhas → ~200 estimado)</li>
+<li>Teste: <code>src/app/api/wizard/phase/5b/route.test.ts</code> (Story 13.4 — NÃO modificado aqui)</li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-02-19: Story criada (SM Bob)</li>
+</ul>
+
+  </main>
+</body>
+</html>

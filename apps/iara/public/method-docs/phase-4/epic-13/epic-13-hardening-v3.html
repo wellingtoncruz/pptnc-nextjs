@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visão Geral do Épico 13 — Hardening v2.2.0 — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li class="active"><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 13 — Hardening v2.2.0</nav><h1>Epic 13: Hardening v2.2.0 — SDK, Neutralidade, Correções e Onboarding</h1>
+<p>Status: backlog</p>
+<h2>Objetivo</h2>
+<p>Preparar o IAra para ser deployável como white-label para qualquer podcast, migrando o SDK deprecated do Vertex AI, eliminando hardcodes de tenant, corrigindo bugs do wizard e melhorando configurações, e documentando o processo de onboarding completo para novos podcasts.</p>
+<h2>Contexto</h2>
+<p>Quatro necessidades convergem neste epic:</p>
+<ol>
+<li><p><strong>SDK Deprecated</strong>: O <code>@google-cloud/vertexai</code> foi deprecated em Jun 2025 com remoção prevista para Jun 2026. O substituto oficial <code>@google/genai</code> suporta Vertex AI + Files API (<code>ai.files</code>).</p>
+</li>
+<li><p><strong>Neutralidade de Tenant</strong>: O <code>PODCAST_ID</code> está hardcoded em <code>src/lib/firebase/config.ts</code> e importado em 29+ API routes. Para deploys white-label, precisa ser externalizado como env var de runtime.</p>
+</li>
+<li><p><strong>Correções e Melhorias</strong>: Bugs no wizard (estado draft→ready para cuts/reels), lista de vídeos com status desatualizado, e melhorias na área de configurações (host name, feature toggles).</p>
+</li>
+<li><p><strong>Onboarding</strong>: Não existe documentação de como instalar e configurar o IAra para um novo podcast. O processo de seed, configuração de prompts, OAuth e deploy precisa ser documentado passo-a-passo.</p>
+</li>
+</ol>
+<h2>Escopo</h2>
+<h3>Incluído nesta Epic</h3>
+<ul>
+<li>Migração completa de <code>@google-cloud/vertexai</code> para <code>@google/genai</code></li>
+<li>Spike de validação do novo SDK (streaming, thinkingConfig, Files API)</li>
+<li>Refatoração da Phase 5B route para usar <code>callLLM</code> compartilhado</li>
+<li>Externalização de <code>PODCAST_ID</code> como env var de runtime</li>
+<li>Externalização de <code>PROJECT_ID</code>, <code>GCP_REGION</code>, <code>FIRESTORE_DATABASE_ID</code> como env vars</li>
+<li>Parametrização do <code>cloudbuild.yaml</code> para deploy multi-pod</li>
+<li>Parametrização do <code>seed-podcast.ts</code> para aceitar argumentos</li>
+<li>Assertion de startup validando env vars obrigatórias</li>
+<li>Fix: transição draft→ready na Fase 8 para cuts/reels</li>
+<li>Fix: refresh da lista de vídeos ao alterar status</li>
+<li>Feature: campo &quot;nome do host&quot; nas configurações + inclusão nos prompts</li>
+<li>Feature: seção &quot;Features&quot; para habilitar/desabilitar menus opcionais</li>
+<li>Documentação step-by-step de onboarding em PT-BR</li>
+<li>Implementação de <code>ai.files</code> para reutilização de transcrição (bônus, se spike positivo)</li>
+<li>Remoção do pacote <code>@google-cloud/vertexai</code> do <code>package.json</code></li>
+</ul>
+<h3>Fora de Escopo (Futuras Epics)</h3>
+<ul>
+<li>Multi-tenancy dinâmico (subdomain-based routing, single service)</li>
+<li>Self-service onboarding (SaaS)</li>
+<li>Billing por tenant</li>
+<li>Dashboard administrativo multi-tenant</li>
+<li>Portal-web (<code>apps/web</code>) multi-pod</li>
+<li>Firestore Security Rules para isolamento cross-tenant</li>
+</ul>
+<h2>Decisões Técnicas</h2>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Escolha</th>
+<th>Justificativa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Approach multi-pod</td>
+<td>White-label (1 deploy = 1 pod)</td>
+<td>Simplicidade, sem routing complexo, mesma imagem Docker</td>
+</tr>
+<tr>
+<td>PODCAST_ID</td>
+<td>Env var runtime (<code>process.env</code>)</td>
+<td>Mesma imagem Docker serve qualquer pod, sem rebuild</td>
+</tr>
+<tr>
+<td>PROJECT_ID e outros</td>
+<td>Env vars com fallback hardcoded</td>
+<td>Backward-compatible, não quebra deploys existentes</td>
+</tr>
+<tr>
+<td>SDK destino</td>
+<td><code>@google/genai</code> v1.41.0+</td>
+<td>Substituto oficial, suporta Vertex AI + Files API</td>
+</tr>
+<tr>
+<td>Phase 5B</td>
+<td>Refatorar para usar <code>callLLM</code></td>
+<td>Elimina duplicação de init do SDK</td>
+</tr>
+<tr>
+<td>Files API</td>
+<td>Implementar se spike positivo</td>
+<td>Bônus: reutilização de transcrição entre fases</td>
+</tr>
+<tr>
+<td>Documentação</td>
+<td>Markdown PT-BR no repo</td>
+<td>Acessível ao produtor, versionada com o código</td>
+</tr>
+<tr>
+<td>AUTH_SECRET</td>
+<td>Único por deploy</td>
+<td>Segurança: sessões não vazam entre pods</td>
+</tr>
+<tr>
+<td>Startup validation</td>
+<td>Assert em <code>config.ts</code></td>
+<td>Fail-fast se env var obrigatória estiver faltando</td>
+</tr>
+<tr>
+<td>Refresh da lista</td>
+<td>Callback de refresh do layout</td>
+<td>Padrão já usado no reopen-video-dialog</td>
+</tr>
+<tr>
+<td>Feature toggles</td>
+<td>Campo <code>features</code> no documento podcast</td>
+<td>Persistido no Firestore, verificado no sidebar e middleware</td>
+</tr>
+<tr>
+<td>Versão alvo</td>
+<td><code>v2.2.0-beta-iara</code> (minor)</td>
+<td>Não é major — sem breaking changes na API ou dados</td>
+</tr>
+</tbody></table>
+<h2>Referências</h2>
+<ul>
+<li><a href="../planning-artifacts/epic-13-sdk-migration-analysis.html">Análise de Migração SDK</a></li>
+<li><a href="5-5-spike-gemini-file-api.html">Spike 5.5 — Gemini File API</a></li>
+<li><a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/deprecations/genai-vertexai-sdk">Vertex AI SDK Migration Guide</a></li>
+<li><a href="https://www.npmjs.com/package/@google/genai">@google/genai npm</a></li>
+</ul>
+<h2>Stories</h2>
+<h3>Bloco 1: SDK Migration (Obrigatório — Deadline Jun 2026)</h3>
+<ul>
+<li><strong>Story 13.1</strong>: Spike — PoC do <code>@google/genai</code> com Vertex AI backend</li>
+<li><strong>Story 13.2</strong>: Migrar <code>client.ts</code> — init, generateContent, response parsing, streaming</li>
+<li><strong>Story 13.3</strong>: Migrar Phase 5B route (refatorar para usar <code>callLLM</code>)</li>
+<li><strong>Story 13.4</strong>: Atualizar todos os testes e mocks do SDK</li>
+<li><strong>Story 13.5</strong>: Implementar <code>ai.files</code> para reutilização de transcrição (se spike positivo)</li>
+<li><strong>Story 13.6</strong>: Remover <code>@google-cloud/vertexai</code> do <code>package.json</code> e cleanup</li>
+</ul>
+<h3>Bloco 2: Neutralidade White-Label</h3>
+<ul>
+<li><strong>Story 13.7</strong>: Externalizar configuração de tenant como env vars</li>
+<li><strong>Story 13.8</strong>: Parametrizar <code>cloudbuild.yaml</code> e <code>seed-podcast.ts</code> para multi-pod</li>
+<li><strong>Story 13.9</strong>: Startup validation e logging de tenant</li>
+</ul>
+<h3>Bloco 3: Correções e Melhorias</h3>
+<ul>
+<li><strong>Story 13.10</strong>: Fix transição draft→ready na Fase 8 para cuts/reels</li>
+<li><strong>Story 13.11</strong>: Refresh da lista de vídeos ao alterar status</li>
+<li><strong>Story 13.12</strong>: Configurações — nome do host e inclusão nos prompts de descrição</li>
+<li><strong>Story 13.13</strong>: Configurações — seção Features (toggle de menus opcionais)</li>
+</ul>
+<h3>Bloco 4: Documentação</h3>
+<ul>
+<li><strong>Story 13.14</strong>: Guia de Onboarding — instalação e deploy de novo podcast (PT-BR)</li>
+</ul>
+<h2>Dependências entre Stories</h2>
+<pre><code>13.1 (Spike) ──→ 13.2 (client.ts) ──→ 13.3 (Phase 5B)
+                       │                      │
+                       ├──→ 13.4 (Testes) ←───┘
+                       │
+                       ├──→ 13.5 (Files API)
+                       │
+                       └──→ 13.6 (Cleanup) ←── 13.3, 13.4
+
+13.7 (Env vars) ──→ 13.8 (Cloud Build) ──→ 13.9 (Validation)
+
+13.10 (Fix draft→ready) — independente
+13.11 (Refresh lista) — independente
+13.12 (Host name) — independente
+13.13 (Features) ──→ 13.14 (Documentação, precisa documentar feature toggles)
+
+13.8, 13.9, 13.13 ──→ 13.14 (Documentação)
+</code></pre>
+<p><strong>Nota</strong>: Blocos 1, 2 e 3 podem ser trabalhados em paralelo. Bloco 4 depende dos Blocos 2 e 3.</p>
+<h2>Estimativa</h2>
+<table>
+<thead>
+<tr>
+<th>Bloco</th>
+<th>Stories</th>
+<th>Esforço Estimado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 — SDK Migration</td>
+<td>13.1 a 13.6</td>
+<td>8-14h</td>
+</tr>
+<tr>
+<td>2 — Neutralidade</td>
+<td>13.7 a 13.9</td>
+<td>4-6h</td>
+</tr>
+<tr>
+<td>3 — Correções/Melhorias</td>
+<td>13.10 a 13.13</td>
+<td>8-12h</td>
+</tr>
+<tr>
+<td>4 — Documentação</td>
+<td>13.14</td>
+<td>3-4h</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>14 stories</strong></td>
+<td><strong>23-36h</strong></td>
+</tr>
+</tbody></table>
+<h2>Detalhamento por Story</h2>
+<h3>Story 13.1: Spike — PoC do <code>@google/genai</code> com Vertex AI backend</h3>
+<p><strong>Objetivo</strong>: Validar que o novo SDK funciona com Vertex AI backend antes de migrar.</p>
+<p><strong>A validar</strong>:</p>
+<ul>
+<li>Inicialização com <code>vertexai: true</code></li>
+<li><code>generateContentStream</code> com streaming funcional</li>
+<li><code>thinkingConfig</code> suportado</li>
+<li>Response structure (<code>candidates</code>, <code>usageMetadata</code>)</li>
+<li><code>ai.files.upload</code> + <code>fileData</code> em chamada <code>generateContent</code></li>
+<li>ADC (Application Default Credentials) funciona</li>
+</ul>
+<p><strong>Timebox</strong>: 2-4h</p>
+<hr>
+<h3>Story 13.2: Migrar <code>client.ts</code></h3>
+<p><strong>Arquivos</strong>: <code>src/lib/llm/client.ts</code>, <code>src/lib/llm/types.ts</code>, <code>src/lib/llm/index.ts</code></p>
+<p><strong>Mudanças</strong>:</p>
+<ul>
+<li>Substituir <code>VertexAI</code> por <code>GoogleGenAI</code> com <code>{ vertexai: true }</code></li>
+<li>Adaptar <code>getModel()</code> → model passado por chamada</li>
+<li>Adaptar <code>callVertexAIWithAttachment</code> para nova API de streaming</li>
+<li>Atualizar response parsing (<code>candidates</code>, <code>usageMetadata</code>)</li>
+<li>Remover workaround <code>undici</code> se não necessário</li>
+<li>Atualizar tipos em <code>types.ts</code></li>
+</ul>
+<hr>
+<h3>Story 13.3: Migrar Phase 5B route</h3>
+<p><strong>Arquivo</strong>: <code>src/app/api/wizard/phase/5b/route.ts</code></p>
+<p><strong>Abordagem</strong>: Refatorar para usar <code>callLLM</code> do client.ts compartilhado ao invés de duplicar inicialização do SDK. Elimina código duplicado e centraliza a dependência.</p>
+<hr>
+<h3>Story 13.4: Atualizar testes e mocks</h3>
+<p><strong>Arquivos</strong>: <code>src/app/api/wizard/phase/5b/route.test.ts</code>, <code>src/lib/llm/llm.test.ts</code>, e qualquer outro que mocke <code>@google-cloud/vertexai</code>.</p>
+<p><strong>Mudanças</strong>: Atualizar <code>vi.mock(&#39;@google-cloud/vertexai&#39;)</code> para <code>vi.mock(&#39;@google/genai&#39;)</code> com a nova interface.</p>
+<hr>
+<h3>Story 13.5: Implementar <code>ai.files</code> para reutilização de transcrição</h3>
+<p><strong>Condicional</strong>: Só implementar se Spike 13.1 confirmar que <code>ai.files</code> funciona via Vertex AI backend.</p>
+<p><strong>Benefício</strong>: Transcrição uploadada uma vez por vídeo, reutilizada em fases 1-7. Reduz tráfego de rede e potencialmente tokens.</p>
+<p><strong>Gerenciamento</strong>: File URI armazenado em memória (session state) com TTL de 48h.</p>
+<hr>
+<h3>Story 13.6: Remover <code>@google-cloud/vertexai</code> e cleanup</h3>
+<p><strong>Ações</strong>:</p>
+<ul>
+<li><code>pnpm remove @google-cloud/vertexai</code> no <code>apps/iara</code></li>
+<li>Verificar que nenhum import residual existe</li>
+<li>Rodar todos os testes (1722+ devem passar)</li>
+<li>Atualizar <code>.env.example</code> se necessário</li>
+</ul>
+<hr>
+<h3>Story 13.7: Externalizar configuração de tenant como env vars</h3>
+<p><strong>Arquivo principal</strong>: <code>src/lib/firebase/config.ts</code></p>
+<p><strong>Mudanças</strong>:</p>
+<pre><code class="language-typescript">// ANTES
+export const PROJECT_ID = &#39;pptnc-stage&#39;
+export const GCP_REGION = &#39;us-east1&#39;
+export const FIRESTORE_DATABASE_ID = &#39;pptnc-stage&#39;
+export const PODCAST_ID = &#39;pptnc&#39;
+
+// DEPOIS
+export const PROJECT_ID = process.env.GCP_PROJECT_ID || &#39;pptnc-stage&#39;
+export const GCP_REGION = process.env.GCP_REGION || &#39;us-east1&#39;
+export const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || &#39;pptnc-stage&#39;
+export const PODCAST_ID = process.env.PODCAST_ID || &#39;pptnc&#39;
+</code></pre>
+<p><strong>Regra</strong>: Fallback para valores atuais garante backward-compatibility. Deploys existentes continuam funcionando sem mudanças.</p>
+<p><strong>Atenção</strong>: <code>admin.ts</code> (Firebase Admin init) também pode ter hardcodes — verificar e externalizar.</p>
+<hr>
+<h3>Story 13.8: Parametrizar Cloud Build e seed</h3>
+<p><strong><code>cloudbuild.yaml</code></strong>:</p>
+<ul>
+<li>Adicionar substitution <code>_PODCAST_ID</code></li>
+<li>Passar <code>--set-env-vars=&quot;PODCAST_ID=${_PODCAST_ID}&quot;</code> no deploy step</li>
+<li>Passar demais env vars (<code>GCP_PROJECT_ID</code>, <code>FIRESTORE_DATABASE_ID</code>)</li>
+</ul>
+<p><strong><code>scripts/seed-podcast.ts</code></strong>:</p>
+<ul>
+<li>Aceitar argumentos: <code>tsx scripts/seed-podcast.ts &lt;podcastId&gt; &lt;podcastName&gt; &lt;channelId&gt;</code></li>
+<li>Copiar prompts/personas do PPTNC como template default</li>
+</ul>
+<hr>
+<h3>Story 13.9: Startup validation e logging de tenant</h3>
+<p><strong>Ações</strong>:</p>
+<ul>
+<li>Assertion em <code>config.ts</code>: se <code>PODCAST_ID</code> está vazio, throw error (fail-fast)</li>
+<li>Log de startup com tenant info: <code>[STARTUP] Tenant: ${PODCAST_ID}, Project: ${PROJECT_ID}</code></li>
+<li>Incluir <code>podcastId</code> em logs de API para rastreabilidade cross-pod</li>
+</ul>
+<hr>
+<h3>Story 13.10: Fix transição draft→ready na Fase 8 para cuts/reels</h3>
+<p><strong>Bug</strong>: Ao completar o fluxo do wizard para cuts/reels, o vídeo permanece em status &quot;draft&quot; na Fase 8, impedindo &quot;Enviar para o YouTube&quot;. Só funciona se navegar para outro vídeo e voltar.</p>
+<p><strong>Causa raiz</strong>: O efeito AUTO-READY em <code>wizard-orchestrator.tsx</code> (linhas 611-669) verifica <code>wizard.currentPhase !== 8</code>, mas para cuts/reels o <code>currentPhase</code> pode não estar sincronizado com 8 durante o fluxo normal. A lógica de hydration em <code>machine.ts</code> calcula <code>firstIncompletePhase = 8</code> corretamente, mas o <code>currentPhase</code> não é atualizado quando <code>currentPhase === firstIncompletePhase</code> (a comparação <code>8 &gt; 8</code> é false).</p>
+<p><strong>Arquivos</strong>:</p>
+<ul>
+<li><code>src/components/wizard/wizard-orchestrator.tsx</code> — efeito AUTO-READY (~linha 611)</li>
+<li><code>src/lib/wizard/machine.ts</code> — action <code>HYDRATE_FROM_VIDEO_DATA</code> (~linha 451)</li>
+</ul>
+<p><strong>Fix sugerido</strong>: Modificar o efeito AUTO-READY para verificar se todas as fases do videoType estão completadas, não apenas <code>currentPhase === 8</code>. Alternativa: garantir que <code>currentPhase</code> seja atualizado para 8 quando todos os phases estão completos no HYDRATE.</p>
+<p><strong>Esforço</strong>: 2-3h</p>
+<hr>
+<h3>Story 13.11: Refresh da lista de vídeos ao alterar status</h3>
+<p><strong>Bug</strong>: A coluna de vídeos (esquerda) não atualiza quando o status de um vídeo muda (ex: draft→ready, ready→sent). O produtor vê estados desatualizados.</p>
+<p><strong>Causa raiz</strong>: O <code>useVideos()</code> hook usa <code>fetch()</code> manual sem auto-revalidation. O <code>handleSendToYouTube</code> no wizard-orchestrator atualiza o Firestore e o estado local, mas <strong>não notifica</strong> o <code>videos-layout.tsx</code> para chamar <code>refresh()</code>. O padrão correto já existe no <code>reopen-video-dialog.tsx</code> que chama <code>onSuccess()</code> → <code>refresh()</code>.</p>
+<p><strong>Arquivos</strong>:</p>
+<ul>
+<li><code>src/components/wizard/wizard-orchestrator.tsx</code> — <code>handleSendToYouTube</code> (~linha 2142)</li>
+<li><code>src/app/videos/videos-layout.tsx</code> — <code>refresh()</code> do <code>useVideos()</code></li>
+<li><code>src/hooks/use-videos.ts</code> — hook de fetch</li>
+</ul>
+<p><strong>Fix sugerido</strong>: Propagar callback <code>onVideoStatusChanged</code> do layout para o wizard-orchestrator. Chamar <code>refresh()</code> quando:</p>
+<ol>
+<li>Vídeo é enviado para o YouTube (sent)</li>
+<li>Status transiciona para &quot;ready&quot; (auto-ready)</li>
+<li>Qualquer PATCH em <code>/api/videos/[videoId]</code> que altere status</li>
+</ol>
+<p><strong>Esforço</strong>: 2-3h</p>
+<hr>
+<h3>Story 13.12: Configurações — nome do host e inclusão nos prompts</h3>
+<p><strong>Feature</strong>: Adicionar campo &quot;Nome do Host&quot; em &quot;Informações do Podcast&quot; nas configurações. O nome do host deve ser incluído nos prompts que geram descrições (Fase 6), junto com os convidados.</p>
+<p><strong>Arquivos</strong>:</p>
+<ul>
+<li><code>src/lib/schemas/podcast.ts</code> — adicionar <code>hostName: z.string().max(200).optional()</code></li>
+<li><code>src/types/podcast.ts</code> — tipo inferido automaticamente do schema</li>
+<li><code>src/components/settings/podcast-settings-form.tsx</code> — novo campo input com auto-save</li>
+<li><code>src/lib/llm/prompts.ts</code> — incluir <code>hostName</code> no template de user prompt da Fase 6</li>
+<li><code>src/lib/llm/interpolation.ts</code> — adicionar variável <code>{hostName}</code> no <code>extractVariables()</code></li>
+<li><code>src/lib/firebase/podcasts-admin.ts</code> — nenhuma mudança (PodcastUpdateSchema já é partial)</li>
+</ul>
+<p><strong>Impacto nos prompts</strong>: Na Fase 6 (descrição), o user prompt deve incluir:</p>
+<pre><code>**Host:** ${podcast.hostName || &#39;Não informado&#39;}
+**Convidados:** ${video.guests?.map(...)}
+</code></pre>
+<p><strong>Esforço</strong>: 2-3h</p>
+<hr>
+<h3>Story 13.13: Configurações — seção Features (toggle de menus opcionais)</h3>
+<p><strong>Feature</strong>: Nova seção &quot;Recursos&quot; (Features) nas configurações onde o admin pode habilitar/desabilitar entradas de menu opcionais. Menus opcionais: <strong>Editorial</strong> e <strong>Notícias</strong>.</p>
+<p><strong>Comportamento</strong>:</p>
+<ul>
+<li>Por padrão, features começam <strong>habilitadas</strong></li>
+<li>Desabilitar uma feature: remove do menu lateral e restringe a rota (retorna 404 ou redirect)</li>
+<li>Persistido no documento podcast no Firestore</li>
+</ul>
+<p><strong>Arquivos</strong>:</p>
+<ul>
+<li><code>src/lib/schemas/podcast.ts</code> — adicionar:<pre><code class="language-typescript">features: z.object({
+  editorial: z.boolean().default(true),
+  news: z.boolean().default(true),
+}).optional()
+</code></pre>
+</li>
+<li><code>src/components/settings/settings-page-client.tsx</code> — nova seção accordion &quot;Recursos&quot;</li>
+<li><code>src/components/settings/features-settings-form.tsx</code> — <strong>novo arquivo</strong> com toggles Switch</li>
+<li><code>src/components/layout/sidebar.tsx</code> — condicional: mostrar &quot;Editorial&quot; e &quot;Notícias&quot; apenas se habilitados</li>
+<li><code>src/app/videos/videos-layout.tsx</code> — verificar feature habilitada antes de renderizar <code>EditorialPanel</code> e <code>NewsPanel</code></li>
+</ul>
+<p><strong>Schema no Firestore</strong>:</p>
+<pre><code class="language-typescript">// podcasts/{podcastId}
+{
+  features: {
+    editorial: true,   // default
+    news: true,        // default
+  }
+}
+</code></pre>
+<p><strong>Esforço</strong>: 3-4h</p>
+<hr>
+<h3>Story 13.14: Guia de Onboarding (PT-BR)</h3>
+<p><strong>Arquivo</strong>: <code>apps/iara/docs/ONBOARDING.md</code></p>
+<p><strong>Conteúdo</strong>:</p>
+<ol>
+<li>Pré-requisitos (GCP project, gcloud CLI, pnpm, Node 20+)</li>
+<li>Clone e configuração local</li>
+<li>Configuração do projeto GCP (OAuth, service account)</li>
+<li>Seed do podcast no Firestore</li>
+<li>Configuração de prompts e personas LLM</li>
+<li>Configuração de features (editorial, notícias)</li>
+<li>Deploy no Cloud Run</li>
+<li>Primeiro acesso e promoção a admin</li>
+<li>Configuração do canal YouTube (channelId) e nome do host</li>
+<li>Primeiro sync e processamento de vídeo</li>
+<li>Checklist de validação pós-deploy</li>
+<li>Troubleshooting (erros comuns)</li>
+</ol>
+<h2>Critérios de Aceitação do Epic</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Novo SDK <code>@google/genai</code> funcional com todas as fases do wizard</li>
+<li><input disabled="" type="checkbox"> <code>@google-cloud/vertexai</code> removido do <code>package.json</code></li>
+<li><input disabled="" type="checkbox"> Nenhum hardcode de <code>&#39;pptnc&#39;</code> em código de produção (apenas em fallbacks de env var)</li>
+<li><input disabled="" type="checkbox"> Deploy existente (PPTNC) continua funcionando sem mudanças de env var</li>
+<li><input disabled="" type="checkbox"> Novo pod deployável apenas com env vars + seed</li>
+<li><input disabled="" type="checkbox"> Wizard: cuts/reels transitam para &quot;ready&quot; ao chegar na Fase 8</li>
+<li><input disabled="" type="checkbox"> Lista de vídeos atualiza automaticamente ao mudar status</li>
+<li><input disabled="" type="checkbox"> Campo &quot;nome do host&quot; funcional e incluído nos prompts de descrição</li>
+<li><input disabled="" type="checkbox"> Feature toggles funcionais (Editorial, Notícias habilitáveis/desabilitáveis)</li>
+<li><input disabled="" type="checkbox"> Documento de onboarding completo e testado</li>
+<li><input disabled="" type="checkbox"> Todos os testes passando (1722+)</li>
+<li><input disabled="" type="checkbox"> Tag de versão: <code>v2.2.0-beta-iara</code></li>
+</ul>
+
+  </main>
+</body>
+</html>

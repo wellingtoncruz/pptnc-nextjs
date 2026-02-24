@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Épicos — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li class="active"><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-3/">Fase 3 — Solucionamento</a></nav><div class="info-box"><table><tr><th>stepsCompleted</th><td>1,2,3,4</td></tr>
+<tr><th>status</th><td>complete</td></tr>
+<tr><th>inputDocuments</th><td>prd-iara.md,architecture-iara.md,ux-design-specification-iara.md,project-context-iara.md,processamento_video.md</td></tr>
+<tr><th>workflowType</th><td>epics</td></tr>
+<tr><th>project_name</th><td>IAra</td></tr>
+<tr><th>date</th><td>2026-01-28</td></tr>
+<tr><th>author</th><td>Wellington</td></tr>
+<tr><th>last_updated</th><td>2026-01-28</td></tr>
+<tr><th>update_notes</th><td>Correct Course: Atualização completa do Epic 4 com critérios de avanço, persistência e mapeamento LLM conforme processamento_video.md</td></tr></table></div>
+<h1>IAra - Epic Breakdown</h1>
+<h2>Overview</h2>
+<p>Este documento fornece o breakdown completo de epics e stories para o <strong>IAra</strong>, decompondo os requisitos do PRD, UX Design e Architecture em stories implementáveis.</p>
+<h2>Requirements Inventory</h2>
+<h3>Functional Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Domínio</th>
+<th>Descrição</th>
+<th>Complexidade</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FR1</td>
+<td>Autenticação</td>
+<td>Login via GCP IAM (Google) com OAuth para YouTube API, dual-purpose credentials, consent screen, token refresh</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>FR2</td>
+<td>Sincronização</td>
+<td>Botão &quot;Verificar novos vídeos&quot; — detecção via YouTube API, classificação por duração (episódio/corte/reel)</td>
+<td>Média</td>
+</tr>
+<tr>
+<td>FR3</td>
+<td>Processamento LLM</td>
+<td>Gemini com prompts por tipo + instruções adicionais + reprocessar. SSE streaming com progressive reveal (30-120s)</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>FR4</td>
+<td>Compliance Check</td>
+<td>Análise da transcrição via prompt especializado. Alerta informativo com argumentos e timestamps</td>
+<td>Baixa</td>
+</tr>
+<tr>
+<td>FR5</td>
+<td>Revisão/Edição</td>
+<td>Tela individual de metadados com edição manual inline e rascunhos persistentes (save on blur/action, debounce 1.5s)</td>
+<td>Média</td>
+</tr>
+<tr>
+<td>FR6</td>
+<td>Publicação YouTube</td>
+<td>Envio de metadados para YouTube via API. Dual-mode: per-video + batch. Partial error handling</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>FR7</td>
+<td>Portal Web</td>
+<td>Criação de registro no Firestore com flag de publicação (data de agendamento). Schema: podcasts/{podcastId}/videos</td>
+<td>Baixa</td>
+</tr>
+<tr>
+<td>FR8</td>
+<td>Gestão de Estado</td>
+<td>Status por vídeo via state machine com transition function (new → processing → draft → ready → sending → sent)</td>
+<td>Média</td>
+</tr>
+<tr>
+<td>FR9</td>
+<td>Parametrização</td>
+<td>Collection <code>podcasts</code> no Firestore com configurações por podcast (nome, channelId, prompts, videoTypes)</td>
+<td>Média</td>
+</tr>
+</tbody></table>
+<h3>Non-Functional Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Requisito</th>
+<th>Impacto Arquitetural</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NFR1</td>
+<td>SSE Streaming</td>
+<td>Route Handler com ReadableStream + contrato de eventos (progress/field/complete/error)</td>
+</tr>
+<tr>
+<td>NFR2</td>
+<td>Persistência</td>
+<td>Debounce 1.5s + Firestore updateDoc com field-level merge</td>
+</tr>
+<tr>
+<td>NFR3</td>
+<td>Cloud Run Timeout</td>
+<td>Configurar timeout explícito (&gt;5min default) para SSE streams</td>
+</tr>
+<tr>
+<td>NFR4</td>
+<td>Middleware</td>
+<td>Auth check sem buffering de stream — middleware não intercepta SSE endpoints</td>
+</tr>
+<tr>
+<td>NFR5</td>
+<td>Sessão Persistente</td>
+<td>Token refresh strategy para OAuth scopes sensíveis</td>
+</tr>
+<tr>
+<td>NFR6</td>
+<td>Disponibilidade</td>
+<td>Circuit breaker, fallback UI, partial batch error handling</td>
+</tr>
+<tr>
+<td>NFR7</td>
+<td>Segurança</td>
+<td>OAuth scopes mínimos, secrets em runtime, Testing mode no MVP</td>
+</tr>
+<tr>
+<td>NFR8</td>
+<td>Testabilidade</td>
+<td>Fixture strategy com snapshot responses, mock de EventSource para SSE</td>
+</tr>
+</tbody></table>
+<h3>Additional Requirements (Architecture)</h3>
+<p><strong>Starter Template:</strong></p>
+<ul>
+<li><code>create-next-app@latest</code> + <code>shadcn/ui init</code></li>
+<li>Next.js 15+ App Router, React 19, TypeScript 5.x strict</li>
+<li>Tailwind CSS v4 (OKLCH, inline @theme)</li>
+<li>Vitest + Firebase Emulator</li>
+</ul>
+<p><strong>Data Architecture:</strong></p>
+<ul>
+<li>Firestore subcollections: <code>podcasts/{podcastId}/videos/{videoId}</code></li>
+<li>Zod schemas para validação runtime de APIs externas</li>
+<li>Firestore SDK split: client vs admin</li>
+</ul>
+<p><strong>Authentication:</strong></p>
+<ul>
+<li>Auth.js v5 (NextAuth) com YouTube OAuth</li>
+<li>Token storage em Firestore (server-side)</li>
+<li>Next.js Middleware para route protection</li>
+<li>refresh_token preservation rule</li>
+</ul>
+<p><strong>Frontend:</strong></p>
+<ul>
+<li>Zustand + URL state (selectedVideoId na URL)</li>
+<li>Master-Detail layout (Side Panel)</li>
+<li>Dark mode only (fixed)</li>
+<li>14 enforcement rules como acceptance criteria</li>
+</ul>
+<p><strong>Infrastructure:</strong></p>
+<ul>
+<li>Cloud Build pipeline (trigger filter: apps/iara/**)</li>
+<li>Multi-stage Dockerfile</li>
+<li>Cloud Logging (structured JSON)</li>
+<li>Dev + Prod environments</li>
+</ul>
+<h3>Additional Requirements (UX Design)</h3>
+<p><strong>Layout:</strong></p>
+<ul>
+<li>Master-Detail (Side Panel) com ResizablePanel</li>
+<li>Sidebar mínima (w-48, colapsável)</li>
+<li>Desktop-first (responsive: tablet básico, mobile low priority)</li>
+</ul>
+<p><strong>Componentes Custom:</strong></p>
+<ul>
+<li>VideoListItem (thumbnail + título + status + quick action)</li>
+<li>VideoDetailPanel (compound: Header, Metadata, Compliance, Override, Footer)</li>
+<li>ProcessingStream (SSE progressive reveal)</li>
+<li>ComplianceAlert (amber-200, tom informativo)</li>
+<li>InboxEmptyState (celebração quando vazio)</li>
+<li>OverrideInput (textarea + chips de sugestão)</li>
+</ul>
+<p><strong>Interações:</strong></p>
+<ul>
+<li>SSE progressive reveal (skeleton → conteúdo, campo por campo)</li>
+<li>Auto-save debounced (1.5s) com indicador &quot;Salvo&quot;</li>
+<li>Quick action &quot;Enviar&quot; no hover para status &quot;Pronto&quot;</li>
+<li>Keyboard shortcuts (↑/↓ navegar, Enter selecionar, Cmd+Enter enviar)</li>
+</ul>
+<p><strong>Acessibilidade:</strong></p>
+<ul>
+<li>WCAG 2.1 AA</li>
+<li>Focus ring: ring-blue-400</li>
+<li>Landmarks e ARIA corretos</li>
+<li>Reduced motion support</li>
+</ul>
+<h3>FR Coverage Map</h3>
+<table>
+<thead>
+<tr>
+<th>FR</th>
+<th>Epic</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FR1</td>
+<td>Epic 1</td>
+<td>Login GCP IAM + OAuth YouTube com dual-purpose credentials</td>
+</tr>
+<tr>
+<td>FR8</td>
+<td>Epic 1</td>
+<td>State machine com transition function para gestão de status</td>
+</tr>
+<tr>
+<td>FR9</td>
+<td>Epic 2</td>
+<td>Collection podcasts com configurações por podcast</td>
+</tr>
+<tr>
+<td>FR2</td>
+<td>Epic 3</td>
+<td>Sincronização e detecção de vídeos via YouTube API</td>
+</tr>
+<tr>
+<td>FR3</td>
+<td>Epic 4</td>
+<td>Processamento LLM Gemini via Wizard de 8 fases (sem SSE)</td>
+</tr>
+<tr>
+<td>FR4</td>
+<td>Epic 4</td>
+<td>Compliance check da transcrição (Fase 3)</td>
+</tr>
+<tr>
+<td>FR5</td>
+<td>Epic 4</td>
+<td>Edição inline com auto-save (absorvido do Epic 5)</td>
+</tr>
+<tr>
+<td>FR6</td>
+<td>Epic 6</td>
+<td>Publicação dual-mode no YouTube (individual + batch)</td>
+</tr>
+<tr>
+<td>FR7</td>
+<td>Epic 6</td>
+<td>Registro no Portal Web via Firestore</td>
+</tr>
+</tbody></table>
+<h2>Epic List</h2>
+<h3>Epic 1: Autenticação e Fundação</h3>
+<p><strong>Valor ao usuário:</strong> Usuário consegue fazer login de forma segura, autorizar acesso ao YouTube, e o sistema possui a infraestrutura de estados para gerenciar todo o ciclo de vida dos vídeos.</p>
+<p><strong>FRs cobertos:</strong> FR1, FR8
+<strong>NFRs relacionados:</strong> NFR4 (Middleware), NFR5 (Sessão Persistente), NFR7 (Segurança)</p>
+<p><strong>Capacidades entregues:</strong></p>
+<ul>
+<li>Login via Google (GCP IAM)</li>
+<li>Autorização OAuth para YouTube API com escopos necessários</li>
+<li>Token refresh automático (refresh_token preservation)</li>
+<li>State machine com <code>transition()</code> function para VideoStatus</li>
+<li>Middleware de proteção de rotas (exceto SSE endpoints)</li>
+</ul>
+<p><strong>Notas de implementação:</strong></p>
+<ul>
+<li>Auth.js v5 com YouTube provider</li>
+<li>Token storage em Firestore (server-side)</li>
+<li>Table-driven tests obrigatórios para state machine</li>
+<li>Estados: new → processing → draft → ready → sending → sent</li>
+</ul>
+<hr>
+<h3>Epic 2: Configuração de Podcast</h3>
+<p><strong>Valor ao usuário:</strong> Usuário pode configurar os parâmetros do seu podcast, definindo prompts personalizados, tipos de vídeo e identificadores do canal.</p>
+<p><strong>FRs cobertos:</strong> FR9
+<strong>NFRs relacionados:</strong> NFR6 (Disponibilidade)</p>
+<p><strong>Capacidades entregues:</strong></p>
+<ul>
+<li>CRUD da collection <code>podcasts</code> no Firestore</li>
+<li>Configuração de nome, channelId, prompts por tipo de vídeo</li>
+<li>Definição de videoTypes (episódio, corte, reel)</li>
+<li>Interface de configuração no painel admin</li>
+</ul>
+<p><strong>Notas de implementação:</strong></p>
+<ul>
+<li>Schema Zod para validação de configurações</li>
+<li>Sidebar com navegação para configurações</li>
+<li>Field-level updates com <code>updateDoc</code></li>
+</ul>
+<hr>
+<h3>Epic 3: Detecção de Vídeos</h3>
+<p><strong>Valor ao usuário:</strong> Usuário pode sincronizar vídeos do YouTube, visualizando novos uploads classificados automaticamente por tipo (episódio, corte, reel).</p>
+<p><strong>FRs cobertos:</strong> FR2
+<strong>NFRs relacionados:</strong> NFR6 (Disponibilidade)</p>
+<p><strong>Capacidades entregues:</strong></p>
+<ul>
+<li>Botão &quot;Verificar novos vídeos&quot; na interface</li>
+<li>Integração com YouTube Data API para listar vídeos do canal</li>
+<li>Classificação automática por duração</li>
+<li>Lista de vídeos com thumbnail, título e status</li>
+<li>Persistência em <code>podcasts/{podcastId}/videos/{videoId}</code></li>
+</ul>
+<p><strong>Notas de implementação:</strong></p>
+<ul>
+<li>YouTube API quota management</li>
+<li>Zod validation para responses da API</li>
+<li>VideoListItem component com status badge</li>
+<li>Master-Detail layout (Side Panel)</li>
+</ul>
+<hr>
+<h3>Epic 4: Processamento AI de Metadados (Wizard)</h3>
+<p><strong>Valor ao usuário:</strong> Usuário pode processar vídeos com IA (Gemini) através de um Wizard de 8 fases que guia a geração e revisão de metadados otimizados, com auto-save e reprocessamento seletivo.</p>
+<p><strong>FRs cobertos:</strong> FR3, FR4, FR5
+<strong>NFRs relacionados:</strong> NFR2 (Persistência com debounce), NFR3 (Cloud Run Timeout)</p>
+<p><strong>NOTA:</strong> Este epic absorve o Epic 5 (Revisão e Edição de Metadados). A edição e auto-save são parte integral do Wizard.</p>
+<p><strong>Capacidades entregues:</strong></p>
+<ul>
+<li>Wizard de 8 fases para processamento completo de metadados</li>
+<li>Integração LLM (Gemini) com chamadas síncronas (sem SSE)</li>
+<li>Fases Tipo 1 (Reprocessáveis) e Tipo 2 (Imutáveis)</li>
+<li>Dependência sequencial entre fases para otimização SEO</li>
+<li>Auto-save em todas as interações do usuário</li>
+<li>Console area com histórico de mensagens/alertas</li>
+<li>Reprocessamento com complemento de prompt</li>
+<li>Compliance check com timestamps clicáveis</li>
+</ul>
+<p><strong>Fases do Wizard:</strong></p>
+<ol>
+<li><strong>Input Inicial e Crítica</strong> (Tipo 2): Coleta contexto e gera crítica do vídeo</li>
+<li><strong>Checagem de Edição</strong> (Tipo 2): Verifica falhas de edição via SRT</li>
+<li><strong>Análise de Risco e Conformidade</strong> (Tipo 2): Identifica riscos de compliance</li>
+<li><strong>Capítulos</strong> (Tipo 2): Sugere divisão de capítulos por assuntos</li>
+<li><strong>Título</strong> (Tipo 1): Gera 5 sugestões de título para escolha</li>
+<li><strong>Descrição</strong> (Tipo 1): Gera descrição otimizada para SEO</li>
+<li><strong>Tags</strong> (Tipo 1): Calcula tags relevantes baseadas no conteúdo</li>
+<li><strong>Atualizar YouTube</strong>: Envia metadados via API (sem LLM)</li>
+</ol>
+<p><strong>Notas de implementação:</strong></p>
+<ul>
+<li>Route Handler com <code>runtime: &#39;nodejs&#39;</code></li>
+<li>Chamadas LLM síncronas com timeout adequado (30-60s)</li>
+<li>State machine por Wizard (XState ou custom) para gerenciar fases</li>
+<li>Persistência de campos na <strong>raiz do objeto video</strong> (não em generatedData ou phases.X.data)</li>
+<li>Prompts configuráveis por fase nas configurações do podcast</li>
+<li>UI: Video preview + Painel interativo (top), Console area (bottom)</li>
+<li>Botão &quot;Avançar&quot; com validação de critérios blocking por fase</li>
+<li>Estado <code>needsRevalidation</code> para marcar fases que precisam ser revalidadas (dados preservados)</li>
+</ul>
+<p><strong>Novos campos a adicionar no VideoSchema:</strong></p>
+<pre><code class="language-typescript">// Em src/lib/schemas/video.ts
+editingIssues: z.array(z.object({
+  timestamp: z.string(),
+  description: z.string()
+})).optional()
+
+riskAndCompliance: z.array(z.object({
+  timestamp: z.string(),
+  risk: z.string(),
+  description: z.string()
+})).optional()
+
+critique: z.string().optional()  // Se não existir
+</code></pre>
+<p><strong>Inputs de Contexto por Tipo de Vídeo (Fase 1):</strong></p>
+<p>Para <strong>Episode</strong>, o produtor DEVE informar:</p>
+<ul>
+<li>Tema geral do Episódio (obrigatório)</li>
+<li>Co-host (opcional): Nome, Cargo, Empresa, LinkedIn</li>
+<li>Convidados (1-3 obrigatórios): Nome, Cargo, Empresa, LinkedIn</li>
+</ul>
+<p>Para <strong>Cut</strong> e <strong>Reel</strong>:</p>
+<ul>
+<li>Usuário DEVE selecionar o episode origem antes de processar</li>
+<li>Cut/Reel herdam automaticamente os metadados do episode pai</li>
+</ul>
+<hr>
+<h3>Epic 5: Revisão e Edição de Metadados ⚠️ ABSORVIDO</h3>
+<blockquote>
+<p><strong>NOTA:</strong> Este Epic foi absorvido pelo Epic 4 (Wizard de Processamento).
+A edição inline, auto-save e finalização de metadados são parte integral do fluxo do Wizard.
+As stories deste epic NÃO devem ser desenvolvidas separadamente.</p>
+</blockquote>
+<p><strong>Status:</strong> ABSORVIDO pelo Epic 4</p>
+<p><strong>Funcionalidades movidas para Epic 4:</strong></p>
+<ul>
+<li>Auto-save com debounce → Infraestrutura do Wizard (Story 4.1-NEW)</li>
+<li>Edição inline de título/descrição → Fases 5 e 6 do Wizard</li>
+<li>Edição de tags → Fase 7 do Wizard</li>
+<li>Edição de chapters → Fase 4 do Wizard</li>
+<li>Marcar como &quot;Pronto&quot; → Fase 8 do Wizard (pré-envio)</li>
+</ul>
+<p><strong>FRs cobertos:</strong> FR5 (movido para Epic 4)
+<strong>NFRs relacionados:</strong> NFR2 (implementado no Epic 4)</p>
+<hr>
+<h3>Epic 6: Publicação e Distribuição</h3>
+<p><strong>Valor ao usuário:</strong> Usuário pode publicar metadados finalizados no YouTube (individual ou em lote) e registrar no Portal web para agendamento.</p>
+<p><strong>FRs cobertos:</strong> FR6, FR7
+<strong>NFRs relacionados:</strong> NFR6 (Disponibilidade), NFR8 (Testabilidade)</p>
+<p><strong>Capacidades entregues:</strong></p>
+<ul>
+<li>Envio individual de metadados para YouTube</li>
+<li>Envio em batch de múltiplos vídeos</li>
+<li>Partial error handling (alguns falham, outros continuam)</li>
+<li>Quick action &quot;Enviar&quot; no hover para status &quot;Pronto&quot;</li>
+<li>Registro no Firestore para Portal Web</li>
+<li>Data de agendamento para publicação</li>
+<li>Cmd+Enter para enviar rápido</li>
+</ul>
+<p><strong>Notas de implementação:</strong></p>
+<ul>
+<li>YouTube Data API update endpoint</li>
+<li>Batch processing com Promise.allSettled</li>
+<li>Circuit breaker para falhas</li>
+<li>Transição: ready → sending → sent</li>
+<li>InboxEmptyState quando todos enviados</li>
+</ul>
+<hr>
+<h2>Epic 1: Autenticação e Fundação — Stories</h2>
+<h3>Story 1.1: Setup do Projeto e Estrutura Base</h3>
+<p>Como um <strong>desenvolvedor</strong>,
+Eu quero ter o projeto Next.js 15+ configurado com shadcn/ui e estrutura de pastas padrão,
+Para que eu possa começar a implementar funcionalidades seguindo a arquitetura definida.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um ambiente de desenvolvimento limpo
+<strong>When</strong> eu executo os comandos de setup do projeto
+<strong>Then</strong> o projeto Next.js 15+ é criado com App Router habilitado
+<strong>And</strong> TypeScript 5.x está configurado em modo strict
+<strong>And</strong> Tailwind CSS v4 está configurado com OKLCH colors
+<strong>And</strong> shadcn/ui está inicializado com tema dark-only
+<strong>And</strong> a estrutura de pastas segue o padrão da architecture:</p>
+<ul>
+<li><code>src/app/</code> para rotas</li>
+<li><code>src/components/</code> para componentes</li>
+<li><code>src/lib/</code> para utilitários</li>
+<li><code>src/types/</code> para tipos TypeScript
+<strong>And</strong> Vitest está configurado para testes unitários
+<strong>And</strong> o arquivo <code>lib/logger.ts</code> existe com função <code>log()</code> para structured logging
+<strong>And</strong> ESLint e Prettier estão configurados
+<strong>And</strong> o projeto compila sem erros (<code>pnpm build</code>)</li>
+</ul>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Usar <code>create-next-app@latest</code> com flags: <code>--typescript --tailwind --eslint --app --src-dir --turbopack</code></li>
+<li>Import alias <code>@/*</code> configurado</li>
+<li><code>runtime: &#39;nodejs&#39;</code> como padrão para Route Handlers</li>
+</ul>
+<hr>
+<h3>Story 1.2: Implementação da State Machine de VideoStatus</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero uma state machine que gerencie as transições de status dos vídeos,
+Para que todas as mudanças de estado sejam validadas e previsíveis.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> os estados definidos: <code>new</code>, <code>processing</code>, <code>draft</code>, <code>ready</code>, <code>sending</code>, <code>sent</code>
+<strong>When</strong> eu chamo <code>transition(currentStatus, action)</code>
+<strong>Then</strong> a função retorna o próximo status válido
+<strong>And</strong> lança <code>InvalidTransitionError</code> para transições inválidas</p>
+<p><strong>Given</strong> um vídeo com status <code>new</code>
+<strong>When</strong> eu chamo <code>transition(&#39;new&#39;, &#39;process&#39;)</code>
+<strong>Then</strong> retorna <code>&#39;processing&#39;</code></p>
+<p><strong>Given</strong> um vídeo com status <code>new</code>
+<strong>When</strong> eu chamo <code>transition(&#39;new&#39;, &#39;send&#39;)</code>
+<strong>Then</strong> lança <code>InvalidTransitionError</code></p>
+<p><strong>Given</strong> um vídeo com status <code>sent</code>
+<strong>When</strong> eu chamo qualquer ação de transição
+<strong>Then</strong> lança <code>InvalidTransitionError</code> (estado terminal)</p>
+<p><strong>And</strong> existe um arquivo <code>src/lib/video-state-machine/transitions.ts</code>
+<strong>And</strong> existe um arquivo <code>src/lib/video-state-machine/types.ts</code> com:</p>
+<ul>
+<li><code>type VideoStatus = &#39;new&#39; | &#39;processing&#39; | &#39;draft&#39; | &#39;ready&#39; | &#39;sending&#39; | &#39;sent&#39;</code></li>
+<li><code>type VideoAction = &#39;process&#39; | &#39;complete&#39; | &#39;error&#39; | &#39;edit&#39; | &#39;finalize&#39; | &#39;send&#39; | &#39;success&#39;</code></li>
+<li><code>class InvalidTransitionError extends Error</code>
+<strong>And</strong> testes table-driven cobrem todas as transições válidas e inválidas
+<strong>And</strong> o arquivo de testes está co-localizado: <code>src/lib/video-state-machine/transitions.test.ts</code></li>
+</ul>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Pure function sem side effects</li>
+<li>Usar <code>test.each()</code> para table-driven tests</li>
+<li>Mapa de transições conforme project-context.md</li>
+</ul>
+<hr>
+<h3>Story 1.3: Configuração Auth.js com Google Provider</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero fazer login usando minha conta Google,
+Para que eu possa acessar o sistema de forma segura.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário não autenticado
+<strong>When</strong> ele acessa a página de login
+<strong>Then</strong> vê um botão &quot;Entrar com Google&quot;</p>
+<p><strong>Given</strong> um usuário clica em &quot;Entrar com Google&quot;
+<strong>When</strong> ele autoriza o acesso no popup do Google
+<strong>Then</strong> é redirecionado para a página principal autenticado
+<strong>And</strong> sua sessão é criada com dados do perfil (nome, email, avatar)</p>
+<p><strong>Given</strong> um usuário autenticado
+<strong>When</strong> ele clica em &quot;Sair&quot;
+<strong>Then</strong> sua sessão é encerrada
+<strong>And</strong> é redirecionado para a página de login</p>
+<p><strong>And</strong> Auth.js v5 está configurado em <code>src/lib/auth.ts</code>
+<strong>And</strong> existe um arquivo <code>src/app/api/auth/[...nextauth]/route.ts</code>
+<strong>And</strong> existe um <code>SessionProvider</code> wrapper em <code>src/components/providers/session-provider.tsx</code>
+<strong>And</strong> a função <code>getServerSession()</code> está disponível para Route Handlers
+<strong>And</strong> variáveis de ambiente configuradas: <code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, <code>NEXTAUTH_SECRET</code></p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Usar Auth.js v5 (não NextAuth v4)</li>
+<li>Google OAuth 2.0 credentials no GCP Console</li>
+<li>Sessão JWT para stateless auth</li>
+</ul>
+<hr>
+<h3>Story 1.4: Integração OAuth YouTube com Escopos Necessários</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero autorizar o acesso à API do YouTube durante o login,
+Para que o sistema possa ler meus vídeos e atualizar metadados.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário fazendo login pela primeira vez
+<strong>When</strong> ele autoriza no Google
+<strong>Then</strong> a consent screen solicita permissões do YouTube:</p>
+<ul>
+<li><code>youtube.readonly</code> (ler vídeos do canal)</li>
+<li><code>youtube.upload</code> (atualizar metadados)
+<strong>And</strong> o usuário pode ver quais permissões está concedendo</li>
+</ul>
+<p><strong>Given</strong> um usuário que já autorizou anteriormente
+<strong>When</strong> ele faz login novamente
+<strong>Then</strong> não precisa re-autorizar (refresh_token é usado)</p>
+<p><strong>Given</strong> um usuário nega as permissões do YouTube
+<strong>When</strong> o fluxo de OAuth retorna
+<strong>Then</strong> o usuário vê uma mensagem explicando que as permissões são necessárias
+<strong>And</strong> pode tentar novamente</p>
+<p><strong>And</strong> os escopos OAuth estão configurados no Auth.js provider
+<strong>And</strong> o access_token do YouTube está disponível na sessão server-side</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Dual-purpose credentials: mesmo OAuth para auth + YouTube API</li>
+<li>Escopos mínimos conforme NFR7</li>
+<li>Consent screen configurada no GCP Console</li>
+</ul>
+<hr>
+<h3>Story 1.5: Armazenamento de Tokens no Firestore</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero armazenar tokens OAuth no Firestore server-side,
+Para que os tokens sejam persistidos de forma segura e o refresh funcione corretamente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário faz login com sucesso
+<strong>When</strong> os tokens são recebidos do Google
+<strong>Then</strong> o <code>access_token</code> é armazenado no Firestore
+<strong>And</strong> o <code>refresh_token</code> é armazenado no Firestore (apenas na primeira autorização)
+<strong>And</strong> o <code>expires_at</code> é armazenado para controle de expiração</p>
+<p><strong>Given</strong> um usuário faz login subsequente
+<strong>When</strong> o callback do OAuth é executado
+<strong>Then</strong> o <code>access_token</code> é atualizado
+<strong>And</strong> o <code>refresh_token</code> existente NÃO é sobrescrito (preservation rule)</p>
+<p><strong>Given</strong> tokens armazenados no Firestore
+<strong>When</strong> eu consulto via admin SDK
+<strong>Then</strong> os tokens estão na collection <code>users/{userId}/tokens</code>
+<strong>And</strong> os dados são criptografados em repouso (Firestore default)</p>
+<p><strong>And</strong> existe <code>src/lib/firebase/admin.ts</code> com inicialização do Firebase Admin SDK
+<strong>And</strong> existe <code>src/lib/firebase/client.ts</code> com inicialização do Firebase Client SDK
+<strong>And</strong> o callback <code>jwt</code> do Auth.js persiste tokens no Firestore
+<strong>And</strong> testes de integração verificam a persistência (Firebase Emulator)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Firebase Admin SDK para operações server-side</li>
+<li>NUNCA expor tokens no client</li>
+<li>refresh_token só vem na primeira autorização - CRÍTICO preservar</li>
+</ul>
+<hr>
+<h3>Story 1.6: Middleware de Proteção de Rotas</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero proteger rotas que requerem autenticação,
+Para que usuários não autenticados sejam redirecionados ao login.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário não autenticado
+<strong>When</strong> ele tenta acessar <code>/videos</code>
+<strong>Then</strong> é redirecionado para <code>/login</code></p>
+<p><strong>Given</strong> um usuário autenticado
+<strong>When</strong> ele acessa <code>/videos</code>
+<strong>Then</strong> a página é renderizada normalmente</p>
+<p><strong>Given</strong> uma requisição para endpoint SSE (<code>/api/process/*</code>)
+<strong>When</strong> o middleware intercepta
+<strong>Then</strong> NÃO aplica buffering na response
+<strong>And</strong> verifica autenticação sem bloquear o stream</p>
+<p><strong>Given</strong> uma requisição para <code>/api/auth/*</code>
+<strong>When</strong> o middleware intercepta
+<strong>Then</strong> permite acesso sem autenticação (rotas públicas)</p>
+<p><strong>And</strong> existe <code>src/middleware.ts</code> na raiz de <code>src/</code>
+<strong>And</strong> o matcher exclui: <code>/_next</code>, <code>/api/auth</code>, assets estáticos
+<strong>And</strong> rotas protegidas: <code>/videos</code>, <code>/settings</code>, <code>/api/*</code> (exceto auth)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Middleware em <code>src/middleware.ts</code> (NÃO em <code>src/app/</code>)</li>
+<li>NFR4: SSE endpoints não podem ter buffering</li>
+<li>Usar <code>NextResponse.next()</code> para SSE endpoints</li>
+</ul>
+<hr>
+<h3>Story 1.7: Token Refresh e Gestão de Sessão Expirada</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero que minha sessão seja mantida automaticamente,
+Para que eu não precise fazer login frequentemente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um access_token próximo da expiração (&lt; 5 min)
+<strong>When</strong> uma requisição autenticada é feita
+<strong>Then</strong> o token é automaticamente renovado usando o refresh_token
+<strong>And</strong> o novo access_token é persistido no Firestore
+<strong>And</strong> a requisição original é completada com sucesso</p>
+<p><strong>Given</strong> um refresh_token inválido ou revogado
+<strong>When</strong> uma tentativa de refresh é feita
+<strong>Then</strong> o usuário é deslogado
+<strong>And</strong> é redirecionado para <code>/login</code>
+<strong>And</strong> vê mensagem &quot;Sessão expirada, faça login novamente&quot;</p>
+<p><strong>Given</strong> uma requisição API com sessão expirada
+<strong>When</strong> o servidor processa a requisição
+<strong>Then</strong> retorna status 401
+<strong>And</strong> body contém <code>{ error: { code: &#39;AUTH_EXPIRED&#39;, message: &#39;Sessão expirada&#39; } }</code></p>
+<p><strong>And</strong> existe lógica de refresh no callback <code>jwt</code> do Auth.js
+<strong>And</strong> o frontend detecta 401 e redireciona para login
+<strong>And</strong> testes cobrem cenários de token expirado e refresh</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Verificar <code>expires_at</code> antes de cada requisição autenticada</li>
+<li>Usar refresh_token para obter novo access_token</li>
+<li>Log estruturado para debugging de auth issues</li>
+</ul>
+<hr>
+<h2>Epic 2: Configuração de Podcast — Stories</h2>
+<h3>Story 2.0: Migração de Videos para Subcollection</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero migrar a collection legada <code>videos</code> para a subcollection <code>podcasts/{podcastId}/videos</code>,
+Para que o modelo de dados esteja alinhado com a arquitetura white-label desde o início.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a collection legada <code>videos</code> no Firestore
+<strong>When</strong> eu executo o script de migração
+<strong>Then</strong> todos os documentos são copiados para <code>podcasts/pptnc/videos/{videoId}</code>
+<strong>And</strong> o campo <code>podcastId: &#39;pptnc&#39;</code> é adicionado em cada documento
+<strong>And</strong> os documentos originais NÃO são deletados (soft migration)</p>
+<p><strong>Given</strong> a migração executada
+<strong>When</strong> eu verifico as contagens
+<strong>Then</strong> o número de documentos em <code>podcasts/pptnc/videos</code> é igual ao número em <code>videos</code></p>
+<p><strong>Given</strong> o script executado múltiplas vezes
+<strong>When</strong> um documento já existe na subcollection
+<strong>Then</strong> o documento NÃO é sobrescrito (idempotente)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Script standalone em <code>scripts/migrate-videos-to-subcollection.ts</code></li>
+<li>Usa Firebase Admin SDK com ADC</li>
+<li>Não deleta originais - Portal produção continua lendo de <code>videos/</code></li>
+<li>Adiciona campos: <code>podcastId</code>, <code>migratedAt</code></li>
+</ul>
+<hr>
+<h3>Story 2.1: Schema e Types do Podcast</h3>
+<p>Como um <strong>desenvolvedor</strong>,
+Eu quero schemas Zod e types TypeScript para o Podcast,
+Para que os dados sejam validados em runtime e tipados em compile time.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a necessidade de validar dados de podcast
+<strong>When</strong> eu importo os schemas de <code>src/lib/schemas/podcast.ts</code>
+<strong>Then</strong> tenho acesso ao <code>PodcastSchema</code> com os campos:</p>
+<ul>
+<li><code>id: string</code></li>
+<li><code>name: string</code></li>
+<li><code>channelId: string</code></li>
+<li><code>ownerId: string</code></li>
+<li><code>prompts: { episode: string, cut: string, reel: string }</code></li>
+<li><code>videoTypes: { episode: { minDuration: number, maxDuration: number }, cut: {...}, reel: {...} }</code></li>
+<li><code>createdAt: Timestamp</code></li>
+<li><code>updatedAt: Timestamp</code></li>
+</ul>
+<p><strong>Given</strong> dados inválidos de podcast
+<strong>When</strong> eu valido com <code>PodcastSchema.parse(data)</code>
+<strong>Then</strong> lança <code>ZodError</code> com mensagens descritivas</p>
+<p><strong>Given</strong> dados válidos de podcast
+<strong>When</strong> eu valido com <code>PodcastSchema.parse(data)</code>
+<strong>Then</strong> retorna o objeto tipado <code>Podcast</code></p>
+<p><strong>And</strong> existe <code>src/types/podcast.ts</code> com <code>type Podcast</code> inferido do Zod
+<strong>And</strong> existe <code>src/lib/schemas/podcast.ts</code> com schemas exportados
+<strong>And</strong> existe <code>VideoTypeConfig</code> para configuração de duração por tipo
+<strong>And</strong> valores default para videoTypes:</p>
+<ul>
+<li>episode: minDuration 1200s (20min), maxDuration null</li>
+<li>cut: minDuration 180s (3min), maxDuration 1199s</li>
+<li>reel: minDuration 0, maxDuration 179s</li>
+</ul>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Usar <code>z.infer&lt;typeof PodcastSchema&gt;</code> para gerar types</li>
+<li>Schemas separados: <code>PodcastSchema</code>, <code>PodcastCreateSchema</code>, <code>PodcastUpdateSchema</code></li>
+<li>Timestamps como <code>z.custom&lt;Timestamp&gt;()</code> para Firestore</li>
+</ul>
+<hr>
+<h3>Story 2.2: Firestore Collection e Operações de Podcast</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero operações CRUD para podcasts no Firestore,
+Para que as configurações sejam persistidas e recuperadas corretamente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário autenticado
+<strong>When</strong> eu chamo <code>getPodcast(podcastId)</code>
+<strong>Then</strong> retorna o documento do podcast validado com Zod
+<strong>And</strong> inclui <code>podcastId</code> em toda query (enforcement rule #8)</p>
+<p><strong>Given</strong> um podcast existente
+<strong>When</strong> eu chamo <code>updatePodcast(podcastId, { name: &#39;Novo Nome&#39; })</code>
+<strong>Then</strong> apenas o campo <code>name</code> é atualizado (field-level merge)
+<strong>And</strong> <code>updatedAt</code> é atualizado com <code>serverTimestamp()</code>
+<strong>And</strong> NÃO usa <code>setDoc</code> sem merge (enforcement rule #4)</p>
+<p><strong>Given</strong> um usuário administrador
+<strong>When</strong> eu chamo <code>createPodcast(data)</code>
+<strong>Then</strong> um novo documento é criado em <code>podcasts/{podcastId}</code>
+<strong>And</strong> os dados são validados com Zod ANTES de salvar
+<strong>And</strong> <code>createdAt</code> e <code>updatedAt</code> são definidos</p>
+<p><strong>Given</strong> operação de leitura do podcast
+<strong>When</strong> eu uso o client SDK
+<strong>Then</strong> importo de <code>firebase/firestore</code></p>
+<p><strong>Given</strong> operação de escrita em Route Handler
+<strong>When</strong> eu uso o admin SDK
+<strong>Then</strong> importo de <code>firebase-admin/firestore</code>
+<strong>And</strong> uso <code>FieldValue.serverTimestamp()</code> (não <code>serverTimestamp()</code>)</p>
+<p><strong>And</strong> existe <code>src/lib/firebase/podcasts.ts</code> com funções exportadas
+<strong>And</strong> funções usam structured logging via <code>log()</code>
+<strong>And</strong> testes de integração com Firebase Emulator</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Split SDK: client vs admin (enforcement rule #12)</li>
+<li>Validar com Zod ANTES de persistir (enforcement rule #2)</li>
+<li>Nunca <code>setDoc</code> sem merge (enforcement rule #4)</li>
+</ul>
+<hr>
+<h3>Story 2.3: Tela de Configurações do Podcast</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero acessar uma tela de configurações do meu podcast,
+Para que eu possa visualizar e editar as configurações atuais.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário autenticado
+<strong>When</strong> ele clica em &quot;Configurações&quot; na sidebar
+<strong>Then</strong> navega para <code>/settings</code>
+<strong>And</strong> vê o formulário de configurações do podcast</p>
+<p><strong>Given</strong> a tela de configurações carregada
+<strong>When</strong> os dados do podcast são buscados
+<strong>Then</strong> os campos são preenchidos com valores atuais:</p>
+<ul>
+<li>Nome do podcast</li>
+<li>Channel ID do YouTube</li>
+<li>Configurações de duração por tipo</li>
+</ul>
+<p><strong>Given</strong> um usuário edita o nome do podcast
+<strong>When</strong> ele sai do campo (blur) ou clica em salvar
+<strong>Then</strong> a alteração é salva automaticamente
+<strong>And</strong> vê indicador &quot;Salvo&quot; confirmando a operação</p>
+<p><strong>Given</strong> um erro ao salvar
+<strong>When</strong> a operação de update falha
+<strong>Then</strong> vê indicador &quot;Erro ao salvar&quot;
+<strong>And</strong> o erro é logado via structured logging</p>
+<p><strong>And</strong> existe <code>src/app/settings/page.tsx</code> como Server Component
+<strong>And</strong> existe <code>src/components/settings/podcast-settings-form.tsx</code> como Client Component
+<strong>And</strong> usa componentes shadcn/ui: <code>Card</code>, <code>Input</code>, <code>Label</code>, <code>Button</code>
+<strong>And</strong> a sidebar tem link para <code>/settings</code> com ícone de engrenagem
+<strong>And</strong> breadcrumb mostra &quot;Configurações&quot; no header</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Dark mode only (enforcement rule do frontend)</li>
+<li>Form validation com Zod</li>
+<li>Debounce no auto-save (1.5s)</li>
+</ul>
+<hr>
+<h3>Story 2.4: Configuração de Prompts por Tipo de Vídeo</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero configurar prompts diferentes para cada tipo de vídeo,
+Para que a IA gere metadados otimizados para episódios, cortes e reels.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a tela de configurações
+<strong>When</strong> o usuário expande a seção &quot;Prompts&quot;
+<strong>Then</strong> vê três áreas de texto:</p>
+<ul>
+<li>Prompt para Episódios</li>
+<li>Prompt para Cortes</li>
+<li>Prompt para Reels</li>
+</ul>
+<p><strong>Given</strong> cada área de prompt
+<strong>When</strong> o usuário visualiza
+<strong>Then</strong> vê o prompt atual (ou placeholder se vazio)
+<strong>And</strong> vê contador de caracteres
+<strong>And</strong> vê dica sobre variáveis disponíveis: <code>{title}</code>, <code>{transcript}</code>, <code>{duration}</code></p>
+<p><strong>Given</strong> o usuário edita um prompt
+<strong>When</strong> ele modifica o texto
+<strong>Then</strong> o auto-save é acionado após 1.5s de inatividade
+<strong>And</strong> vê indicador &quot;Salvando...&quot; durante a operação
+<strong>And</strong> vê indicador &quot;Salvo&quot; após sucesso</p>
+<p><strong>Given</strong> um prompt muito longo (&gt; 10000 caracteres)
+<strong>When</strong> o usuário tenta salvar
+<strong>Then</strong> vê erro de validação inline
+<strong>And</strong> a operação de save é bloqueada</p>
+<p><strong>Given</strong> a configuração de duração por tipo
+<strong>When</strong> o usuário visualiza
+<strong>Then</strong> vê os ranges de duração para classificação:</p>
+<ul>
+<li>Episódio: &gt; 20 minutos</li>
+<li>Corte: 3-20 minutos</li>
+<li>Reel: &lt; 3 minutos
+<strong>And</strong> pode editar os limites de duração</li>
+</ul>
+<p><strong>And</strong> existe <code>src/components/settings/prompt-editor.tsx</code>
+<strong>And</strong> usa <code>Textarea</code> do shadcn/ui com resize vertical
+<strong>And</strong> prompts são salvos em <code>podcasts/{podcastId}.prompts</code>
+<strong>And</strong> validação de tamanho máximo no schema Zod</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Variáveis de prompt serão interpoladas no Epic 4</li>
+<li>Duração em segundos no banco, exibida em minutos na UI</li>
+<li>Accordion ou Tabs para organizar os 3 tipos</li>
+</ul>
+<hr>
+<h2>Epic 3: Detecção de Vídeos — Stories</h2>
+<h3>Story 3.1: Schema e Types do Video</h3>
+<p>Como um <strong>desenvolvedor</strong>,
+Eu quero schemas Zod e types TypeScript para Video,
+Para que os dados de vídeos sejam validados e tipados corretamente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a necessidade de validar dados de vídeo
+<strong>When</strong> eu importo os schemas de <code>src/lib/schemas/video.ts</code>
+<strong>Then</strong> tenho acesso ao <code>VideoSchema</code> com os campos:</p>
+<ul>
+<li><code>id: string</code> (YouTube video ID)</li>
+<li><code>podcastId: string</code></li>
+<li><code>youtubeData: { title, description, thumbnail, duration, publishedAt }</code></li>
+<li><code>generatedData: { title?, description?, tags?, chapters?, compliance? }</code></li>
+<li><code>status: VideoStatus</code></li>
+<li><code>videoType: &#39;episode&#39; | &#39;cut&#39; | &#39;reel&#39;</code></li>
+<li><code>createdAt: Timestamp</code></li>
+<li><code>updatedAt: Timestamp</code></li>
+</ul>
+<p><strong>Given</strong> a duração de um vídeo
+<strong>When</strong> eu chamo <code>classifyVideoType(durationSeconds, config)</code>
+<strong>Then</strong> retorna:</p>
+<ul>
+<li><code>&#39;episode&#39;</code> se duration &gt;= config.episode.minDuration</li>
+<li><code>&#39;cut&#39;</code> se duration &gt;= config.cut.minDuration E &lt; config.episode.minDuration</li>
+<li><code>&#39;reel&#39;</code> se duration &lt; config.cut.minDuration</li>
+</ul>
+<p><strong>Given</strong> dados do YouTube API
+<strong>When</strong> eu valido com <code>YouTubeVideoResponseSchema.parse(data)</code>
+<strong>Then</strong> os dados são validados e transformados para o formato interno
+<strong>And</strong> lança <code>ZodError</code> se a response for inválida</p>
+<p><strong>And</strong> existe <code>src/types/video.ts</code> com types inferidos
+<strong>And</strong> existe <code>VideoSummary</code> (para lista) e <code>VideoDetail</code> (para detalhe)
+<strong>And</strong> existe função <code>classifyVideoType()</code> em <code>src/lib/video-utils.ts</code>
+<strong>And</strong> testes unitários para classificação de tipo</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>VideoSummary: id, title, thumbnail, status, videoType</li>
+<li>VideoDetail: todos os campos incluindo generatedData</li>
+<li>Duração vem do YouTube em ISO 8601 (PT1H2M3S)</li>
+</ul>
+<hr>
+<h3>Story 3.2: Integração YouTube Data API para Listar Vídeos</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero buscar vídeos do canal do usuário via YouTube Data API,
+Para que novos uploads sejam detectados automaticamente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário autenticado com token YouTube válido
+<strong>When</strong> eu chamo <code>GET /api/youtube/videos</code>
+<strong>Then</strong> retorna lista de vídeos do canal do usuário
+<strong>And</strong> cada vídeo contém: id, title, description, thumbnail, duration, publishedAt
+<strong>And</strong> os dados são validados com Zod ANTES de retornar</p>
+<p><strong>Given</strong> um token expirado
+<strong>When</strong> a requisição é feita
+<strong>Then</strong> o token é renovado automaticamente via refresh_token
+<strong>And</strong> a requisição é retentada com o novo token</p>
+<p><strong>Given</strong> quota do YouTube excedida
+<strong>When</strong> a API retorna erro 403
+<strong>Then</strong> retorna <code>{ error: { code: &#39;YOUTUBE_QUOTA&#39;, message: &#39;...&#39; } }</code>
+<strong>And</strong> o erro é logado via structured logging</p>
+<p><strong>Given</strong> vídeo não encontrado ou privado
+<strong>When</strong> a API retorna erro 404
+<strong>Then</strong> retorna <code>{ error: { code: &#39;YOUTUBE_NOT_FOUND&#39;, message: &#39;...&#39; } }</code></p>
+<p><strong>And</strong> existe <code>src/app/api/youtube/videos/route.ts</code>
+<strong>And</strong> inclui <code>export const runtime = &#39;nodejs&#39;</code> (enforcement rule #3)
+<strong>And</strong> usa YouTube Data API v3 endpoint: <code>channels.list</code> + <code>playlistItems.list</code>
+<strong>And</strong> implementa paginação para canais com muitos vídeos</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Buscar uploads playlist via <code>channels.list?part=contentDetails</code></li>
+<li>Listar vídeos via <code>playlistItems.list?playlistId=UU...</code></li>
+<li>Detalhes via <code>videos.list?part=snippet,contentDetails</code></li>
+</ul>
+<hr>
+<h3>Story 3.3: Persistência de Vídeos no Firestore</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero persistir vídeos detectados no Firestore,
+Para que o histórico e status sejam mantidos entre sessões.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> vídeos retornados da YouTube API
+<strong>When</strong> eu processo a sincronização
+<strong>Then</strong> novos vídeos são criados em <code>podcasts/{podcastId}/videos/{videoId}</code>
+<strong>And</strong> cada vídeo é criado com status <code>&#39;new&#39;</code> (via state machine)
+<strong>And</strong> <code>videoType</code> é classificado automaticamente pela duração</p>
+<p><strong>Given</strong> um vídeo que já existe no Firestore
+<strong>When</strong> a sincronização é executada
+<strong>Then</strong> os dados do YouTube são atualizados (título, thumbnail)
+<strong>And</strong> o <code>status</code> NÃO é alterado (preservar progresso)
+<strong>And</strong> <code>updatedAt</code> é atualizado com <code>serverTimestamp()</code></p>
+<p><strong>Given</strong> vídeo no YouTube foi deletado
+<strong>When</strong> a sincronização é executada
+<strong>Then</strong> o vídeo no Firestore é marcado com flag <code>deleted: true</code>
+<strong>And</strong> NÃO é removido do banco (soft delete)</p>
+<p><strong>Given</strong> operação de sincronização
+<strong>When</strong> eu chamo <code>POST /api/sync</code>
+<strong>Then</strong> retorna <code>{ data: { added: number, updated: number, deleted: number } }</code>
+<strong>And</strong> usa transição <code>transition(&#39;new&#39;, &#39;classify&#39;)</code> para novos vídeos</p>
+<p><strong>And</strong> existe <code>src/lib/firebase/videos.ts</code> com funções CRUD
+<strong>And</strong> todas as queries incluem <code>podcastId</code> (enforcement rule #8)
+<strong>And</strong> usa <code>updateDoc</code> com fields explícitos (enforcement rule #4)
+<strong>And</strong> valida dados com Zod ANTES de persistir</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Batch writes para performance (max 500 per batch)</li>
+<li>Usar videoId do YouTube como document ID</li>
+<li>Índice composto: podcastId + status + createdAt</li>
+</ul>
+<hr>
+<h3>Story 3.4: Layout Master-Detail com Lista de Vídeos</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero um layout com lista de vídeos à esquerda e detalhes à direita,
+Para que eu possa navegar e visualizar vídeos eficientemente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um usuário acessa <code>/videos</code>
+<strong>When</strong> a página carrega
+<strong>Then</strong> vê layout Master-Detail com:</p>
+<ul>
+<li>Sidebar fixa à esquerda (w-48, colapsável)</li>
+<li>Painel de lista de vídeos (largura ajustável)</li>
+<li>Painel de detalhes à direita</li>
+</ul>
+<p><strong>Given</strong> o layout carregado
+<strong>When</strong> o usuário arrasta o divisor entre painéis
+<strong>Then</strong> os painéis são redimensionados
+<strong>And</strong> a preferência é salva (localStorage)</p>
+<p><strong>Given</strong> nenhum vídeo selecionado
+<strong>When</strong> o painel de detalhes é renderizado
+<strong>Then</strong> mostra estado vazio com instrução &quot;Selecione um vídeo&quot;</p>
+<p><strong>Given</strong> a sidebar
+<strong>When</strong> o usuário clica no ícone de colapsar
+<strong>Then</strong> a sidebar colapsa para mostrar apenas ícones
+<strong>And</strong> expande ao clicar novamente</p>
+<p><strong>And</strong> existe <code>src/app/videos/page.tsx</code> como Server Component
+<strong>And</strong> existe <code>src/components/layout/master-detail-layout.tsx</code>
+<strong>And</strong> usa <code>ResizablePanel</code> do shadcn/ui
+<strong>And</strong> implementa dark mode only
+<strong>And</strong> responsivo: em tablet, lista sobrepõe detalhes</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>ResizablePanelGroup com persistenceKey</li>
+<li>Min/max constraints nos painéis</li>
+<li>Mobile: drawer para detalhes</li>
+</ul>
+<hr>
+<h3>Story 3.5: Componente VideoListItem</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero ver meus vídeos em uma lista visual com status,
+Para que eu possa identificar rapidamente o estado de cada vídeo.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a lista de vídeos carregada
+<strong>When</strong> eu visualizo um item
+<strong>Then</strong> vejo:</p>
+<ul>
+<li>Thumbnail do vídeo (aspect ratio 16:9)</li>
+<li>Título (truncado se muito longo)</li>
+<li>Badge de status colorido</li>
+<li>Badge de tipo (episódio/corte/reel)</li>
+</ul>
+<p><strong>Given</strong> os status possíveis
+<strong>When</strong> renderizo os badges
+<strong>Then</strong> as cores são:</p>
+<ul>
+<li><code>new</code>: gray</li>
+<li><code>processing</code>: blue (com animação pulse)</li>
+<li><code>draft</code>: yellow</li>
+<li><code>ready</code>: green</li>
+<li><code>sending</code>: blue (com animação)</li>
+<li><code>sent</code>: green (check icon)</li>
+</ul>
+<p><strong>Given</strong> um vídeo na lista
+<strong>When</strong> eu clico nele
+<strong>Then</strong> o vídeo é selecionado
+<strong>And</strong> a URL atualiza para <code>?selected={videoId}</code> (URL state)
+<strong>And</strong> o item recebe estilo de seleção (ring-blue-400)</p>
+<p><strong>Given</strong> a lista de vídeos
+<strong>When</strong> eu pressiono ↓ ou ↑
+<strong>Then</strong> a seleção move para o próximo/anterior vídeo
+<strong>And</strong> a URL é atualizada
+<strong>And</strong> o scroll acompanha a seleção</p>
+<p><strong>Given</strong> um vídeo selecionado
+<strong>When</strong> eu pressiono Enter
+<strong>Then</strong> o foco vai para o painel de detalhes</p>
+<p><strong>And</strong> existe <code>src/components/videos/video-list-item.tsx</code>
+<strong>And</strong> usa <code>Badge</code> do shadcn/ui para status
+<strong>And</strong> implementa <code>role=&quot;listbox&quot;</code> e <code>role=&quot;option&quot;</code> para a11y
+<strong>And</strong> usa <code>useSearchParams</code> para URL state (enforcement rule #10)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>selectedVideoId NUNCA no Zustand, sempre na URL</li>
+<li>Thumbnail lazy loading com placeholder</li>
+<li>Keyboard handler no container da lista</li>
+</ul>
+<hr>
+<h2>Epic 4: Processamento AI de Metadados (Wizard) — Stories</h2>
+<h3>Story 4.0b: Inputs de Contexto para Processamento ✅ DONE</h3>
+<p>Como um <strong>produtor de conteúdo</strong>,
+Eu quero informar contexto adicional sobre o episódio antes do processamento de IA,
+Para que a IA tenha informações relevantes sobre tema, co-host e convidados para gerar metadados de qualidade.</p>
+<p><strong>Status:</strong> DONE (implementado com schema legacy-compatible)</p>
+<p><strong>Implementação:</strong></p>
+<ul>
+<li>Schemas: <code>GuestSchema</code>, <code>EpisodeContextFormSchema</code> em <code>src/lib/schemas/video.ts</code></li>
+<li>Campos flat no VideoSchema: <code>theme</code>, <code>parentEpisodeId</code>, <code>guests</code> (legacy: guests[0] = co-host)</li>
+<li>Modal: <code>ContextInputsModal</code> com form para episodes e selector para cuts/reels</li>
+<li>API: <code>PUT /api/videos/[videoId]/context</code></li>
+<li>Componentes: <code>PersonForm</code>, <code>EpisodeOriginSelector</code>, <code>ContextInputsPreview</code></li>
+</ul>
+<hr>
+<h3>Story 4.1: Infraestrutura do Wizard e Layout Base</h3>
+<p>Como um <strong>desenvolvedor</strong>,
+Eu quero uma infraestrutura de Wizard com state machine e layout definido,
+Para que o fluxo de 8 fases seja consistente e gerenciável.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a necessidade de gerenciar o Wizard
+<strong>When</strong> eu importo o estado de <code>src/lib/wizard/machine.ts</code>
+<strong>Then</strong> tenho acesso à state machine com:</p>
+<pre><code class="language-typescript">type WizardPhase = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+type PhaseStatus = &#39;pending&#39; | &#39;loading&#39; | &#39;completed&#39; | &#39;error&#39;
+
+interface WizardState {
+  currentPhase: WizardPhase
+  phases: Record&lt;WizardPhase, {
+    status: PhaseStatus
+    needsRevalidation: boolean  // Marcado quando fase anterior foi alterada
+    data: PhaseData | null
+    error: string | null
+  }&gt;
+}
+</code></pre>
+<p><strong>Given</strong> o layout do Wizard
+<strong>When</strong> renderizado
+<strong>Then</strong> mostra:</p>
+<ul>
+<li><strong>Top half</strong>: Video preview (esquerda) + Painel interativo (direita)</li>
+<li><strong>Bottom half</strong>: Console area (scroll vertical, empilha alerts)</li>
+<li><strong>Header</strong>: Breadcrumb com 8 fases e indicadores de estado</li>
+<li><strong>Footer do painel interativo</strong>: Botão &quot;Avançar&quot; para próxima fase</li>
+</ul>
+<p><strong>Given</strong> o breadcrumb do Wizard
+<strong>When</strong> renderizado
+<strong>Then</strong> mostra indicadores:</p>
+<ul>
+<li>✓ Verde: fase completa</li>
+<li>● Azul pulsante: fase em progresso</li>
+<li>○ Cinza: fase pendente</li>
+<li>⚠ Amarelo: fase com erro ou needsRevalidation</li>
+</ul>
+<p><strong>Given</strong> o botão &quot;Avançar&quot;
+<strong>When</strong> clicado
+<strong>Then</strong> valida os critérios de avanço da fase atual (específicos por fase)
+<strong>And</strong> se critérios atendidos, avança para próxima fase
+<strong>And</strong> se critérios NÃO atendidos, mostra feedback do que falta</p>
+<p><strong>Given</strong> o usuário volta para uma fase anterior (ex: Fase 5)
+<strong>When</strong> ele faz alterações ou revalida
+<strong>Then</strong> fases seguintes (6, 7, 8) são marcadas com <code>needsRevalidation: true</code>
+<strong>And</strong> os dados das fases seguintes NÃO são apagados (preservados)
+<strong>And</strong> Alert Dialog solicita confirmação antes de marcar</p>
+<p><strong>Given</strong> o usuário avança para fase marcada com needsRevalidation
+<strong>When</strong> a fase é exibida
+<strong>Then</strong> mostra opção: &quot;Manter dados existentes&quot; ou &quot;Revalidar com LLM&quot;
+<strong>And</strong> se escolher manter, desmarca needsRevalidation e avança
+<strong>And</strong> se escolher revalidar, executa chamada LLM</p>
+<p><strong>And</strong> existe <code>src/lib/wizard/machine.ts</code> com state machine (XState ou custom)
+<strong>And</strong> existe <code>src/components/wizard/wizard-layout.tsx</code> com layout base
+<strong>And</strong> existe <code>src/components/wizard/wizard-breadcrumb.tsx</code>
+<strong>And</strong> existe <code>src/components/wizard/wizard-advance-button.tsx</code> com validação
+<strong>And</strong> existe <code>src/components/wizard/console-area.tsx</code> (empilha alerts)
+<strong>And</strong> existe <code>src/hooks/use-wizard.ts</code> para gerenciar estado</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>State machine pode usar XState ou implementação custom</li>
+<li>Console area mantém histórico de alerts (não limpa)</li>
+<li>Video preview usa YouTube embedded player (responsivo)</li>
+<li>Persistência de estado intermediário no Firestore</li>
+<li>Critérios de avanço são blocking (impedem avançar se não atendidos)</li>
+<li>Dados de fases seguintes são preservados ao voltar (não limpos)</li>
+</ul>
+<hr>
+<h3>Story 4.2: Integração LLM Base (Gemini API)</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero um cliente configurado para a API do Gemini com chamadas síncronas,
+Para que eu possa gerar metadados de vídeos em cada fase do Wizard.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a necessidade de chamar o Gemini
+<strong>When</strong> eu uso <code>callLLM(phase, video, promptOverride?)</code>
+<strong>Then</strong> a requisição é enviada para a API do Gemini
+<strong>And</strong> aguarda resposta completa (sem streaming)
+<strong>And</strong> timeout de 30-60s por chamada
+<strong>And</strong> retorna JSON parseado ou erro</p>
+<p><strong>Given</strong> os prompts por fase
+<strong>When</strong> eu chamo <code>getPromptForPhase(phase, video, config)</code>
+<strong>Then</strong> retorna o prompt interpolado com variáveis:</p>
+<ul>
+<li><code>{title}</code>: título original do vídeo</li>
+<li><code>{transcript}</code>: transcrição do vídeo (SRT)</li>
+<li><code>{duration}</code>: duração formatada</li>
+<li><code>{theme}</code>: tema do episódio</li>
+<li><code>{guests}</code>: dados dos convidados formatados</li>
+<li><code>{previousPhaseData}</code>: dados das fases anteriores (para SEO chain)
+<strong>And</strong> para cut/reel, busca contexto do parentEpisodeId</li>
+</ul>
+<p><strong>Given</strong> erro de LLM (rate limit, timeout, invalid response)
+<strong>When</strong> a chamada falha
+<strong>Then</strong> retorna erro estruturado <code>{ code: string, message: string }</code>
+<strong>And</strong> a aplicação NÃO muda de fase
+<strong>And</strong> mostra mensagem amigável ao usuário</p>
+<p><strong>And</strong> existe <code>src/lib/llm/client.ts</code> com cliente Gemini
+<strong>And</strong> existe <code>src/lib/llm/prompts.ts</code> com templates por fase
+<strong>And</strong> prompts configuráveis em <code>podcasts/{podcastId}.prompts</code>
+<strong>And</strong> usa variável de ambiente <code>GEMINI_API_KEY</code></p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Chamadas síncronas (fetch com await), sem SSE</li>
+<li>Timeout configurável por fase (default 60s)</li>
+<li>Response schema JSON para output estruturado</li>
+<li>Log estruturado para todas as chamadas</li>
+</ul>
+<hr>
+<h3>Story 4.2b: Refinamento LLM - Prompt Spec (processamento_video.md)</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero que as chamadas LLM sigam a especificação definida em <code>processamento_video.md</code>,
+Para que os prompts sejam montados dinamicamente usando personas e prompts configurados no podcast.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> uma chamada LLM para qualquer fase
+<strong>When</strong> o prompt é construído
+<strong>Then</strong> segue o template base definido em <code>processamento_video.md</code>:</p>
+<pre><code>Seu papel: {persona.role}
+Seu objetivo: {persona.objective}
+Seu contexto: {persona.resume}
+Sua tarefa: {prompts.{videoType}.{phase}.description}
+Seu retorno deve ser estritamente: {prompts.{videoType}.{phase}.expectedOutput}
+</code></pre>
+<p><strong>And</strong> para fases Tipo 1 (Reprocessáveis), inclui linha adicional:</p>
+<pre><code>Dê uma atenção especial a essa instrução: {additionalContext}
+</code></pre>
+<p><strong>And</strong> para Fase 6, inclui também: <code>Título do episódio: {title}</code> e <code>Convidados: {guests}</code>
+<strong>And</strong> para Fase 7, inclui também: <code>Título do episódio: {title}</code> e <code>Descrição do episódio: {description}</code></p>
+<p><strong>Given</strong> a Fase 1 (Crítica)
+<strong>When</strong> a chamada LLM é feita
+<strong>Then</strong> usa persona <code>podcast.personas.critic</code>
+<strong>And</strong> usa prompts de <code>podcast.prompts.{videoType}.critique</code>
+<strong>And</strong> o anexo é <code>transcriptionTXT</code> (não SRT)</p>
+<p><strong>Given</strong> a transcrição do vídeo
+<strong>When</strong> enviada para a API Gemini
+<strong>Then</strong> é salva em arquivo temporário
+<strong>And</strong> passada como ANEXO (file attachment) na requisição
+<strong>And</strong> NÃO é enviada inline no prompt</p>
+<p><strong>Given</strong> os placeholders no template
+<strong>When</strong> o prompt é interpolado
+<strong>Then</strong> <code>{persona.role}</code> → <code>podcast.personas.{personaName}.role</code>
+<strong>And</strong> <code>{persona.objective}</code> → <code>podcast.personas.{personaName}.objective</code>
+<strong>And</strong> <code>{persona.resume}</code> → <code>podcast.personas.{personaName}.resume</code>
+<strong>And</strong> <code>{prompts.{videoType}.{phase}.description}</code> → <code>podcast.prompts.{videoType}.{phase}.description</code>
+<strong>And</strong> <code>{prompts.{videoType}.{phase}.expectedOutput}</code> → <code>podcast.prompts.{videoType}.{phase}.expectedOutput</code></p>
+<p><strong>Given</strong> podcast sem personas/prompts configurados
+<strong>When</strong> a chamada LLM é feita
+<strong>Then</strong> usa os prompts padrão de <code>BASE_SYSTEM_PROMPTS</code> como fallback
+<strong>And</strong> log indica que usou fallback</p>
+<p><strong>And</strong> existe função <code>buildPhasePrompt(phase, persona, prompts, videoType)</code> em <code>src/lib/llm/prompts.ts</code>
+<strong>And</strong> <code>callLLM()</code> aceita parâmetro <code>podcast</code> para extrair personas/prompts
+<strong>And</strong> existe função <code>sendTranscriptionAsAttachment()</code> em <code>src/lib/llm/client.ts</code>
+<strong>And</strong> testes cobrem interpolação de placeholders e fallback</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Referência: <code>/pptnc/processamento_video.md</code> para especificação completa</li>
+<li>Gemini File API para attachments: <code>model.generateContent({ contents: [...], files: [...] })</code></li>
+<li>Arquivo temporário pode usar <code>os.tmpdir()</code> + uuid</li>
+<li>Limpar arquivo temporário após chamada</li>
+<li>Mapeamento persona por fase conforme tabela acima</li>
+</ul>
+<p><strong>Fases e suas configurações (per processamento_video.md):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Persona</th>
+<th>Anexo</th>
+<th>Prompt Key</th>
+<th>Campo Persistência</th>
+<th>Tipo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 - Crítica</td>
+<td>critic</td>
+<td>TXT</td>
+<td>critique</td>
+<td><code>critique</code></td>
+<td>Imutável</td>
+</tr>
+<tr>
+<td>2 - Edição</td>
+<td>critic</td>
+<td>SRT</td>
+<td>editing</td>
+<td><code>editingIssues</code></td>
+<td>Imutável</td>
+</tr>
+<tr>
+<td>3 - Compliance</td>
+<td>critic</td>
+<td>SRT</td>
+<td>compliance</td>
+<td><code>riskAndCompliance</code></td>
+<td>Imutável</td>
+</tr>
+<tr>
+<td>4 - Capítulos</td>
+<td>critic</td>
+<td>SRT</td>
+<td>chapters</td>
+<td><code>chapters</code></td>
+<td>Imutável</td>
+</tr>
+<tr>
+<td>5 - Título</td>
+<td>writer</td>
+<td>TXT</td>
+<td>titles</td>
+<td><code>title</code></td>
+<td>Reprocessável</td>
+</tr>
+<tr>
+<td>6 - Descrição</td>
+<td>writer</td>
+<td>TXT</td>
+<td>description</td>
+<td><code>description</code></td>
+<td>Reprocessável</td>
+</tr>
+<tr>
+<td>7 - Tags</td>
+<td>writer</td>
+<td>TXT</td>
+<td>tags</td>
+<td><code>tags</code></td>
+<td>Reprocessável</td>
+</tr>
+<tr>
+<td>8 - YouTube</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>Ação</td>
+</tr>
+</tbody></table>
+<p><strong>Critérios de Avanço por Fase:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Critérios Blocking</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>LLM OK + <code>critique</code> persistido + inputs preenchidos (tema, co-host, convidados)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>LLM OK + <code>editingIssues</code> persistido + confirmação se houver falhas</td>
+</tr>
+<tr>
+<td>3</td>
+<td>LLM OK + <code>riskAndCompliance</code> persistido + confirmação se houver riscos</td>
+</tr>
+<tr>
+<td>4</td>
+<td>LLM OK + <code>chapters</code> persistido + aprovação do produtor (&quot;Aprova os capítulos?&quot;)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>LLM OK + <code>title</code> persistido (seleção de 1 dos 5 títulos)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>LLM OK + <code>description</code> persistido</td>
+</tr>
+<tr>
+<td>7</td>
+<td>LLM OK + <code>tags</code> persistido</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Story 4.3: Fase 1 - Input Inicial e Crítica (Tipo 2)</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero informar contexto e receber uma crítica sincera do episódio,
+Para que eu tenha feedback especializado sobre o conteúdo.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard aberto na Fase 1
+<strong>When</strong> a fase é renderizada
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Campos de contexto para preenchimento (tema do episódio, co-host, convidados)</li>
+<li>Botão &quot;Processar Crítica&quot; para iniciar LLM (habilitado apenas se inputs preenchidos)</li>
+</ul>
+<p><strong>Given</strong> os inputs obrigatórios
+<strong>When</strong> o produtor tenta avançar sem preencher
+<strong>Then</strong> botão &quot;Processar Crítica&quot; permanece desabilitado
+<strong>And</strong> campos obrigatórios são destacados com indicador visual</p>
+<p><strong>Given</strong> o botão &quot;Processar Crítica&quot; clicado
+<strong>When</strong> a chamada LLM inicia
+<strong>Then</strong> <strong>Console Area</strong> mostra:</p>
+<ul>
+<li>Spinner: &quot;Estou assistindo o episódio para te dar uma opinião sincera...&quot;</li>
+<li>Após retorno: Alert com título &quot;Crítica do Especialista&quot; e texto do LLM</li>
+</ul>
+<p><strong>Given</strong> a crítica retornada
+<strong>When</strong> salva no Firestore
+<strong>Then</strong> campo <code>critique</code> é persistido na <strong>raiz do objeto video</strong>
+<strong>And</strong> fase muda para status <code>completed</code>
+<strong>And</strong> botão &quot;Avançar&quot; é habilitado</p>
+<p><strong>Given</strong> os critérios de avanço da Fase 1
+<strong>When</strong> o botão &quot;Avançar&quot; é clicado
+<strong>Then</strong> valida:</p>
+<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>critique</code> persistido ✓</li>
+<li>Inputs preenchidos: tema, co-host, convidados ✓
+<strong>And</strong> se todos atendidos, avança para Fase 2
+<strong>And</strong> se algum faltar, mostra feedback específico</li>
+</ul>
+<p><strong>Given</strong> esta é uma fase Tipo 2 (Imutável)
+<strong>When</strong> renderizada
+<strong>Then</strong> NÃO mostra input de override nem botão de revalidar
+<strong>And</strong> crítica é gerada uma única vez</p>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-1-critique.tsx</code>
+<strong>And</strong> prompt de crítica em <code>src/lib/llm/prompts/critique.ts</code>
+<strong>And</strong> integra com contexto da Story 4.0b</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase Tipo 2: sem revalidação</li>
+<li>Usa transcriptionTXT como anexo</li>
+<li>Persona: critic</li>
+<li>Persistência: campo <code>critique</code> na raiz do video (não em phases.X.data)</li>
+<li>Tom da crítica: construtivo mas honesto</li>
+<li><strong>Dependência:</strong> Story 4.2b para dynamic prompts + file attachment</li>
+</ul>
+<hr>
+<h3>Story 4.4: Fase 2 - Checagem de Edição (Tipo 2)</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero verificar se há falhas de edição perceptíveis no vídeo,
+Para que eu possa corrigir antes de publicar.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard na Fase 2
+<strong>When</strong> a fase inicia automaticamente
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Loading inicialmente</li>
+<li>Após LLM: Lista de possíveis falhas OU Card de sucesso</li>
+</ul>
+<p><strong>Given</strong> falhas de edição identificadas
+<strong>When</strong> renderizadas
+<strong>Then</strong> cada falha mostra:</p>
+<ul>
+<li>Timestamp clicável (vai para o ponto no vídeo)</li>
+<li>Descrição da falha
+<strong>And</strong> clicar no timestamp abre YouTube no ponto exato</li>
+</ul>
+<p><strong>Given</strong> nenhuma falha identificada
+<strong>When</strong> renderizado
+<strong>Then</strong> mostra Card: &quot;Parabéns, não há falhas de edição que eu possa identificar.&quot;</p>
+<p><strong>Given</strong> o processamento LLM
+<strong>When</strong> em andamento
+<strong>Then</strong> <strong>Console Area</strong> mostra:</p>
+<ul>
+<li>Spinner: &quot;Verificando se existem falhas de edição perceptíveis...&quot;</li>
+<li>Após retorno: Alert &quot;Checagem de Edição&quot; + &quot;Verifique acima se existem trechos que você deveria verificar. Obs: Nada substitui a revisão humana, ok?&quot;</li>
+</ul>
+<p><strong>Given</strong> o retorno do LLM
+<strong>When</strong> salvo no Firestore
+<strong>Then</strong> campo <code>editingIssues</code> é persistido na <strong>raiz do objeto video</strong>
+<strong>And</strong> estrutura: <code>Array&lt;{ timestamp: string, description: string }&gt;</code></p>
+<p><strong>Given</strong> os critérios de avanço da Fase 2
+<strong>When</strong> o botão &quot;Avançar&quot; é clicado
+<strong>Then</strong> valida:</p>
+<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>editingIssues</code> persistido ✓</li>
+<li>Se houver falhas: Alert Dialog &quot;Tem certeza que deseja continuar?&quot; ✓
+<strong>And</strong> se produtor confirmar &quot;Sim&quot;, avança para Fase 3
+<strong>And</strong> se &quot;Não&quot;, permanece na Fase 2 para revisão</li>
+</ul>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-2-edit-check.tsx</code>
+<strong>And</strong> prompt usa transcrição SRT para identificar gaps/cortes abruptos
+<strong>And</strong> timestamps extraídos do SRT</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase Tipo 2: sem revalidação</li>
+<li>Usa transcriptionSRT como anexo</li>
+<li>Persona: critic</li>
+<li>Persistência: campo <code>editingIssues</code> na raiz do video</li>
+<li>Analisa transcrição para identificar cortes abruptos, silêncios longos, etc.</li>
+<li>Timestamps linkam para <code>https://youtu.be/{videoId}?t={seconds}</code></li>
+</ul>
+<hr>
+<h3>Story 4.5: Fase 3 - Análise de Risco e Conformidade (Tipo 2)</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero identificar riscos de compliance antes de publicar,
+Para que eu possa revisar conteúdo sensível.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard na Fase 3
+<strong>When</strong> a fase inicia
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Loading inicialmente</li>
+<li>Após LLM: Lista de riscos OU Card de sucesso</li>
+</ul>
+<p><strong>Given</strong> riscos de compliance identificados
+<strong>When</strong> renderizados
+<strong>Then</strong> cada risco mostra:</p>
+<ul>
+<li>Timestamp clicável</li>
+<li>Descrição do risco</li>
+<li>Tipo: menção de marca, linguagem sensível, claims não verificados, etc.</li>
+</ul>
+<p><strong>Given</strong> nenhum risco identificado
+<strong>When</strong> renderizado
+<strong>Then</strong> mostra Card: &quot;Não me parece haver riscos de compliance.&quot;</p>
+<p><strong>Given</strong> o processamento LLM
+<strong>When</strong> em andamento
+<strong>Then</strong> <strong>Console Area</strong> mostra:</p>
+<ul>
+<li>Spinner: &quot;Verificando se existem pontos polêmicos ou riscos de conformidade...&quot;</li>
+<li>Após retorno: Alert &quot;Riscos e Conformidade&quot; + &quot;Verifique acima se existem trechos que você deveria verificar.&quot;</li>
+</ul>
+<p><strong>Given</strong> o retorno do LLM
+<strong>When</strong> salvo no Firestore
+<strong>Then</strong> campo <code>riskAndCompliance</code> é persistido na <strong>raiz do objeto video</strong>
+<strong>And</strong> estrutura: <code>Array&lt;{ timestamp: string, risk: string, description: string }&gt;</code></p>
+<p><strong>Given</strong> os critérios de avanço da Fase 3
+<strong>When</strong> o botão &quot;Avançar&quot; é clicado
+<strong>Then</strong> valida:</p>
+<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>riskAndCompliance</code> persistido ✓</li>
+<li>Se houver riscos: Alert Dialog &quot;Tem certeza que deseja continuar?&quot; ✓
+<strong>And</strong> se produtor confirmar &quot;Sim&quot;, avança para Fase 4
+<strong>And</strong> se &quot;Não&quot;, permanece na Fase 3 para revisão</li>
+</ul>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-3-compliance.tsx</code>
+<strong>And</strong> prompt especializado em compliance/riscos
+<strong>And</strong> componente reutiliza lógica de timestamps clicáveis</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase Tipo 2: sem revalidação</li>
+<li>Usa transcriptionSRT como anexo</li>
+<li>Persona: critic</li>
+<li>Persistência: campo <code>riskAndCompliance</code> na raiz do video</li>
+<li>Identifica: marcas, linguagem ofensiva, claims médicos/legais, etc.</li>
+</ul>
+<hr>
+<h3>Story 4.6: Fase 4 - Capítulos (Tipo 2)</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero uma sugestão de divisão de capítulos por assuntos,
+Para que o vídeo tenha navegação otimizada.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard na Fase 4
+<strong>When</strong> a fase inicia
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Loading inicialmente</li>
+<li>Após LLM: Lista de capítulos com timestamps e títulos</li>
+</ul>
+<p><strong>Given</strong> capítulos gerados
+<strong>When</strong> renderizados
+<strong>Then</strong> cada capítulo mostra:</p>
+<ul>
+<li>Timestamp clicável (formato MM:SS ou HH:MM:SS)</li>
+<li>Título do capítulo
+<strong>And</strong> primeiro capítulo sempre começa em 00:00
+<strong>And</strong> clicar no timestamp vai para o ponto exato do vídeo</li>
+</ul>
+<p><strong>Given</strong> o processamento LLM
+<strong>When</strong> em andamento
+<strong>Then</strong> <strong>Console Area</strong> mostra:</p>
+<ul>
+<li>Spinner: &quot;Fazendo a separação de capítulos...&quot;</li>
+<li>Após retorno: Alert &quot;Capítulos:&quot; + lista de capítulos com timestamps</li>
+</ul>
+<p><strong>Given</strong> os capítulos salvos
+<strong>When</strong> persistidos
+<strong>Then</strong> campo <code>chapters</code> é persistido na <strong>raiz do objeto video</strong>
+<strong>And</strong> estrutura: <code>Array&lt;{ timestamp: string, title: string }&gt;</code></p>
+<p><strong>Given</strong> os critérios de avanço da Fase 4
+<strong>When</strong> o botão &quot;Avançar&quot; é clicado
+<strong>Then</strong> valida:</p>
+<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>chapters</code> persistido ✓</li>
+<li>Alert Dialog &quot;Aprova os capítulos?&quot; ✓
+<strong>And</strong> se produtor confirmar &quot;Sim&quot;, avança para Fase 5
+<strong>And</strong> se &quot;Não&quot;, permanece na Fase 4 para revisão</li>
+</ul>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-4-chapters.tsx</code>
+<strong>And</strong> capítulos são ordenados por timestamp
+<strong>And</strong> validação: primeiro capítulo deve ser 00:00</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase Tipo 2: sem revalidação</li>
+<li>Usa transcriptionSRT como anexo</li>
+<li>Persona: critic</li>
+<li>Persistência: campo <code>chapters</code> na raiz do video</li>
+<li>LLM analisa transcrição para identificar mudanças de assunto</li>
+<li>Capítulos usados na descrição do YouTube (formato padrão)</li>
+</ul>
+<hr>
+<h3>Story 4.7: Fase 5 - Título (Tipo 1 - Reprocessável)</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero escolher o melhor título entre 5 sugestões,
+Para que o vídeo tenha um título otimizado para SEO e engajamento.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard na Fase 5
+<strong>When</strong> a fase inicia
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Loading inicialmente</li>
+<li>Após LLM: Lista de 5 títulos para seleção (radio buttons)</li>
+<li>Input de complemento de prompt <code>{additionalContext}</code></li>
+<li>Botão &quot;Revalidar&quot;</li>
+</ul>
+<p><strong>Given</strong> os 5 títulos gerados
+<strong>When</strong> renderizados
+<strong>Then</strong> produtor pode selecionar UM título
+<strong>And</strong> seleção é salva com auto-save</p>
+<p><strong>Given</strong> o botão &quot;Revalidar&quot; clicado
+<strong>When</strong> com complemento de prompt preenchido
+<strong>Then</strong> Alert Dialog solicita confirmação (fases 6, 7 serão marcadas para revalidação)
+<strong>And</strong> se confirmado: nova chamada LLM com <code>{additionalContext}</code> no prompt
+<strong>And</strong> fases 6, 7 são marcadas com <code>needsRevalidation: true</code> (dados preservados)</p>
+<p><strong>Given</strong> o processamento LLM
+<strong>When</strong> em andamento
+<strong>Then</strong> <strong>Console Area</strong> mostra:</p>
+<ul>
+<li>Spinner: &quot;Pensando em boas sugestões de título...&quot;</li>
+<li>Após retorno: Alert &quot;Títulos&quot; + &quot;Escolha o melhor título para o vídeo, ou me dê uma dica para eu poder ajudar melhor.&quot;</li>
+</ul>
+<p><strong>Given</strong> título selecionado
+<strong>When</strong> salvo
+<strong>Then</strong> campo <code>title</code> é persistido na <strong>raiz do objeto video</strong>
+<strong>And</strong> dado usado na Fase 6 para gerar descrição</p>
+<p><strong>Given</strong> os critérios de avanço da Fase 5
+<strong>When</strong> o botão &quot;Avançar&quot; é clicado
+<strong>Then</strong> valida:</p>
+<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>title</code> persistido (título selecionado) ✓
+<strong>And</strong> avança para Fase 6</li>
+</ul>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-5-title.tsx</code>
+<strong>And</strong> componente de seleção com radio buttons
+<strong>And</strong> input de complemento com máximo 200 caracteres</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase Tipo 1: permite revalidação com <code>{additionalContext}</code></li>
+<li>Usa transcriptionTXT como anexo</li>
+<li>Persona: writer</li>
+<li>Persistência: campo <code>title</code> na raiz do video</li>
+<li>Revalidação marca fases seguintes (não apaga dados)</li>
+<li>Título selecionado influencia descrição e tags (SEO chain)</li>
+</ul>
+<hr>
+<h3>Story 4.8: Fase 6 - Descrição (Tipo 1 - Reprocessável)</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero uma descrição otimizada para SEO,
+Para que o vídeo seja encontrado mais facilmente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard na Fase 6
+<strong>When</strong> a fase inicia
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Loading inicialmente</li>
+<li>Após LLM: Textarea com descrição gerada (editável)</li>
+<li>Input de complemento de prompt <code>{additionalContext}</code></li>
+<li>Botão &quot;Revalidar&quot;</li>
+</ul>
+<p><strong>Given</strong> a descrição gerada
+<strong>When</strong> renderizada
+<strong>Then</strong> textarea permite edição livre
+<strong>And</strong> alterações são salvas com auto-save
+<strong>And</strong> contador de caracteres (max 5000)</p>
+<p><strong>Given</strong> o botão &quot;Revalidar&quot; clicado
+<strong>When</strong> com complemento de prompt
+<strong>Then</strong> Alert Dialog solicita confirmação (fase 7 será marcada para revalidação)
+<strong>And</strong> se confirmado: nova chamada LLM com <code>{additionalContext}</code> no prompt
+<strong>And</strong> fase 7 é marcada com <code>needsRevalidation: true</code> (dados preservados)</p>
+<p><strong>Given</strong> o processamento LLM
+<strong>When</strong> em andamento
+<strong>Then</strong> <strong>Console Area</strong> mostra:</p>
+<ul>
+<li>Spinner: &quot;Calculando uma descrição otimizada para você...&quot;</li>
+<li>Após retorno: Alert &quot;Descrição&quot; + &quot;Confira a descrição e faça os ajustes se necessário:&quot;</li>
+</ul>
+<p><strong>Given</strong> descrição editada
+<strong>When</strong> salva
+<strong>Then</strong> campo <code>description</code> é persistido na <strong>raiz do objeto video</strong>
+<strong>And</strong> capítulos são incluídos automaticamente no formato YouTube</p>
+<p><strong>Given</strong> os critérios de avanço da Fase 6
+<strong>When</strong> o botão &quot;Avançar&quot; é clicado
+<strong>Then</strong> valida:</p>
+<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>description</code> persistido ✓
+<strong>And</strong> avança para Fase 7</li>
+</ul>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-6-description.tsx</code>
+<strong>And</strong> textarea com auto-resize
+<strong>And</strong> descrição usa título e capítulos para otimização SEO</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase Tipo 1: permite revalidação e edição livre</li>
+<li>Usa transcriptionTXT como anexo</li>
+<li>Persona: writer</li>
+<li>Persistência: campo <code>description</code> na raiz do video</li>
+<li>Template do prompt inclui: <code>{title}</code>, <code>{guests}</code>, <code>{additionalContext}</code></li>
+<li>Descrição inclui capítulos no formato <code>00:00 Título</code></li>
+<li>Links de redes sociais podem ser template do podcast</li>
+</ul>
+<hr>
+<h3>Story 4.9: Fase 7 - Tags (Tipo 1 - Reprocessável)</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero tags relevantes baseadas no conteúdo,
+Para que o vídeo seja categorizado corretamente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard na Fase 7
+<strong>When</strong> a fase inicia
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Loading inicialmente</li>
+<li>Após LLM: Nuvem de tags como badges/labels</li>
+<li>Input para adicionar/remover tags</li>
+<li>Input de complemento de prompt <code>{additionalContext}</code></li>
+<li>Botão &quot;Revalidar&quot;</li>
+</ul>
+<p><strong>Given</strong> as tags geradas
+<strong>When</strong> renderizadas
+<strong>Then</strong> produtor pode:</p>
+<ul>
+<li>Remover tags clicando no X</li>
+<li>Adicionar novas tags via input
+<strong>And</strong> máximo de 30 tags (limite YouTube)
+<strong>And</strong> alterações são salvas com auto-save</li>
+</ul>
+<p><strong>Given</strong> o botão &quot;Revalidar&quot; clicado
+<strong>When</strong> com complemento de prompt
+<strong>Then</strong> Alert Dialog solicita confirmação
+<strong>And</strong> se confirmado: nova chamada LLM com <code>{title}</code> + <code>{description}</code> atuais</p>
+<p><strong>Given</strong> o processamento LLM
+<strong>When</strong> em andamento
+<strong>Then</strong> <strong>Console Area</strong> mostra:</p>
+<ul>
+<li>Spinner: &quot;Calculando as tags...&quot;</li>
+<li>Após retorno: Alert &quot;Tags&quot; + &quot;Essas são as tags que eu produzi:&quot; + tags</li>
+</ul>
+<p><strong>Given</strong> tags editadas
+<strong>When</strong> salvas
+<strong>Then</strong> campo <code>tags</code> é persistido na <strong>raiz do objeto video</strong>
+<strong>And</strong> estrutura: <code>Array&lt;string&gt;</code></p>
+<p><strong>Given</strong> os critérios de avanço da Fase 7
+<strong>When</strong> o botão &quot;Avançar&quot; é clicado
+<strong>Then</strong> valida:</p>
+<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>tags</code> persistido ✓
+<strong>And</strong> avança para Fase 8</li>
+</ul>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-7-tags.tsx</code>
+<strong>And</strong> componente de tag input com badges
+<strong>And</strong> tags geradas baseadas em título + descrição + transcrição</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase Tipo 1: permite revalidação e edição</li>
+<li>Usa transcriptionTXT como anexo</li>
+<li>Persona: writer</li>
+<li>Persistência: campo <code>tags</code> na raiz do video</li>
+<li>Template do prompt inclui: <code>{title}</code>, <code>{description}</code></li>
+<li>Tags não devem ser duplicadas</li>
+<li>Limite YouTube: 500 caracteres total ou 30 tags</li>
+</ul>
+<hr>
+<h3>Story 4.10: Fase 8 - Atualizar YouTube</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero enviar os metadados finalizados para o YouTube,
+Para que as alterações sejam publicadas no meu canal.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o Wizard na Fase 8
+<strong>When</strong> a fase é renderizada
+<strong>Then</strong> <strong>Área de Interatividade</strong> mostra:</p>
+<ul>
+<li>Resumo dos metadados finais (título, descrição preview, tags count, chapters count)</li>
+<li>Botão &quot;Enviar para o YouTube&quot;</li>
+</ul>
+<p><strong>Given</strong> o botão &quot;Enviar para o YouTube&quot; clicado
+<strong>When</strong> a requisição inicia
+<strong>Then</strong> botão mostra loading state
+<strong>And</strong> chamada à YouTube Data API com metadados
+<strong>And</strong> status do vídeo muda para <code>sending</code></p>
+<p><strong>Given</strong> envio bem-sucedido
+<strong>When</strong> YouTube retorna 200
+<strong>Then</strong> status muda para <code>sent</code>
+<strong>And</strong> <strong>Console Area</strong> mostra Alert de sucesso
+<strong>And</strong> Wizard pode ser fechado</p>
+<p><strong>Given</strong> erro no envio
+<strong>When</strong> YouTube retorna erro
+<strong>Then</strong> status permanece <code>ready</code>
+<strong>And</strong> <strong>Console Area</strong> mostra Alert de erro com mensagem
+<strong>And</strong> botão volta ao estado normal para retry</p>
+<p><strong>Given</strong> esta fase
+<strong>When</strong> renderizada
+<strong>Then</strong> NÃO possui processamento LLM
+<strong>And</strong> NÃO possui revalidação</p>
+<p><strong>And</strong> existe <code>src/components/wizard/phases/phase-8-publish.tsx</code>
+<strong>And</strong> usa endpoint <code>PUT /api/youtube/videos/{videoId}</code>
+<strong>And</strong> validação final antes do envio</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Fase sem LLM, apenas chamada à YouTube API</li>
+<li>Chapters são formatados na descrição (formato YouTube: <code>00:00 Título</code>)</li>
+<li>Metadados enviados: <code>title</code>, <code>description</code>, <code>tags</code> (da raiz do video)</li>
+<li>O detalhamento da chamada para a API do YouTube está no Epic 6</li>
+</ul>
+<hr>
+<h3>Story 4.11: Correção de Hover Cards em Vídeos Bloqueados</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero ver informações sobre vídeos bloqueados em hover cards sobre o vídeo,
+Para que eu entenda por que não posso processá-los.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um vídeo bloqueado na lista (sem transcrição, etc.)
+<strong>When</strong> eu passo o mouse sobre o vídeo
+<strong>Then</strong> um hover card aparece <strong>sobre</strong> o thumbnail do vídeo
+<strong>And</strong> NÃO aparece na lateral como tooltip</p>
+<p><strong>Given</strong> o hover card
+<strong>When</strong> renderizado
+<strong>Then</strong> mostra:</p>
+<ul>
+<li>Motivo do bloqueio (ex: &quot;Transcrição não disponível&quot;)</li>
+<li>Ação sugerida (ex: &quot;Aguarde a transcrição ser gerada pelo YouTube&quot;)</li>
+</ul>
+<p><strong>Given</strong> o mouse sai do vídeo
+<strong>When</strong> o hover card está visível
+<strong>Then</strong> hover card desaparece suavemente</p>
+<p><strong>And</strong> existe <code>src/components/videos/video-block-hover-card.tsx</code>
+<strong>And</strong> usa <code>HoverCard</code> do shadcn/ui
+<strong>And</strong> posicionamento: center sobre o thumbnail</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Substitui tooltip lateral por hover card central</li>
+<li>Componente reutilizável para diferentes motivos de bloqueio</li>
+<li>Z-index adequado para não conflitar com outros elementos</li>
+</ul>
+<hr>
+<h2>Epic 5: Revisão e Edição de Metadados — Stories ⚠️ ABSORVIDO</h2>
+<blockquote>
+<p><strong>NOTA:</strong> Todas as stories deste Epic foram absorvidas pelo Epic 4 (Wizard de Processamento).
+NÃO desenvolva estas stories separadamente.</p>
+</blockquote>
+<h3>Mapeamento de Stories Absorvidas:</h3>
+<table>
+<thead>
+<tr>
+<th>Story Original</th>
+<th>Absorvida Por</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5.1 useAutoSave</td>
+<td>Story 4.1 (Wizard Infrastructure)</td>
+<td>Hook implementado como parte da infraestrutura</td>
+</tr>
+<tr>
+<td>5.2 VideoDetailPanel</td>
+<td>Story 4.1 (Wizard Layout)</td>
+<td>Substituído pelo layout do Wizard</td>
+</tr>
+<tr>
+<td>5.3 Edição Título/Descrição</td>
+<td>Stories 4.7 e 4.8</td>
+<td>Fases 5 e 6 do Wizard</td>
+</tr>
+<tr>
+<td>5.4 Edição Tags/Chapters</td>
+<td>Stories 4.6 e 4.9</td>
+<td>Fases 4 e 7 do Wizard</td>
+</tr>
+<tr>
+<td>5.5 Marcar como Pronto</td>
+<td>Story 4.10</td>
+<td>Fase 8 (pré-envio) do Wizard</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Epic 6: Publicação e Distribuição — Stories</h2>
+<h3>Story 6.1: Endpoint de Publicação Individual no YouTube</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero atualizar metadados de um vídeo no YouTube via API,
+Para que as alterações feitas no IAra sejam refletidas na plataforma.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um vídeo com status <code>ready</code>
+<strong>When</strong> eu chamo <code>PUT /api/youtube/videos/{videoId}</code>
+<strong>Then</strong> os metadados são enviados para YouTube Data API:</p>
+<ul>
+<li><code>snippet.title</code>: título gerado/editado</li>
+<li><code>snippet.description</code>: descrição gerada/editada</li>
+<li><code>snippet.tags</code>: array de tags
+<strong>And</strong> a response do YouTube é validada com Zod</li>
+</ul>
+<p><strong>Given</strong> atualização bem-sucedida
+<strong>When</strong> o YouTube retorna 200
+<strong>Then</strong> retorna <code>{ data: { videoId, updatedAt } }</code>
+<strong>And</strong> o status do vídeo muda para <code>sent</code> via <code>transition(status, &#39;success&#39;)</code>
+<strong>And</strong> <code>sentAt</code> é salvo no Firestore</p>
+<p><strong>Given</strong> erro de autenticação
+<strong>When</strong> o YouTube retorna 401
+<strong>Then</strong> tenta refresh do token automaticamente
+<strong>And</strong> retenta a requisição uma vez
+<strong>And</strong> se falhar novamente, retorna <code>{ error: { code: &#39;AUTH_EXPIRED&#39; } }</code></p>
+<p><strong>Given</strong> vídeo não encontrado no YouTube
+<strong>When</strong> a API retorna 404
+<strong>Then</strong> retorna <code>{ error: { code: &#39;YOUTUBE_NOT_FOUND&#39; } }</code>
+<strong>And</strong> status volta para <code>ready</code> via <code>transition(status, &#39;error&#39;)</code></p>
+<p><strong>Given</strong> quota do YouTube excedida
+<strong>When</strong> a API retorna 403
+<strong>Then</strong> retorna <code>{ error: { code: &#39;YOUTUBE_QUOTA&#39; } }</code>
+<strong>And</strong> status volta para <code>ready</code></p>
+<p><strong>And</strong> existe <code>src/app/api/youtube/videos/[videoId]/route.ts</code>
+<strong>And</strong> inclui <code>export const runtime = &#39;nodejs&#39;</code>
+<strong>And</strong> usa YouTube Data API v3 endpoint <code>videos.update</code>
+<strong>And</strong> structured logging para todas as operações</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>YouTube API requer <code>part=snippet</code> para update de metadados</li>
+<li>Chapters vão na descrição (formato YouTube: 00:00 Título)</li>
+<li>Rate limit: ~10,000 units/day</li>
+</ul>
+<hr>
+<h3>Story 6.2: Envio Individual com UI</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero enviar um vídeo individual para o YouTube,
+Para que eu possa publicar metadados quando estiver satisfeito.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um vídeo com status <code>ready</code>
+<strong>When</strong> eu visualizo o footer do painel
+<strong>Then</strong> vejo botão &quot;Enviar para YouTube&quot; habilitado
+<strong>And</strong> botão tem ícone de upload</p>
+<p><strong>Given</strong> clico em &quot;Enviar para YouTube&quot;
+<strong>When</strong> a requisição é iniciada
+<strong>Then</strong> botão mostra estado loading com spinner
+<strong>And</strong> status muda para <code>sending</code> via <code>transition(status, &#39;send&#39;)</code>
+<strong>And</strong> botão fica desabilitado</p>
+<p><strong>Given</strong> envio bem-sucedido
+<strong>When</strong> a API retorna sucesso
+<strong>Then</strong> status muda para <code>sent</code>
+<strong>And</strong> toast de sucesso: &quot;Vídeo publicado com sucesso!&quot;
+<strong>And</strong> botão muda para &quot;Enviado ✓&quot; desabilitado
+<strong>And</strong> badge na lista atualiza para verde</p>
+<p><strong>Given</strong> erro no envio
+<strong>When</strong> a API retorna erro
+<strong>Then</strong> status volta para <code>ready</code>
+<strong>And</strong> toast de erro com mensagem descritiva
+<strong>And</strong> botão volta ao estado normal
+<strong>And</strong> usuário pode tentar novamente</p>
+<p><strong>Given</strong> vídeo com status diferente de <code>ready</code>
+<strong>When</strong> eu visualizo o footer
+<strong>Then</strong> botão &quot;Enviar&quot; está desabilitado
+<strong>And</strong> tooltip explica o motivo</p>
+<p><strong>And</strong> existe lógica de envio em <code>src/lib/actions/publish-video.ts</code>
+<strong>And</strong> usa <code>useTransition</code> ou similar para loading state
+<strong>And</strong> integra com Zustand para atualizar estado global</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Transição <code>ready → sending → sent</code> ou <code>ready → sending → ready</code> (erro)</li>
+<li>Não usar retry automático para writes</li>
+<li>Log de sucesso/erro com videoId</li>
+</ul>
+<hr>
+<h3>Story 6.3: Envio em Batch de Múltiplos Vídeos</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero enviar múltiplos vídeos de uma vez,
+Para que eu possa publicar em lote quando tiver vários prontos.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> múltiplos vídeos com status <code>ready</code>
+<strong>When</strong> eu ativo modo de seleção múltipla
+<strong>Then</strong> checkboxes aparecem em cada VideoListItem
+<strong>And</strong> contador mostra &quot;X selecionados&quot;
+<strong>And</strong> botão &quot;Enviar Selecionados&quot; aparece</p>
+<p><strong>Given</strong> vídeos selecionados
+<strong>When</strong> eu clico em &quot;Enviar Selecionados&quot;
+<strong>Then</strong> todos são enviados em paralelo via <code>Promise.allSettled</code>
+<strong>And</strong> cada vídeo mostra seu estado individual
+<strong>And</strong> progress bar mostra progresso geral (X de Y)</p>
+<p><strong>Given</strong> batch com sucesso parcial
+<strong>When</strong> alguns vídeos falham e outros sucedem
+<strong>Then</strong> vídeos com sucesso → status <code>sent</code>
+<strong>And</strong> vídeos com falha → status <code>ready</code> (podem retentar)
+<strong>And</strong> toast mostra resumo: &quot;5 enviados, 2 falharam&quot;
+<strong>And</strong> retorna <code>{ error: { code: &#39;BATCH_PARTIAL&#39;, details: [...] } }</code></p>
+<p><strong>Given</strong> batch completo com sucesso
+<strong>When</strong> todos os vídeos são enviados
+<strong>Then</strong> toast de sucesso: &quot;Todos os X vídeos publicados!&quot;
+<strong>And</strong> seleção é limpa
+<strong>And</strong> modo de seleção é desativado</p>
+<p><strong>Given</strong> nenhum vídeo <code>ready</code> selecionado
+<strong>When</strong> tento enviar batch
+<strong>Then</strong> botão está desabilitado
+<strong>And</strong> tooltip: &quot;Selecione vídeos prontos para enviar&quot;</p>
+<p><strong>And</strong> existe <code>src/app/api/youtube/videos/batch/route.ts</code>
+<strong>And</strong> existe <code>src/components/videos/batch-actions.tsx</code>
+<strong>And</strong> usa <code>Promise.allSettled</code> para não falhar tudo se um falhar
+<strong>And</strong> limite de 10 vídeos por batch (quota management)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Promise.allSettled para partial success</li>
+<li>Processar em chunks se &gt; 10 vídeos</li>
+<li>Cada vídeo tem sua transição de estado individual</li>
+</ul>
+<hr>
+<h3>Story 6.4: Quick Action e Keyboard Shortcuts</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero ações rápidas e atalhos de teclado,
+Para que eu possa trabalhar de forma mais eficiente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um vídeo com status <code>ready</code> na lista
+<strong>When</strong> eu passo o mouse sobre o item
+<strong>Then</strong> aparece quick action &quot;Enviar&quot; no canto direito
+<strong>And</strong> quick action tem ícone de upload</p>
+<p><strong>Given</strong> a quick action visível
+<strong>When</strong> eu clico nela
+<strong>Then</strong> o vídeo é enviado diretamente
+<strong>And</strong> não precisa abrir o painel de detalhes
+<strong>And</strong> feedback visual no próprio item da lista</p>
+<p><strong>Given</strong> um vídeo selecionado com status <code>ready</code>
+<strong>When</strong> eu pressiono Cmd+Enter (Mac) ou Ctrl+Enter (Windows)
+<strong>Then</strong> o vídeo é enviado para o YouTube
+<strong>And</strong> mesmo comportamento do botão &quot;Enviar&quot;</p>
+<p><strong>Given</strong> a lista de vídeos com foco
+<strong>When</strong> eu pressiono ↑ ou ↓
+<strong>Then</strong> a seleção move para o vídeo anterior/próximo
+<strong>And</strong> URL atualiza com novo <code>?selected=</code>
+<strong>And</strong> painel de detalhes atualiza</p>
+<p><strong>Given</strong> um vídeo selecionado
+<strong>When</strong> eu pressiono Enter
+<strong>Then</strong> o foco move para o painel de detalhes
+<strong>And</strong> primeiro campo editável recebe foco</p>
+<p><strong>Given</strong> foco no painel de detalhes
+<strong>When</strong> eu pressiono Escape
+<strong>Then</strong> o foco volta para a lista
+<strong>And</strong> vídeo permanece selecionado</p>
+<p><strong>And</strong> existe <code>src/hooks/use-keyboard-shortcuts.ts</code>
+<strong>And</strong> shortcuts são registrados globalmente
+<strong>And</strong> shortcuts respeitam quando input tem foco (não dispara)
+<strong>And</strong> tooltip nos botões mostra o atalho</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>useHotkeys ou implementação custom</li>
+<li>Verificar <code>document.activeElement</code> antes de disparar</li>
+<li>Quick action usa mesmo endpoint que botão normal</li>
+</ul>
+<hr>
+<h3>Story 6.5: Registro no Portal Web (Firestore)</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero registrar vídeos publicados no Firestore para o Portal,
+Para que o site público possa exibir os episódios.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um vídeo enviado com sucesso para o YouTube
+<strong>When</strong> o status muda para <code>sent</code>
+<strong>Then</strong> um registro é criado/atualizado no Firestore
+<strong>And</strong> schema do Portal:</p>
+<pre><code class="language-typescript">{
+  videoId: string,
+  podcastId: string,
+  title: string,
+  description: string,
+  thumbnail: string,
+  duration: number,
+  publishedAt: Timestamp,
+  scheduledAt?: Timestamp,
+  youtubeUrl: string,
+  videoType: &#39;episode&#39; | &#39;cut&#39; | &#39;reel&#39;,
+  portalPublished: boolean
+}
+</code></pre>
+<p><strong>Given</strong> o registro do Portal
+<strong>When</strong> <code>portalPublished</code> é <code>true</code>
+<strong>Then</strong> o vídeo aparece no site público
+<strong>And</strong> ordenado por <code>publishedAt</code></p>
+<p><strong>Given</strong> um vídeo com data de agendamento
+<strong>When</strong> eu defino <code>scheduledAt</code> no painel
+<strong>Then</strong> o vídeo é salvo com a data
+<strong>And</strong> <code>portalPublished</code> é <code>false</code> até a data chegar
+<strong>And</strong> job ou trigger publica automaticamente na data</p>
+<p><strong>Given</strong> a seção de agendamento
+<strong>When</strong> eu visualizo no painel
+<strong>Then</strong> vejo date picker para <code>scheduledAt</code>
+<strong>And</strong> opção &quot;Publicar imediatamente&quot; (default)
+<strong>And</strong> opção &quot;Agendar para&quot; com seletor de data/hora</p>
+<p><strong>Given</strong> um vídeo agendado
+<strong>When</strong> a data/hora chega
+<strong>Then</strong> <code>portalPublished</code> muda para <code>true</code>
+<strong>And</strong> vídeo aparece no Portal público</p>
+<p><strong>And</strong> existe <code>src/lib/firebase/portal.ts</code> com funções de registro
+<strong>And</strong> schema validado com Zod antes de persistir
+<strong>And</strong> collection path: <code>podcasts/{podcastId}/videos/{videoId}</code> (mesmo doc)
+<strong>And</strong> campo <code>portalPublished</code> controla visibilidade</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Reutiliza o mesmo documento do vídeo</li>
+<li>Agendamento pode usar Cloud Functions ou client-side check</li>
+<li>Portal lê apenas vídeos com <code>portalPublished: true</code></li>
+</ul>
+<hr>
+<h3>Story 6.6: InboxEmptyState - Celebração</h3>
+<p>Como um <strong>usuário</strong>,
+Eu quero ver uma celebração quando todos os vídeos foram processados,
+Para que eu saiba que completei meu trabalho.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> todos os vídeos com status <code>sent</code>
+<strong>When</strong> a lista é renderizada
+<strong>Then</strong> mostra InboxEmptyState com:</p>
+<ul>
+<li>Ilustração ou emoji celebratório 🎉</li>
+<li>Mensagem: &quot;Tudo publicado!&quot;</li>
+<li>Submensagem: &quot;Todos os vídeos foram enviados para o YouTube&quot;</li>
+</ul>
+<p><strong>Given</strong> nenhum vídeo na lista
+<strong>When</strong> a lista é renderizada
+<strong>Then</strong> mostra estado vazio com:</p>
+<ul>
+<li>Mensagem: &quot;Nenhum vídeo encontrado&quot;</li>
+<li>Botão: &quot;Verificar novos vídeos&quot;</li>
+</ul>
+<p><strong>Given</strong> filtro ativo que resulta em lista vazia
+<strong>When</strong> a lista é renderizada
+<strong>Then</strong> mostra mensagem específica do filtro:</p>
+<ul>
+<li>Filtro &quot;Novos&quot;: &quot;Nenhum vídeo novo&quot;</li>
+<li>Filtro &quot;Rascunhos&quot;: &quot;Nenhum rascunho pendente&quot;</li>
+<li>Filtro &quot;Prontos&quot;: &quot;Nenhum vídeo pronto para enviar&quot;</li>
+</ul>
+<p><strong>Given</strong> o estado de celebração
+<strong>When</strong> eu clico em &quot;Verificar novos vídeos&quot;
+<strong>Then</strong> a sincronização é executada
+<strong>And</strong> se novos vídeos encontrados, lista atualiza
+<strong>And</strong> estado de celebração desaparece</p>
+<p><strong>Given</strong> o estado de celebração
+<strong>When</strong> novos vídeos são adicionados ao canal
+<strong>Then</strong> a lista não atualiza automaticamente
+<strong>And</strong> usuário precisa clicar em &quot;Verificar novos&quot;</p>
+<p><strong>And</strong> existe <code>src/components/videos/inbox-empty-state.tsx</code>
+<strong>And</strong> usa ilustração ou animação Lottie leve
+<strong>And</strong> animação respeita <code>prefers-reduced-motion</code>
+<strong>And</strong> botão &quot;Verificar novos&quot; chama endpoint de sync</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Celebração apenas quando TODOS são <code>sent</code></li>
+<li>Se há mix de status, não mostra celebração</li>
+<li>Empty state diferente por contexto (filtro vs sem dados)</li>
+</ul>
+<hr>
+<h2>Business Rules</h2>
+<h3>Owner ID Constraint</h3>
+<p>O campo <code>ownerId</code> em um documento de podcast <strong>DEVE</strong> ser um usuário válido da plataforma do tipo <strong>Admin</strong>. Esta é uma restrição de integridade referencial:</p>
+<ul>
+<li>O Owner ID é imutável após a criação do podcast</li>
+<li>O Owner ID deve referenciar um usuário existente em <code>podcasts/{podcastId}/users/{userId}</code></li>
+<li>O usuário referenciado deve ter role <code>admin</code></li>
+<li>A UI exibe o Owner ID como read-only</li>
+</ul>
+<hr>
+<h2>Future Epics (Backlog)</h2>
+<h3>Epic 7: Onboarding e Multi-Tenant</h3>
+<p><strong>Contexto:</strong> Este épico cobre o fluxo de criação de um novo podcast em um novo deploy, incluindo:</p>
+<ol>
+<li><p><strong>Wizard de Setup Inicial</strong></p>
+<ul>
+<li>Primeira execução detecta ausência de podcast configurado</li>
+<li>Coleta: nome do podcast, YouTube channel ID</li>
+<li>Vincula OAuth do usuário logado como owner</li>
+<li>Cria documento em <code>podcasts/{podcastId}</code> com defaults</li>
+</ul>
+</li>
+<li><p><strong>Validação de Channel ID</strong></p>
+<ul>
+<li>Verifica se o channel ID é válido via YouTube API</li>
+<li>Confirma que o usuário tem acesso ao canal</li>
+</ul>
+</li>
+<li><p><strong>Configuração de Prompts Default</strong></p>
+<ul>
+<li>Gera prompts iniciais baseados no nome/tipo do podcast</li>
+<li>Permite customização posterior via Settings</li>
+</ul>
+</li>
+<li><p><strong>Multi-Tenant Deployment</strong></p>
+<ul>
+<li>Documentação de como fazer fork para novo tenant</li>
+<li>Script de bootstrap para novo ambiente</li>
+<li>Variáveis de ambiente por tenant</li>
+</ul>
+</li>
+</ol>
+<p><strong>Prioridade:</strong> Após Epic 6 (Publicação)
+<strong>Dependências:</strong> Epic 1 (Auth), Epic 2 (Podcast Config)</p>
+
+  </main>
+</body>
+</html>

@@ -3,6 +3,13 @@ import { resolve, dirname } from 'node:path'
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  async rewrites() {
+    return [
+      // Serve index.html for /method-docs directory paths
+      { source: '/method-docs', destination: '/method-docs/index.html' },
+      { source: '/method-docs/:path*/', destination: '/method-docs/:path*/index.html' },
+    ]
+  },
   // Point to monorepo root for proper standalone output tracing
   outputFileTracingRoot: resolve(dirname(''), '../../'),
   images: {

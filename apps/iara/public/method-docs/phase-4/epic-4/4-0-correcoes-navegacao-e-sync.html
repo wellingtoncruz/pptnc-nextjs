@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.0 Correções de Navegação e Sincronização — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li class="active"><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 4 — Wizard de Processamento</nav><h1>Story 4.0: Correções de Navegação e Sincronização</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor de conteúdo</strong>,
+I want <strong>que a sincronização de vídeos respeite as regras de visibilidade do YouTube e que vídeos já enviados fiquem inacessíveis para edição</strong>,
+so that <strong>eu trabalhe apenas em vídeos que ainda precisam de processamento e não edite acidentalmente vídeos já publicados</strong>.</p>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Botão &quot;Verificar Novos&quot; com Loading State</h3>
+<ol>
+<li><p><strong>Given</strong> o usuário na tela de vídeos
+<strong>When</strong> ele clica no botão &quot;Verificar Novos&quot;
+<strong>Then</strong> o layout é travado com overlay semi-transparente
+<strong>And</strong> um spinner é exibido centralizado
+<strong>And</strong> o botão fica desabilitado durante a operação
+<strong>And</strong> nenhuma interação é permitida até o sync completar</p>
+</li>
+<li><p><strong>Given</strong> a sincronização em andamento
+<strong>When</strong> ela completa com sucesso
+<strong>Then</strong> o overlay e spinner são removidos
+<strong>And</strong> a lista de vídeos é atualizada
+<strong>And</strong> toast mostra resumo: &quot;X novos vídeos encontrados&quot; ou &quot;Nenhum vídeo novo&quot;</p>
+</li>
+<li><p><strong>Given</strong> a sincronização em andamento
+<strong>When</strong> ocorre um erro
+<strong>Then</strong> o overlay e spinner são removidos
+<strong>And</strong> toast de erro é exibido com mensagem descritiva
+<strong>And</strong> o usuário pode tentar novamente</p>
+</li>
+</ol>
+<h3>AC2: Vídeos <code>sent</code> Ofuscados e Sem Interação</h3>
+<ol start="4">
+<li><p><strong>Given</strong> a lista de vídeos renderizada
+<strong>When</strong> um vídeo tem status <code>sent</code>
+<strong>Then</strong> o item é exibido com opacidade reduzida (opacity-50)
+<strong>And</strong> o cursor muda para <code>not-allowed</code>
+<strong>And</strong> o clique não seleciona o vídeo
+<strong>And</strong> não atualiza a URL com <code>?selected=</code></p>
+</li>
+<li><p><strong>Given</strong> um vídeo com status <code>sent</code> na lista
+<strong>When</strong> o usuário passa o mouse sobre ele (hover)
+<strong>Then</strong> aparece tooltip com texto: &quot;Para trabalhar nesse video, torne ele Privado ou Não Listado&quot;
+<strong>And</strong> o tooltip usa posicionamento adequado (não corta na borda)</p>
+</li>
+<li><p><strong>Given</strong> navegação por teclado (↑/↓)
+<strong>When</strong> o próximo vídeo na sequência tem status <code>sent</code>
+<strong>Then</strong> a seleção pula para o próximo vídeo não-<code>sent</code>
+<strong>And</strong> se todos abaixo/acima são <code>sent</code>, a seleção não move</p>
+</li>
+</ol>
+<h3>AC3: Regras de Visibilidade para Novos Vídeos</h3>
+<ol start="7">
+<li><p><strong>Given</strong> a sincronização busca vídeos do YouTube
+<strong>When</strong> um vídeo novo tem visibilidade &quot;Rascunho&quot; (Draft)
+<strong>Then</strong> é criado no Firestore com status <code>new</code></p>
+</li>
+<li><p><strong>Given</strong> a sincronização busca vídeos do YouTube
+<strong>When</strong> um vídeo novo tem visibilidade &quot;Não Listado&quot; (Unlisted)
+<strong>Then</strong> é criado no Firestore com status <code>new</code></p>
+</li>
+<li><p><strong>Given</strong> a sincronização busca vídeos do YouTube
+<strong>When</strong> um vídeo novo tem visibilidade &quot;Privado&quot; (Private)
+<strong>Then</strong> é criado no Firestore com status <code>new</code></p>
+</li>
+<li><p><strong>Given</strong> a sincronização busca vídeos do YouTube
+<strong>When</strong> um vídeo novo tem visibilidade &quot;Público&quot; (Public)
+<strong>Then</strong> é criado no Firestore com status <code>sent</code>
+<strong>And</strong> aparece na lista já ofuscado</p>
+</li>
+</ol>
+<h3>AC4: Reavaliação de Vídeos <code>sent</code></h3>
+<ol start="11">
+<li><p><strong>Given</strong> a sincronização é executada
+<strong>When</strong> existem vídeos com status <code>sent</code> no Firestore
+<strong>Then</strong> a visibilidade atual de cada um é verificada no YouTube</p>
+</li>
+<li><p><strong>Given</strong> um vídeo com status <code>sent</code>
+<strong>When</strong> sua visibilidade no YouTube mudou para &quot;Não Listado&quot;
+<strong>Then</strong> seu status muda para <code>draft</code>
+<strong>And</strong> ele volta a ser clicável na lista
+<strong>And</strong> toast informa: &quot;X vídeos voltaram para edição&quot;</p>
+</li>
+<li><p><strong>Given</strong> um vídeo com status <code>sent</code>
+<strong>When</strong> sua visibilidade no YouTube mudou para &quot;Privado&quot;
+<strong>Then</strong> seu status muda para <code>draft</code>
+<strong>And</strong> comportamento igual ao AC12</p>
+</li>
+<li><p><strong>Given</strong> um vídeo com status <code>sent</code>
+<strong>When</strong> sua visibilidade no YouTube continua &quot;Público&quot;
+<strong>Then</strong> seu status permanece <code>sent</code>
+<strong>And</strong> nenhuma alteração é feita</p>
+</li>
+</ol>
+<h3>AC5: Persistência do Campo de Visibilidade</h3>
+<ol start="15">
+<li><strong>Given</strong> qualquer operação de sync
+<strong>When</strong> dados do vídeo são salvos/atualizados no Firestore
+<strong>Then</strong> o campo <code>visibility</code> é persistido com valor: <code>&#39;public&#39; | &#39;unlisted&#39; | &#39;private&#39; | &#39;draft&#39;</code>
+<strong>And</strong> o campo <code>visibilityUpdatedAt</code> registra o timestamp da última verificação</li>
+</ol>
+<h3>AC6: Modal de Feedback Após Sync</h3>
+<ol start="16">
+<li><p><strong>Given</strong> a sincronização completa com sucesso
+<strong>When</strong> foram encontrados novos vídeos ou vídeos reabraram para edição
+<strong>Then</strong> um modal é exibido com o resumo:</p>
+<ul>
+<li>&quot;Encontrados X novos vídeos&quot;</li>
+<li>&quot;Y vídeos voltaram para edição&quot; (se houver)
+<strong>And</strong> o modal tem botão &quot;Entendi&quot; para fechar</li>
+</ul>
+</li>
+<li><p><strong>Given</strong> a sincronização completa com sucesso
+<strong>When</strong> nenhum novo vídeo foi encontrado
+<strong>Then</strong> o modal mostra: &quot;Nenhum vídeo novo encontrado&quot;</p>
+</li>
+<li><p><strong>Given</strong> a sincronização falha
+<strong>When</strong> ocorre erro de quota da API YouTube
+<strong>Then</strong> o modal mostra mensagem amigável: &quot;Limite de requisições excedido. Tente novamente em alguns minutos.&quot;</p>
+</li>
+</ol>
+<h3>AC7: Verificação e Download de Transcrição</h3>
+<ol start="19">
+<li><p><strong>Given</strong> um vídeo novo com status <code>new</code>
+<strong>When</strong> a sincronização processa o vídeo
+<strong>Then</strong> o sistema verifica se <code>transcriptionSRT</code> e <code>transcriptionTXT</code> estão preenchidos
+<strong>And</strong> se ambos estiverem vazios, busca legendas PT_BR auto-geradas no YouTube</p>
+</li>
+<li><p><strong>Given</strong> um vídeo <code>sent</code> que mudou para <code>draft</code> (via reopen)
+<strong>When</strong> a reavaliação é processada
+<strong>Then</strong> o sistema também verifica a transcrição (mesma lógica do AC19)</p>
+</li>
+<li><p><strong>Given</strong> existem legendas PT_BR auto-geradas no YouTube
+<strong>When</strong> o sistema busca as legendas
+<strong>Then</strong> faz download do arquivo SRT
+<strong>And</strong> converte para texto puro (TXT) removendo timestamps
+<strong>And</strong> persiste ambos: <code>transcriptionSRT</code> e <code>transcriptionTXT</code></p>
+</li>
+<li><p><strong>Given</strong> NÃO existem legendas PT_BR no YouTube
+<strong>When</strong> o sistema verifica as legendas
+<strong>Then</strong> os campos <code>transcriptionSRT</code> e <code>transcriptionTXT</code> permanecem vazios
+<strong>And</strong> o vídeo fica marcado como &quot;pendente de transcrição&quot;</p>
+</li>
+</ol>
+<h3>AC8: Bloqueio de Vídeos Pendentes de Transcrição</h3>
+<ol start="23">
+<li><p><strong>Given</strong> um vídeo com status <code>new</code> ou <code>draft</code>
+<strong>When</strong> os campos <code>transcriptionSRT</code> e <code>transcriptionTXT</code> estão vazios
+<strong>Then</strong> o item é exibido com opacidade reduzida (opacity-50)
+<strong>And</strong> o cursor muda para <code>not-allowed</code>
+<strong>And</strong> o clique não seleciona o vídeo</p>
+</li>
+<li><p><strong>Given</strong> um vídeo pendente de transcrição na lista
+<strong>When</strong> o usuário passa o mouse sobre ele
+<strong>Then</strong> aparece tooltip: &quot;Transcrição ainda em processamento, aguarde.&quot;</p>
+</li>
+<li><p><strong>Given</strong> navegação por teclado
+<strong>When</strong> o próximo vídeo está pendente de transcrição
+<strong>Then</strong> a seleção pula para o próximo vídeo disponível</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Implementar Loading State do Sync</strong> (AC: #1, #2, #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar componente <code>SyncOverlay</code> com spinner centralizado</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Adicionar estado <code>isSyncing</code> no VideoListPanel ou store</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Implementar overlay que bloqueia interações durante sync</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Conectar ao endpoint de sync existente</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5 Adicionar toast de sucesso/erro com resumo</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Implementar Ofuscamento de Vídeos <code>sent</code></strong> (AC: #4, #5, #6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Adicionar lógica condicional em VideoListItem para status <code>sent</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Aplicar classes de opacidade e cursor</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Bloquear onClick para vídeos <code>sent</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Adicionar Tooltip do shadcn/ui com mensagem especificada</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5 Ajustar navegação por teclado para pular vídeos <code>sent</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.6 Escrever testes para comportamento de vídeos <code>sent</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 3: Buscar Visibilidade na YouTube API</strong> (AC: #7-10, #15)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Atualizar endpoint <code>/api/youtube/videos</code> para incluir <code>status.privacyStatus</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Mapear valores do YouTube para tipo interno: <code>&#39;public&#39; | &#39;unlisted&#39; | &#39;private&#39; | &#39;draft&#39;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Adicionar campo <code>visibility</code> ao VideoSchema (Zod)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Adicionar campo <code>visibilityUpdatedAt</code> ao VideoSchema</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Escrever testes para mapeamento de visibilidade</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 4: Implementar Regras de Status por Visibilidade</strong> (AC: #7-10)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Atualizar lógica de sync para determinar status inicial baseado em visibilidade</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Vídeos novos públicos → status <code>sent</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Vídeos novos não-públicos → status <code>new</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Escrever testes para cada combinação de visibilidade</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 5: Implementar Reavaliação de Vídeos <code>sent</code></strong> (AC: #11-14)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Durante sync, buscar visibilidade atual de vídeos <code>sent</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Comparar visibilidade anterior com atual</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Se mudou para não-público → transição para <code>draft</code> via <code>transition()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Retornar contagem de vídeos que voltaram para edição</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Exibir toast informativo quando vídeos voltam para edição</li>
+<li><input checked="" disabled="" type="checkbox"> 5.6 Escrever testes para reavaliação</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 6: Testes de Integração</strong> (AC: 1-15)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 Teste E2E: sync com vídeos de diferentes visibilidades</li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Teste E2E: reavaliação de vídeos sent</li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Teste E2E: interação bloqueada em vídeos sent</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 7: YouTube Captions API Client</strong> (AC: #21, #22)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1 Adicionar método <code>listCaptions(videoId)</code> ao YouTubeClient</li>
+<li><input checked="" disabled="" type="checkbox"> 7.2 Filtrar legendas por idioma PT_BR (pt, pt-BR) e tipo ASR (auto-generated)</li>
+<li><input checked="" disabled="" type="checkbox"> 7.3 Adicionar método <code>downloadCaption(captionId)</code> para obter SRT</li>
+<li><input checked="" disabled="" type="checkbox"> 7.4 Escrever testes para listCaptions e downloadCaption</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 8: Parser SRT → TXT</strong> (AC: #21)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 8.1 Criar função <code>parseSrtToText(srt: string): string</code></li>
+<li><input checked="" disabled="" type="checkbox"> 8.2 Remover números de sequência</li>
+<li><input checked="" disabled="" type="checkbox"> 8.3 Remover timestamps (00:00:00,000 --&gt; 00:00:00,000)</li>
+<li><input checked="" disabled="" type="checkbox"> 8.4 Preservar quebras de parágrafo em blocos separados</li>
+<li><input checked="" disabled="" type="checkbox"> 8.5 Escrever testes para parser com exemplos reais</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 9: Integrar Transcrição no Sync</strong> (AC: #19, #20, #21, #22)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 9.1 Criar função <code>fetchTranscriptionForVideo(videoId, accessToken)</code></li>
+<li><input checked="" disabled="" type="checkbox"> 9.2 Para vídeos novos com status <code>new</code>: verificar/buscar transcrição</li>
+<li><input checked="" disabled="" type="checkbox"> 9.3 Para vídeos reabertos (sent→draft): verificar/buscar transcrição</li>
+<li><input checked="" disabled="" type="checkbox"> 9.4 Persistir <code>transcriptionSRT</code> e <code>transcriptionTXT</code> no Firestore</li>
+<li><input checked="" disabled="" type="checkbox"> 9.5 Tratar erro de quota com mensagem amigável</li>
+<li><input checked="" disabled="" type="checkbox"> 9.6 Escrever testes para integração de transcrição</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 10: Bloqueio de Vídeos Pendentes de Transcrição</strong> (AC: #23, #24, #25)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 10.1 Criar helper <code>isPendingTranscription(video)</code> baseado em campos vazios</li>
+<li><input checked="" disabled="" type="checkbox"> 10.2 Atualizar VideoListItem para ofuscar vídeos pendentes</li>
+<li><input checked="" disabled="" type="checkbox"> 10.3 Adicionar tooltip específico para transcrição pendente</li>
+<li><input checked="" disabled="" type="checkbox"> 10.4 Atualizar navegação por teclado para pular pendentes</li>
+<li><input checked="" disabled="" type="checkbox"> 10.5 Escrever testes para comportamento de pendentes</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 11: Modal de Feedback do Sync</strong> (AC: #16, #17, #18)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 11.1 Criar componente <code>SyncResultModal</code></li>
+<li><input checked="" disabled="" type="checkbox"> 11.2 Exibir resumo: novos vídeos, vídeos reabertos</li>
+<li><input checked="" disabled="" type="checkbox"> 11.3 Exibir mensagem de erro amigável para quota excedida</li>
+<li><input checked="" disabled="" type="checkbox"> 11.4 Integrar modal no VideosLayout após sync</li>
+<li><input checked="" disabled="" type="checkbox"> 11.5 Escrever testes para SyncResultModal</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>YouTube API - Privacy Status</h3>
+<p>A YouTube Data API retorna o campo <code>status.privacyStatus</code> com valores:</p>
+<ul>
+<li><code>public</code> - Vídeo público</li>
+<li><code>unlisted</code> - Não listado</li>
+<li><code>private</code> - Privado</li>
+</ul>
+<p>Para vídeos em &quot;Rascunho&quot; no YouTube Studio, o valor é <code>private</code> com um campo adicional. Verificar se há distinção ou tratar ambos como editáveis.</p>
+<pre><code class="language-typescript">// Exemplo de response do YouTube API
+{
+  &quot;id&quot;: &quot;abc123&quot;,
+  &quot;status&quot;: {
+    &quot;privacyStatus&quot;: &quot;unlisted&quot;,
+    &quot;uploadStatus&quot;: &quot;processed&quot;
+  }
+}
+</code></pre>
+<h3>Mapeamento de Visibilidade → Status Inicial</h3>
+<pre><code class="language-typescript">function getInitialStatus(privacyStatus: string): VideoStatus {
+  if (privacyStatus === &#39;public&#39;) {
+    return &#39;sent&#39;
+  }
+  return &#39;new&#39;
+}
+</code></pre>
+<h3>Transição de <code>sent</code> → <code>draft</code></h3>
+<p>A state machine atual não tem transição <code>sent</code> → <code>draft</code>. Será necessário:</p>
+<p><strong>Opção A:</strong> Adicionar nova action <code>reopen</code> que permite <code>sent</code> → <code>draft</code>
+<strong>Opção B:</strong> Bypass da state machine para esta operação específica (não recomendado)</p>
+<p>Recomendação: <strong>Opção A</strong> - Adicionar transição na state machine:</p>
+<pre><code class="language-typescript">// Em transitions.ts
+sent: { reopen: &#39;draft&#39; }  // Nova transição
+</code></pre>
+<h3>Schema Update</h3>
+<pre><code class="language-typescript">// Adicionar ao VideoSchema
+visibility: z.enum([&#39;public&#39;, &#39;unlisted&#39;, &#39;private&#39;, &#39;draft&#39;]).optional(),
+visibilityUpdatedAt: z.custom&lt;Timestamp&gt;().optional(),
+</code></pre>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ul>
+<li><strong>Rule #2</strong>: Validar com Zod antes de persistir (novo campo visibility)</li>
+<li><strong>Rule #4</strong>: Usar <code>updateDoc</code> com fields explícitos</li>
+<li><strong>Rule #8</strong>: Incluir <code>podcastId</code> em toda query</li>
+<li><strong>Rule #10</strong>: selectedVideoId via URL (não selecionar vídeos <code>sent</code>)</li>
+</ul>
+<h3>Componentes Afetados</h3>
+<pre><code>src/
+├── components/
+│   └── videos/
+│       ├── video-list-item.tsx      # Ofuscamento e tooltip
+│       ├── video-list-panel.tsx     # Loading state e navegação
+│       └── sync-overlay.tsx         # CRIAR - Overlay de sync
+├── hooks/
+│   └── use-videos.ts                # Lógica de sync
+├── lib/
+│   ├── video-state-machine/
+│   │   └── transitions.ts           # Nova transição sent→draft
+│   ├── schemas/
+│   │   └── video.ts                 # Novos campos
+│   └── youtube/
+│       └── client.ts                # Buscar privacyStatus
+└── app/
+    └── api/
+        └── videos/
+            └── route.ts             # Lógica de reavaliação
+</code></pre>
+<h3>Considerações de UX</h3>
+<ul>
+<li>O overlay de sync deve ter z-index alto para cobrir toda a interface</li>
+<li>O spinner deve ser visualmente consistente com o design system</li>
+<li>O tooltip em vídeos <code>sent</code> deve ser informativo, não frustrante</li>
+<li>Ao voltar vídeos para <code>draft</code>, considerar destacá-los brevemente na lista</li>
+</ul>
+<h3>Testes Prioritários</h3>
+<ol>
+<li>Vídeo público novo → entra como <code>sent</code></li>
+<li>Vídeo privado novo → entra como <code>new</code></li>
+<li>Vídeo <code>sent</code> que ficou privado → volta para <code>draft</code></li>
+<li>Clique em vídeo <code>sent</code> → não seleciona</li>
+<li>Navegação por teclado pula vídeos <code>sent</code></li>
+<li>Overlay bloqueia interações durante sync</li>
+<li>Vídeo novo sem transcrição → fica bloqueado</li>
+<li>Vídeo com transcrição preenchida → fica disponível</li>
+<li>Download de legenda PT_BR → persiste SRT e TXT</li>
+<li>Vídeo sem legenda disponível → permanece bloqueado</li>
+</ol>
+<h3>YouTube Captions API</h3>
+<p>A YouTube Data API fornece endpoints para listar e baixar legendas:</p>
+<pre><code class="language-typescript">// 1. Listar legendas de um vídeo
+// GET https://www.googleapis.com/youtube/v3/captions?part=snippet&amp;videoId={videoId}
+{
+  &quot;items&quot;: [
+    {
+      &quot;id&quot;: &quot;caption-id-1&quot;,
+      &quot;snippet&quot;: {
+        &quot;videoId&quot;: &quot;abc123&quot;,
+        &quot;language&quot;: &quot;pt-BR&quot;,
+        &quot;trackKind&quot;: &quot;ASR&quot;,  // ASR = auto-generated
+        &quot;name&quot;: &quot;&quot;
+      }
+    }
+  ]
+}
+
+// 2. Baixar legenda em formato SRT
+// GET https://www.googleapis.com/youtube/v3/captions/{captionId}?tfmt=srt
+</code></pre>
+<p><strong>Filtro de legendas:</strong></p>
+<ul>
+<li><code>trackKind === &#39;ASR&#39;</code> = legendas auto-geradas</li>
+<li><code>language</code> deve ser <code>&#39;pt&#39;</code> ou <code>&#39;pt-BR&#39;</code></li>
+<li>Priorizar <code>pt-BR</code> sobre <code>pt</code> se ambas existirem</li>
+</ul>
+<h3>Parser SRT → TXT</h3>
+<p>Formato SRT:</p>
+<pre><code>1
+00:00:00,000 --&gt; 00:00:02,500
+Primeira linha de texto
+
+2
+00:00:02,500 --&gt; 00:00:05,000
+Segunda linha de texto
+com continuação
+</code></pre>
+<p>Conversão para TXT:</p>
+<pre><code>Primeira linha de texto
+
+Segunda linha de texto com continuação
+</code></pre>
+<p><strong>Regras do parser:</strong></p>
+<ul>
+<li>Remover número de sequência (linha 1, 2, 3...)</li>
+<li>Remover linha de timestamp (00:00:00,000 --&gt; 00:00:00,000)</li>
+<li>Juntar linhas de texto do mesmo bloco com espaço</li>
+<li>Separar blocos com dupla quebra de linha</li>
+</ul>
+<h3>Verificação de Transcrição Pendente</h3>
+<pre><code class="language-typescript">function isPendingTranscription(video: Video): boolean {
+  // Apenas vídeos new ou draft podem estar pendentes
+  if (video.status !== &#39;new&#39; &amp;&amp; video.status !== &#39;draft&#39;) {
+    return false
+  }
+  // Pendente se ambos campos estão vazios
+  return !video.transcriptionSRT &amp;&amp; !video.transcriptionTXT
+}
+</code></pre>
+<h2>References</h2>
+<ul>
+<li>[Source: retrospective-epic-3-iara.md] - Lições aprendidas sobre layout e interação</li>
+<li>[Source: architecture-iara.md#State Machine] - Transições de estado</li>
+<li>[Source: ux-design-specification-iara.md] - Padrões de interação</li>
+<li><a href="https://developers.google.com/youtube/v3/docs/videos#status.privacyStatus">YouTube API Reference - Videos</a></li>
+<li><a href="https://developers.google.com/youtube/v3/docs/captions/list">YouTube API Reference - Captions.list</a></li>
+<li><a href="https://developers.google.com/youtube/v3/docs/captions/download">YouTube API Reference - Captions.download</a></li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Completion Notes List</h3>
+<p><strong>Phase 1 - Navigation and Visibility (Tasks 1-6):</strong></p>
+<ul>
+<li><strong>State Machine</strong>: Added <code>reopen</code> action to allow <code>sent → draft</code> transition when visibility changes</li>
+<li><strong>Video Schema</strong>: Added <code>visibilityUpdatedAt</code> timestamp field</li>
+<li><strong>VideoListItem</strong>: Sent videos now have opacity-50, cursor-not-allowed, blocked click, tooltip explaining why</li>
+<li><strong>VideoListPanel</strong>: Keyboard navigation (↑/↓) skips sent videos</li>
+<li><strong>SyncOverlay</strong>: New component with spinner that blocks interactions during sync</li>
+<li><strong>VideosLayout</strong>: Integrated SyncOverlay, added isSyncing state</li>
+<li><strong>Sync Logic</strong>:<ul>
+<li>New public videos → status <code>sent</code></li>
+<li>New non-public videos → status <code>new</code></li>
+<li>Existing sent videos with changed visibility (to non-public) → transition to <code>draft</code> via <code>reopen</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Phase 2 - Transcription and Feedback (Tasks 7-11):</strong></p>
+<ul>
+<li><p><strong>YouTube Captions API</strong>: Added <code>listCaptions()</code>, <code>downloadCaption()</code>, and <code>downloadPortugueseCaptions()</code> methods to YouTubeClient</p>
+</li>
+<li><p><strong>SRT Parser</strong>: Created <code>parseSrtToText()</code> function to convert SRT to plain text</p>
+</li>
+<li><p><strong>Sync Transcription Integration</strong>:</p>
+<ul>
+<li>New non-public videos automatically fetch PT-BR transcriptions</li>
+<li>Reopened videos (sent→draft) also fetch transcriptions</li>
+<li>Returns <code>transcriptionsFetched</code> and <code>transcriptionsUnavailable</code> counts</li>
+<li>Returns <code>quotaError</code> message if YouTube quota exceeded</li>
+</ul>
+</li>
+<li><p><strong>VideoListItem</strong>: Videos pending transcription (new/draft without transcription) are dimmed and show specific tooltip</p>
+</li>
+<li><p><strong>VideoListPanel</strong>: Keyboard navigation skips videos pending transcription</p>
+</li>
+<li><p><strong>SyncResultModal</strong>: Modal showing sync results with:</p>
+<ul>
+<li>Number of new videos found</li>
+<li>Number of videos that returned to editing</li>
+<li>Transcription fetch results</li>
+<li>Quota error warning if applicable</li>
+</ul>
+</li>
+<li><p><strong>VideosLayout</strong>: Integrated SyncResultModal to show after sync completes</p>
+</li>
+<li><p><strong>Tests</strong>: 659 tests passing (all project tests)</p>
+</li>
+</ul>
+<h3>File List</h3>
+<p><strong>Created:</strong></p>
+<ul>
+<li><code>src/components/videos/sync-overlay.tsx</code> - Overlay with spinner during sync</li>
+<li><code>src/components/videos/sync-overlay.test.tsx</code> - 7 tests</li>
+<li><code>src/lib/srt-parser.ts</code> - SRT to plain text parser</li>
+<li><code>src/lib/srt-parser.test.ts</code> - 19 tests</li>
+<li><code>src/components/videos/sync-result-modal.tsx</code> - Modal for sync feedback</li>
+<li><code>src/components/videos/sync-result-modal.test.tsx</code> - 12 tests</li>
+</ul>
+<p><strong>Modified:</strong></p>
+<ul>
+<li><code>src/lib/video-state-machine/types.ts</code> - Added <code>reopen</code> action</li>
+<li><code>src/lib/video-state-machine/transitions.ts</code> - Added <code>sent → draft</code> via <code>reopen</code></li>
+<li><code>src/lib/video-state-machine/transitions.test.ts</code> - Added tests for reopen transition</li>
+<li><code>src/lib/schemas/video.ts</code> - Added <code>visibilityUpdatedAt</code>, added <code>transcriptionSRT</code>/<code>TXT</code> to VideoSummarySchema</li>
+<li><code>src/lib/schemas/video.test.ts</code> - Updated tests for new schema fields</li>
+<li><code>src/lib/schemas/youtube-api.ts</code> - Added YouTube Captions API schemas</li>
+<li><code>src/lib/schemas/podcast.ts</code> - Minor updates</li>
+<li><code>src/lib/youtube/client.ts</code> - Added <code>listCaptions()</code>, <code>downloadCaption()</code>, <code>downloadPortugueseCaptions()</code> methods</li>
+<li><code>src/lib/youtube/client.test.ts</code> - Added 11 tests for captions methods</li>
+<li><code>src/lib/youtube/index.ts</code> - Exported <code>YouTubeCaptionData</code> type</li>
+<li><code>src/components/videos/video-list-item.tsx</code> - Added sent video dimming, tooltip, pending transcription handling</li>
+<li><code>src/components/videos/video-list-item.test.tsx</code> - Added 13 tests for sent/pending behavior</li>
+<li><code>src/components/videos/video-list-panel.tsx</code> - Keyboard navigation skips sent and pending transcription videos</li>
+<li><code>src/components/videos/video-list-panel.test.tsx</code> - Updated mocks with transcription fields</li>
+<li><code>src/app/videos/videos-layout.tsx</code> - Added isSyncing state, SyncOverlay, SyncResultModal integration</li>
+<li><code>src/app/videos/videos-layout.test.tsx</code> - Updated tests for SyncOverlay and SyncResultModal</li>
+<li><code>src/lib/sync/sync-videos.ts</code> - Visibility-based status, reopen logic, transcription fetching, fixed toMillis bug</li>
+<li><code>src/lib/sync/sync-videos.test.ts</code> - Added tests for visibility rules and transcription</li>
+<li><code>src/lib/firebase/videos-admin.ts</code> - Added transcriptionSRT/TXT to VideoSummary in getVideosForDisplayAdmin</li>
+<li><code>src/lib/firebase/videos-admin.test.ts</code> - Updated tests for transcription fields</li>
+<li><code>src/lib/firebase/videos.test.ts</code> - Updated mocks with transcription fields</li>
+<li><code>src/lib/firebase/tokens.ts</code> - Minor fixes</li>
+<li><code>src/hooks/use-videos.test.ts</code> - Updated mocks with transcription fields</li>
+<li><code>src/app/api/youtube/__tests__/videos.test.ts</code> - Updated tests</li>
+<li><code>src/components/layout/master-detail-layout.test.tsx</code> - Updated tests</li>
+</ul>
+
+  </main>
+</body>
+</html>

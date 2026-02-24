@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13.10 Correção Draft-Ready Fase 8 Cortes/Reels — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 13 — Hardening v2.2.0</nav><h1>Story 13.10: Fix transição draft→ready na Fase 8 para cuts/reels</h1>
+<p>Status: review</p>
+<hr>
+<h2>Story</h2>
+<p>Como um <strong>produtor de podcast</strong>,
+Eu quero que ao completar todas as fases do wizard para cortes e reels, o vídeo transite automaticamente para status &quot;ready&quot; ao chegar na Fase 8,
+Para que eu possa publicar o vídeo no YouTube sem precisar navegar para outro vídeo e voltar.</p>
+<hr>
+<h2>Contexto</h2>
+<h3>Fluxo Atual (Bug)</h3>
+<ol>
+<li>Produtor abre um vídeo tipo <code>cut</code> com status <code>new</code></li>
+<li>Segue o fluxo: Fase 0 → 5 → 5B → 6 → 7 → &quot;Avançar&quot; → Fase 8</li>
+<li>Na Fase 8, botão &quot;Enviar para o YouTube&quot; está desabilitado</li>
+<li>Erro ao tentar enviar: <code>&quot;Video com status &#39;draft&#39; não pode ser enviado&quot;</code></li>
+<li><strong>Workaround</strong>: Navegar para outro vídeo e voltar → status corrige para &quot;ready&quot;</li>
+</ol>
+<h3>Causa Raiz</h3>
+<p>O <strong>estado local</strong> (<code>videoData.status</code>) fica dessincronizado com o <strong>Firestore</strong>.</p>
+<p>O servidor (AUTO-DRAFT em <code>videos-admin.ts:449-458</code>) transiciona <code>new → draft</code> silenciosamente quando qualquer fase salva dados no Firestore. Porém as respostas das APIs de fase <strong>não retornam o status atualizado</strong>, então o <code>videoData.status</code> no React permanece <code>&#39;new&#39;</code>.</p>
+<p>Quando <code>currentPhase</code> chega em <code>8</code>, o efeito AUTO-READY verifica:</p>
+<pre><code class="language-typescript">if (videoData.status !== &#39;draft&#39;) return  // ← &#39;new&#39; !== &#39;draft&#39; → true → RETURN EARLY!
+</code></pre>
+<p>O guard falha porque o estado local é <code>&#39;new&#39;</code>, mesmo que o Firestore já tenha <code>&#39;draft&#39;</code>. A transição para <code>&#39;ready&#39;</code> nunca acontece.</p>
+<p>A mensagem de erro <code>&quot;Video com status &#39;draft&#39; não pode ser enviado&quot;</code> vem da rota YouTube API (<code>/api/youtube/videos/[videoId]/route.ts:87</code>) que lê o status diretamente do <strong>Firestore</strong> (onde é <code>&#39;draft&#39;</code>), não do estado local.</p>
+<h3>Por que funciona ao navegar para outro vídeo e voltar</h3>
+<p>Ao retornar, <code>fetchFreshVideoData()</code> busca dados frescos do Firestore (onde status já é <code>&#39;draft&#39;</code>), o <code>videoData</code> é atualizado com o status correto, e o efeito AUTO-READY dispara normalmente.</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Transição automática para ready ao chegar na Fase 8</h3>
+<p><strong>Given</strong> um vídeo tipo <code>cut</code> ou <code>reel</code> com status <code>new</code> no Firestore
+<strong>When</strong> o produtor completa todas as fases e o wizard chega na Fase 8
+<strong>Then</strong> o status do vídeo é atualizado para <code>ready</code> no Firestore e no estado local
+<strong>And</strong> o botão &quot;Enviar para o YouTube&quot; fica habilitado</p>
+<h3>AC2: Compatibilidade com vídeos já em draft</h3>
+<p><strong>Given</strong> um vídeo tipo <code>cut</code> ou <code>reel</code> que já está com status <code>draft</code> no Firestore
+<strong>When</strong> o wizard chega na Fase 8
+<strong>Then</strong> o status do vídeo é atualizado para <code>ready</code> (comportamento existente preservado)</p>
+<h3>AC3: Não afetar vídeos em outros estados</h3>
+<p><strong>Given</strong> um vídeo com status <code>ready</code>, <code>sending</code> ou <code>sent</code>
+<strong>When</strong> o wizard está na Fase 8
+<strong>Then</strong> o status não é alterado</p>
+<h3>AC4: Compatibilidade com episódios</h3>
+<p><strong>Given</strong> um vídeo tipo <code>episode</code> com status <code>new</code>
+<strong>When</strong> o produtor completa todas as fases 1-7 e chega na Fase 8
+<strong>Then</strong> o status transita para <code>ready</code> (mesmo fix se aplica a episódios)</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Adicionar efeito CLIENT-SIDE AUTO-DRAFT</strong> (AC: 1, 2, 3, 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Novo useEffect que espelha o comportamento do servidor: quando o wizard avança além da primeira fase, transiciona <code>videoData.status</code> de <code>&#39;new&#39;</code> para <code>&#39;draft&#39;</code> localmente</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Manter o guard original do AUTO-READY (<code>videoData.status !== &#39;draft&#39;</code>) inalterado</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 AUTO-READY continua funcionando: agora recebe <code>&#39;draft&#39;</code> corretamente → PATCH <code>{ status: &#39;ready&#39; }</code> → sucesso</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Adicionar testes</strong> (AC: 1, 2, 3, 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Teste: cut phase 7 → phase 8 via COMPLETE_PHASE_AND_ADVANCE (machine.test.ts)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Teste: reel phase 7 → phase 8 via COMPLETE_PHASE_AND_ADVANCE (machine.test.ts)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Teste: fluxo completo de cut (0→5→5B→6→7→8) atinge phase 8</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Teste: fluxo completo de reel (0→5→6→7→8) atinge phase 8</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 3: Validação manual</strong> (AC: 1)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 3.1 Testar fluxo completo com vídeo cut (0 → 5 → 5B → 6 → 7 → 8 → Publicar)</li>
+<li><input disabled="" type="checkbox"> 3.2 Testar fluxo completo com vídeo reel (0 → 5 → 6 → 7 → 8 → Publicar)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Diagnóstico Detalhado</h3>
+<p><strong>Caminho do bug:</strong></p>
+<ol>
+<li><code>videos-admin.ts:449-458</code> — AUTO-DRAFT: quando qualquer fase salva dados no Firestore, o status muda <code>new</code> → <code>draft</code> <strong>no servidor</strong></li>
+<li>As APIs de fase (PUT <code>/api/videos/{id}/title</code>, etc.) <strong>não retornam o status atualizado</strong></li>
+<li><code>videoData.status</code> permanece <code>&#39;new&#39;</code> no estado React</li>
+<li>Quando Phase 7 chama <code>completePhaseAndAdvance(7, { tags })</code>, o reducer seta <code>currentPhase = 8</code></li>
+<li>O efeito AUTO-READY dispara, verifica <code>videoData.status !== &#39;draft&#39;</code> → <code>&#39;new&#39; !== &#39;draft&#39;</code> → <code>true</code> → <strong>return early</strong></li>
+<li>O vídeo fica em <code>&#39;draft&#39;</code> no Firestore sem nunca chegar a <code>&#39;ready&#39;</code></li>
+<li>Ao tentar publicar, YouTube API lê <code>&#39;draft&#39;</code> do Firestore → <code>canTransition(&#39;draft&#39;, &#39;send&#39;)</code> → <code>false</code> → erro</li>
+</ol>
+<p><strong>Solução implementada: CLIENT-SIDE AUTO-DRAFT</strong></p>
+<pre><code class="language-typescript">// wizard-orchestrator.tsx — NOVO efeito ANTES do AUTO-READY
+useEffect(() =&gt; {
+  if (videoData.status !== &#39;new&#39;) return
+  if (videoDataReadyFor !== video.id) return
+
+  // First phase: episode starts at 1, cut/reel start at 0
+  const firstPhase = video.videoType === &#39;episode&#39; ? 1 : 0
+
+  // If wizard has advanced past the first phase, data was saved → server did AUTO-DRAFT
+  if (wizard.currentPhase === firstPhase) return
+
+  setVideoData(prev =&gt; prev.status === &#39;new&#39; ? { ...prev, status: &#39;draft&#39; } : prev)
+}, [wizard.currentPhase, videoData.status, videoDataReadyFor, video.id, video.videoType])
+</code></pre>
+<p><strong>Fluxo corrigido (cut com status &#39;new&#39;):</strong></p>
+<ol>
+<li>Mount → <code>fetchFreshVideoData()</code> → <code>videoData.status = &#39;new&#39;</code></li>
+<li>TranscriptionLoader → <code>videoDataReadyFor = video.id</code></li>
+<li>Phase 0 completa → <code>currentPhase = 5</code></li>
+<li><strong>CLIENT-SIDE AUTO-DRAFT</strong>: <code>status === &#39;new&#39;</code>, <code>5 !== 0</code> → <code>setVideoData({ status: &#39;draft&#39; })</code></li>
+<li>Re-render: <code>videoData.status = &#39;draft&#39;</code></li>
+<li>User continua: Phase 5 → 5B → 6 → 7</li>
+<li>Phase 7 completa → <code>currentPhase = 8</code></li>
+<li><strong>AUTO-READY</strong>: <code>status === &#39;draft&#39;</code> → guard passa → PATCH <code>{ status: &#39;ready&#39; }</code> → sucesso</li>
+</ol>
+<h3>Alternativa considerada e descartada</h3>
+<p>Alterar o guard do AUTO-READY para aceitar <code>&#39;new&#39;</code> além de <code>&#39;draft&#39;</code>. Descartada porque:</p>
+<ul>
+<li>É uma gambiarra que mascara o problema real (estado local dessincronizado)</li>
+<li>Viola o princípio de que o AUTO-READY só deve atuar sobre vídeos em <code>&#39;draft&#39;</code></li>
+<li>Envia PATCH <code>{ status: &#39;ready&#39; }</code> para vídeos com status <code>&#39;new&#39;</code> no Firestore, o que é semanticamente incorreto</li>
+</ul>
+<h3>Arquivos Envolvidos</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Mudança</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/wizard/wizard-orchestrator.tsx</code></td>
+<td>Novo efeito CLIENT-SIDE AUTO-DRAFT</td>
+</tr>
+<tr>
+<td><code>src/lib/wizard/machine.test.ts</code></td>
+<td>Testes: cut/reel phase 7 → 8</td>
+</tr>
+<tr>
+<td><code>src/components/wizard/wizard-orchestrator-cut.test.tsx</code></td>
+<td>Testes: fluxo completo cut atinge phase 8</td>
+</tr>
+<tr>
+<td><code>src/components/wizard/wizard-orchestrator-reel.test.tsx</code></td>
+<td>Testes: fluxo completo reel atinge phase 8</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>References</h2>
+<ul>
+<li><a href="epic-13-hardening-v3.html">Epic 13 Doc</a></li>
+<li><a href="../../session-context-2026-02-01.html">Session Context 2026-02-01</a> — Problema 5 (race condition transcrição) no mesmo efeito</li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-02-17: Story criada (SM Bob via BMad Party Mode)</li>
+<li>2026-02-17: Primeira tentativa — alteração do guard do AUTO-READY (descartada)</li>
+<li>2026-02-19: Reimplementada — CLIENT-SIDE AUTO-DRAFT espelha servidor — 1728 testes passando</li>
+</ul>
+
+  </main>
+</body>
+</html>

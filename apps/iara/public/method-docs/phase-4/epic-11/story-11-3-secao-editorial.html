@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11.3 Seção Editorial — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 11 — Melhorias v2.1.0</nav><h1>Story 11.3: Seção Editorial</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor de conteúdo</strong>,
+I want <strong>uma seção editorial com visão dos episódios em grid</strong>,
+so that <strong>eu tenha uma visão rápida e visual dos episódios recentes e possa acessar relatórios editoriais futuramente</strong>.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1 - Menu Editorial</strong>: Given o menu lateral da aplicação, When renderizado, Then exibe nova entrada &quot;Editorial&quot; posicionada entre &quot;Vídeos&quot; e &quot;Usuários&quot;, And ao clicar navega para <code>/videos?view=editorial</code>.</p>
+</li>
+<li><p><strong>AC2 - Grid de Episódios</strong>: Given o produtor acessa a view Editorial, When a página carrega, Then exibe grid responsivo com os 16 episódios mais recentes (videoType <code>episode</code>), ordenados do mais recente ao mais antigo.</p>
+</li>
+<li><p><strong>AC3 - Card do Episódio</strong>: Given cada card no grid, When renderizado, Then exibe: thumbnail 16:9 (via <code>VideoThumbnail</code>), título do episódio (CardTitle), descrição truncada (CardDescription <code>line-clamp-2</code>), badge de status no canto superior (CardAction, mesmas cores da lista principal), e botão &quot;Relatório Editorial&quot; full-width no CardFooter (<code>variant=&quot;default&quot;</code>, desabilitado, tooltip &quot;Em breve&quot;).</p>
+</li>
+<li><p><strong>AC4 - Busca por Título</strong>: Given a barra de busca no topo da seção, When o produtor digita um termo, Then filtra client-side por correspondência parcial no título (case-insensitive), And o grid atualiza com os resultados em debounce 300ms, And os detalhes completos dos vídeos filtrados são carregados para montar os cards.</p>
+</li>
+<li><p><strong>AC5 - Empty State</strong>: Given a busca não encontra resultados, When o grid está vazio, Then exibe empty state: &quot;Nenhum episódio encontrado&quot;. Given o produtor limpa a barra de busca, When o campo fica vazio, Then volta a exibir os 16 episódios mais recentes.</p>
+</li>
+<li><p><strong>AC6 - Responsividade</strong>: Given a página Editorial em diferentes viewports, When renderizada, Then exibe 4 colunas em desktop (xl), 3 em large (lg), 2 em tablet (md), 1 em mobile.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Adicionar item &quot;Editorial&quot; no sidebar (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Importar ícone <code>FileText</code> de <code>lucide-react</code> em <code>sidebar.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Adicionar entrada <code>{ href: &#39;/videos?view=editorial&#39;, label: &#39;Editorial&#39;, icon: FileText, isActive: isEditorialView, adminOnly: false }</code> entre &quot;Vídeos&quot; e &quot;Usuários&quot; no array <code>navItems</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Adicionar detecção <code>const isEditorialView = searchParams.get(&#39;view&#39;) === &#39;editorial&#39;</code> no <code>useMemo</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Corrigir <code>isActive</code> de &quot;Vídeos&quot; para excluir <code>isEditorialView</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.5 Testes do sidebar: item Editorial visível, active state correto, não conflita com Vídeos</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar Route Handler <code>GET /api/editorial/episodes</code> (AC: #2, #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar <code>src/app/api/editorial/episodes/route.ts</code> (endpoint separado para evitar conflito com <code>/api/videos/episodes</code> existente)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Auth via <code>auth()</code>, retornar 401 se sem sessão</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Query Firestore: <code>where(&#39;videoType&#39;, &#39;==&#39;, &#39;episode&#39;)</code>, select fields: <code>title</code>, <code>description</code>, <code>status</code>, <code>thumbnails</code>, <code>storageThumbnailUrl</code>, <code>publishedAt</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Ordenar por <code>publishedAt</code> desc (em memória)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5 Suportar query param <code>?limit=16</code> (default 16) e <code>?search=termo</code> (filtro server-side por título, case-insensitive)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.6 Response: <code>{ data: Array&lt;EpisodeSummary&gt; }</code> com fields: <code>id</code>, <code>title</code>, <code>description</code>, <code>status</code>, <code>thumbnailUrl</code>, <code>publishedAt</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.7 Structured logging e error handling padrão</li>
+<li><input checked="" disabled="" type="checkbox"> 2.8 Testes unitários: 14 testes (auth, params, filtro, limite, empty, erro Firestore, query, fields)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar componente <code>EpisodeCard</code> (AC: #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/components/editorial/episode-card.tsx</code> (client component)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Layout: <code>Card</code> do shadcn com thumbnail 16:9 no topo via <code>VideoThumbnail</code> (width/height proporcional)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Título com <code>font-semibold text-sm line-clamp-1</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Descrição com <code>text-sm text-muted-foreground line-clamp-2</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Badge de status: duplicou <code>statusColors</code> e <code>statusLabels</code> (decisão: não tocar em <code>video-list-item.tsx</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 Botão &quot;Relatório Editorial&quot;: <code>&lt;Button variant=&quot;default&quot; size=&quot;sm&quot; disabled className=&quot;w-full&quot;&gt;</code> em CardFooter com <code>&lt;Tooltip&gt;</code> &quot;Em breve&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 3.7 Testes: 8 testes (render, descrição vazia, badge status, botão desabilitado, thumbnail, status desconhecido)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Criar painel <code>EditorialPanel</code> (AC: #2, #4, #5, #6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/components/editorial/editorial-panel.tsx</code> (client component)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Header com título &quot;Editorial&quot; e barra de busca (<code>Input</code> com ícone Search de lucide)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Busca com debounce 300ms via <code>useState</code> + <code>useEffect</code> com <code>setTimeout</code>/<code>clearTimeout</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Fetch de episódios via <code>GET /api/editorial/episodes?limit=16</code> no mount (useEffect)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.5 Quando busca preenchida: <code>GET /api/editorial/episodes?search={termo}</code> (sem limit, retorna todos que matcham)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.6 Grid responsivo: <code>grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.7 Loading state com skeletons (4 cards skeleton, apenas no load inicial)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.8 Empty state: &quot;Nenhum episódio encontrado&quot; centralizado no grid area</li>
+<li><input checked="" disabled="" type="checkbox"> 4.9 Scroll: <code>overflow-y-auto</code> com <code>min-h-0</code> (ScrollArea do Radix não funcionava com flex column)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.10 Testes: 9 testes (loading, dados, busca debounce, empty, erro API, header, campo busca, limit, erro rede)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Integrar view editorial no <code>videos-layout.tsx</code> (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Importar <code>EditorialPanel</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Adicionar bloco <code>if (currentView === &#39;editorial&#39;)</code> no <code>VideosLayout</code>, seguindo padrão de <code>settings</code> e <code>users</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Render: Sidebar + EditorialPanel (full width, sem master-detail split)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Sem check de admin (editorial é acessível para todos)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Testes: 2 testes (view editorial renderiza EditorialPanel, sidebar com userName)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Testes de integração e regressão (AC: todos)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 Garantir que testes existentes do sidebar continuam passando (12/12 pass)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Garantir que testes de videos-layout continuam passando (9/9 pass, incluiu mock de useCurrentUser que faltava)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Garantir que navegação Vídeos/Editorial/Usuários/Configurações não conflita (52/52 pass)</li>
+<li><input disabled="" type="checkbox"> 6.4 Teste manual: navegar para Editorial → ver grid → buscar → limpar busca</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Padrão de View Switching (CRÍTICO)</h3>
+<p>O projeto usa <code>?view=</code> query params para switching de views, NÃO rotas separadas. Todas as views estão dentro de <code>/videos</code>:</p>
+<ul>
+<li><code>/videos</code> → lista de vídeos (default)</li>
+<li><code>/videos?view=settings</code> → painel de configurações</li>
+<li><code>/videos?view=users</code> → gestão de usuários</li>
+<li><code>/videos?view=editorial</code> → <strong>NOVA</strong> seção editorial</li>
+</ul>
+<p><strong>NÃO criar</strong> <code>src/app/editorial/page.tsx</code>. Usar o padrão existente em <code>videos-layout.tsx</code>.</p>
+<h3>Sidebar — Posição do Item Editorial</h3>
+<p>O array <code>navItems</code> no sidebar.tsx atualmente tem:</p>
+<ol>
+<li>Vídeos (<code>/videos</code>) — para todos</li>
+<li>Usuários (<code>/videos?view=users</code>) — adminOnly</li>
+<li>Configurações (<code>/videos?view=settings</code>) — adminOnly</li>
+</ol>
+<p>O item &quot;Editorial&quot; deve ficar entre Vídeos e Usuários (posição 2, index 1).</p>
+<p>A condição <code>isActive</code> de Vídeos precisa excluir <code>isEditorialView</code>:</p>
+<pre><code class="language-typescript">isActive: (pathname === &#39;/videos&#39; || pathname?.startsWith(&#39;/videos/&#39;)) &amp;&amp; !isSettingsView &amp;&amp; !isUsersView &amp;&amp; !isEditorialView,
+</code></pre>
+<h3>VideoThumbnail — Reutilizar Componente Existente</h3>
+<p>O <code>VideoThumbnail</code> (<code>src/components/ui/video-thumbnail.tsx</code>) já resolve:</p>
+<ul>
+<li>Fallback chain (custom → hqdefault → default → placeholder)</li>
+<li>Data URIs (base64 thumbnails)</li>
+<li>URLs com query params expiráveis (ignora signed URLs)</li>
+</ul>
+<p>Para o card editorial, usar com dimensões maiores (aspect 16:9):</p>
+<pre><code class="language-typescript">&lt;VideoThumbnail
+  youtubeId={episode.id}
+  thumbnailUrl={episode.thumbnailUrl}
+  alt={episode.title}
+  width={480}
+  height={270}
+  className=&quot;w-full rounded-t-lg&quot;
+/&gt;
+</code></pre>
+<h3>Status Badge — Constantes Existentes</h3>
+<p>As constantes <code>statusColors</code> e <code>statusLabels</code> estão em <code>video-list-item.tsx</code> (linhas ~20-40). Como são constantes locais (não exportadas), há duas opções:</p>
+<ol>
+<li><strong>Duplicar</strong> no <code>episode-card.tsx</code> (simples, sem risco de regressão)</li>
+<li><strong>Extrair</strong> para arquivo compartilhado <code>src/lib/video-status.ts</code></li>
+</ol>
+<p><strong>Recomendação: Duplicar</strong> — são ~10 linhas e a story 11-3 não deve tocar em <code>video-list-item.tsx</code>.</p>
+<h3>Endpoint — Abordagem Simplificada</h3>
+<p>O epic sugere dois endpoints (summary + batch), mas isso adiciona complexidade desnecessária. Um único endpoint <code>GET /api/editorial/episodes</code> que retorna os campos necessários é suficiente (endpoint separado de <code>/api/videos/episodes</code> para evitar conflito com seleção de episódio-pai):</p>
+<pre><code class="language-typescript">// GET /api/editorial/episodes?limit=16&amp;search=termo
+// Response: { data: EpisodeSummary[] }
+
+interface EpisodeSummary {
+  id: string
+  title: string
+  description?: string
+  status: VideoStatus
+  thumbnailUrl?: string
+  publishedAt?: string
+}
+</code></pre>
+<p>Query Firestore com <code>select()</code> para projeção de campos (não trazer documento inteiro):</p>
+<pre><code class="language-typescript">const snapshot = await videosRef
+  .where(&#39;videoType&#39;, &#39;==&#39;, &#39;episode&#39;)
+  .select(&#39;title&#39;, &#39;description&#39;, &#39;status&#39;, &#39;thumbnails&#39;, &#39;storageThumbnailUrl&#39;, &#39;publishedAt&#39;)
+  .get()
+</code></pre>
+<p><strong>Filtragem por título</strong>: Firestore não suporta <code>LIKE</code>. Fazer server-side em memória após query:</p>
+<pre><code class="language-typescript">const filtered = episodes.filter(e =&gt;
+  e.title.toLowerCase().includes(searchTerm.toLowerCase())
+)
+</code></pre>
+<h3>Busca — Debounce Pattern</h3>
+<p>Usar o pattern de debounce simples com <code>useEffect</code>:</p>
+<pre><code class="language-typescript">const [searchInput, setSearchInput] = useState(&#39;&#39;)
+const [debouncedSearch, setDebouncedSearch] = useState(&#39;&#39;)
+
+useEffect(() =&gt; {
+  const timer = setTimeout(() =&gt; setDebouncedSearch(searchInput), 300)
+  return () =&gt; clearTimeout(timer)
+}, [searchInput])
+
+// Fetch com debouncedSearch como dependência
+useEffect(() =&gt; {
+  fetchEpisodes(debouncedSearch)
+}, [debouncedSearch])
+</code></pre>
+<h3>Layout — Full Width (sem Master-Detail)</h3>
+<p>A view editorial usa layout full-width com sidebar, SEM o <code>MasterDetailLayout</code> (sem resizable panels):</p>
+<pre><code class="language-typescript">if (currentView === &#39;editorial&#39;) {
+  return (
+    &lt;div className=&quot;flex h-screen&quot;&gt;
+      &lt;div className=&quot;shrink-0&quot;&gt;
+        &lt;Sidebar userName={userName} /&gt;
+      &lt;/div&gt;
+      &lt;div className=&quot;flex-1 overflow-hidden&quot;&gt;
+        &lt;EditorialPanel /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+</code></pre>
+<p>Seguir exatamente o padrão de <code>currentView === &#39;settings&#39;</code> em <code>videos-layout.tsx</code> (linhas 132-143).</p>
+<h3>Sem Paginação — Design Intencional</h3>
+<p>O epic especifica sem paginação. O limit=16 mostra os 16 mais recentes (4x4 grid). Quando busca está ativa, mostra todos os resultados sem limit. <strong>Nota</strong>: A query Firestore carrega todos os episódios em memória — aceitável no volume atual (~50-100 episódios), mas pode precisar de <code>.orderBy().limit()</code> no Firestore se escalar.</p>
+<h3>Project Structure Notes</h3>
+<ul>
+<li>Source code: <code>/home/wellington/Documentos/PPTNC/pptnc/apps/iara/src/</code></li>
+<li>Sidebar: <code>src/components/layout/sidebar.tsx</code> — MODIFICAR</li>
+<li>Videos Layout: <code>src/app/videos/videos-layout.tsx</code> — MODIFICAR</li>
+<li>Route Handlers: <code>src/app/api/</code> — CRIADO em <code>src/app/api/editorial/episodes/route.ts</code></li>
+<li>Componentes editorial: CRIAR em <code>src/components/editorial/</code></li>
+<li>Thumbnail: <code>src/components/ui/video-thumbnail.tsx</code> — REUSAR</li>
+<li>Card: <code>src/components/ui/card.tsx</code> — REUSAR</li>
+<li>Badge: <code>src/components/ui/badge.tsx</code> — REUSAR</li>
+<li>Tooltip: <code>src/components/ui/tooltip.tsx</code> — REUSAR</li>
+<li>Input: <code>src/components/ui/input.tsx</code> — REUSAR</li>
+<li>ScrollArea: <code>src/components/ui/scroll-area.tsx</code> — REUSAR</li>
+<li>Skeleton: <code>src/components/ui/skeleton.tsx</code> — REUSAR</li>
+<li>Videos Admin: <code>src/lib/firebase/videos-admin.ts</code> — NÃO MODIFICAR (query no route handler)</li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ol>
+<li>N/A — Não muda <code>VideoStatus</code></li>
+<li>Validar dados do Firestore (select retorna dados parciais) — verificar campos undefined</li>
+<li><code>export const runtime = &#39;nodejs&#39;</code> no Route Handler</li>
+<li>N/A — Não faz update de vídeos</li>
+<li>Import order: React/Next → External → Internal → Utils → Types</li>
+<li>File naming: kebab-case files, PascalCase exports</li>
+<li>Testes co-localizados: <code>it(&#39;verb + behavior&#39;)</code></li>
+<li><code>podcastId</code> em todas as queries: usar <code>PODCAST_ID</code> de <code>config.ts</code></li>
+<li>Structured logging via <code>log()</code> — NUNCA <code>console.log</code></li>
+<li>N/A — Sem selectedVideoId nesta view</li>
+<li><code>import type</code> para type-only imports</li>
+<li>Firestore SDK: <code>firebase-admin</code> no Route Handler</li>
+<li>Dark mode fixed: <code>className=&quot;dark&quot;</code> — sem toggle</li>
+</ol>
+<h3>Lições das Stories Anteriores (11-1, 11-2)</h3>
+<ol>
+<li><strong>Firestore rejeita undefined</strong>: Ao fazer <code>select()</code> em campos opcionais, o resultado pode ter <code>undefined</code>. Filtrar antes de enviar ao client: <code>Object.fromEntries(Object.entries(data).filter(([, v]) =&gt; v !== undefined))</code></li>
+<li><strong>thumbnailUrl</strong>: Preferir <code>storageThumbnailUrl</code> sobre <code>thumbnails</code> (funciona para vídeos privados/draft). O <code>VideoThumbnail</code> já faz fallback automaticamente.</li>
+<li><strong>Tests importar de <code>@/test-utils</code></strong>: NUNCA importar direto de <code>@testing-library/react</code>. O projeto tem <code>test-utils.tsx</code> com providers.</li>
+<li><strong>Mocks de <code>auth()</code></strong>: Usar <code>vi.mocked(auth).mockResolvedValue({ user: { id: &#39;user-123&#39; } } as never)</code> para simular sessão autenticada.</li>
+<li><strong>Mocks de <code>getAdminDb()</code></strong>: Route handler tests mocam <code>@/lib/firebase/admin</code> e retornam snapshot mockado.</li>
+</ol>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-11-melhorias-v2.1.0.md#Story-11-3] — Acceptance criteria originais</li>
+<li>[Source: architecture-iara.md#Enforcement-Rules] — 18 regras obrigatórias</li>
+<li>[Source: architecture-iara.md#Route-Handlers] — Template de Route Handler</li>
+<li>[Source: pptnc/apps/iara/src/components/layout/sidebar.tsx] — Sidebar navigation pattern</li>
+<li>[Source: pptnc/apps/iara/src/app/videos/videos-layout.tsx:132-187] — View switching pattern</li>
+<li>[Source: pptnc/apps/iara/src/components/ui/video-thumbnail.tsx] — Thumbnail component (reusar)</li>
+<li>[Source: pptnc/apps/iara/src/components/videos/video-list-item.tsx:20-40] — Status badge colors/labels</li>
+<li>[Source: pptnc/apps/iara/src/lib/firebase/videos-admin.ts:186-240] — getVideosForDisplayAdmin pattern</li>
+<li>[Source: pptnc/apps/iara/src/lib/firebase/videos-admin.ts:648-680] — getEpisodesForParentSelection (query episode)</li>
+<li>[Source: pptnc/apps/iara/src/app/videos/page.tsx] — Page server component pattern</li>
+<li>[Source: story-11-1-linkedin-profile-scraping.md] — Lição: Firestore rejeita undefined</li>
+<li>[Source: story-11-2-reabrir-episodio.md] — Lição: test-utils import, auth mock</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6 (claude-opus-4-6)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Fixed pre-existing missing <code>useCurrentUser</code> mock in <code>videos-layout.test.tsx</code> (all 9 existing tests were broken by Story 10 changes)</li>
+<li>Endpoint created at <code>/api/editorial/episodes</code> instead of <code>/api/videos/episodes</code> to avoid conflict with existing parent episode selection endpoint</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>52 total new/updated tests: 12 sidebar + 14 route + 8 card + 9 panel + 9 layout</li>
+<li>All 52 tests passing, no regressions in story-related files</li>
+<li>19 pre-existing test failures in unrelated files (use-videos, settings-page-client, video-header, users-admin, users, videos-admin, phase-5-title, phase-5b-short-title) — NOT caused by this story</li>
+<li>Task 6.4 (manual testing) left unchecked — requires running app</li>
+</ul>
+<h3>Code Review (2026-02-07)</h3>
+<p><strong>Reviewer:</strong> Claude Opus 4.6 (adversarial code-review workflow)</p>
+<p><strong>Issues Found:</strong> 1 High, 4 Medium, 2 Low</p>
+<p><strong>Fixed:</strong></p>
+<ul>
+<li>[H1] Story ACs/tasks atualizados para refletir implementação real (limit 16, 4 colunas, variant=&quot;default&quot;, overflow-y-auto)</li>
+<li>[M1] Removido import <code>act</code> não usado em <code>editorial-panel.test.tsx</code></li>
+<li>[M3] Skeletons agora só aparecem no load inicial (<code>isLoading &amp;&amp; episodes.length === 0</code>), evitando flash durante busca</li>
+<li>[M4] Referências ao endpoint atualizadas no story para <code>/api/editorial/episodes</code> consistentemente</li>
+</ul>
+<p><strong>Aceitos (sem correção):</strong></p>
+<ul>
+<li>[M2] Query Firestore sem paginação server-side — aceitável no volume atual, documentado como nota</li>
+<li>[L1] <code>EpisodeSummary</code> duplicada (route vs card) — separação de camadas intencional</li>
+<li>[L2] <code>status: string</code> com cast — fallback garante exibição de status desconhecido</li>
+</ul>
+<h3>File List</h3>
+<p><strong>Created:</strong></p>
+<ul>
+<li><code>src/app/api/editorial/episodes/route.ts</code> — GET endpoint for editorial episodes</li>
+<li><code>src/app/api/editorial/episodes/route.test.ts</code> — 14 tests</li>
+<li><code>src/components/editorial/episode-card.tsx</code> — Episode card component</li>
+<li><code>src/components/editorial/episode-card.test.tsx</code> — 8 tests</li>
+<li><code>src/components/editorial/editorial-panel.tsx</code> — Editorial panel with search and grid</li>
+<li><code>src/components/editorial/editorial-panel.test.tsx</code> — 9 tests</li>
+</ul>
+<p><strong>Modified:</strong></p>
+<ul>
+<li><code>src/components/layout/sidebar.tsx</code> — Added Editorial nav item with FileText icon</li>
+<li><code>src/components/layout/sidebar.test.tsx</code> — Added 3 tests for Editorial nav item</li>
+<li><code>src/app/videos/videos-layout.tsx</code> — Added editorial view handler + EditorialPanel import</li>
+<li><code>src/app/videos/videos-layout.test.tsx</code> — Added 2 tests + useCurrentUser mock + EditorialPanel mock</li>
+</ul>
+
+  </main>
+</body>
+</html>

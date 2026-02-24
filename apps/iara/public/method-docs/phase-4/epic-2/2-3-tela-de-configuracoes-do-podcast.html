@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.3 Tela de Configurações do Podcast — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 2 — Configuração de Podcast</nav><h1>Story 2.3: Tela de Configurações do Podcast</h1>
+<p>Status: done</p>
+<hr>
+<h2>Story</h2>
+<p>Como um <strong>usuário</strong>,
+Eu quero acessar uma tela de configurações do meu podcast,
+Para que eu possa visualizar e editar as configurações atuais.</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Navegação para Configurações</h3>
+<p><strong>Given</strong> um usuário autenticado
+<strong>When</strong> ele clica em &quot;Configurações&quot; na sidebar
+<strong>Then</strong> navega para <code>/settings</code>
+<strong>And</strong> vê o formulário de configurações do podcast</p>
+<h3>AC2: Carregamento de Dados</h3>
+<p><strong>Given</strong> a tela de configurações carregada
+<strong>When</strong> os dados do podcast são buscados
+<strong>Then</strong> os campos são preenchidos com valores atuais:</p>
+<ul>
+<li>Nome do podcast</li>
+<li>Channel ID do YouTube
+<strong>And</strong> mostra skeleton enquanto carrega</li>
+</ul>
+<h3>AC3: Edição com Auto-Save</h3>
+<p><strong>Given</strong> um usuário edita o nome do podcast
+<strong>When</strong> ele sai do campo (blur) ou aguarda 1.5s após parar de digitar
+<strong>Then</strong> a alteração é salva automaticamente
+<strong>And</strong> vê indicador &quot;Salvando...&quot; durante a operação
+<strong>And</strong> vê indicador &quot;Salvo&quot; confirmando a operação</p>
+<h3>AC4: Tratamento de Erros</h3>
+<p><strong>Given</strong> um erro ao salvar
+<strong>When</strong> a operação de update falha
+<strong>Then</strong> vê indicador &quot;Erro ao salvar&quot; em vermelho
+<strong>And</strong> o erro é logado via structured logging (<code>log()</code>)
+<strong>And</strong> o valor editado é preservado localmente</p>
+<h3>AC5: Validação de Campos</h3>
+<p><strong>Given</strong> campos de configuração
+<strong>When</strong> o usuário tenta salvar valores inválidos
+<strong>Then</strong> validação Zod é executada no client
+<strong>And</strong> erros de validação são exibidos inline
+<strong>And</strong> a operação de save é bloqueada</p>
+<h3>AC6: Link na Sidebar</h3>
+<p><strong>Given</strong> a sidebar do aplicativo
+<strong>When</strong> renderizada
+<strong>Then</strong> exibe link para <code>/settings</code> com ícone de engrenagem (Settings do lucide-react)
+<strong>And</strong> link mostra estado ativo quando na página de configurações</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Criar página Server Component</strong> (AC: 1, 2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>src/app/settings/page.tsx</code> como Server Component</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Buscar dados do podcast usando <code>getPodcastAdmin()</code> (server-side)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Passar dados para o Client Component</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Implementar loading state com Suspense boundary</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Criar componente de formulário</strong> (AC: 2, 3, 4, 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar <code>src/components/settings/podcast-settings-form.tsx</code> como Client Component</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Implementar campos: nome do podcast, channel ID (read-only)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Usar componentes shadcn/ui: Card, Input, Label</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Integrar com <code>useAutoSave</code> hook (criar se não existir)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5 Implementar indicadores de status: idle, saving, saved, error</li>
+<li><input checked="" disabled="" type="checkbox"> 2.6 Validar com <code>PodcastUpdateSchema</code> antes de salvar</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 3: Implementar useAutoSave hook</strong> (AC: 3, 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/hooks/use-auto-save.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Implementar debounce de 1.5s</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Retornar <code>saveStatus: &#39;idle&#39; | &#39;saving&#39; | &#39;saved&#39; | &#39;error&#39;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Forçar save imediato no blur</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Cleanup adequado no unmount</li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 Criar testes co-localizados <code>use-auto-save.test.ts</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 4: Adicionar link na Sidebar</strong> (AC: 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Verificar/criar componente de sidebar em <code>src/components/layout/</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Adicionar link para <code>/settings</code> com ícone Settings (lucide-react)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Implementar estado ativo quando pathname === &#39;/settings&#39;</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Manter consistência visual com outros links da sidebar</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 5: Testes</strong> (AC: 1-6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Criar <code>src/components/settings/podcast-settings-form.test.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Testar renderização com dados do podcast</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Testar indicador de saving/saved</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Testar validação de campos</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Testar tratamento de erros</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Estrutura de Arquivos</h3>
+<pre><code>src/
+├── app/
+│   └── settings/
+│       └── page.tsx           # CRIAR - Server Component
+├── components/
+│   ├── settings/
+│   │   ├── podcast-settings-form.tsx      # CRIAR - Client Component
+│   │   └── podcast-settings-form.test.tsx # CRIAR - Testes
+│   └── layout/
+│       └── sidebar.tsx        # VERIFICAR/ATUALIZAR - Link settings
+├── hooks/
+│   ├── use-auto-save.ts       # CRIAR - Auto-save hook
+│   └── use-auto-save.test.ts  # CRIAR - Testes do hook
+</code></pre>
+<h3>Padrão de Implementação - Server Component (page.tsx)</h3>
+<pre><code class="language-typescript">// src/app/settings/page.tsx
+import { Suspense } from &#39;react&#39;
+
+import { getPodcastAdmin } from &#39;@/lib/firebase/podcasts-admin&#39;
+import { PODCAST_ID } from &#39;@/lib/firebase/config&#39;
+import { PodcastSettingsForm } from &#39;@/components/settings/podcast-settings-form&#39;
+import { Skeleton } from &#39;@/components/ui/skeleton&#39;
+
+export default async function SettingsPage() {
+  const podcast = await getPodcastAdmin(PODCAST_ID)
+
+  if (!podcast) {
+    return &lt;div&gt;Podcast não encontrado&lt;/div&gt;
+  }
+
+  return (
+    &lt;div className=&quot;container max-w-2xl py-8&quot;&gt;
+      &lt;h1 className=&quot;text-2xl font-bold mb-6&quot;&gt;Configurações&lt;/h1&gt;
+      &lt;Suspense fallback={&lt;SettingsFormSkeleton /&gt;}&gt;
+        &lt;PodcastSettingsForm podcast={podcast} /&gt;
+      &lt;/Suspense&gt;
+    &lt;/div&gt;
+  )
+}
+
+function SettingsFormSkeleton() {
+  return (
+    &lt;div className=&quot;space-y-4&quot;&gt;
+      &lt;Skeleton className=&quot;h-10 w-full&quot; /&gt;
+      &lt;Skeleton className=&quot;h-10 w-full&quot; /&gt;
+    &lt;/div&gt;
+  )
+}
+</code></pre>
+<h3>Padrão de Implementação - Client Component</h3>
+<pre><code class="language-typescript">// src/components/settings/podcast-settings-form.tsx
+&#39;use client&#39;
+
+import { useState } from &#39;react&#39;
+
+import { Card, CardContent, CardHeader, CardTitle } from &#39;@/components/ui/card&#39;
+import { Input } from &#39;@/components/ui/input&#39;
+import { Label } from &#39;@/components/ui/label&#39;
+import { useAutoSave } from &#39;@/hooks/use-auto-save&#39;
+import { updatePodcast } from &#39;@/lib/firebase/podcasts&#39;
+import { PodcastUpdateSchema } from &#39;@/lib/schemas&#39;
+import { log } from &#39;@/lib/logger&#39;
+import type { Podcast } from &#39;@/types/podcast&#39;
+
+interface PodcastSettingsFormProps {
+  podcast: Podcast
+}
+
+export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
+  const [name, setName] = useState(podcast.name)
+
+  const { saveStatus, error } = useAutoSave(
+    name,
+    async (value) =&gt; {
+      const validated = PodcastUpdateSchema.parse({ name: value })
+      await updatePodcast(podcast.id, validated)
+    },
+    1500
+  )
+
+  return (
+    &lt;Card&gt;
+      &lt;CardHeader&gt;
+        &lt;CardTitle&gt;Informações do Podcast&lt;/CardTitle&gt;
+      &lt;/CardHeader&gt;
+      &lt;CardContent className=&quot;space-y-4&quot;&gt;
+        &lt;div className=&quot;space-y-2&quot;&gt;
+          &lt;Label htmlFor=&quot;name&quot;&gt;Nome do Podcast&lt;/Label&gt;
+          &lt;Input
+            id=&quot;name&quot;
+            value={name}
+            onChange={(e) =&gt; setName(e.target.value)}
+          /&gt;
+          &lt;SaveStatusIndicator status={saveStatus} error={error} /&gt;
+        &lt;/div&gt;
+
+        &lt;div className=&quot;space-y-2&quot;&gt;
+          &lt;Label htmlFor=&quot;channelId&quot;&gt;Channel ID do YouTube&lt;/Label&gt;
+          &lt;Input
+            id=&quot;channelId&quot;
+            value={podcast.channelId}
+            disabled
+            className=&quot;bg-muted&quot;
+          /&gt;
+          &lt;p className=&quot;text-xs text-muted-foreground&quot;&gt;
+            O Channel ID não pode ser alterado
+          &lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/CardContent&gt;
+    &lt;/Card&gt;
+  )
+}
+
+function SaveStatusIndicator({
+  status,
+  error
+}: {
+  status: &#39;idle&#39; | &#39;saving&#39; | &#39;saved&#39; | &#39;error&#39;
+  error: Error | null
+}) {
+  if (status === &#39;saving&#39;) {
+    return &lt;p className=&quot;text-xs text-muted-foreground&quot;&gt;Salvando...&lt;/p&gt;
+  }
+  if (status === &#39;saved&#39;) {
+    return &lt;p className=&quot;text-xs text-green-500&quot;&gt;Salvo&lt;/p&gt;
+  }
+  if (status === &#39;error&#39;) {
+    return &lt;p className=&quot;text-xs text-red-500&quot;&gt;Erro ao salvar&lt;/p&gt;
+  }
+  return null
+}
+</code></pre>
+<h3>Padrão de Implementação - useAutoSave Hook</h3>
+<pre><code class="language-typescript">// src/hooks/use-auto-save.ts
+&#39;use client&#39;
+
+import { useCallback, useEffect, useRef, useState } from &#39;react&#39;
+
+import { log } from &#39;@/lib/logger&#39;
+
+type SaveStatus = &#39;idle&#39; | &#39;saving&#39; | &#39;saved&#39; | &#39;error&#39;
+
+interface UseAutoSaveReturn {
+  saveStatus: SaveStatus
+  error: Error | null
+  save: () =&gt; void
+}
+
+export function useAutoSave&lt;T&gt;(
+  value: T,
+  saveFn: (value: T) =&gt; Promise&lt;void&gt;,
+  delay: number = 1500
+): UseAutoSaveReturn {
+  const [saveStatus, setSaveStatus] = useState&lt;SaveStatus&gt;(&#39;idle&#39;)
+  const [error, setError] = useState&lt;Error | null&gt;(null)
+  const timeoutRef = useRef&lt;NodeJS.Timeout | null&gt;(null)
+  const lastSavedValueRef = useRef&lt;T&gt;(value)
+  const isMountedRef = useRef(true)
+
+  const performSave = useCallback(async (valueToSave: T) =&gt; {
+    if (valueToSave === lastSavedValueRef.current) return
+
+    setSaveStatus(&#39;saving&#39;)
+    setError(null)
+
+    try {
+      await saveFn(valueToSave)
+      if (isMountedRef.current) {
+        lastSavedValueRef.current = valueToSave
+        setSaveStatus(&#39;saved&#39;)
+        // Reset to idle after 2s
+        setTimeout(() =&gt; {
+          if (isMountedRef.current) {
+            setSaveStatus(&#39;idle&#39;)
+          }
+        }, 2000)
+      }
+    } catch (err) {
+      if (isMountedRef.current) {
+        const error = err instanceof Error ? err : new Error(String(err))
+        setError(error)
+        setSaveStatus(&#39;error&#39;)
+        log(&#39;ERROR&#39;, &#39;Auto-save failed&#39;, { error })
+      }
+    }
+  }, [saveFn])
+
+  // Debounced save on value change
+  useEffect(() =&gt; {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    timeoutRef.current = setTimeout(() =&gt; {
+      performSave(value)
+    }, delay)
+
+    return () =&gt; {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [value, delay, performSave])
+
+  // Cleanup on unmount
+  useEffect(() =&gt; {
+    isMountedRef.current = true
+    return () =&gt; {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  // Force immediate save
+  const save = useCallback(() =&gt; {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    performSave(value)
+  }, [value, performSave])
+
+  return { saveStatus, error, save }
+}
+</code></pre>
+<h3>Componentes shadcn/ui Necessários</h3>
+<p>Verificar se já estão instalados:</p>
+<ul>
+<li>Card (CardContent, CardHeader, CardTitle)</li>
+<li>Input</li>
+<li>Label</li>
+</ul>
+<p>Se não instalados:</p>
+<pre><code class="language-bash">pnpm dlx shadcn@latest add card input label
+</code></pre>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ol>
+<li><strong>Rule #2 (Zod Validation)</strong>: Validar com <code>PodcastUpdateSchema.parse()</code> ANTES de chamar <code>updatePodcast()</code></li>
+<li><strong>Rule #4 (Field-Level Updates)</strong>: <code>updatePodcast()</code> já usa <code>updateDoc</code>, não <code>setDoc</code></li>
+<li><strong>Rule #6 (File Naming)</strong>: kebab-case para arquivos, PascalCase para exports</li>
+<li><strong>Rule #9 (Structured Logging)</strong>: Usar <code>log()</code> para erros, nunca <code>console.log</code></li>
+<li><strong>Rule #11 (Import Type)</strong>: Usar <code>import type</code> para <code>Podcast</code></li>
+<li><strong>Rule #12 (Timestamp SDK)</strong>: Client Component usa <code>serverTimestamp()</code> via <code>updatePodcast()</code></li>
+</ol>
+<h3>Sidebar Link Pattern</h3>
+<pre><code class="language-typescript">// Em src/components/layout/sidebar.tsx ou similar
+import { Settings } from &#39;lucide-react&#39;
+import Link from &#39;next/link&#39;
+import { usePathname } from &#39;next/navigation&#39;
+
+import { cn } from &#39;@/lib/utils&#39;
+
+export function Sidebar() {
+  const pathname = usePathname()
+
+  return (
+    &lt;nav className=&quot;...&quot;&gt;
+      {/* ... outros links ... */}
+      &lt;Link
+        href=&quot;/settings&quot;
+        className={cn(
+          &quot;flex items-center gap-2 px-3 py-2 rounded-md text-sm&quot;,
+          pathname === &#39;/settings&#39;
+            ? &quot;bg-accent text-accent-foreground&quot;
+            : &quot;hover:bg-accent/50&quot;
+        )}
+      &gt;
+        &lt;Settings className=&quot;h-4 w-4&quot; /&gt;
+        Configurações
+      &lt;/Link&gt;
+    &lt;/nav&gt;
+  )
+}
+</code></pre>
+<h3>Dark Mode</h3>
+<p>Lembrar que o app usa dark mode fixo. Todos os componentes shadcn/ui já são theme-aware. Cores como <code>text-green-500</code> e <code>text-red-500</code> funcionam bem em dark mode.</p>
+<hr>
+<h2>References</h2>
+<ul>
+<li>[Source: epics-iara.md#Story 2.3]</li>
+<li>[Source: architecture-iara.md#Frontend Architecture]</li>
+<li>[Source: project-context-iara.md#Enforcement Rules]</li>
+<li>[Source: ux-design-specification-iara.md#Design Foundations]</li>
+<li>[Dependency: Story 2-2 (podcasts.ts, podcasts-admin.ts)]</li>
+</ul>
+<hr>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Client SDK: <code>updatePodcast()</code> de <code>./podcasts.ts</code></li>
+<li>Admin SDK: <code>getPodcastAdmin()</code> de <code>./podcasts-admin.ts</code></li>
+<li>Schemas: <code>PodcastUpdateSchema</code> de <code>@/lib/schemas</code></li>
+</ul>
+<h3>Completion Notes List</h3>
+<ol>
+<li><p><strong>Task 1</strong>: Página Server Component criada em <code>src/app/settings/page.tsx</code></p>
+<ul>
+<li>Busca dados do podcast via <code>getPodcastAdmin(PODCAST_ID)</code></li>
+<li>Verifica autenticação com <code>auth()</code></li>
+<li>Exibe erro se podcast não encontrado</li>
+</ul>
+</li>
+<li><p><strong>Task 2</strong>: Formulário Client Component criado em <code>src/components/settings/podcast-settings-form.tsx</code></p>
+<ul>
+<li>Campos: nome do podcast (editável), channel ID (read-only), owner ID (read-only)</li>
+<li>Integração com <code>useAutoSave</code> hook</li>
+<li>Indicadores de status: idle, saving, saved, error</li>
+<li>Validação Zod antes de salvar</li>
+</ul>
+</li>
+<li><p><strong>Task 3</strong>: Hook <code>useAutoSave</code> criado em <code>src/hooks/use-auto-save.ts</code></p>
+<ul>
+<li>Debounce de 1.5s</li>
+<li>Retorna <code>saveStatus</code>, <code>error</code>, <code>save()</code></li>
+<li>Skip no primeiro render</li>
+<li>Cleanup no unmount</li>
+<li>9 testes passando</li>
+</ul>
+</li>
+<li><p><strong>Task 4</strong>: Link de configurações adicionado na página de vídeos</p>
+<ul>
+<li>Link no header com ícone Settings (lucide-react)</li>
+<li>Navegação para <code>/settings</code></li>
+</ul>
+</li>
+<li><p><strong>Task 5</strong>: Testes criados</p>
+<ul>
+<li>9 testes do hook useAutoSave</li>
+<li>9 testes do componente PodcastSettingsForm</li>
+<li>Total: 224 testes passando no projeto</li>
+</ul>
+</li>
+</ol>
+<p><strong>Correções adicionais:</strong></p>
+<ul>
+<li>Corrigido <code>err.errors</code> → <code>err.issues</code> (Zod v4)</li>
+<li>Corrigido <code>log(&#39;DEBUG&#39;, ...)</code> → <code>log(&#39;INFO&#39;, ...)</code> em auth.ts e refresh-token.ts (LogLevel não suporta DEBUG)</li>
+<li>Instalado <code>@testing-library/user-event</code> como dev dependency</li>
+<li>Instalado componentes shadcn/ui: input, label</li>
+</ul>
+<h3>File List</h3>
+<p><strong>Arquivos criados:</strong></p>
+<ul>
+<li>src/app/settings/page.tsx</li>
+<li>src/components/settings/podcast-settings-form.tsx</li>
+<li>src/components/settings/podcast-settings-form.test.tsx</li>
+<li>src/hooks/use-auto-save.ts</li>
+<li>src/hooks/use-auto-save.test.ts</li>
+<li>src/components/ui/input.tsx (via shadcn)</li>
+<li>src/components/ui/label.tsx (via shadcn)</li>
+</ul>
+<p><strong>Arquivos modificados:</strong></p>
+<ul>
+<li>src/app/videos/page.tsx (adicionado link para settings)</li>
+<li>src/lib/auth.ts (corrigido DEBUG → INFO)</li>
+<li>src/lib/auth/refresh-token.ts (corrigido DEBUG → INFO)</li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-01-25: Story criada com status ready-for-dev</li>
+<li>2026-01-25: Implementação completa - 224 testes passando, status: review</li>
+<li>2026-01-25: Code review aprovado - 9 issues corrigidos, 234 testes passando, status: done</li>
+</ul>
+
+  </main>
+</body>
+</html>

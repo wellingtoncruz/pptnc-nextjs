@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.6 Middleware de Proteção de Rotas — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group" open>
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 1 — Autenticação e Fundação</nav><h1>Story 1.6: Middleware de Proteção de Rotas</h1>
+<p>Status: done</p>
+<hr>
+<h2>Story</h2>
+<p>Como um <strong>sistema</strong>,
+Eu quero proteger rotas que requerem autenticação,
+Para que usuários não autenticados sejam redirecionados ao login.</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Redirecionamento de usuários não autenticados</h3>
+<p><strong>Given</strong> um usuário não autenticado
+<strong>When</strong> ele tenta acessar <code>/videos</code>
+<strong>Then</strong> é redirecionado para <code>/login</code></p>
+<h3>AC2: Acesso permitido para usuários autenticados</h3>
+<p><strong>Given</strong> um usuário autenticado
+<strong>When</strong> ele acessa <code>/videos</code>
+<strong>Then</strong> a página é renderizada normalmente</p>
+<h3>AC3: SSE endpoints sem buffering</h3>
+<p><strong>Given</strong> uma requisição para endpoint SSE (<code>/api/process/*</code>)
+<strong>When</strong> o middleware intercepta
+<strong>Then</strong> NÃO aplica buffering na response
+<strong>And</strong> verifica autenticação sem bloquear o stream</p>
+<h3>AC4: Rotas públicas de auth</h3>
+<p><strong>Given</strong> uma requisição para <code>/api/auth/*</code>
+<strong>When</strong> o middleware intercepta
+<strong>Then</strong> permite acesso sem autenticação (rotas públicas)</p>
+<h3>AC5: Localização correta do middleware</h3>
+<p><strong>Given</strong> a estrutura do projeto Next.js
+<strong>When</strong> eu verifico a localização do middleware
+<strong>Then</strong> existe <code>src/middleware.ts</code> na raiz de <code>src/</code>
+<strong>And</strong> NÃO está em <code>src/app/middleware.ts</code></p>
+<h3>AC6: Matcher configuration</h3>
+<p><strong>Given</strong> o middleware configurado
+<strong>When</strong> eu verifico o matcher
+<strong>Then</strong> exclui: <code>/_next</code>, <code>/api/auth</code>, assets estáticos (<code>favicon.ico</code>, etc)
+<strong>And</strong> protege: <code>/videos</code>, <code>/settings</code>, <code>/api/*</code> (exceto auth)</p>
+<h3>AC7: Página de login</h3>
+<p><strong>Given</strong> um usuário não autenticado redirecionado
+<strong>When</strong> ele chega na página <code>/login</code>
+<strong>Then</strong> vê opção de &quot;Entrar com Google&quot;
+<strong>And</strong> após login bem-sucedido, é redirecionado para a URL original</p>
+<h3>AC8: Testes unitários</h3>
+<p><strong>Given</strong> testes para o middleware
+<strong>When</strong> eu executo <code>pnpm test</code>
+<strong>Then</strong> testes verificam redirecionamento de usuários não autenticados
+<strong>And</strong> testes verificam passagem de usuários autenticados
+<strong>And</strong> testes verificam exclusão de rotas públicas</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Criar middleware de autenticação</strong> (AC: 1, 2, 5, 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>src/middleware.ts</code> na raiz de src</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Implementar verificação de sessão via Auth.js</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Configurar matcher para rotas protegidas</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Excluir rotas públicas do matcher (<code>/_next</code>, <code>/api/auth</code>, assets)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Implementar lógica de redirecionamento</strong> (AC: 1, 7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Redirecionar para <code>/login</code> se não autenticado</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Preservar URL original para redirect após login (callbackUrl)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Usar <code>NextResponse.redirect()</code> com URL absoluta</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 3: Tratamento especial para SSE endpoints</strong> (AC: 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Identificar rotas SSE (<code>/api/process/*</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Usar <code>NextResponse.next()</code> sem buffering para SSE</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Verificar auth mas não bloquear stream</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 4: Criar página de login</strong> (AC: 7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/app/login/page.tsx</code> (já existia, atualizado)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Implementar botão &quot;Entrar com Google&quot; usando signIn() (já existia)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Redirecionar para callbackUrl após sucesso</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 5: Implementar testes</strong> (AC: 8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Criar <code>src/middleware.test.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Testar redirecionamento de usuários não autenticados</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Testar passagem de usuários autenticados</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Testar exclusão de rotas públicas</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Arquitetura do Middleware no Next.js 15+</h3>
+<p>O middleware deve estar em <code>src/middleware.ts</code> (na raiz de <code>src/</code>, NÃO em <code>src/app/</code>).</p>
+<p><strong>Estrutura correta:</strong></p>
+<pre><code>src/
+├── middleware.ts    ← AQUI (raiz de src/)
+├── app/
+│   └── ...
+</code></pre>
+<h3>Auth.js v5 no Middleware</h3>
+<p>Auth.js v5 fornece helper para middleware:</p>
+<pre><code class="language-typescript">// src/middleware.ts
+import { auth } from &#39;./lib/auth&#39;
+
+export default auth((req) =&gt; {
+  const isAuthenticated = !!req.auth
+  // ... lógica de redirecionamento
+})
+
+export const config = {
+  matcher: [&#39;/((?!api/auth|_next/static|_next/image|favicon.ico).*)&#39;],
+}
+</code></pre>
+<h3>Matcher Configuration</h3>
+<p><strong>Rotas a EXCLUIR (públicas):</strong></p>
+<ul>
+<li><code>/_next/*</code> - Assets do Next.js</li>
+<li><code>/api/auth/*</code> - Endpoints de autenticação</li>
+<li><code>/favicon.ico</code> - Favicon</li>
+<li><code>/login</code> - Página de login</li>
+</ul>
+<p><strong>Rotas a PROTEGER:</strong></p>
+<ul>
+<li><code>/videos</code> - Lista de vídeos</li>
+<li><code>/videos/*</code> - Subpáginas de vídeos</li>
+<li><code>/settings</code> - Configurações</li>
+<li><code>/api/*</code> (exceto <code>/api/auth/*</code>) - API routes</li>
+</ul>
+<h3>SSE Endpoints - NFR4</h3>
+<p>Endpoints SSE (<code>/api/process/*</code>) precisam de tratamento especial:</p>
+<ul>
+<li>Middleware NÃO pode aplicar buffering</li>
+<li>Usar <code>NextResponse.next()</code> para passar a request sem modificação</li>
+<li>Verificar auth mas não bloquear o stream</li>
+</ul>
+<pre><code class="language-typescript">// Para SSE endpoints
+if (req.nextUrl.pathname.startsWith(&#39;/api/process&#39;)) {
+  if (!isAuthenticated) {
+    return new NextResponse(
+      JSON.stringify({ error: { code: &#39;AUTH_EXPIRED&#39;, message: &#39;Sessão expirada&#39; } }),
+      { status: 401, headers: { &#39;Content-Type&#39;: &#39;application/json&#39; } }
+    )
+  }
+  return NextResponse.next() // Não aplica buffering
+}
+</code></pre>
+<h3>Página de Login</h3>
+<pre><code class="language-typescript">// src/app/login/page.tsx
+import { signIn } from &#39;@/lib/auth&#39;
+
+export default function LoginPage() {
+  return (
+    &lt;form action={async () =&gt; {
+      &#39;use server&#39;
+      await signIn(&#39;google&#39;, { redirectTo: &#39;/videos&#39; })
+    }}&gt;
+      &lt;button type=&quot;submit&quot;&gt;Entrar com Google&lt;/button&gt;
+    &lt;/form&gt;
+  )
+}
+</code></pre>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ol>
+<li><strong>Rule #3 (Runtime Node)</strong>: Se middleware precisar chamar APIs, verificar runtime</li>
+<li><strong>Rule #9 (Structured Logging)</strong>: Usar <code>log()</code> para erros de auth</li>
+<li><strong>NFR4 (Middleware)</strong>: SSE endpoints não podem ter buffering</li>
+</ol>
+<h3>Referências da Arquitetura</h3>
+<ul>
+<li>[Source: architecture-iara.md#Authentication &amp; Security]</li>
+<li>[Source: architecture-iara.md#Route Handler Pattern]</li>
+<li>[Source: project-context-iara.md#Enforcement Rules]</li>
+</ul>
+<hr>
+<h2>References</h2>
+<ul>
+<li><a href="https://authjs.dev/getting-started/session-management/protecting">Auth.js v5 Middleware</a></li>
+<li><a href="https://nextjs.org/docs/app/building-your-application/routing/middleware">Next.js Middleware</a></li>
+<li>[Source: architecture-iara.md#Authentication &amp; Security]</li>
+<li>[Source: epics-iara.md#Story 1.6]</li>
+</ul>
+<hr>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Next.js 16 mostra warning de depreciação: middleware renomeado para &quot;proxy&quot; (funcionalidade mantida)</li>
+<li>Página de login já existia de story anterior (1.3/1.4), apenas atualizada para suportar callbackUrl</li>
+<li>Auth.js v5 middleware helper funciona com pattern <code>auth((req) =&gt; { ... })</code></li>
+</ul>
+<h3>Completion Notes List</h3>
+<ol>
+<li><p><strong>Task 1</strong>: Middleware criado em <code>src/middleware.ts</code></p>
+<ul>
+<li>Usa Auth.js v5 helper <code>auth()</code> para verificação de sessão</li>
+<li>Matcher exclui: <code>/api/auth/*</code>, <code>/_next/*</code>, <code>/login</code>, <code>/auth/error</code>, assets</li>
+<li>Protege: <code>/videos</code>, <code>/settings</code>, <code>/api/*</code> (exceto auth)</li>
+</ul>
+</li>
+<li><p><strong>Task 2</strong>: Lógica de redirecionamento implementada</p>
+<ul>
+<li>Usuários não autenticados redirecionados para <code>/login?callbackUrl={originalPath}</code></li>
+<li>Usa <code>NextResponse.redirect()</code> com URL absoluta</li>
+</ul>
+</li>
+<li><p><strong>Task 3</strong>: SSE endpoints com tratamento especial</p>
+<ul>
+<li>Rotas <code>/api/process/*</code> verificam auth mas retornam 401 JSON se não autenticado</li>
+<li>Usa <code>NextResponse.next()</code> para evitar buffering</li>
+</ul>
+</li>
+<li><p><strong>Task 4</strong>: Página de login atualizada</p>
+<ul>
+<li>Adicionado suporte a <code>searchParams.callbackUrl</code></li>
+<li>Redireciona para callbackUrl após login bem-sucedido</li>
+</ul>
+</li>
+<li><p><strong>Task 5</strong>: 13 testes unitários implementados</p>
+<ul>
+<li>Testa redirecionamento de usuários não autenticados</li>
+<li>Testa passagem de usuários autenticados</li>
+<li>Testa retorno 401 para APIs protegidas</li>
+<li>Testa configuração do matcher</li>
+</ul>
+</li>
+</ol>
+<h3>File List</h3>
+<p><strong>Arquivos criados:</strong></p>
+<ul>
+<li>src/middleware.ts</li>
+<li>src/middleware.test.ts</li>
+</ul>
+<p><strong>Arquivos modificados:</strong></p>
+<ul>
+<li>src/app/login/page.tsx (adicionado suporte a callbackUrl)</li>
+</ul>
+<hr>
+<h2>Senior Developer Review (AI)</h2>
+<p><strong>Reviewer:</strong> Claude Opus 4.5
+<strong>Date:</strong> 2026-01-25
+<strong>Outcome:</strong> ✅ APPROVED (com correções aplicadas)</p>
+<h3>Issues Encontrados e Corrigidos</h3>
+<table>
+<thead>
+<tr>
+<th>Severidade</th>
+<th>Issue</th>
+<th>Correção</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🟡 MEDIUM</td>
+<td>Open Redirect via callbackUrl não validado</td>
+<td>Validação adicionada: apenas paths relativos iniciando com <code>/</code></td>
+</tr>
+<tr>
+<td>🟡 MEDIUM</td>
+<td>Falta de logging no middleware (Rule #9)</td>
+<td>Adicionado <code>log()</code> para falhas de auth</td>
+</tr>
+<tr>
+<td>🟡 MEDIUM</td>
+<td>Query string perdida no callbackUrl</td>
+<td>Incluído <code>search</code> junto com <code>pathname</code></td>
+</tr>
+<tr>
+<td>🟢 LOW</td>
+<td>Código duplicado para resposta 401</td>
+<td>Extraído para função <code>createUnauthorizedResponse()</code></td>
+</tr>
+<tr>
+<td>🟢 LOW</td>
+<td>Teste não cobria query string</td>
+<td>Adicionados 2 testes para query string preservation</td>
+</tr>
+</tbody></table>
+<h3>Métricas Finais</h3>
+<ul>
+<li><strong>Testes:</strong> 119 passando (117 → 119 após review)</li>
+<li><strong>Arquivos modificados no review:</strong> 3 (middleware.ts, middleware.test.ts, login/page.tsx)</li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-01-25: Story criada com status ready-for-dev via create-story workflow</li>
+<li>2026-01-25: Implementação completa - 5 tasks, 117 testes passando, status: review</li>
+<li>2026-01-25: Code review executado - 5 issues corrigidos, 119 testes passando</li>
+<li>2026-01-25: Story marcada como done</li>
+</ul>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13.2 Migrar Client TS — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 13 — Hardening v2.2.0</nav><h1>Story 13.2: Migrar client.ts — @google-cloud/vertexai → @google/genai</h1>
+<p>Status: done</p>
+<hr>
+<h2>Story</h2>
+<p>Como <strong>tech lead do IAra</strong>,
+Eu quero migrar o <code>client.ts</code> do SDK deprecated <code>@google-cloud/vertexai</code> para <code>@google/genai</code>,
+Para que o IAra use o SDK suportado antes do deadline de remoção (Jun 2026).</p>
+<hr>
+<h2>Contexto</h2>
+<h3>Situação Atual</h3>
+<ul>
+<li><code>src/lib/llm/client.ts</code> é o único ponto de chamada LLM para fases 1-7</li>
+<li>Usa <code>@google-cloud/vertexai</code> (deprecated Jun 2025, remoção Jun 2026)</li>
+<li>Singleton <code>VertexAI</code> + <code>GenerativeModel</code> com <code>getModel()</code></li>
+<li>Workaround <code>undici</code> para evitar <code>UND_ERR_HEADERS_TIMEOUT</code> em thinking longo</li>
+<li>Workaround <code>as Record&lt;string, unknown&gt;</code> para <code>thinkingConfig</code> (sem tipo no SDK antigo)</li>
+<li>Streaming via <code>model.generateContentStream()</code> com consumo de chunks + <code>streamingResult.response</code></li>
+<li>Response parsing: <code>response.candidates?.[0]?.content?.parts?.[0]?.text</code></li>
+</ul>
+<h3>Mapeamento de API (confirmado pelo Spike 13.1)</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>SDK Antigo</th>
+<th>SDK Novo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Import</td>
+<td><code>import { VertexAI, GenerativeModel } from &#39;@google-cloud/vertexai&#39;</code></td>
+<td><code>import { GoogleGenAI } from &#39;@google/genai&#39;</code></td>
+</tr>
+<tr>
+<td>Init</td>
+<td><code>new VertexAI({ project, location })</code> → <code>getGenerativeModel(...)</code></td>
+<td><code>new GoogleGenAI({ vertexai: true, project, location })</code></td>
+</tr>
+<tr>
+<td>Model</td>
+<td>Singleton via <code>getModel()</code></td>
+<td>Passado por chamada — sem singleton</td>
+</tr>
+<tr>
+<td>Streaming</td>
+<td><code>model.generateContentStream({ contents, systemInstruction })</code></td>
+<td><code>ai.models.generateContentStream({ model, contents, config })</code></td>
+</tr>
+<tr>
+<td>System prompt</td>
+<td><code>{ role: &#39;system&#39;, parts: [{ text }] }</code></td>
+<td>String direta em <code>config.systemInstruction</code></td>
+</tr>
+<tr>
+<td>Config</td>
+<td><code>generationConfig: { temperature, maxOutputTokens, ... }</code></td>
+<td>Campos diretos em <code>config</code></td>
+</tr>
+<tr>
+<td>thinkingConfig</td>
+<td><code>as Record&lt;string, unknown&gt;</code> workaround</td>
+<td>Tipado nativamente</td>
+</tr>
+<tr>
+<td>Response text</td>
+<td><code>response.candidates?.[0]?.content?.parts?.[0]?.text</code></td>
+<td><code>response.text</code> (getter)</td>
+</tr>
+<tr>
+<td>Usage</td>
+<td><code>response.usageMetadata?.promptTokenCount</code></td>
+<td>Idêntico</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td><code>undici</code> global dispatcher workaround</td>
+<td>Não necessário (stream mantém conexão)</td>
+</tr>
+<tr>
+<td>Abort</td>
+<td>Não suportado</td>
+<td><code>config.abortSignal</code> nativo</td>
+</tr>
+</tbody></table>
+<h3>Arquivos Envolvidos</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Mudança</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/llm/client.ts</code></td>
+<td><strong>Major</strong> — Refatorar init, streaming, response, remover undici</td>
+</tr>
+<tr>
+<td><code>src/lib/llm/types.ts</code></td>
+<td><strong>Minor</strong> — Remover <code>VertexAIConfig</code>, atualizar docs</td>
+</tr>
+<tr>
+<td><code>src/lib/llm/index.ts</code></td>
+<td><strong>Minor</strong> — Renomear export <code>resetVertexAIClient</code> → <code>resetGenAIClient</code></td>
+</tr>
+</tbody></table>
+<p><strong>NOTA</strong>: <code>src/app/api/wizard/phase/5b/route.ts</code> NÃO é modificado nesta story (será Story 13.3).
+<strong>NOTA</strong>: Testes NÃO são modificados nesta story (será Story 13.4).</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Import e inicialização migrados</h3>
+<p><strong>Given</strong> o arquivo <code>client.ts</code>
+<strong>When</strong> o dev revisa os imports
+<strong>Then</strong> não existe nenhum import de <code>@google-cloud/vertexai</code>
+<strong>And</strong> <code>GoogleGenAI</code> é importado de <code>@google/genai</code>
+<strong>And</strong> o client é inicializado com <code>{ vertexai: true, project, location }</code></p>
+<h3>AC2: Streaming funciona com novo SDK</h3>
+<p><strong>Given</strong> uma chamada LLM via <code>callLLM()</code>
+<strong>When</strong> o modelo processa com streaming
+<strong>Then</strong> os chunks são iterados via <code>for await (const chunk of stream)</code>
+<strong>And</strong> a resposta final é extraída via <code>response.text</code> (getter do último chunk acumulado)</p>
+<h3>AC3: thinkingConfig sem workaround</h3>
+<p><strong>Given</strong> a configuração do modelo
+<strong>When</strong> <code>thinkingConfig</code> é passado
+<strong>Then</strong> é tipado nativamente (sem <code>as Record&lt;string, unknown&gt;</code>)</p>
+<h3>AC4: undici workaround removido</h3>
+<p><strong>Given</strong> o arquivo <code>client.ts</code>
+<strong>When</strong> o dev revisa o código
+<strong>Then</strong> não existe import de <code>undici</code>
+<strong>And</strong> não existe <code>setGlobalDispatcher</code></p>
+<h3>AC5: Response parsing simplificado</h3>
+<p><strong>Given</strong> uma resposta do modelo
+<strong>When</strong> o texto é extraído
+<strong>Then</strong> usa <code>response.text</code> (do último chunk da stream) ao invés de <code>response.candidates[0].content.parts[0].text</code></p>
+<h3>AC6: systemInstruction simplificado</h3>
+<p><strong>Given</strong> uma chamada LLM
+<strong>When</strong> o system prompt é passado
+<strong>Then</strong> usa <code>config: { systemInstruction: text }</code> (string direta)
+<strong>And</strong> não usa <code>{ role: &#39;system&#39;, parts: [{ text }] }</code></p>
+<h3>AC7: Singleton simplificado</h3>
+<p><strong>Given</strong> o client
+<strong>When</strong> inicializado
+<strong>Then</strong> mantém apenas <code>ai</code> (GoogleGenAI) como singleton
+<strong>And</strong> remove <code>vertexAI</code>, <code>generativeModel</code>, <code>currentModelName</code> como state
+<strong>And</strong> remove <code>getVertexAI()</code>, <code>getModel()</code></p>
+<h3>AC8: API pública preservada</h3>
+<p><strong>Given</strong> a interface pública do módulo LLM
+<strong>When</strong> outros arquivos chamam <code>callLLM</code>, <code>callLLMQueued</code>, <code>isLLMConfigured</code>
+<strong>Then</strong> a assinatura e comportamento são idênticos
+<strong>And</strong> o arquivo <code>index.ts</code> continua exportando as mesmas funções</p>
+<h3>AC9: Build passa</h3>
+<p><strong>Given</strong> a migração completa
+<strong>When</strong> <code>pnpm build</code> (ou <code>tsc --noEmit</code> no escopo de <code>apps/iara</code>)
+<strong>Then</strong> compila sem erros de tipo relacionados ao novo SDK</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 1: Migrar inicialização</strong> (AC: 1, 7)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 1.1 Remover imports de <code>@google-cloud/vertexai</code> (<code>VertexAI</code>, <code>GenerativeModel</code>, <code>Part</code>)</li>
+<li><input disabled="" type="checkbox"> 1.2 Remover import e uso de <code>undici</code> (<code>Agent</code>, <code>setGlobalDispatcher</code>)</li>
+<li><input disabled="" type="checkbox"> 1.3 Importar <code>GoogleGenAI</code> de <code>@google/genai</code></li>
+<li><input disabled="" type="checkbox"> 1.4 Criar singleton <code>let ai: GoogleGenAI | undefined</code> com lazy init</li>
+<li><input disabled="" type="checkbox"> 1.5 Criar <code>function getAI(): GoogleGenAI</code> que retorna ou inicializa</li>
+<li><input disabled="" type="checkbox"> 1.6 Remover <code>vertexAI</code>, <code>generativeModel</code>, <code>currentModelName</code></li>
+<li><input disabled="" type="checkbox"> 1.7 Renomear <code>resetVertexAIClient</code> → <code>resetGenAIClient</code> (reset <code>ai = undefined</code>)</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 2: Migrar chamada LLM</strong> (AC: 2, 3, 5, 6)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.1 Refatorar <code>callVertexAIWithAttachment</code> → <code>callGenAI</code></li>
+<li><input disabled="" type="checkbox"> 2.2 Montar <code>contents</code> como array de <code>Part</code> (text + inlineData)</li>
+<li><input disabled="" type="checkbox"> 2.3 Montar <code>config</code> com: <code>systemInstruction</code> (string), <code>responseMimeType</code>, <code>temperature</code>, <code>maxOutputTokens</code>, <code>thinkingConfig</code> (tipado)</li>
+<li><input disabled="" type="checkbox"> 2.4 Chamar <code>ai.models.generateContentStream({ model, contents, config })</code></li>
+<li><input disabled="" type="checkbox"> 2.5 Iterar stream com <code>for await (const chunk of stream)</code> — acumular último chunk</li>
+<li><input disabled="" type="checkbox"> 2.6 Extrair texto via propriedade do último chunk (ou acumular text de cada chunk)</li>
+<li><input disabled="" type="checkbox"> 2.7 Extrair <code>usageMetadata</code> do último chunk (<code>promptTokenCount</code>, <code>candidatesTokenCount</code>, <code>totalTokenCount</code>)</li>
+<li><input disabled="" type="checkbox"> 2.8 Extrair <code>finishReason</code> de <code>candidates[0]</code></li>
+<li><input disabled="" type="checkbox"> 2.9 Manter lógica de retry para PARSE_ERROR (loop inalterado)</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 3: Remover código deprecated</strong> (AC: 4, 7)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 3.1 Remover <code>callVertexAI</code> (wrapper legacy)</li>
+<li><input disabled="" type="checkbox"> 3.2 Remover <code>getVertexAI()</code>, <code>getModel()</code>, <code>readFileAsBase64()</code> se inlineData aceitar buffer direto (verificar)</li>
+<li><input disabled="" type="checkbox"> 3.3 Verificar se <code>readFileAsBase64</code> ainda é necessário (inlineData.data no novo SDK também é base64 string)</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 4: Atualizar types.ts e index.ts</strong> (AC: 8)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 4.1 Remover <code>VertexAIConfig</code> interface de <code>types.ts</code></li>
+<li><input disabled="" type="checkbox"> 4.2 Atualizar comentários que referenciam &quot;Vertex AI&quot; para &quot;Google GenAI&quot;</li>
+<li><input disabled="" type="checkbox"> 4.3 Renomear export em <code>index.ts</code>: <code>resetVertexAIClient</code> → <code>resetGenAIClient</code></li>
+<li><input disabled="" type="checkbox"> 4.4 Remover export de <code>VertexAIConfig</code> type</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 5: Verificar build</strong> (AC: 9)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 5.1 Rodar <code>tsc --noEmit</code> e verificar erros de tipo no escopo do client.ts</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Estrutura esperada após migração</h3>
+<pre><code class="language-typescript">import { GoogleGenAI } from &#39;@google/genai&#39;
+
+// Singleton
+let ai: GoogleGenAI | undefined
+const DEFAULT_MODEL = &#39;gemini-2.5-flash&#39;
+
+function getAI(): GoogleGenAI {
+  if (ai) return ai
+  ai = new GoogleGenAI({
+    vertexai: true,
+    project: PROJECT_ID,
+    location: GCP_REGION,
+  })
+  return ai
+}
+
+export function resetGenAIClient(): void {
+  ai = undefined
+}
+
+// Core call
+async function callGenAI&lt;T&gt;(
+  systemPrompt: string,
+  userPrompt: string,
+  timeout: number,
+  attachmentPath: string | undefined
+): Promise&lt;{ data: T; usage: ... }&gt; {
+  const client = getAI()
+  const modelName = VERTEX_AI_MODEL || DEFAULT_MODEL
+
+  // Build parts
+  const parts = [{ text: userPrompt }]
+  if (attachmentPath) {
+    const base64 = await readFileAsBase64(attachmentPath)
+    parts.push({ inlineData: { data: base64, mimeType: &#39;text/plain&#39; } })
+  }
+
+  // Streaming call
+  const stream = await client.models.generateContentStream({
+    model: modelName,
+    contents: parts,
+    config: {
+      systemInstruction: systemPrompt,
+      responseMimeType: &#39;application/json&#39;,
+      temperature: 0.7,
+      maxOutputTokens: 65536,
+      thinkingConfig: { thinkingBudget: 24576 },
+    },
+  })
+
+  // Consume stream
+  let lastResponse
+  for await (const chunk of stream) {
+    lastResponse = chunk
+  }
+
+  const text = lastResponse?.text
+  // ... parse, retry, etc.
+}
+</code></pre>
+<h3>readFileAsBase64 mantido</h3>
+<p>O <code>inlineData.data</code> no novo SDK continua sendo string base64 — a função <code>readFileAsBase64</code> é necessária.</p>
+<h3>Stream response pattern</h3>
+<p>No SDK antigo: <code>streamingResult.stream</code> (chunks) + <code>streamingResult.response</code> (aggregated).
+No SDK novo: <code>stream</code> retorna <code>AsyncGenerator&lt;GenerateContentResponse&gt;</code> — cada chunk é um response parcial. O último chunk contém os dados finais. Usar <code>response.text</code> e <code>response.usageMetadata</code> do último chunk.</p>
+<h3>Timeout handling</h3>
+<p>O undici workaround (headersTimeout: 0) resolvia o problema de timeout HTTP durante thinking.
+No novo SDK, o streaming mantém a conexão ativa (cada chunk é um keep-alive). Se mesmo assim ocorrer timeout, PHASE_TIMEOUTS com valor 0 (fases 1-4) significa &quot;sem timeout&quot;. Para fases 5-7 (timeout 120s), o timeout do fetch nativo deve ser suficiente.</p>
+<h3>Esforço Estimado</h3>
+<p>2-4h</p>
+<hr>
+<h2>References</h2>
+<ul>
+<li><a href="../../planning-artifacts/epic-13-sdk-migration-analysis.html">Spike 13.1 — Análise de Migração</a></li>
+<li><a href="epic-13-hardening-v3.html">Epic 13 Doc</a> — Story 13.2 detalhamento</li>
+<li>Arquivo principal: <code>src/lib/llm/client.ts</code> (534 linhas → ~300 estimado)</li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-02-19: Story criada (SM Bob)</li>
+</ul>
+
+  </main>
+</body>
+</html>

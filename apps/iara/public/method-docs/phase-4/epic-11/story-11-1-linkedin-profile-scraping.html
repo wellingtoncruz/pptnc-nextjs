@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11.1 Extração de Perfis LinkedIn — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li class="active"><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 11 — Melhorias v2.1.0</nav><h1>Story 11.1: LinkedIn Profile Scraping para Co-host e Convidados</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor de conteúdo</strong>,
+I want <strong>que os dados dos convidados sejam enriquecidos automaticamente a partir do LinkedIn</strong>,
+so that <strong>eu não precise preencher manualmente nome, cargo e empresa</strong>.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1 - Scraping disparado após salvar contexto</strong>: Given o Wizard na Fase 0/1 com vídeo tipo <code>episode</code>, When o produtor preenche o campo LinkedIn de um co-host ou convidado e salva o contexto, Then uma chamada server-side fire-and-forget é feita para a BrightData API com a URL informada, e o produtor vê apenas o spinner normal do save (sem UI adicional).</p>
+</li>
+<li><p><strong>AC2 - Persistência na subcollection guests</strong>: Given a BrightData API retorna dados do perfil, When o scraping completa com sucesso, Then o JSON completo retornado é persistido em <code>/podcasts/{podcastId}/guests/{docId}</code>, o avatar é baixado e salvo em <code>public/guests/{hash}.jpg</code>, e o campo <code>guests[i].photo</code> do vídeo é atualizado com o path relativo <code>/guests/{hash}.jpg</code>.</p>
+</li>
+<li><p><strong>AC3 - Guest já existente (idempotência)</strong>: Given um guest já existente na subcollection (mesmo campo <code>url</code>), When o scraping é disparado novamente, Then o documento é atualizado (não duplicado) e a imagem do avatar é atualizada se mudou.</p>
+</li>
+<li><p><strong>AC4 - Erro na BrightData API</strong>: Given a BrightData API retorna erro ou timeout, When o autosave do campo LinkedIn completa, Then a URL do LinkedIn é salva normalmente no vídeo, o erro é logado via structured logging, e o fluxo do produtor NÃO é bloqueado.</p>
+</li>
+<li><p><strong>AC5 - Apenas episódios</strong>: Given um vídeo do tipo <code>cut</code> ou <code>reel</code>, When o contexto é salvo, Then o scraping NÃO é disparado (apenas <code>episode</code> dispara scraping).</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar schemas Zod e tipos para subcollection guests (AC: #2, #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>src/lib/schemas/guest.ts</code> com <code>LinkedInGuestSchema</code> (campos BrightData) e <code>GuestDocSchema</code> (documento Firestore)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Exportar tipos <code>LinkedInGuestProfile</code>, <code>GuestDoc</code> em <code>src/types/guest.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Schema do request body: <code>GuestScrapeRequestSchema = z.object({ videoId: z.string() })</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Testes do schema (validação positiva/negativa)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar módulo Firestore para subcollection guests (AC: #2, #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar <code>src/lib/firebase/guests-admin.ts</code> com funções <code>getGuestByLinkedInUrl()</code>, <code>upsertGuest()</code>, <code>getGuestsByPodcast()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Collection path: <code>podcasts/{podcastId}/guests/{docId}</code> (docId auto-gerado)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 <code>getGuestByLinkedInUrl(podcastId, url)</code>: busca guest pela URL do LinkedIn (campo <code>url</code> no doc)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 <code>upsertGuest(podcastId, data)</code>: cria ou atualiza guest (match por <code>url</code>), retorna docId</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5 Timestamps: <code>createdAt</code> na criação, <code>updatedAt</code> sempre via <code>FieldValue.serverTimestamp()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.6 Testes unitários para cada função (11 testes)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar cliente BrightData (AC: #1, #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/lib/brightdata/client.ts</code> com função <code>scrapeLinkedInProfile</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Método <code>scrapeLinkedInProfile(url: string): Promise&lt;LinkedInGuestProfile | null&gt;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Endpoint: <code>POST https://api.brightdata.com/datasets/v3/scrape?dataset_id=gd_l1viktl72bvl7bjuj0&amp;notify=false&amp;include_errors=true</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Headers: <code>Authorization: Bearer {BRIGHTDATA_API_KEY}</code>, <code>Content-Type: application/json</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Body: <code>{ input: [{ url }] }</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 Tratar HTTP 200 (dados inline) e HTTP 202 (async — log warning e retornar null, sem polling)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.7 Validar response com Zod (<code>LinkedInGuestSchema</code>) antes de retornar</li>
+<li><input checked="" disabled="" type="checkbox"> 3.8 Tratar erros: timeout (30s), HTTP 401/429, network errors — retornar null e logar</li>
+<li><input checked="" disabled="" type="checkbox"> 3.9 Testes unitários com mock de fetch (12 testes)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.10 Exportar em <code>src/lib/brightdata/index.ts</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Criar Route Handler <code>POST /api/guests/scrape</code> (AC: #1, #2, #3, #4, #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/app/api/guests/scrape/route.ts</code> seguindo Route Handler template</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 <code>export const runtime = &#39;nodejs&#39;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Autenticar sessão via <code>auth()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Validar request body com <code>GuestScrapeRequestSchema</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.5 Buscar vídeo no Firestore e validar <code>videoType === &#39;episode&#39;</code> (AC5)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.6 Iterar sobre <code>video.guests[]</code> que tenham campo <code>linkedin</code> preenchido</li>
+<li><input checked="" disabled="" type="checkbox"> 4.7 Para cada guest com LinkedIn: chamar <code>scrapeLinkedInProfile(linkedin)</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.8 Se sucesso: <code>upsertGuest(podcastId, profileData)</code> na subcollection</li>
+<li><input checked="" disabled="" type="checkbox"> 4.9 Se sucesso E avatar URL presente: baixar imagem do avatar e salvar em <code>public/guests/{md5(linkedinUrl)}.jpg</code> via <code>fs.writeFile</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.10 Atualizar <code>guests[i].photo</code> no vídeo com path relativo <code>/guests/{hash}.jpg</code> (usar <code>updateVideoAdmin</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.11 NÃO sobrescrever campos manuais (nome, cargo, empresa) no vídeo</li>
+<li><input checked="" disabled="" type="checkbox"> 4.12 Structured logging para: início, cada scrape, sucesso, erro, fim</li>
+<li><input checked="" disabled="" type="checkbox"> 4.13 Retorno: <code>{ data: { videoId, scrapedCount, errorCount } }</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.14 Se nenhum guest tem LinkedIn ou videoType != episode: retornar <code>{ data: { videoId, scrapedCount: 0 } }</code> sem erro</li>
+<li><input checked="" disabled="" type="checkbox"> 4.15 Testes unitários (16 testes: auth, validation, scrape success/error, upsert, avatar, skip non-episode)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Integrar no fluxo de contexto do Wizard (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Em <code>phase-1-critique.tsx</code>, após <code>PUT /api/videos/[videoId]/context</code> bem-sucedido, disparar <code>POST /api/guests/scrape</code> fire-and-forget</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Fire-and-forget: <code>fetch(&#39;/api/guests/scrape&#39;, { method: &#39;POST&#39;, body }).catch(() =&gt; {})</code> — sem await, sem tratamento de erro no client</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Apenas quando guests têm campo linkedin preenchido (Phase1 é exclusivo de episode)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Sem mudança visual no componente (spinner do save já existe)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Testes: 2 testes — scrape chamado quando guests têm LinkedIn, NÃO chamado quando não têm</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Configurar variável de ambiente (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 Adicionar <code>BRIGHTDATA_API_KEY</code> em <code>.env.example</code> com comentário</li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Adicionar <code>BRIGHTDATA_API_KEY</code> em <code>.env.local</code> (placeholder — user precisa preencher)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Ler de <code>process.env.BRIGHTDATA_API_KEY</code> no <code>scrapeLinkedInProfile()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.4 Se env var ausente: logar ERROR e retornar null (não crashar)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 7: Testes de integração e regressão (AC: todos)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1 Garantir que testes existentes de context (PUT) continuam passando</li>
+<li><input checked="" disabled="" type="checkbox"> 7.2 Garantir que testes do Wizard Fase 1 continuam passando (14 testes, incluindo 2 novos de scrape)</li>
+<li><input disabled="" type="checkbox"> 7.3 Teste manual: preencher LinkedIn no contexto → verificar subcollection guests no Firestore → verificar photo no vídeo (requer BRIGHTDATA_API_KEY configurada)</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Fluxo Completo</h3>
+<pre><code>1. Produtor abre Wizard → Fase 0 (contexto) → preenche LinkedIn dos guests
+2. Clica &quot;Salvar&quot; → PUT /api/videos/{videoId}/context (salva normalmente)
+3. Após sucesso: client dispara POST /api/guests/scrape { videoId } (fire-and-forget)
+4. Route Handler:
+   a. Busca vídeo no Firestore
+   b. Filtra guests com campo linkedin preenchido
+   c. Para cada guest:
+      - Chama BrightData API com linkedin URL
+      - Se sucesso: upsert na subcollection guests
+      - Se avatar URL: baixa imagem, salva em public/guests/{md5}.jpg
+      - Atualiza guests[i].photo no vídeo com path /guests/{md5}.jpg
+   d. Retorna contagem (irrelevante para o client — fire-and-forget)
+5. Produtor NÃO vê feedback — se atualizar a página depois, verá o avatar
+</code></pre>
+<h3>BrightData API — Comportamento</h3>
+<p><strong>Endpoint:</strong> <code>POST https://api.brightdata.com/datasets/v3/scrape?dataset_id=gd_l1viktl72bvl7bjuj0&amp;notify=false&amp;include_errors=true</code></p>
+<p><strong>Resposta HTTP 200 (sucesso síncrono, &lt;60s):</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;Richard Branson&quot;,
+    &quot;url&quot;: &quot;https://www.linkedin.com/in/richardbranson&quot;,
+    &quot;avatar&quot;: &quot;https://media.licdn.com/...&quot;,
+    &quot;position&quot;: &quot;Founder at Virgin Group&quot;,
+    &quot;current_company_name&quot;: &quot;Virgin Group&quot;,
+    &quot;about&quot;: &quot;...&quot;,
+    &quot;city&quot;: &quot;London&quot;,
+    &quot;country_code&quot;: &quot;GB&quot;,
+    &quot;linkedin_id&quot;: &quot;...&quot;,
+    ...
+  }
+]
+</code></pre>
+<p><strong>Resposta HTTP 202 (timeout &gt;60s):</strong> Retorna <code>snapshot_id</code> para polling. <strong>Decisão: NÃO implementar polling</strong> — se receber 202, logar warning e retornar null. O scraping ocorrerá na próxima vez que o produtor salvar o contexto.</p>
+<p><strong>Parâmetros:</strong></p>
+<ul>
+<li><code>notify=false</code>: sem webhook callback</li>
+<li><code>include_errors=true</code>: inclui registros de erro para URLs que falharam</li>
+</ul>
+<p><strong>Match de guest:</strong> <code>video.guests[i].linkedin</code> === <code>response[0].url</code></p>
+<h3>Subcollection Schema</h3>
+<pre><code class="language-typescript">// podcasts/{podcastId}/guests/{docId}
+{
+  url: string,              // LinkedIn URL (campo de match)
+  name: string,
+  avatar: string,           // URL original do BrightData (para re-download se necessário)
+  position: string,
+  currentCompanyName: string,
+  about: string,
+  city: string,
+  countryCode: string,
+  linkedinId: string,
+  raw: object,              // JSON completo do BrightData (futuro uso)
+  scrapedAt: Timestamp,
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+}
+</code></pre>
+<p><strong>Matching:</strong> Para encontrar guest na subcollection, query <code>where(&#39;url&#39;, &#39;==&#39;, linkedinUrl)</code>.</p>
+<p><strong>Campo <code>raw</code>:</strong> Salvar o JSON completo da BrightData permite uso futuro sem re-scraping.</p>
+<h3>Avatar — Salvar em Disco (public/guests/)</h3>
+<p><strong>Decisão: salvar imagem no filesystem</strong> em <code>public/guests/</code>.</p>
+<ul>
+<li>O disco persistente já está mapeado no Cloud Run para <code>public/guests/</code></li>
+<li>Nomeação por hash MD5 da URL do LinkedIn: <code>md5(linkedinUrl).jpg</code><ul>
+<li>Ex: URL <code>https://linkedin.com/in/richard</code> → arquivo <code>public/guests/a1b2c3d4e5f6.jpg</code></li>
+</ul>
+</li>
+<li>O campo <code>guests[i].photo</code> no vídeo contém o <strong>path relativo</strong>: <code>/guests/a1b2c3d4e5f6.jpg</code></li>
+<li>A imagem é servida diretamente pelo Next.js como static asset</li>
+<li>Hash garante idempotência (mesmo LinkedIn URL → mesmo arquivo → sobrescreve se atualizado)</li>
+</ul>
+<p><strong>Implementação do download:</strong></p>
+<pre><code class="language-typescript">import { createHash } from &#39;crypto&#39;
+import { writeFile, mkdir } from &#39;fs/promises&#39;
+import path from &#39;path&#39;
+
+async function downloadAndSaveAvatar(avatarUrl: string, linkedinUrl: string): Promise&lt;string | null&gt; {
+  const hash = createHash(&#39;md5&#39;).update(linkedinUrl).digest(&#39;hex&#39;)
+  const filename = `${hash}.jpg`
+  const dirPath = path.join(process.cwd(), &#39;public&#39;, &#39;guests&#39;)
+  const filePath = path.join(dirPath, filename)
+
+  const response = await fetch(avatarUrl)
+  if (!response.ok) return null
+
+  const buffer = Buffer.from(await response.arrayBuffer())
+  if (buffer.length &lt; 1000) return null // placeholder image
+
+  await mkdir(dirPath, { recursive: true })
+  await writeFile(filePath, buffer)
+
+  return `/guests/${filename}` // path relativo para o campo photo
+}
+</code></pre>
+<h3>Campo photo no VideoUpdateSchema</h3>
+<p>O campo <code>guests[i].photo</code> já é <code>z.string().optional()</code> no <code>GuestSchema</code>. Aceita qualquer string, incluindo paths relativos como <code>/guests/a1b2c3.jpg</code>. <strong>Nenhuma mudança no schema de video é necessária.</strong></p>
+<h3>NÃO Sobrescrever Campos Manuais</h3>
+<p>Quando o scraping preenche dados, o Route Handler DEVE:</p>
+<ul>
+<li>Atualizar APENAS <code>guests[i].photo</code> no vídeo (avatar baixado)</li>
+<li>NÃO alterar <code>guests[i].name</code>, <code>guests[i].role</code>, <code>guests[i].company</code> no vídeo</li>
+<li>Os dados completos ficam na subcollection guests, acessíveis para uso futuro</li>
+</ul>
+<h3>Context Form — Nenhuma Mudança na UI</h3>
+<p>O <code>context-inputs-modal.tsx</code> já tem fluxo de submit:</p>
+<ol>
+<li>Monta <code>ContextSubmitData</code> com theme e guests</li>
+<li>Chama callback <code>onSubmit(data)</code></li>
+<li>O parent (wizard orchestrator) chama <code>PUT /api/videos/[videoId]/context</code></li>
+</ol>
+<p>A única mudança é adicionar o fire-and-forget após o PUT:</p>
+<pre><code class="language-typescript">// Após PUT /api/videos/[videoId]/context bem-sucedido
+if (video.videoType === &#39;episode&#39;) {
+  fetch(&#39;/api/guests/scrape&#39;, {
+    method: &#39;POST&#39;,
+    headers: { &#39;Content-Type&#39;: &#39;application/json&#39; },
+    body: JSON.stringify({ videoId }),
+  }).catch(() =&gt; {}) // fire-and-forget
+}
+</code></pre>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ol>
+<li>Usar <code>transition()</code> para mudança de <code>VideoStatus</code> — N/A (não muda status)</li>
+<li>Validar dados externos com Zod antes de persistir — BrightData response DEVE ser validado</li>
+<li><code>export const runtime = &#39;nodejs&#39;</code> em Route Handler</li>
+<li><code>updateDoc</code> com fields explícitos — NUNCA <code>setDoc</code> sem merge</li>
+<li>Structured logging via <code>log()</code> — NUNCA <code>console.log</code></li>
+<li><code>podcastId</code> em todas as queries Firestore</li>
+<li>Testes co-localizados com pattern <code>it(&#39;verb + behavior&#39;)</code></li>
+<li><code>FieldValue.serverTimestamp()</code> em Route Handlers (admin SDK)</li>
+<li><strong>CUIDADO com updateVideoAdmin e timestamps</strong>: <code>Timestamp.now()</code> para campos validados por Zod, <code>FieldValue.serverTimestamp()</code> é auto-adicionado por <code>updateVideoAdmin</code> no campo <code>updatedAt</code></li>
+</ol>
+<h3>Project Structure Notes</h3>
+<ul>
+<li>Source code: <code>/home/wellington/Documentos/PPTNC/pptnc/apps/iara/src/</code></li>
+<li>Testes co-localizados (ex: <code>client.test.ts</code> ao lado de <code>client.ts</code>)</li>
+<li>Route Handlers em <code>src/app/api/</code></li>
+<li>Componentes de processamento em <code>src/components/processing/</code></li>
+<li>Firebase admin functions em <code>src/lib/firebase/</code></li>
+<li>Image download: <code>src/lib/firebase/storage-admin.ts</code> → <code>downloadImageAsDataUrl()</code></li>
+<li>Guest schemas: CRIAR em <code>src/lib/schemas/guest.ts</code></li>
+<li>BrightData client: CRIAR em <code>src/lib/brightdata/client.ts</code></li>
+<li>Context modal: <code>src/components/processing/context-inputs-modal.tsx</code></li>
+</ul>
+<h3>Descoberta: updateVideoAdmin valida com Zod</h3>
+<p><code>updateVideoAdmin()</code> chama <code>VideoUpdateSchema.parse(data)</code> ANTES de persistir. O campo <code>guests</code> é <code>z.array(GuestSchema).optional()</code> no <code>VideoUpdateSchema</code>. Para atualizar apenas <code>guests[i].photo</code>, é necessário passar o array inteiro de guests (não é possível atualizar um item individual do array via Firestore).</p>
+<p><strong>Fluxo para atualizar photo:</strong></p>
+<ol>
+<li>Buscar vídeo atual: <code>getVideoAdmin(podcastId, videoId)</code></li>
+<li>Modificar <code>video.guests[i].photo</code> no array</li>
+<li>Salvar array inteiro: <code>updateVideoAdmin(podcastId, videoId, { guests: updatedGuests })</code></li>
+</ol>
+<h3>Bug Fix Recente: Timestamp.now() vs FieldValue.serverTimestamp()</h3>
+<p>Na Story 11-2, descobrimos que <code>FieldValue.serverTimestamp()</code> falha a validação Zod em <code>updateVideoAdmin()</code>. A solução é usar <code>Timestamp.now()</code> para campos que passam por Zod, e <code>FieldValue.serverTimestamp()</code> é adicionado automaticamente para <code>updatedAt</code>. Seguir o mesmo padrão aqui.</p>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-11-melhorias-v2.1.0.md#Story-11-1] — Acceptance criteria originais</li>
+<li>[Source: architecture-iara.md#Enforcement-Rules] — 18 regras obrigatórias</li>
+<li>[Source: architecture-iara.md#Route-Handlers] — Template de Route Handler</li>
+<li>[Source: pptnc/apps/iara/src/lib/schemas/video.ts:165-187] — GuestSchema (name, role, company, linkedin, photo)</li>
+<li>[Source: pptnc/apps/iara/src/components/processing/context-inputs-modal.tsx] — Modal de contexto</li>
+<li>[Source: pptnc/apps/iara/src/components/processing/context-inputs-form.tsx] — Form de guests</li>
+<li>[Source: pptnc/apps/iara/src/app/api/videos/[videoId]/context/route.ts] — PUT endpoint de contexto</li>
+<li>[Source: pptnc/apps/iara/src/lib/firebase/videos-admin.ts:437-472] — updateVideoAdmin com Zod validation</li>
+<li>[Source: pptnc/apps/iara/src/lib/firebase/storage-admin.ts:18-64] — downloadImageAsDataUrl (referência de fetch de imagens, mas avatar usa fs.writeFile)</li>
+<li>[Source: pptnc/apps/iara/src/lib/logger.ts] — Structured logging</li>
+<li>[Source: pptnc/apps/iara/src/lib/firebase/tokens.ts] — Token management</li>
+<li>[Source: pptnc/apps/iara/.env.example] — Variáveis de ambiente</li>
+<li>[Source: story-11-2-reabrir-episodio.md] — Lição: Timestamp.now() vs FieldValue.serverTimestamp()</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6</p>
+<h3>Debug Log References</h3>
+<ul>
+<li><code>z.record(z.unknown())</code> fails with TypeError in project Zod version — use <code>z.record(z.string(), z.unknown())</code></li>
+<li><code>crypto</code> and <code>fs/promises</code> mocks require <code>importOriginal</code> pattern with <code>default</code> export for vitest</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>All 7 tasks complete (6 fully automated, 1 pending manual test with real API key)</li>
+<li>69 new/modified tests, all passing (post-review)</li>
+<li>Pre-existing failures (26 tests in 9 files) are unrelated to this story</li>
+<li>Fire-and-forget deduplicado por LinkedIn URLs (não dispara em cada auto-save)</li>
+<li>BRIGHTDATA_API_KEY must be configured in .env.local for production use</li>
+</ul>
+<h3>File List</h3>
+<p><strong>New Files:</strong></p>
+<ul>
+<li><code>src/lib/schemas/guest.ts</code> — Zod schemas (LinkedInGuest, GuestDoc, GuestDocCreate, GuestScrapeRequest)</li>
+<li><code>src/lib/schemas/guest.test.ts</code> — 13 schema tests</li>
+<li><code>src/types/guest.ts</code> — TypeScript types inferred from schemas</li>
+<li><code>src/lib/firebase/guests-admin.ts</code> — Firestore CRUD for guests subcollection</li>
+<li><code>src/lib/firebase/guests-admin.test.ts</code> — 11 Firestore tests</li>
+<li><code>src/lib/brightdata/client.ts</code> — BrightData API client (scrapeLinkedInProfile)</li>
+<li><code>src/lib/brightdata/client.test.ts</code> — 12 API client tests</li>
+<li><code>src/lib/brightdata/index.ts</code> — barrel export</li>
+<li><code>src/app/api/guests/scrape/route.ts</code> — POST route handler</li>
+<li><code>src/app/api/guests/scrape/route.test.ts</code> — 19 route handler tests (16 + 3 from review)</li>
+</ul>
+<p><strong>Modified Files:</strong></p>
+<ul>
+<li><code>src/lib/schemas/index.ts</code> — added guest schema exports</li>
+<li><code>src/components/wizard/phases/phase-1-critique.tsx</code> — fire-and-forget scrape call with dedup</li>
+<li><code>src/components/wizard/phases/phase-1-critique.test.tsx</code> — 4 scrape tests (2 original + 1 dedup + 1 no-linkedin)</li>
+<li><code>.env.example</code> — added BRIGHTDATA_API_KEY</li>
+<li><code>.env.local</code> — added BRIGHTDATA_API_KEY placeholder</li>
+</ul>
+<h2>Senior Developer Review (AI)</h2>
+<p><strong>Reviewer:</strong> Wellington on 2026-02-07
+<strong>Model:</strong> Claude Opus 4.6 (adversarial code review)</p>
+<h3>Findings Summary</h3>
+<ul>
+<li><strong>0 CRITICAL</strong> | <strong>1 HIGH</strong> | <strong>4 MEDIUM</strong> | <strong>2 LOW</strong></li>
+<li><strong>All ACs validated:</strong> IMPLEMENTED (5/5)</li>
+<li><strong>All tasks audited:</strong> [x] verified (30+ subtasks)</li>
+<li><strong>Git vs story discrepancies:</strong> 1 minor (M1)</li>
+</ul>
+<h3>Issues Found and Resolution</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severity</th>
+<th>Description</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H1</td>
+<td>HIGH</td>
+<td><code>.env.local</code> tracked in git com segredos reais</td>
+<td>PRE-EXISTING — fora do escopo da story. Recomenda-se <code>.gitignore</code> separado</td>
+</tr>
+<tr>
+<td>M1</td>
+<td>MEDIUM</td>
+<td>Story File List não documenta diff do <code>.env.local</code></td>
+<td>NOTED — discrepância menor</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>MEDIUM</td>
+<td>Fire-and-forget disparava em CADA auto-save</td>
+<td>FIXED — <code>useRef</code> dedup por LinkedIn URLs</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>MEDIUM</td>
+<td><code>photoPath</code> no schema mas nunca passado ao <code>upsertGuest</code></td>
+<td>FIXED — avatar download antes do upsert, <code>photoPath</code> incluído</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>MEDIUM</td>
+<td>Avatar download sem timeout (fetch sem AbortController)</td>
+<td>FIXED — 15s timeout com AbortController</td>
+</tr>
+<tr>
+<td>L1</td>
+<td>LOW</td>
+<td><code>LinkedInGuestSchema.url</code> optional vs <code>GuestDocSchema.url</code> required</td>
+<td>NOTED — design choice válido, <code>guest.linkedin</code> usado como fallback</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>LOW</td>
+<td>Task 7.3 (teste manual) pendente</td>
+<td>NOTED — requer BRIGHTDATA_API_KEY real</td>
+</tr>
+</tbody></table>
+<h3>Tests After Review</h3>
+<ul>
+<li>69 tests total (13 schema + 11 firestore + 12 brightdata + 19 route + 15 phase1 - 1 overlap)</li>
+<li>+3 new tests: dedup scrape, photoPath not included on failure, avatar timeout</li>
+</ul>
+<h3>Outcome</h3>
+<p><strong>APPROVED</strong> — All HIGH/MEDIUM issues fixed or pre-existing. Story status: done.</p>
+
+  </main>
+</body>
+</html>

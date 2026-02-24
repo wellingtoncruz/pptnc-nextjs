@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5.5 Spike Gemini File API — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 5 — Melhorias do Wizard</nav><h1>Story 5.5: Spike - Gemini File API para Reutilização de Transcrição</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>desenvolvedor</strong>,
+I want investigar se o Gemini File API pode ser usado para fazer upload da transcrição uma vez e reutilizá-la em múltiplas chamadas LLM,
+so that possamos reduzir latência, custo de tokens e complexidade nas chamadas das fases 1-7.</p>
+<h2>Acceptance Criteria (Spike)</h2>
+<ol>
+<li><p><strong>AC1: Documentar API do Gemini File</strong></p>
+<ul>
+<li>Pesquisar documentação oficial (Vertex AI e Gemini API)</li>
+<li>Verificar se <code>@google-cloud/vertexai</code> SDK suporta File API</li>
+<li>Documentar: endpoints, autenticação, limites, custos, TTL</li>
+</ul>
+</li>
+<li><p><strong>AC2: Prova de Conceito</strong> (se API disponível)</p>
+<ul>
+<li>Criar script de teste para upload de arquivo</li>
+<li>Testar chamada <code>generateContent</code> com file URI</li>
+<li>Medir: tempo de upload, tempo de resposta, tokens usados</li>
+</ul>
+</li>
+<li><p><strong>AC3: Análise de Trade-offs e Recomendação</strong></p>
+<ul>
+<li>Documentar prós, contras, riscos</li>
+<li>Estimar esforço de implementação completa</li>
+<li>Fazer recomendação final: IMPLEMENT, DEFER, ou DISCARD</li>
+</ul>
+</li>
+</ol>
+<h2>Objetivo</h2>
+<p>Investigar viabilidade e beneficios de usar a Gemini File API para reutilizar arquivos de transcricao (SRT/TXT) entre chamadas LLM do mesmo video.</p>
+<h2>Hipotese</h2>
+<p>Ao fazer upload do arquivo de transcricao uma unica vez e reutilizar o <code>file_id</code> nas chamadas subsequentes (fases 1-7), podemos:</p>
+<ul>
+<li>Reduzir consumo de tokens (transcricao nao e re-tokenizada)</li>
+<li>Reduzir trafego de rede (upload unico)</li>
+<li>Melhorar latencia das chamadas</li>
+</ul>
+<h2>Questoes a Investigar</h2>
+<ol>
+<li><p><strong>API Compatibility</strong></p>
+<ul>
+<li>A Vertex AI (usado atualmente) suporta File API ou apenas a API direta do Gemini?</li>
+<li>Qual endpoint usar: <code>files.create</code> ou <code>media.upload</code>?</li>
+<li>Como referenciar arquivo em <code>generateContent</code>?</li>
+</ul>
+</li>
+<li><p><strong>Economia Real</strong></p>
+<ul>
+<li>Arquivos uploadados contam tokens no upload ou apenas na geracao?</li>
+<li>Qual o custo comparativo: inline vs file reference?</li>
+<li>Ha cache de tokens no lado do Gemini?</li>
+</ul>
+</li>
+<li><p><strong>Limitacoes</strong></p>
+<ul>
+<li>TTL dos arquivos (documentacao menciona 48h)</li>
+<li>Tamanho maximo de arquivo</li>
+<li>Rate limits de upload</li>
+<li>Regiao/disponibilidade</li>
+</ul>
+</li>
+<li><p><strong>Implementacao</strong></p>
+<ul>
+<li>Como gerenciar <code>file_id</code> entre chamadas?</li>
+<li>Quando invalidar/re-upload (troca de video, expiracao)?</li>
+<li>Impacto na arquitetura atual (inline attachment)</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Pesquisar Documentação (AC: 1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Pesquisar Gemini File API na documentação oficial</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Verificar se Vertex AI SDK (<code>@google-cloud/vertexai</code>) suporta File API</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Documentar: endpoints, autenticação, limites de tamanho, TTL</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Verificar custos (storage, operações de upload)</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+Task 2: Prova de Conceito (AC: 2) - <del>se API disponível</del> <strong>N/A - Vertex AI não suporta Files API</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <del>2.1: Criar script de teste para upload de arquivo</del></li>
+<li><input disabled="" type="checkbox"> <del>2.2: Testar chamada <code>generateContent</code> com file URI</del></li>
+<li><input disabled="" type="checkbox"> <del>2.3: Comparar resposta com implementação atual (inlineData)</del></li>
+<li><input disabled="" type="checkbox"> <del>2.4: Medir métricas: tempo, tokens, etc.</del></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Análise e Recomendação (AC: 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Documentar prós e contras</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Documentar riscos (expiration, quota, complexity)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Estimar esforço de implementação completa</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Fazer recomendação final (IMPLEMENT / DEFER / DISCARD)</li>
+</ul>
+</li>
+</ul>
+<h2>Timebox</h2>
+<p>2-4 horas de investigação</p>
+<h2>Referencias</h2>
+<ul>
+<li><a href="https://ai.google.dev/gemini-api/docs/files">Gemini File API</a></li>
+<li><a href="https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini">Vertex AI SDK</a></li>
+<li>Codigo atual: <code>src/lib/llm/client.ts</code> (inline attachment)</li>
+</ul>
+<h2>Output Esperado</h2>
+<p>Documento de findings em <code>_bmad-output/spikes/5-5-gemini-file-api-findings.md</code> contendo:</p>
+<ol>
+<li>Resumo executivo</li>
+<li>Analise tecnica detalhada</li>
+<li>Metricas coletadas (se PoC realizado)</li>
+<li>Recomendacao final</li>
+<li>Proximos passos (se aprovado para implementacao)</li>
+</ol>
+<h2>Dev Notes</h2>
+<h3>Codigo Atual - Inline Attachment</h3>
+<pre><code class="language-typescript">// src/lib/llm/client.ts
+const base64Content = await readFileAsBase64(attachmentPath)
+parts.push({
+  inlineData: {
+    mimeType: &#39;text/plain&#39;,
+    data: base64Content,
+  },
+})
+</code></pre>
+<h3>Possivel Implementacao - File Reference</h3>
+<pre><code class="language-typescript">// Hipotetico - precisa validar com API
+const fileId = await uploadFile(transcriptionPath)
+parts.push({
+  fileData: {
+    fileUri: `gs://bucket/${fileId}`,  // ou outro formato
+    mimeType: &#39;text/plain&#39;,
+  },
+})
+</code></pre>
+<h3>Gerenciamento de File ID</h3>
+<p>Se viavel, o <code>file_id</code> seria armazenado em:</p>
+<ul>
+<li>Memoria (session state no orchestrator)</li>
+<li>Ou no objeto Video (Firestore) para persistencia</li>
+</ul>
+<pre><code class="language-typescript">interface VideoProcessingState {
+  videoId: string
+  transcriptionFileId?: string
+  transcriptionFileExpiry?: Date
+}
+</code></pre>
+<h2>Spike Output (Janeiro 2026)</h2>
+<h3>Descobertas</h3>
+<h4>1. Diferença Crítica: Gemini API vs Vertex AI</h4>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Gemini API (direta)</th>
+<th>Vertex AI (usado pelo IAra)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Files API</td>
+<td>Sim, dedicada</td>
+<td>Não existe</td>
+</tr>
+<tr>
+<td>Upload de arquivos</td>
+<td><code>files.create</code> endpoint</td>
+<td>Via GCS bucket</td>
+</tr>
+<tr>
+<td>Referência em prompts</td>
+<td><code>files/{file_id}</code> URI</td>
+<td><code>gs://bucket/path</code> URI</td>
+</tr>
+<tr>
+<td>TTL automático</td>
+<td>48 horas</td>
+<td>N/A (gerenciado por você)</td>
+</tr>
+<tr>
+<td>SDK</td>
+<td><code>@google/genai</code></td>
+<td><code>@google-cloud/vertexai</code></td>
+</tr>
+</tbody></table>
+<p><strong>Conclusão</strong>: O Gemini API (ai.google.dev) possui uma Files API dedicada, mas o <strong>Vertex AI (usado pelo IAra) NÃO possui esta funcionalidade</strong>.</p>
+<h4>2. Vertex AI - Suporte a Arquivos</h4>
+<p>O SDK <code>@google-cloud/vertexai</code> suporta <code>FileDataPart</code> com a seguinte interface:</p>
+<pre><code class="language-typescript">// node_modules/@google-cloud/vertexai/build/src/types/content.d.ts
+export interface FileData {
+  mimeType: string;
+  fileUri: string;  // Deve ser gs:// ou URL HTTP pública
+}
+export interface FileDataPart extends BasePart {
+  fileData: FileData;
+}
+</code></pre>
+<p>O <code>fileUri</code> aceita:</p>
+<ul>
+<li><code>gs://bucket-name/path/to/file</code> - Google Cloud Storage</li>
+<li>URL HTTP/HTTPS pública</li>
+</ul>
+<p><strong>NÃO aceita</strong>: URIs do tipo <code>files/{file_id}</code> como a Gemini API direta.</p>
+<h4>3. Gemini API Files API (Referência)</h4>
+<p>Para completude, documentamos a Files API da Gemini API direta:</p>
+<table>
+<thead>
+<tr>
+<th>Limite</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tamanho máximo por arquivo</td>
+<td>2 GB</td>
+</tr>
+<tr>
+<td>Storage total por projeto</td>
+<td>20 GB</td>
+</tr>
+<tr>
+<td>TTL (Time-to-Live)</td>
+<td>48 horas (não configurável)</td>
+</tr>
+<tr>
+<td>Formatos suportados</td>
+<td>text/<em>, image/</em>, audio/<em>, video/</em>, application/pdf</td>
+</tr>
+</tbody></table>
+<pre><code class="language-python"># Exemplo Gemini API (NÃO compatível com Vertex AI)
+import google.generativeai as genai
+file = genai.upload_file(&quot;transcription.txt&quot;)
+model.generate_content([file, &quot;Analise esta transcrição&quot;])
+</code></pre>
+<h4>4. Alternativa com GCS para Vertex AI</h4>
+<p>Para reutilizar arquivos no Vertex AI, seria necessário:</p>
+<ol>
+<li><strong>Criar bucket GCS</strong> no projeto</li>
+<li><strong>Upload via Cloud Storage SDK</strong>:<pre><code class="language-typescript">import { Storage } from &#39;@google-cloud/storage&#39;
+const storage = new Storage()
+await storage.bucket(&#39;iara-transcriptions&#39;).upload(localPath)
+</code></pre>
+</li>
+<li><strong>Referência no prompt</strong>:<pre><code class="language-typescript">parts.push({
+  fileData: {
+    fileUri: &#39;gs://iara-transcriptions/video-123.txt&#39;,
+    mimeType: &#39;text/plain&#39;,
+  }
+})
+</code></pre>
+</li>
+<li><strong>Gerenciar limpeza</strong> (lifecycle policies ou cron job)</li>
+</ol>
+<h3>Análise de Trade-offs</h3>
+<h4>Prós (se implementado via GCS)</h4>
+<ul>
+<li>Transcrição carregada uma vez por vídeo</li>
+<li>Menor tráfego de rede nas fases 2-7</li>
+<li>Potencial economia de tokens (a verificar)</li>
+</ul>
+<h4>Contras</h4>
+<ul>
+<li><strong>Infraestrutura adicional</strong>: Bucket GCS, permissões IAM</li>
+<li><strong>Complexidade operacional</strong>: Lifecycle policies, limpeza</li>
+<li><strong>Custo de storage</strong>: ~$0.02/GB/mês (mínimo, mas existe)</li>
+<li><strong>Latência de upload</strong>: Upload para GCS antes da primeira chamada</li>
+<li><strong>Gerenciamento de estado</strong>: Saber se arquivo já existe no bucket</li>
+<li><strong>Sem garantia de economia</strong>: Tokens podem ser contados da mesma forma</li>
+</ul>
+<h4>Riscos</h4>
+<ul>
+<li><strong>Não há documentação clara</strong> se referência por GCS economiza tokens vs inline</li>
+<li><strong>Complexidade desnecessária</strong> para o tamanho atual das transcrições (~50-200KB)</li>
+<li><strong>Custo-benefício questionável</strong> dado overhead de infraestrutura</li>
+</ul>
+<h3>Estimativa de Esforço (se implementado)</h3>
+<table>
+<thead>
+<tr>
+<th>Tarefa</th>
+<th>Esforço</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Criar bucket GCS + IAM</td>
+<td>1-2h</td>
+</tr>
+<tr>
+<td>Implementar upload para GCS</td>
+<td>2-3h</td>
+</tr>
+<tr>
+<td>Modificar client.ts para usar fileUri</td>
+<td>1-2h</td>
+</tr>
+<tr>
+<td>Gerenciamento de lifecycle/cleanup</td>
+<td>2-3h</td>
+</tr>
+<tr>
+<td>Testes e validação</td>
+<td>2-3h</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>8-13h</strong></td>
+</tr>
+</tbody></table>
+<h3>Recomendação Final (Janeiro 2026)</h3>
+<p><strong>Decisão:</strong> DISCARD</p>
+<p><strong>Justificativa:</strong></p>
+<ol>
+<li><p><strong>API não disponível</strong>: O Vertex AI (usado pelo IAra) não possui a Files API que motivou este spike. A alternativa (GCS) requer infraestrutura adicional significativa.</p>
+</li>
+<li><p><strong>Custo-benefício desfavorável</strong>: Para transcrições de ~50-200KB, o overhead de criar/gerenciar bucket GCS não justifica o potencial benefício.</p>
+</li>
+<li><p><strong>Economia incerta</strong>: Não há confirmação de que usar <code>fileUri</code> vs <code>inlineData</code> economiza tokens ou reduz latência significativamente.</p>
+</li>
+<li><p><strong>Implementação atual funciona bem</strong>: O approach de inline attachment com arquivo temporário local atende as necessidades atuais sem dependências externas.</p>
+</li>
+<li><p><strong>Complexidade desnecessária</strong>: Adicionar GCS introduz ponto de falha adicional, custos recorrentes, e necessidade de gerenciamento de lifecycle.</p>
+</li>
+</ol>
+<hr>
+<h2>Reavaliação (Fevereiro 2026) — Party-Mode</h2>
+<p><strong>Data</strong>: 2026-02-17
+<strong>Trigger</strong>: Descoberta de que <code>@google-cloud/vertexai</code> está deprecated</p>
+<h3>Mudança de Cenário</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Spike (Jan 2026)</th>
+<th>Reavaliação (Fev 2026)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SDK <code>@google-cloud/vertexai</code></td>
+<td>Em uso, estável</td>
+<td><strong>DEPRECATED</strong> (Jun 2025), remoção Jun 2026</td>
+</tr>
+<tr>
+<td>Novo SDK <code>@google/genai</code></td>
+<td>Não existia/não avaliado</td>
+<td><strong>Disponível</strong> (v1.41.0)</td>
+</tr>
+<tr>
+<td><code>ai.files</code> no novo SDK</td>
+<td>N/A</td>
+<td><strong>Existe</strong> — upload + reuso de file URI</td>
+</tr>
+<tr>
+<td>Suporte Vertex AI no novo SDK</td>
+<td>N/A</td>
+<td><strong>Sim</strong> — <code>vertexai: true</code> na init</td>
+</tr>
+<tr>
+<td>Files API via Vertex AI</td>
+<td>Não disponível</td>
+<td><strong>Potencialmente disponível</strong> via novo SDK</td>
+</tr>
+</tbody></table>
+<h3>Descoberta Crítica</h3>
+<p>O SDK <code>@google-cloud/vertexai</code> foi <strong>deprecated em Jun 2025</strong> com remoção prevista para <strong>Jun 2026</strong>. O substituto oficial é <code>@google/genai</code> que:</p>
+<ol>
+<li>Suporta <strong>ambos</strong> Gemini API e Vertex AI com a mesma interface</li>
+<li>Possui módulo <code>ai.files</code> para upload e reutilização de arquivos</li>
+<li>Retorna <code>file_uri</code> reutilizável em múltiplas chamadas <code>generateContent</code></li>
+<li>TTL de 48h (suficiente para sessão de processamento de vídeo)</li>
+</ol>
+<h3>Recomendação Atualizada</h3>
+<p><strong>Decisão atualizada:</strong> DISCARD → <strong>DEFER (vinculado à migração obrigatória do SDK)</strong></p>
+<p>O file reuse deixa de ser um esforço isolado e passa a ser uma <strong>story dentro do epic de migração de SDK</strong>, que é obrigatório antes de Jun 2026.</p>
+<h3>Referências</h3>
+<ul>
+<li><a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/deprecations/genai-vertexai-sdk">Vertex AI SDK Migration Guide</a></li>
+<li><a href="https://github.com/googleapis/js-genai">Google Gen AI SDK (@google/genai)</a></li>
+<li><a href="https://ai.google.dev/gemini-api/docs/files">Gemini Files API</a></li>
+<li><a href="https://www.npmjs.com/package/@google/genai">@google/genai npm</a></li>
+</ul>
+<hr>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<ul>
+<li>Spike original: Claude Opus 4.5 (claude-opus-4-5-20251101)</li>
+<li>Reavaliação: Claude Opus 4.6 (claude-opus-4-6)</li>
+</ul>
+<h3>Debug Log References</h3>
+<ul>
+<li>Web Search: &quot;Gemini File API Vertex AI 2025&quot;</li>
+<li>Web Fetch: ai.google.dev/gemini-api/docs/files</li>
+<li>Web Fetch: cloud.google.com/vertex-ai/docs/reference/rest</li>
+<li>Read: node_modules/@google-cloud/vertexai/build/src/types/content.d.ts</li>
+<li>Web Search: &quot;@google/genai SDK Node.js Vertex AI File API 2026&quot;</li>
+<li>Web Fetch: docs.cloud.google.com/vertex-ai/generative-ai/docs/deprecations/genai-vertexai-sdk</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>Task 1.1: Pesquisada documentação oficial - Gemini API tem Files API, Vertex AI não</li>
+<li>Task 1.2: SDK @google-cloud/vertexai suporta FileDataPart mas com GCS URIs, não Files API</li>
+<li>Task 1.3: Documentados limites: 2GB/arquivo, 20GB/projeto, 48h TTL (apenas Gemini API direta)</li>
+<li>Task 1.4: Custos: Gemini Files API não tem custo adicional; GCS ~$0.02/GB/mês</li>
+<li>Task 2: N/A - Vertex AI não suporta Files API, PoC não aplicável</li>
+<li>Task 3.1: Prós/contras documentados</li>
+<li>Task 3.2: Riscos documentados (infraestrutura, complexidade, economia incerta)</li>
+<li>Task 3.3: Esforço estimado: 8-13h para implementação completa via GCS</li>
+<li>Task 3.4: Recomendação original: DISCARD → Reavaliação Fev 2026: DEFER (migração SDK)</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li>5-5-spike-gemini-file-api.md (UPDATED - reavaliação Fev 2026 adicionada)</li>
+</ul>
+
+  </main>
+</body>
+</html>

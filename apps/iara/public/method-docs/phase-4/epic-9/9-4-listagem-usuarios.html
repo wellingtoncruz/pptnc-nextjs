@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9.4 Listagem de Usuários — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 9 — Gestão de Usuários</nav><h1>Story 9.4: API e Tela de Listagem de Usuários</h1>
+<p>Status: review</p>
+<h2>Story</h2>
+<p>As a administrador do podcast,
+I want ver uma lista de todos os usuários autorizados,
+so that eu possa visualizar quem tem acesso ao sistema e suas informações.</p>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: API GET /api/users</h3>
+<pre><code class="language-gherkin">DADO um usuário autenticado como admin
+QUANDO eu chamar GET /api/users
+ENTÃO deve retornar lista de usuários com:
+  - id, email, name, picture, role, lastAccessAt, createdAt
+E deve estar ordenada por lastAccessAt DESC (mais recente primeiro)
+E deve excluir usuários soft-deleted
+
+DADO um usuário autenticado como &#39;user&#39; (não admin)
+QUANDO eu chamar GET /api/users
+ENTÃO deve retornar 403 Forbidden
+</code></pre>
+<h3>AC2: Proteção da rota /videos?view=users</h3>
+<pre><code class="language-gherkin">DADO um usuário não-admin
+QUANDO ele acessar /videos?view=users diretamente
+ENTÃO deve ser redirecionado para /videos
+E não deve ver conteúdo de usuários
+</code></pre>
+<h3>AC3: Componente UserListPanel</h3>
+<pre><code class="language-gherkin">DADO a tela de usuários carregada
+QUANDO os dados forem buscados com sucesso
+ENTÃO deve exibir uma lista/tabela com:
+  - Avatar do usuário (imagem ou iniciais)
+  - Nome completo
+  - Email
+  - Badge de Role (Admin/Usuário)
+  - Último acesso (formato relativo: &quot;há 2 horas&quot;)
+E deve ter estado de loading enquanto busca
+E deve ter estado de erro com botão retry
+</code></pre>
+<h3>AC4: Indicador de usuário atual</h3>
+<pre><code class="language-gherkin">DADO a lista de usuários
+QUANDO eu visualizar meu próprio usuário
+ENTÃO deve haver um indicador &quot;(você)&quot; ou similar
+E não deve ser possível ações sobre si mesmo
+</code></pre>
+<h3>AC5: Estado vazio</h3>
+<pre><code class="language-gherkin">DADO que não há outros usuários além do atual
+QUANDO a lista carregar
+ENTÃO deve mostrar mensagem informativa
+E explicar que novos usuários aparecem após primeiro login
+</code></pre>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar API GET /api/users (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Criar <code>src/app/api/users/route.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Verificar autenticação com <code>auth()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Verificar role admin com <code>requireAdmin()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Chamar <code>listPodcastUsers(PODCAST_ID)</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.5: Ordenar por lastAccessAt DESC</li>
+<li><input checked="" disabled="" type="checkbox"> 1.6: Retornar <code>{ data: User[] }</code></li>
+<li><input disabled="" type="checkbox"> 1.7: Criar testes para API</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar componente UserListPanel (AC: #3, #4, #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Criar <code>src/components/users/user-list-panel.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Usar useSWR para fetch de <code>/api/users</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Estado de loading com Skeleton</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4: Estado de erro com botão retry</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5: Lista com Avatar, Nome, Email, Role Badge, Último acesso</li>
+<li><input checked="" disabled="" type="checkbox"> 2.6: Indicador &quot;(você)&quot; para usuário atual</li>
+<li><input checked="" disabled="" type="checkbox"> 2.7: Estado vazio quando só há o usuário atual</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar componente UserCard (AC: #3, #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Criar <code>src/components/users/user-card.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Avatar com fallback para iniciais</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Badge colorido para role (admin=verde, user=cinza)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Formatação de data relativa (função inline, não usa date-fns)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5: Prop <code>isCurrentUser</code> para indicador</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Integrar no layout principal (AC: #2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Modificar <code>src/app/videos/videos-layout.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: Renderizar UserListPanel quando <code>view=users</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.3: Verificar isAdmin antes de renderizar</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4: Redirecionar não-admin para /videos</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+Task 5: Testes (AC: todos)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 5.1: Testes para API /api/users</li>
+<li><input disabled="" type="checkbox"> 5.2: Testes para UserListPanel (loading, error, success)</li>
+<li><input disabled="" type="checkbox"> 5.3: Testes para UserCard</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Funções já disponíveis em <code>users-admin.ts</code>:</h3>
+<pre><code class="language-typescript">// USE ESTA FUNÇÃO - já implementada e testada!
+import { listPodcastUsers } from &#39;@/lib/firebase/users-admin&#39;
+
+const users = await listPodcastUsers(PODCAST_ID)
+// Retorna User[] excluindo soft-deleted
+</code></pre>
+<h3>Middleware já disponível:</h3>
+<pre><code class="language-typescript">// USE ESTAS FUNÇÕES - já implementadas!
+import { requireAdmin, requireAuth } from &#39;@/lib/auth/require-admin&#39;
+
+// Padrão de uso em API:
+const session = await auth()
+const authError = requireAuth(session)
+if (authError) return authError
+
+const adminCheck = requireAdmin(session)
+if (!adminCheck.authorized) return adminCheck.response
+
+// Agora é admin, continuar...
+</code></pre>
+<h3>Hook já disponível:</h3>
+<pre><code class="language-typescript">// USE ESTE HOOK - já implementado!
+import { useCurrentUser } from &#39;@/hooks/use-current-user&#39;
+
+const { user, isAdmin, isLoading } = useCurrentUser()
+// user.id é o ID do usuário atual para comparação
+</code></pre>
+<h3>Padrões de UI existentes:</h3>
+<ul>
+<li>Usar <code>Card</code> do shadcn/ui para layout</li>
+<li>Usar <code>Avatar</code> do shadcn/ui para imagens</li>
+<li>Usar <code>Badge</code> do shadcn/ui para roles</li>
+<li>Usar <code>Skeleton</code> para loading states</li>
+<li>Seguir dark mode only</li>
+</ul>
+<h3>Formatação de data relativa:</h3>
+<pre><code class="language-typescript">// Se date-fns não estiver instalado, usar:
+const formatRelativeTime = (date: Date): string =&gt; {
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes &lt; 1) return &#39;agora&#39;
+  if (minutes &lt; 60) return `há ${minutes} min`
+  if (hours &lt; 24) return `há ${hours}h`
+  return `há ${days}d`
+}
+</code></pre>
+<h3>Estrutura de arquivos a criar:</h3>
+<pre><code>src/app/api/users/
+└── route.ts                    # GET /api/users
+
+src/components/users/
+├── user-list-panel.tsx         # Painel principal
+├── user-list-panel.test.tsx    # Testes
+├── user-card.tsx               # Card individual
+└── user-card.test.tsx          # Testes
+</code></pre>
+<h3>Project Structure Notes</h3>
+<ul>
+<li>API em <code>src/app/api/users/route.ts</code> seguindo padrão Next.js App Router</li>
+<li>Componentes em <code>src/components/users/</code> (nova pasta)</li>
+<li>Testes co-localizados com componentes</li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: _bmad-output/stories/epic-9-gestao-acesso.md] - Epic com decisões de produto</li>
+<li>[Source: src/lib/firebase/users-admin.ts] - Funções de backend já implementadas</li>
+<li>[Source: src/lib/auth/require-admin.ts] - Middleware de proteção admin</li>
+<li>[Source: src/hooks/use-current-user.ts] - Hook para dados do usuário atual</li>
+<li>[Source: src/components/layout/sidebar.tsx] - Referência para estrutura de menu</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<p>N/A - No debug logs needed, implementation was straightforward.</p>
+<h3>Completion Notes List</h3>
+<ol>
+<li>API GET /api/users criada seguindo padrões existentes do projeto</li>
+<li>UserCard usa Image do Next.js com fallback para iniciais</li>
+<li>Formatação de data relativa implementada inline (sem date-fns)</li>
+<li>Badge verde para admin, secondary (cinza) para user</li>
+<li>UserListPanel usa SWR com padrão do projeto</li>
+<li>Proteção de rota no layout com verificação isAdmin e redirect</li>
+<li>Testes pendentes para Task 5</li>
+</ol>
+<h3>File List</h3>
+<p><strong>Arquivos Criados:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/app/api/users/route.ts</code></td>
+<td>API GET /api/users - lista usuários ordenados por lastAccessAt</td>
+</tr>
+<tr>
+<td><code>src/components/users/user-card.tsx</code></td>
+<td>Card individual com avatar, nome, email, role badge</td>
+</tr>
+<tr>
+<td><code>src/components/users/user-list-panel.tsx</code></td>
+<td>Painel com SWR, loading, error, empty states</td>
+</tr>
+</tbody></table>
+<p><strong>Arquivos Modificados:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Tipo de Mudança</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/app/videos/videos-layout.tsx</code></td>
+<td>Adicionado view=users com UserListPanel e proteção admin</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/users-admin.ts</code></td>
+<td>Fix: listPodcastUsers filtra deleted em memória (legacy users); countAdmins também corrigido</td>
+</tr>
+<tr>
+<td><code>src/lib/schemas/user.ts</code></td>
+<td>Campos opcionais com defaults para suportar usuários legados</td>
+</tr>
+</tbody></table>
+<p><strong>Arquivos Pendentes (Task 5):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/app/api/users/route.test.ts</code></td>
+<td>Testes da API</td>
+</tr>
+<tr>
+<td><code>src/components/users/user-list-panel.test.tsx</code></td>
+<td>Testes do painel</td>
+</tr>
+<tr>
+<td><code>src/components/users/user-card.test.tsx</code></td>
+<td>Testes do card</td>
+</tr>
+</tbody></table>
+<h2>Code Review Record</h2>
+<h3>Review Date: 2026-02-02</h3>
+<p><strong>Reviewer:</strong> Claude Opus 4.5 (Adversarial Code Review Workflow)</p>
+<p><strong>Issues Found:</strong> 1 High, 3 Medium, 3 Low</p>
+<p><strong>Issues Fixed:</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severity</th>
+<th>Issue</th>
+<th>Fix Applied</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M2</td>
+<td>MEDIUM</td>
+<td><code>countAdmins()</code> usava <code>where(&#39;deleted&#39;, &#39;==&#39;, false)</code> que não funciona para legacy users</td>
+<td>Alterado para filtrar em memória igual <code>listPodcastUsers()</code></td>
+</tr>
+<tr>
+<td>L2</td>
+<td>LOW</td>
+<td><code>formatRelativeTime()</code> não tratava datas futuras (clock skew)</td>
+<td>Adicionado check <code>if (diff &lt; 0) return &#39;agora&#39;</code></td>
+</tr>
+<tr>
+<td>L3</td>
+<td>LOW</td>
+<td>Dependência externa de domínio Google não documentada</td>
+<td>Adicionado comentário no componente</td>
+</tr>
+<tr>
+<td>M1</td>
+<td>MEDIUM</td>
+<td>File List incompleta</td>
+<td>Adicionados arquivos modificados: users-admin.ts, user.ts</td>
+</tr>
+</tbody></table>
+<p><strong>Issues Deferred (Task 5):</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severity</th>
+<th>Issue</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H1</td>
+<td>HIGH</td>
+<td>Testes não implementados</td>
+<td>Task 5 explicitamente marcada como pendente</td>
+</tr>
+<tr>
+<td>L1</td>
+<td>LOW</td>
+<td>Sem Error Boundary no UserListPanel</td>
+<td>Decisão arquitetural, baixo risco</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>MEDIUM</td>
+<td>Sem sanitização de user.id em data-testid</td>
+<td>Risco mínimo, IDs são UUIDs do Google</td>
+</tr>
+</tbody></table>
+<p><strong>Recommendation:</strong> Story pode avançar para &quot;done&quot; após Task 5 (testes) ser completada.</p>
+<h2>Change Log</h2>
+<ul>
+<li>2026-02-02: Story criada - API e tela de listagem de usuários</li>
+<li>2026-02-02: Implementação Tasks 1-4 completas, status: review</li>
+<li>2026-02-02: Code Review - 4 issues corrigidos, 3 deferred (testes pendentes)</li>
+</ul>
+
+  </main>
+</body>
+</html>

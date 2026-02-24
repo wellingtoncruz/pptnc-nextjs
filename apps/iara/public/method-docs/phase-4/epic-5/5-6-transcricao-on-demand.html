@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5.6 Transcrição Sob Demanda — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 5 — Melhorias do Wizard</nav><h1>Story 5.6: Transcrição On-Demand</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want que a transcrição seja baixada apenas quando eu selecionar um vídeo para processar,
+So that o sync seja rápido e não esgote a quota da YouTube API.</p>
+<h2>Contexto</h2>
+<p>O sync atual baixa transcrições via YouTube Captions API durante a sincronização, consumindo 200 units por transcrição. Com limite de 10.000 units/dia, isso permite apenas 50 transcrições diárias. Se o produtor fizer múltiplos syncs ou tiver muitos vídeos novos, a quota esgota rapidamente.</p>
+<p><strong>Solução:</strong> Lazy loading de transcrições - baixar apenas quando o produtor selecionar um vídeo para processar no Wizard.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1: Sync sem transcrição</strong></p>
+<ul>
+<li>Given o processo de sync executado</li>
+<li>When novos vídeos são detectados</li>
+<li>Then apenas metadados são salvos (sem transcrição)</li>
+<li>And o sync completa rapidamente</li>
+<li>And campos <code>transcriptionSRT</code> e <code>transcriptionTXT</code> ficam vazios</li>
+</ul>
+</li>
+<li><p><strong>AC2: Loader de transcrição no Wizard</strong></p>
+<ul>
+<li>Given um vídeo selecionado para processamento</li>
+<li>When <code>transcriptionSRT</code> ou <code>transcriptionTXT</code> estão vazios</li>
+<li>Then exibe componente <code>TranscriptionLoader</code> ANTES do Wizard</li>
+<li>And mostra spinner com &quot;Estamos transcrevendo o seu vídeo...&quot;</li>
+</ul>
+</li>
+<li><p><strong>AC3: Download bem-sucedido</strong></p>
+<ul>
+<li>Given o <code>TranscriptionLoader</code> ativo</li>
+<li>When a transcrição é baixada com sucesso</li>
+<li>Then SRT e TXT são salvos no Firestore</li>
+<li>And o Wizard inicia automaticamente</li>
+<li>And transcrição fica disponível para todas as fases</li>
+</ul>
+</li>
+<li><p><strong>AC4: Transcrição indisponível (processando)</strong></p>
+<ul>
+<li>Given o <code>TranscriptionLoader</code> ativo</li>
+<li>When YouTube retorna que transcrição não está disponível</li>
+<li>Then exibe mensagem &quot;Esse vídeo ainda está em processamento pelo YouTube, tente novamente em alguns minutos&quot;</li>
+<li>And exibe botão &quot;Voltar&quot;</li>
+<li>And botão redireciona para Home (/videos)</li>
+</ul>
+</li>
+<li><p><strong>AC5: Erro de quota</strong></p>
+<ul>
+<li>Given o <code>TranscriptionLoader</code> ativo</li>
+<li>When YouTube retorna erro 429 (quota exceeded)</li>
+<li>Then exibe mensagem &quot;Limite de requisições atingido, tente novamente mais tarde&quot;</li>
+<li>And exibe botão &quot;Voltar&quot;</li>
+</ul>
+</li>
+<li><p><strong>AC6: Outros erros</strong></p>
+<ul>
+<li>Given o <code>TranscriptionLoader</code> ativo</li>
+<li>When ocorre erro de rede ou outro erro</li>
+<li>Then exibe mensagem genérica de erro</li>
+<li>And exibe botão &quot;Tentar novamente&quot;</li>
+<li>And exibe botão &quot;Voltar&quot;</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Remover transcrição do Sync (AC: 1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Remover chamada a <code>fetchTranscriptionsForVideos()</code> de <code>sync-videos.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Remover constantes <code>MAX_TRANSCRIPTIONS_PER_SYNC</code> e <code>MAX_VIDEOS_TO_PRIORITIZE</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Atualizar <code>SyncResult</code> type (remover campos de transcrição)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Atualizar <code>SyncResultModal</code> (remover exibição de contagem de transcrições)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5: Testes unitários para sync sem transcrição</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: API Route de Transcrição On-Demand (AC: 3, 4, 5, 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Criar route <code>POST /api/videos/[videoId]/transcription</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Chamar <code>YouTubeClient.downloadPortugueseCaptions()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Parsear SRT para TXT com <code>parseSrtToText()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.4: Salvar SRT e TXT no Firestore via <code>updateVideo()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.5: Tratar erro: transcrição indisponível → código <code>TRANSCRIPTION_UNAVAILABLE</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.6: Tratar erro: quota exceeded (429) → código <code>QUOTA_EXCEEDED</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.7: Tratar erro: auth (401) → refresh token e retry</li>
+<li><input checked="" disabled="" type="checkbox"> 2.8: Testes unitários (via TranscriptionLoader tests)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Componente TranscriptionLoader (AC: 2, 3, 4, 5, 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Criar <code>src/components/wizard/transcription-loader.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Implementar UI com spinner e mensagem &quot;Estamos transcrevendo o seu vídeo...&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Chamar API <code>POST /api/videos/[videoId]/transcription</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Implementar estado de erro com mensagens específicas por código</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5: Implementar botão &quot;Voltar&quot; → navigate to <code>/videos</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.6: Implementar botão &quot;Tentar novamente&quot; para erros recuperáveis</li>
+<li><input checked="" disabled="" type="checkbox"> 3.7: Chamar <code>onSuccess()</code> após transcrição salva</li>
+<li><input checked="" disabled="" type="checkbox"> 3.8: Testes unitários (9 tests passing)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Integrar no Wizard Orchestrator (AC: 2, 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Adicionar check de <code>transcriptionSRT</code> e <code>transcriptionTXT</code> no início do orchestrator</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: Se vazio, renderizar <code>TranscriptionLoader</code> em vez do Wizard</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3: Após sucesso, fazer refresh do video data e renderizar Wizard</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4: Testes de integração (all 1223 tests passing)</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura Atual vs Proposta</h3>
+<pre><code>ANTES (Eager Loading):
+Sync → Busca vídeos → Baixa transcrições → Salva tudo
+Problema: Consome quota mesmo para vídeos nunca processados
+
+DEPOIS (Lazy Loading):
+Sync → Busca vídeos → Salva metadados (SEM transcrição)
+Seleção → Check transcrição → Se vazio, TranscriptionLoader → Wizard
+Benefício: Só gasta quota quando REALMENTE precisa
+</code></pre>
+<h3>Fluxo de Seleção de Vídeo</h3>
+<pre><code>User seleciona vídeo na lista
+         ↓
+    video.transcriptionSRT existe?
+         ↓
+    ┌────┴────┐
+   SIM       NÃO
+    ↓         ↓
+ Wizard   TranscriptionLoader
+              ↓
+         POST /api/videos/[videoId]/transcription
+              ↓
+         YouTube Captions API
+              ↓
+         ┌────┴────┐
+      SUCCESS    ERROR
+         ↓          ↓
+      Salva     Mensagem de erro
+      Firestore + Botão Voltar
+         ↓
+      Wizard
+</code></pre>
+<h3>API Route Response</h3>
+<pre><code class="language-typescript">// POST /api/videos/[videoId]/transcription
+
+// Success (200)
+{
+  &quot;data&quot;: {
+    &quot;transcriptionSRT&quot;: &quot;1\n00:00:00,000 --&gt; 00:00:05,000\nOlá...&quot;,
+    &quot;transcriptionTXT&quot;: &quot;Olá...&quot;
+  }
+}
+
+// Transcrição indisponível (404)
+{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;TRANSCRIPTION_UNAVAILABLE&quot;,
+    &quot;message&quot;: &quot;Transcrição ainda não disponível&quot;
+  }
+}
+
+// Quota exceeded (429)
+{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;QUOTA_EXCEEDED&quot;,
+    &quot;message&quot;: &quot;Limite de requisições excedido&quot;
+  }
+}
+</code></pre>
+<h3>Componente TranscriptionLoader</h3>
+<pre><code class="language-typescript">// src/components/wizard/transcription-loader.tsx
+
+interface TranscriptionLoaderProps {
+  video: Video
+  onSuccess: () =&gt; void  // Chamado após transcrição salva
+  onCancel: () =&gt; void   // Chamado ao clicar &quot;Voltar&quot;
+}
+
+// Estados do componente:
+// - &#39;loading&#39;: Spinner + &quot;Estamos transcrevendo o seu vídeo...&quot;
+// - &#39;error&#39;: Mensagem de erro + botões
+// - &#39;success&#39;: Transição para Wizard (não renderiza nada, chama onSuccess)
+</code></pre>
+<h3>Modificação no Wizard Orchestrator</h3>
+<pre><code class="language-typescript">// wizard-orchestrator.tsx
+
+export function WizardOrchestrator({ video, ... }: Props) {
+  const router = useRouter()
+  const { refresh } = useVideos()
+
+  // Check se precisa baixar transcrição
+  if (!video.transcriptionSRT || !video.transcriptionTXT) {
+    return (
+      &lt;TranscriptionLoader
+        video={video}
+        onSuccess={() =&gt; refresh()}  // Recarrega video com transcrição
+        onCancel={() =&gt; router.push(&#39;/videos&#39;)}
+      /&gt;
+    )
+  }
+
+  // ... resto do Wizard
+}
+</code></pre>
+<h3>Remoção do Sync</h3>
+<p>Arquivos a modificar:</p>
+<ul>
+<li><code>src/lib/sync/sync-videos.ts</code> - Remover <code>fetchTranscriptionsForVideos()</code></li>
+<li><code>src/lib/sync/types.ts</code> - Atualizar <code>SyncResult</code></li>
+<li><code>src/components/videos/sync-result-modal.tsx</code> - Remover campos de transcrição</li>
+</ul>
+<h3>Impacto na Quota</h3>
+<table>
+<thead>
+<tr>
+<th>Cenário</th>
+<th>Antes</th>
+<th>Depois</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sync de 50 vídeos</td>
+<td>~10.000 units</td>
+<td>~0 units</td>
+</tr>
+<tr>
+<td>Processar 3 vídeos/dia</td>
+<td>N/A (já baixado)</td>
+<td>600 units</td>
+</tr>
+<tr>
+<td>Quota diária restante</td>
+<td>0</td>
+<td>9.400 units</td>
+</tr>
+</tbody></table>
+<h3>Mensagens de Erro (PT-BR)</h3>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Mensagem</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>TRANSCRIPTION_UNAVAILABLE</code></td>
+<td>&quot;Esse vídeo ainda está em processamento pelo YouTube, tente novamente em alguns minutos&quot;</td>
+</tr>
+<tr>
+<td><code>QUOTA_EXCEEDED</code></td>
+<td>&quot;Limite de requisições atingido, tente novamente mais tarde&quot;</td>
+</tr>
+<tr>
+<td><code>NETWORK_ERROR</code></td>
+<td>&quot;Erro de conexão, verifique sua internet e tente novamente&quot;</td>
+</tr>
+<tr>
+<td><code>UNKNOWN_ERROR</code></td>
+<td>&quot;Ocorreu um erro inesperado, tente novamente&quot;</td>
+</tr>
+</tbody></table>
+<h3>Referências</h3>
+<ul>
+<li>[Source: sync-videos.ts - Lógica atual de sync com transcrição]</li>
+<li>[Source: youtube/client.ts - downloadPortugueseCaptions()]</li>
+<li>[Source: wizard-orchestrator.tsx - Ponto de integração]</li>
+<li>[Source: Party Mode Discussion - 2026-01-29]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<p>None</p>
+<h3>Completion Notes List</h3>
+<ul>
+<li><p>Task 1: Removed transcription fetching from sync process</p>
+<ul>
+<li>Removed <code>fetchTranscriptionsForVideos()</code>, <code>fetchTranscriptionForVideo()</code>, and <code>TranscriptionResult</code> interface</li>
+<li>Removed constants <code>MAX_TRANSCRIPTIONS_PER_SYNC</code> and <code>MAX_VIDEOS_TO_PRIORITIZE</code></li>
+<li>Updated <code>SyncResult</code> interface to remove transcription fields</li>
+<li>Updated <code>SyncResultModal</code> component and its tests</li>
+<li>All 36 sync tests passing</li>
+</ul>
+</li>
+<li><p>Task 2: Created API route <code>POST /api/videos/[videoId]/transcription</code></p>
+<ul>
+<li>Handles YouTube authentication with token refresh</li>
+<li>Downloads Portuguese ASR captions via <code>YouTubeClient.downloadPortugueseCaptions()</code></li>
+<li>Parses SRT to TXT with <code>parseSrtToText()</code></li>
+<li>Saves both to Firestore</li>
+<li>Error codes: TRANSCRIPTION_UNAVAILABLE, QUOTA_EXCEEDED, AUTH_EXPIRED, INTERNAL_ERROR</li>
+</ul>
+</li>
+<li><p>Task 3: Created <code>TranscriptionLoader</code> component</p>
+<ul>
+<li>Shows spinner with &quot;Estamos transcrevendo o seu vídeo...&quot; during loading</li>
+<li>Shows error-specific messages in Portuguese</li>
+<li>&quot;Tentar novamente&quot; button for recoverable errors (NETWORK_ERROR, UNKNOWN_ERROR)</li>
+<li>&quot;Voltar&quot; button navigates to /videos</li>
+<li>Auth errors redirect to signin</li>
+<li>9 unit tests passing</li>
+</ul>
+</li>
+<li><p>Task 4: Integrated TranscriptionLoader into WizardOrchestrator</p>
+<ul>
+<li>Checks if <code>transcriptionSRT</code> or <code>transcriptionTXT</code> is missing</li>
+<li>Renders TranscriptionLoader before Wizard if transcription needed</li>
+<li>Uses <code>router.refresh()</code> to reload video data after successful transcription</li>
+</ul>
+</li>
+</ul>
+<p>All 1223 tests passing (no regressions)</p>
+<h3>File List</h3>
+<ul>
+<li>src/lib/sync/sync-videos.ts (UPDATED - removed transcription fetching)</li>
+<li>src/lib/sync/sync-videos.test.ts (UPDATED - removed transcription tests)</li>
+<li>src/components/videos/sync-result-modal.tsx (UPDATED - removed transcription fields)</li>
+<li>src/components/videos/sync-result-modal.test.tsx (UPDATED - removed transcription tests)</li>
+<li>src/app/api/videos/[videoId]/transcription/route.ts (NEW - on-demand transcription API)</li>
+<li>src/components/wizard/transcription-loader.tsx (NEW - TranscriptionLoader component)</li>
+<li>src/components/wizard/transcription-loader.test.tsx (NEW - 9 tests)</li>
+<li>src/components/wizard/wizard-orchestrator.tsx (UPDATED - integrated TranscriptionLoader)</li>
+</ul>
+
+  </main>
+</body>
+</html>

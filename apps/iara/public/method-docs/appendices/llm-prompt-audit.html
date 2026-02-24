@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auditoria de Prompts LLM — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li class="active"><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/appendices/">Apêndices</a></nav><h1>Auditoria de Prompts LLM — IAra (AS-IS)</h1>
+<blockquote>
+<p><strong>Data:</strong> 2026-02-24
+<strong>Versão:</strong> v2.2.2-beta-iara
+<strong>Objetivo:</strong> Mapear tudo que é enviado ao LLM além do que está no banco de dados (Firestore)</p>
+</blockquote>
+<hr>
+<h2>Arquitetura Geral</h2>
+<pre><code>Route Handler → callLLMQueued() → callLLM() → callGenAI()
+                                                    ↓
+                                          generateContentStream()
+</code></pre>
+<p><strong>Modelo:</strong> <code>gemini-2.5-flash</code> (ou env <code>VERTEX_AI_MODEL</code>)
+<strong>SDK:</strong> <code>@google/genai</code> com backend Vertex AI
+<strong>Config fixa (toda chamada):</strong></p>
+<ul>
+<li><code>temperature: 0.7</code></li>
+<li><code>maxOutputTokens: 65536</code></li>
+<li><code>thinkingConfig.thinkingBudget: 24576</code></li>
+<li><code>responseMimeType: &#39;application/json&#39;</code></li>
+</ul>
+<hr>
+<h2>Estrutura da Chamada à API</h2>
+<pre><code class="language-typescript">// client.ts:170-184
+generateContentStream({
+  model: modelName,
+  contents: [
+    { text: userPrompt },                          // ← User prompt (texto)
+    { inlineData: { mimeType: &#39;text/plain&#39;,        // ← Transcrição (base64)
+                    data: base64Transcription } }
+  ],
+  config: {
+    systemInstruction: systemPrompt,               // ← System prompt
+    responseMimeType: &#39;application/json&#39;,
+    temperature: 0.7,
+    maxOutputTokens: 65536,
+    thinkingConfig: { thinkingBudget: 24576 },
+  },
+})
+</code></pre>
+<hr>
+<h2>Composição do System Prompt</h2>
+<h3>Quando podcast está configurado (fluxo principal)</h3>
+<pre><code>prompts.ts:538-545 → buildPhasePrompt()
+
+┌─────────────────────────────────────────────────────┐
+│ Seu papel: {persona.role}                           │ ← Firestore
+│ Seu objetivo: {persona.objective}                   │ ← Firestore
+│ Seu contexto: {persona.resume}                      │ ← Firestore
+│                                                     │
+│ ## TAREFA                                           │ ← ESTÁTICO (código)
+│ {prompts[videoType][promptKey].description}          │ ← Firestore
+│                                                     │
+│ {PHASE_JSON_SCHEMAS[phase]}                         │ ← ESTÁTICO (código)
+└─────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Nota:</strong> O <code>expectedOutput</code> do Firestore é <strong>IGNORADO</strong> quando <code>PHASE_JSON_SCHEMAS[phase]</code> existe (todas as fases 1-7). Ele só seria usado se o JSON schema fosse vazio.</p>
+<h3>Para fases reprocessáveis (5, 6, 7) com instrução do produtor</h3>
+<pre><code>client.ts:394-395
+
+Adicionado ao FINAL do system prompt:
+
+┌─────────────────────────────────────────────────────┐
+│ \n\n**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**          │ ← ESTÁTICO (código)
+│ Dê uma atenção especial a essa instrução:           │ ← ESTÁTICO (código)
+│ {additionalContext}                                 │ ← Input do usuário (UI)
+└─────────────────────────────────────────────────────┘
+</code></pre>
+<h3>Fallback (sem podcast configurado)</h3>
+<p>Usa <code>BASE_SYSTEM_PROMPTS[phase]</code> — prompts 100% hardcoded no código (ver Apêndice A).</p>
+<hr>
+<h2>Composição do User Prompt</h2>
+<p>O user prompt é construído via template + interpolação de variáveis:</p>
+<pre><code>client.ts:402-407
+
+template = USER_PROMPT_TEMPLATES[phase]       // ← ESTÁTICO (código)
+variables = extractVariables(video, ...)       // ← Dados do vídeo (Firestore)
+variables.transcript = &#39;[Transcrição anexada como arquivo]&#39;  // ← ESTÁTICO (código)
+userPrompt = interpolatePrompt(template, variables, additionalContext)
+</code></pre>
+<hr>
+<h2>Detalhamento por Fase</h2>
+<h3>Fase 1 — Crítica</h3>
+<p><strong>Persona:</strong> <code>critic</code> | <strong>Prompt key:</strong> <code>critique</code> | <strong>Attachment:</strong> TXT</p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.critic.role}
+Seu objetivo: {persona.critic.objective}
+Seu contexto: {persona.critic.resume}
+
+## TAREFA
+{prompts[videoType].critique.description}
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;critique&quot;: &quot;Crítica geral do episódio em texto (string, 2-4 parágrafos)&quot;,
+  &quot;highlights&quot;: [&quot;Ponto forte 1&quot;, &quot;Ponto forte 2&quot;, &quot;...&quot;],
+  &quot;suggestions&quot;: [&quot;Sugestão de melhoria 1&quot;, &quot;Sugestão 2&quot;, &quot;...&quot;]
+}
+
+IMPORTANTE: O campo &quot;critique&quot; DEVE ser uma STRING única com parágrafos separados por \n\n, NÃO um array.
+</code></pre>
+<p><strong>User prompt:</strong></p>
+<pre><code>## Informações do Vídeo
+
+**Título:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Tipo:** {video.videoType}
+**Tema:** {video.theme}
+
+**Convidados:**
+{formatGuests(video.guests)}
+
+## Transcrição
+
+[Transcrição anexada como arquivo]
+</code></pre>
+<hr>
+<h3>Fase 2 — Checagem de Edição</h3>
+<p><strong>Persona:</strong> <code>critic</code> | <strong>Prompt key:</strong> <code>editing</code> | <strong>Attachment:</strong> SRT</p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.critic.role}
+Seu objetivo: {persona.critic.objective}
+Seu contexto: {persona.critic.resume}
+
+## TAREFA
+{prompts[videoType].editing.description}
+
+## FORMATO DE RESPOSTA
+
+Responda APENAS com JSON válido. A resposta será parseada diretamente como JSON.
+NÃO use tags, NÃO use markdown, NÃO inclua texto fora do JSON.
+
+Estrutura obrigatória:
+{&quot;hasIssues&quot;: boolean, &quot;issues&quot;: [{&quot;timestamp&quot;: &quot;HH:MM:SS&quot;, &quot;description&quot;: &quot;string&quot;}]}
+
+## REGRAS OBRIGATÓRIAS DE OUTPUT
+
+1. JSON COMPACTO: sem indentação, sem quebras de linha, uma única linha.
+2. DESCRIPTIONS CURTAS: máximo 80 caracteres. Descreva o tipo do problema, NÃO transcreva o diálogo.
+3. TIMESTAMPS válidos: formato &quot;HH:MM:SS&quot;, dentro da duração do vídeo.
+
+## EXEMPLOS
+
+CORRETO: {&quot;hasIssues&quot;:true,&quot;issues&quot;:[{&quot;timestamp&quot;:&quot;00:12:45&quot;,&quot;description&quot;:&quot;Pausa longa de 5s entre falas&quot;},{&quot;timestamp&quot;:&quot;00:25:30&quot;,&quot;description&quot;:&quot;Instrução de edição: apresentador pede corte&quot;}]}
+CORRETO: {&quot;hasIssues&quot;:false,&quot;issues&quot;:[]}
+ERRADO: {&quot;hasIssues&quot;:true,&quot;issues&quot;:[{&quot;timestamp&quot;:&quot;00:12:45&quot;,&quot;description&quot;:&quot;O apresentador falou: \&quot;vamos cortar essa parte aqui porque ficou ruim e eu acho que a gente deveria regravar essa cena toda\&quot; - Remover imediatamente do corte final.&quot;}]}
+
+IMPORTANTE: O campo &quot;timestamp&quot; DEVE ser STRING no formato &quot;HH:MM:SS&quot;.
+</code></pre>
+<p><strong>User prompt:</strong></p>
+<pre><code>## Informações do Vídeo
+
+**Título:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+
+## Transcrição (SRT)
+
+[Transcrição anexada como arquivo]
+</code></pre>
+<hr>
+<h3>Fase 3 — Análise de Risco e Compliance</h3>
+<p><strong>Persona:</strong> <code>critic</code> | <strong>Prompt key:</strong> <code>compliance</code> | <strong>Attachment:</strong> SRT</p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.critic.role}
+Seu objetivo: {persona.critic.objective}
+Seu contexto: {persona.critic.resume}
+
+## TAREFA
+{prompts[videoType].compliance.description}
+
+## FORMATO DE RESPOSTA
+
+Responda APENAS com JSON válido dentro das tags &lt;json_response&gt;. Não inclua markdown, explicações ou texto fora das tags.
+
+Estrutura obrigatória:
+{
+  &quot;hasRisks&quot;: boolean,
+  &quot;risks&quot;: [{&quot;timestamp&quot;: &quot;HH:MM:SS&quot;, &quot;risk&quot;: &quot;tipo&quot;, &quot;description&quot;: &quot;string&quot;}]
+}
+
+Tipos de risco válidos: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.
+
+## EXEMPLOS DE RESPOSTA CORRETA
+
+Exemplo 1 - Com riscos:
+&lt;json_response&gt;
+{&quot;hasRisks&quot;: true, &quot;risks&quot;: [{&quot;timestamp&quot;: &quot;00:08:20&quot;, &quot;risk&quot;: &quot;brand_mention&quot;, &quot;description&quot;: &quot;Menção à marca sem autorização&quot;}]}
+&lt;/json_response&gt;
+
+Exemplo 2 - Sem riscos:
+&lt;json_response&gt;
+{&quot;hasRisks&quot;: false, &quot;risks&quot;: []}
+&lt;/json_response&gt;
+
+IMPORTANTE: O campo &quot;timestamp&quot; DEVE ser uma STRING no formato &quot;HH:MM:SS&quot; ou &quot;MM:SS&quot;.
+</code></pre>
+<p><strong>User prompt:</strong></p>
+<pre><code>## Informações do Vídeo
+
+**Título:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Tema:** {video.theme}
+
+**Convidados:**
+{formatGuests(video.guests)}
+
+## Transcrição
+
+[Transcrição anexada como arquivo]
+</code></pre>
+<hr>
+<h3>Fase 4 — Capítulos</h3>
+<p><strong>Persona:</strong> <code>critic</code> | <strong>Prompt key:</strong> <code>chapters</code> | <strong>Attachment:</strong> SRT</p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.critic.role}
+Seu objetivo: {persona.critic.objective}
+Seu contexto: {persona.critic.resume}
+
+## TAREFA
+{prompts[videoType].chapters.description}
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;chapters&quot;: [
+    { &quot;timestamp&quot;: &quot;00:00&quot;, &quot;title&quot;: &quot;Introdução&quot; },
+    { &quot;timestamp&quot;: &quot;05:30&quot;, &quot;title&quot;: &quot;Tema principal&quot; },
+    ...
+  ]
+}
+
+IMPORTANTE: O campo &quot;timestamp&quot; DEVE ser uma STRING no formato &quot;HH:MM:SS&quot; ou &quot;MM:SS&quot;, NÃO um número.
+</code></pre>
+<p><strong>User prompt:</strong></p>
+<pre><code>## Informações do Vídeo
+
+**Título:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Tema:** {video.theme}
+
+## Transcrição
+
+[Transcrição anexada como arquivo]
+</code></pre>
+<hr>
+<h3>Fase 5 — Títulos</h3>
+<p><strong>Persona:</strong> <code>writer</code> | <strong>Prompt key:</strong> <code>titles</code> | <strong>Attachment:</strong> TXT</p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.writer.role}
+Seu objetivo: {persona.writer.objective}
+Seu contexto: {persona.writer.resume}
+
+## TAREFA
+{prompts[videoType].titles.description}
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;titles&quot;: [
+    &quot;Título 1 - mais conservador&quot;,
+    &quot;Título 2 - equilibrado&quot;,
+    &quot;Título 3 - mais chamativo&quot;,
+    &quot;Título 4 - focado em SEO&quot;,
+    &quot;Título 5 - criativo/diferente&quot;
+  ]
+}
+
+[Se additionalContext:]
+
+**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**
+Dê uma atenção especial a essa instrução: {additionalContext}
+</code></pre>
+<p><strong>User prompt:</strong></p>
+<pre><code>## Contexto do Vídeo
+
+**Título original:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Tipo:** {video.videoType}
+**Tema:** {video.theme}
+
+**Convidados:**
+{formatGuests(video.guests)}
+
+## Dados das Fases Anteriores
+
+{JSON.stringify(previousPhaseData)}
+
+## Transcrição (resumo)
+
+[Transcrição anexada como arquivo]
+
+[Se additionalContext:]
+## Contexto Adicional
+
+{additionalContext}
+</code></pre>
+<hr>
+<h3>Fase 6 — Descrição</h3>
+<p><strong>Persona:</strong> <code>writer</code> | <strong>Prompt key:</strong> <code>description</code> | <strong>Attachment:</strong> TXT</p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.writer.role}
+Seu objetivo: {persona.writer.objective}
+Seu contexto: {persona.writer.resume}
+
+## TAREFA
+{prompts[videoType].description.description}
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;description&quot;: &quot;Descrição completa aqui...&quot;
+}
+
+[Se additionalContext:]
+
+**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**
+Dê uma atenção especial a essa instrução: {additionalContext}
+</code></pre>
+<p><strong>User prompt:</strong></p>
+<pre><code>## Contexto do Vídeo
+
+**Título escolhido:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Tipo:** {video.videoType}
+**Tema:** {video.theme}
+
+**Host/Apresentador:** {podcast.hostName || &#39;Não informado&#39;}
+
+**Convidados:**
+{formatGuests(video.guests)}
+
+## Dados das Fases Anteriores
+
+{JSON.stringify(previousPhaseData)}
+
+## Transcrição
+
+[Transcrição anexada como arquivo]
+
+[Se additionalContext:]
+## Contexto Adicional
+
+{additionalContext}
+</code></pre>
+<hr>
+<h3>Fase 7 — Tags</h3>
+<p><strong>Persona:</strong> <code>writer</code> | <strong>Prompt key:</strong> <code>tags</code> | <strong>Attachment:</strong> TXT</p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.writer.role}
+Seu objetivo: {persona.writer.objective}
+Seu contexto: {persona.writer.resume}
+
+## TAREFA
+{prompts[videoType].tags.description}
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;tags&quot;: [&quot;tag1&quot;, &quot;tag2&quot;, &quot;tag3&quot;, ...]
+}
+
+[Se additionalContext:]
+
+**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**
+Dê uma atenção especial a essa instrução: {additionalContext}
+</code></pre>
+<p><strong>User prompt:</strong></p>
+<pre><code>## Contexto do Vídeo
+
+**Título:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Tipo:** {video.videoType}
+**Tema:** {video.theme}
+
+## Dados das Fases Anteriores
+
+{JSON.stringify(previousPhaseData)}
+
+## Transcrição (resumo)
+
+[Transcrição anexada como arquivo]
+
+[Se additionalContext:]
+## Contexto Adicional
+
+{additionalContext}
+</code></pre>
+<hr>
+<h3>Fase 5B — Títulos Curtos (Thumbnails, apenas Cut)</h3>
+<p><strong>Persona:</strong> <code>writer</code> | <strong>Prompt key:</strong> <code>cut.thumbs</code> | <strong>Attachment:</strong> TXT
+<strong>Rota dedicada:</strong> <code>POST /api/wizard/phase/5b</code></p>
+<p><strong>System prompt:</strong></p>
+<pre><code>Seu papel: {persona.writer.role}
+Seu objetivo: {persona.writer.objective}
+Seu contexto: {persona.writer.resume}
+
+## TAREFA
+{prompts.cut.thumbs.description}
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;shortTitles&quot;: [
+    &quot;Título Curto 1&quot;,
+    &quot;Título Curto 2&quot;,
+    &quot;Título Curto 3&quot;,
+    &quot;Título Curto 4&quot;,
+    &quot;Título Curto 5&quot;
+  ]
+}
+
+[Se additionalContext:]
+
+**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**
+Dê uma atenção especial a essa instrução: {additionalContext}
+</code></pre>
+<p><strong>User prompt (construído inline, NÃO usa templates):</strong></p>
+<pre><code>## Contexto do Corte
+
+**Título do episódio original:** {video.title || &#39;Sem título&#39;}
+**Título selecionado para o corte:** {video.title || &#39;Não definido&#39;}
+**Duração:** {Math.floor(video.duration / 60)}min {video.duration % 60}s
+**Tema:** {video.theme || &#39;Não informado&#39;}
+
+**Convidados:**
+{video.guests?.map(g =&gt; `- ${g.name} (${g.role || &#39;Convidado&#39;})`).join(&#39;\n&#39;) || &#39;Não informado&#39;}
+
+[Transcrição anexada como arquivo]
+</code></pre>
+<hr>
+<h2>Resumo: O Que Vai Além do Banco de Dados</h2>
+<h3>Texto estático adicionado pelo código (em TODAS as chamadas)</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Origem</th>
+<th>Arquivo:Linha</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&quot;Seu papel:&quot;</code> / <code>&quot;Seu objetivo:&quot;</code> / <code>&quot;Seu contexto:&quot;</code></td>
+<td>Labels fixos</td>
+<td><code>prompts.ts:538-540</code></td>
+</tr>
+<tr>
+<td><code>&quot;## TAREFA&quot;</code></td>
+<td>Header fixo</td>
+<td><code>prompts.ts:542</code></td>
+</tr>
+<tr>
+<td><code>PHASE_JSON_SCHEMAS[phase]</code></td>
+<td>Schema JSON completo por fase</td>
+<td><code>prompts.ts:311-402</code></td>
+</tr>
+<tr>
+<td><code>&quot;[Transcrição anexada como arquivo]&quot;</code></td>
+<td>Placeholder no user prompt</td>
+<td><code>client.ts:406</code></td>
+</tr>
+<tr>
+<td>Headers markdown do user prompt (<code>## Informações do Vídeo</code>, etc.)</td>
+<td>Templates de user prompt</td>
+<td><code>prompts.ts:155-264</code></td>
+</tr>
+<tr>
+<td>Labels dos campos (<code>**Título:**</code>, <code>**Duração:**</code>, etc.)</td>
+<td>Templates de user prompt</td>
+<td><code>prompts.ts:155-264</code></td>
+</tr>
+<tr>
+<td><code>&quot;Nenhum convidado informado&quot;</code></td>
+<td>Fallback para guests vazio</td>
+<td><code>interpolation.ts:37</code></td>
+</tr>
+<tr>
+<td><code>&quot;Não informado&quot;</code></td>
+<td>Fallback para hostName vazio</td>
+<td><code>interpolation.ts:98</code></td>
+</tr>
+</tbody></table>
+<h3>Texto estático adicionado condicionalmente</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Condição</th>
+<th>Arquivo:Linha</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&quot;**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**\nDê uma atenção especial a essa instrução:&quot;</code></td>
+<td>Fases 5,6,7 com additionalContext</td>
+<td><code>client.ts:395</code></td>
+</tr>
+<tr>
+<td><code>&quot;## Contexto Adicional\n\n&quot;</code></td>
+<td>User prompt com additionalContext</td>
+<td><code>interpolation.ts:121</code></td>
+</tr>
+<tr>
+<td><code>&quot;[... transcrição truncada ...]&quot;</code></td>
+<td>Transcrição &gt; 50K chars</td>
+<td><code>interpolation.ts:75-78</code></td>
+</tr>
+</tbody></table>
+<h3>Configurações fixas da API</h3>
+<table>
+<thead>
+<tr>
+<th>Parâmetro</th>
+<th>Valor</th>
+<th>Arquivo:Linha</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>responseMimeType</code></td>
+<td><code>&#39;application/json&#39;</code></td>
+<td><code>client.ts:175</code></td>
+</tr>
+<tr>
+<td><code>temperature</code></td>
+<td><code>0.7</code></td>
+<td><code>client.ts:176</code></td>
+</tr>
+<tr>
+<td><code>maxOutputTokens</code></td>
+<td><code>65536</code></td>
+<td><code>client.ts:177</code></td>
+</tr>
+<tr>
+<td><code>thinkingBudget</code></td>
+<td><code>24576</code></td>
+<td><code>client.ts:182</code></td>
+</tr>
+</tbody></table>
+<h3>Dados do vídeo injetados (Firestore → prompt)</h3>
+<table>
+<thead>
+<tr>
+<th>Variável</th>
+<th>Origem</th>
+<th>Transformação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>{title}</code></td>
+<td><code>video.title</code></td>
+<td>Nenhuma</td>
+</tr>
+<tr>
+<td><code>{duration}</code></td>
+<td><code>video.duration</code></td>
+<td><code>formatDuration()</code> → &quot;1h 23m 45s&quot;</td>
+</tr>
+<tr>
+<td><code>{videoType}</code></td>
+<td><code>video.videoType</code></td>
+<td>Nenhuma</td>
+</tr>
+<tr>
+<td><code>{theme}</code></td>
+<td><code>video.theme</code></td>
+<td>Nenhuma (vazio se null)</td>
+</tr>
+<tr>
+<td><code>{guests}</code></td>
+<td><code>video.guests[]</code></td>
+<td><code>formatGuests()</code> → lista markdown numerada</td>
+</tr>
+<tr>
+<td><code>{hostName}</code></td>
+<td><code>podcast.hostName</code></td>
+<td>Fallback &quot;Não informado&quot;</td>
+</tr>
+<tr>
+<td><code>{previousPhaseData}</code></td>
+<td>Dados das fases anteriores</td>
+<td><code>JSON.stringify(data, null, 2)</code></td>
+</tr>
+<tr>
+<td><code>{transcript}</code></td>
+<td>Substituído por placeholder</td>
+<td><code>&quot;[Transcrição anexada como arquivo]&quot;</code></td>
+</tr>
+<tr>
+<td>Transcrição real</td>
+<td><code>video.transcriptionTXT</code> ou <code>transcriptionSRT</code></td>
+<td>Base64 como <code>inlineData</code> attachment</td>
+</tr>
+</tbody></table>
+<h3>Diferenças na Fase 5B vs Fases 1-7</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Fases 1-7</th>
+<th>Fase 5B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chamada</td>
+<td><code>callLLMQueued()</code> (fila)</td>
+<td><code>callGenAI()</code> direto</td>
+</tr>
+<tr>
+<td>User prompt</td>
+<td>Template interpolado</td>
+<td>String literal inline</td>
+</tr>
+<tr>
+<td>Formato duração</td>
+<td><code>&quot;1h 23m 45s&quot;</code></td>
+<td><code>&quot;23min 45s&quot;</code></td>
+</tr>
+<tr>
+<td>Formato guests</td>
+<td>Lista markdown com LinkedIn</td>
+<td>Lista simples <code>- Nome (Role)</code></td>
+</tr>
+<tr>
+<td>JSON schema</td>
+<td>Via <code>PHASE_JSON_SCHEMAS</code></td>
+<td>Inline no prompt</td>
+</tr>
+<tr>
+<td><code>expectedOutput</code> do DB</td>
+<td>Ignorado (JSON schema prevalece)</td>
+<td>Ignorado (JSON inline)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Observação Importante</h2>
+<p>O campo <code>expectedOutput</code> configurado no Firestore para cada prompt de fase <strong>nunca é usado</strong> nas fases 1-7, porque <code>PHASE_JSON_SCHEMAS[phase]</code> sempre existe e tem precedência (ver <code>prompts.ts:536-546</code>). Esse campo só seria usado na branch <code>else</code> da linha 548, que nunca é alcançada para fases com LLM.</p>
+
+  </main>
+</body>
+</html>

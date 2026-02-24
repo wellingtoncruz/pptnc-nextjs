@@ -86,6 +86,7 @@ export const proxy = auth((req) => {
  * - /favicon.ico, /robots.txt, etc (static assets)
  * - /login (login page - must be public)
  * - /report/* (public editorial report pages)
+ * - /method-docs/* (public BMAD documentation site)
  *
  * Protects everything else.
  */
@@ -101,6 +102,6 @@ export const config = {
      * - auth/error (auth error page)
      * - Public assets with extensions
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquitetura — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li class="active"><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-3/">Fase 3 — Solucionamento</a></nav><div class="info-box"><table><tr><th>stepsCompleted</th><td>1,2,3,4,5,6,7,8</td></tr>
+<tr><th>status</th><td>complete</td></tr>
+<tr><th>completedAt</th><td>2026-01-24</td></tr>
+<tr><th>inputDocuments</th><td>prd-iara.md,ux-design-specification-iara.md,product-brief-iara-2026-01-23.md,project-context.md</td></tr>
+<tr><th>workflowType</th><td>architecture</td></tr>
+<tr><th>project_name</th><td>IAra</td></tr>
+<tr><th>user_name</th><td>Wellington</td></tr>
+<tr><th>date</th><td>2026-01-24</td></tr></table></div>
+<h1>Architecture Decision Document</h1>
+<p><em>This document builds collaboratively through step-by-step discovery. Sections are appended as we work through each architectural decision together.</em></p>
+<h2>Project Context Analysis</h2>
+<h3>Requirements Overview</h3>
+<p><strong>Functional Requirements:</strong></p>
+<p>9 FRs organizados no escopo MVP:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Domínio</th>
+<th>Complexidade Arquitetural</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Autenticação (GCP IAM + YouTube OAuth)</td>
+<td>Alta (dual-purpose credentials, consent screen, token refresh)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Sincronização de Vídeos (YouTube API read)</td>
+<td>Média (polling manual, classificação por duração)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Processamento LLM (Gemini + SSE)</td>
+<td>Alta (streaming assíncrono, ReadableStream, timeout, retry)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Compliance Check (análise de transcrição)</td>
+<td>Baixa (subconjunto do processamento LLM)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Revisão/Edição de Metadados</td>
+<td>Média (auto-save com field-level merge, edição inline)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Publicação YouTube (API write, dual-mode)</td>
+<td>Alta (per-video + batch, partial error handling, rollback)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Integração Portal Web (Firestore write)</td>
+<td>Baixa (criação de registro com schema existente)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Gestão de Estado (lifecycle por vídeo)</td>
+<td>Média (state machine com transition function, invariantes)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Parametrização (collection podcasts)</td>
+<td>Média (config-driven execution context, podcastId first-class)</td>
+</tr>
+</tbody></table>
+<p><strong>Non-Functional Requirements:</strong></p>
+<table>
+<thead>
+<tr>
+<th>NFR</th>
+<th>Requisito</th>
+<th>Impacto Arquitetural</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Streaming</td>
+<td>SSE progressive reveal (30-120s)</td>
+<td>Route Handler com ReadableStream + contrato de eventos explícito</td>
+</tr>
+<tr>
+<td>Persistência</td>
+<td>Save on blur + save on action</td>
+<td>Debounce 1.5s + Firestore updateDoc com field-level merge</td>
+</tr>
+<tr>
+<td>Cloud Run</td>
+<td>Timeout para SSE streams</td>
+<td>Configurar timeout explícito (&gt;5min default)</td>
+</tr>
+<tr>
+<td>Middleware</td>
+<td>Auth check sem buffering de stream</td>
+<td>Middleware não pode interceptar SSE endpoints</td>
+</tr>
+<tr>
+<td>Sessão</td>
+<td>Persistente, sem relogin frequente</td>
+<td>Token refresh strategy para OAuth scopes sensíveis</td>
+</tr>
+<tr>
+<td>Disponibilidade</td>
+<td>Tolerante a falhas de APIs externas</td>
+<td>Circuit breaker, fallback UI, partial batch error handling</td>
+</tr>
+<tr>
+<td>Segurança</td>
+<td>OAuth scopes mínimos, secrets em runtime</td>
+<td>Secret Manager, server-only credentials, testing mode no MVP</td>
+</tr>
+<tr>
+<td>Testabilidade</td>
+<td>Mock de APIs externas</td>
+<td>Fixture strategy com snapshot responses, sem sandbox oficial YouTube</td>
+</tr>
+</tbody></table>
+<p><strong>Scale &amp; Complexity:</strong></p>
+<ul>
+<li>Primary domain: Full-stack web app (SPA + API routes + external APIs)</li>
+<li>Complexity level: Medium</li>
+<li>Concurrent users: 1-2 (single-tenant MVP)</li>
+<li>Data volume: ~22 vídeos/semana, ~1000/ano</li>
+<li>Firestore writes: ~6 field-level merges por vídeo revisado (debounced)</li>
+<li>Compute: Delegada (Gemini, YouTube) — IAra orquestra</li>
+</ul>
+<h3>Technical Constraints &amp; Dependencies</h3>
+<ul>
+<li><strong>Monorepo pnpm:</strong> <code>apps/iara</code> — compartilha tooling e convenções com portal PPTNC</li>
+<li><strong>Next.js 15+ premissa:</strong> App Router, Route Handlers para SSE (ReadableStream manual)</li>
+<li><strong>GCP ecosystem:</strong> Cloud Run (timeout config), Firestore (field-level merge), IAM, Secret Manager</li>
+<li><strong>YouTube API quotas:</strong> 10.000 units/dia (default) — batch operations devem ser eficientes</li>
+<li><strong>YouTube OAuth:</strong> Consent screen com scopes sensíveis — app em &quot;Testing&quot; mode no MVP (≤100 users)</li>
+<li><strong>Gemini API:</strong> Streaming response, token limits por request, rate limiting</li>
+<li><strong>Firestore billing:</strong> Write-per-field com debounce, evitar writes desnecessários</li>
+<li><strong>Cloud Run SSE:</strong> Timeout default 5min — configurar explicitamente para streams longos</li>
+</ul>
+<h3>Cross-Cutting Concerns Identified</h3>
+<ol>
+<li><strong>Authentication &amp; Authorization:</strong> Dual-purpose OAuth (app login + YouTube API access), consent screen com scopes sensíveis, token lifecycle, &quot;Testing&quot; mode como constraint MVP</li>
+<li><strong>SSE Streaming Contract:</strong> Formato de eventos definido como decisão arquitetural (field names, progress format, error format, completion signal) — não delegado ao dev</li>
+<li><strong>State Machine:</strong> Video status como state machine com transition function explícita — transições inválidas impossíveis por construção, não por validação</li>
+<li><strong>Persistence Strategy:</strong> Firestore updateDoc com field-level merge, debounce 1.5s, optimistic UI</li>
+<li><strong>Batch Publishing:</strong> Dual-mode (per-video + multi-select), partial error handling (N de M enviados), sem rollback automático</li>
+<li><strong>Config-Driven Context:</strong> <code>podcastId</code> como parâmetro first-class em toda query Firestore — isolation by design desde o MVP</li>
+<li><strong>Test Strategy:</strong> YouTube API sem sandbox — fixture strategy com snapshot responses, mock de EventSource para SSE, state machine invariants como unit tests</li>
+<li><strong>Error Handling:</strong> Diferenciado por fonte (Gemini timeout vs YouTube quota vs network vs partial batch failure)</li>
+</ol>
+<h2>Starter Template Evaluation</h2>
+<h3>Primary Technology Domain</h3>
+<p>Full-stack web application (SPA client-heavy + API routes) dentro de monorepo pnpm existente.</p>
+<h3>Starter Options Considered</h3>
+<table>
+<thead>
+<tr>
+<th>Opção</th>
+<th>Avaliação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>create-next-app@latest</code></td>
+<td>Starter oficial, TypeScript + Tailwind v4 por default, App Router. Escolhido.</td>
+</tr>
+<tr>
+<td>T3 Stack (<code>create-t3-app</code>)</td>
+<td>Inclui tRPC + Prisma + NextAuth — overhead desnecessário, IAra usa Firestore + YouTube OAuth</td>
+</tr>
+<tr>
+<td>Turborepo starter</td>
+<td>Template de monorepo — já temos workspace pnpm existente</td>
+</tr>
+<tr>
+<td>Custom boilerplate</td>
+<td>Sem justificativa — <code>create-next-app</code> + <code>shadcn init</code> cobre 100%</td>
+</tr>
+</tbody></table>
+<h3>Selected Starter: create-next-app + shadcn/ui init</h3>
+<p><strong>Rationale:</strong> Starter oficial com zero opinião além do essencial. shadcn/ui complementa com design system. Monorepo existente define a estrutura.</p>
+<p><strong>Initialization Commands:</strong></p>
+<pre><code class="language-bash"># Dentro do monorepo existente
+cd apps/
+pnpm create next-app@latest iara --typescript --tailwind --eslint --app --src-dir --turbopack --import-alias &quot;@/*&quot; --use-pnpm
+
+# Inicializar shadcn/ui com Tailwind v4
+cd iara/
+pnpm dlx shadcn@latest init
+
+# Adicionar componentes base (do UX spec)
+pnpm dlx shadcn@latest add button card scroll-area resizable-panel separator skeleton badge tooltip dropdown-menu
+</code></pre>
+<p><strong>Architectural Decisions Provided by Starter:</strong></p>
+<p><strong>Language &amp; Runtime:</strong></p>
+<ul>
+<li>TypeScript 5.x strict mode</li>
+<li>React 19 (Server Components por padrão)</li>
+<li>Next.js 15+ App Router</li>
+<li><code>export const runtime = &#39;nodejs&#39;</code> obrigatório em Route Handlers com SSE ou chamadas a APIs externas (Edge tem timeout de 30s)</li>
+</ul>
+<p><strong>Styling Solution:</strong></p>
+<ul>
+<li>Tailwind CSS v4 (inline <code>@theme</code>, OKLCH colors, sem config file)</li>
+<li><code>tw-animate-css</code> (substitui tailwindcss-animate)</li>
+<li>PostCSS com <code>@tailwindcss/postcss</code></li>
+<li>CSS variables para design tokens em <code>globals.css</code></li>
+</ul>
+<p><strong>Build Tooling:</strong></p>
+<ul>
+<li>Turbopack (dev mode)</li>
+<li>Next.js compiler (production)</li>
+<li><code>output: &quot;standalone&quot;</code> para Cloud Run</li>
+<li><code>outputFileTracingRoot</code> apontando para monorepo root</li>
+<li>Static assets servidos diretamente pelo Cloud Run (suficiente para 1-2 usuários MVP — decisão consciente)</li>
+</ul>
+<p><strong>Testing Framework:</strong></p>
+<ul>
+<li>Vitest (registrado no <code>vitest.workspace.ts</code> do monorepo root)</li>
+<li><code>vitest.setup.ts</code> com mocks globais: <code>EventSource</code>, <code>fetch</code></li>
+<li><code>test-utils.tsx</code> com wrapper incluindo portal containers + providers (Radix/shadcn)</li>
+<li>@testing-library/react para componentes</li>
+<li>Firebase Emulator para integration tests (<code>test:integration</code> script)</li>
+<li>Mock strategy para APIs externas (YouTube, Gemini) via fixture/snapshot</li>
+</ul>
+<p><strong>Code Organization:</strong></p>
+<pre><code>apps/iara/
+├── src/
+│   ├── app/                    # App Router (pages, layouts, route handlers)
+│   │   ├── layout.tsx          # Root layout (dark mode fixed, auth provider)
+│   │   ├── page.tsx            # Redirect to /videos
+│   │   ├── api/
+│   │   │   ├── videos/         # YouTube sync, CRUD (runtime: &#39;nodejs&#39;)
+│   │   │   ├── process/        # Gemini SSE endpoint (runtime: &#39;nodejs&#39;)
+│   │   │   └── auth/           # OAuth callbacks (runtime: &#39;nodejs&#39;)
+│   │   └── videos/             # Main video management UI (sem route group)
+│   │       └── page.tsx        # Master-Detail layout
+│   ├── components/             # UI components
+│   │   ├── ui/                 # shadcn/ui components
+│   │   └── video/              # Custom video components (compound)
+│   ├── hooks/                  # Custom hooks (useSSEStream, useAutoSave)
+│   ├── lib/                    # Utilities, clients, modules
+│   │   ├── firebase-client.ts  # Firestore client SDK (browser)
+│   │   ├── firebase-admin.ts   # Firestore admin SDK (server/Route Handlers)
+│   │   ├── youtube.ts          # YouTube API client
+│   │   ├── gemini.ts           # Gemini API client
+│   │   └── state/              # Video state machine module
+│   │       ├── index.ts        # Public API
+│   │       ├── transitions.ts  # Transition rules
+│   │       ├── types.ts        # VideoStatus enum, types
+│   │       └── guards.ts       # Validation guards
+│   └── types/                  # Shared TypeScript types (video.ts)
+├── next.config.mjs
+├── postcss.config.mjs
+├── tsconfig.json
+├── vitest.config.ts            # Registrado no workspace root
+├── vitest.setup.ts             # Mocks globais (EventSource, fetch)
+└── test-utils.tsx              # Wrappers para testes (portals, providers)
+</code></pre>
+<p><strong>Development Experience:</strong></p>
+<ul>
+<li>Turbopack hot reload (~instant)</li>
+<li>TypeScript strict mode + path aliases (@/*)</li>
+<li>ESLint com regras Next.js</li>
+<li>pnpm workspace linking para shared packages</li>
+<li>Firebase Emulator para testes locais de Firestore</li>
+</ul>
+<p><strong>Monorepo Integration:</strong></p>
+<pre><code class="language-javascript">// next.config.mjs
+import path from &#39;path&#39;;
+import { fileURLToPath } from &#39;url&#39;;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
+  output: &quot;standalone&quot;,
+  outputFileTracingRoot: path.join(__dirname, &quot;../../&quot;),
+};
+</code></pre>
+<p><strong>Firebase SDK Split:</strong></p>
+<pre><code class="language-typescript">// lib/firebase-client.ts — Client Components (browser)
+import { initializeApp, getApps } from &#39;firebase/app&#39;;
+import { getFirestore } from &#39;firebase/firestore&#39;;
+
+// lib/firebase-admin.ts — Route Handlers (server)
+import { initializeApp, cert } from &#39;firebase-admin/app&#39;;
+import { getFirestore } from &#39;firebase-admin/firestore&#39;;
+</code></pre>
+<p><strong>Dark Mode (Fixed):</strong></p>
+<pre><code class="language-tsx">// src/app/layout.tsx
+&lt;html lang=&quot;pt-BR&quot; className=&quot;dark&quot;&gt;
+</code></pre>
+<p>Sem <code>next-themes</code>, sem toggle — dark mode fixo conforme UX spec.</p>
+<p><strong>Scripts (package.json):</strong></p>
+<pre><code class="language-json">{
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;next dev --turbopack&quot;,
+    &quot;build&quot;: &quot;next build&quot;,
+    &quot;start&quot;: &quot;next start&quot;,
+    &quot;test&quot;: &quot;vitest&quot;,
+    &quot;test:integration&quot;: &quot;firebase emulators:exec &#39;vitest run --config vitest.integration.config.ts&#39;&quot;,
+    &quot;lint&quot;: &quot;next lint&quot;
+  }
+}
+</code></pre>
+<p><strong>Note:</strong> Project initialization usando estes comandos deve ser a primeira story de implementação.</p>
+<h2>Core Architectural Decisions</h2>
+<h3>Decision Priority Analysis</h3>
+<p><strong>Critical Decisions (Block Implementation):</strong></p>
+<ul>
+<li>Firestore subcollections (podcasts/{id}/videos/{id})</li>
+<li>Auth.js v5 com YouTube OAuth scopes</li>
+<li>SSE hybrid contract (progress/field/complete/error)</li>
+<li>State machine com transition function</li>
+</ul>
+<p><strong>Important Decisions (Shape Architecture):</strong></p>
+<ul>
+<li>Zustand + URL state</li>
+<li>Firebase SDK split (client/admin)</li>
+<li>YouTubeClient + GeminiClient wrappers</li>
+<li>Cloud Build pipeline</li>
+<li>Multi-stage Dockerfile</li>
+</ul>
+<p><strong>Deferred Decisions (Post-MVP):</strong></p>
+<ul>
+<li>Staging environment</li>
+<li>Advanced monitoring (alerts, Sentry)</li>
+<li>Secret Manager migration</li>
+<li>Collection group queries (cross-podcast)</li>
+</ul>
+<h3>Data Architecture</h3>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Escolha</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Collection structure</td>
+<td>Subcollections: <code>podcasts/{podcastId}/...</code></td>
+<td>Isolation by design, white-label ready. Cada podcast é um tenant isolado com deploy independente.</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td>Zod</td>
+<td>Runtime validation para dados de APIs externas (YouTube, Gemini). Type inference + schema reuse.</td>
+</tr>
+<tr>
+<td>Caching</td>
+<td>Firestore built-in (SDK client cache)</td>
+<td>Single-user MVP, sem necessidade de cache layer adicional.</td>
+</tr>
+</tbody></table>
+<p><strong>Firestore Schema (MVP):</strong></p>
+<pre><code>podcasts/{podcastId}
+├── name: string
+├── channelId: string
+├── prompts: { episode: string, cut: string, reel: string }
+├── compliancePrompt: string
+├── videoTypes: { episode: { minDuration }, cut: {...}, reel: {...} }
+└── createdAt: Timestamp
+
+podcasts/{podcastId}/users/{userId}
+└── tokens/oauth
+    ├── accessToken: string
+    ├── refreshToken: string (preserved - NEVER overwrite)
+    ├── expiresAt: number
+    └── updatedAt: Timestamp
+
+podcasts/{podcastId}/videos/{videoId}
+├── title: string (inicial do YouTube, editável pelo produtor)
+├── description?: string (inicial do YouTube, editável pelo produtor)
+├── thumbnails: { default?, medium?, high?, standard?, maxres? }
+├── duration: number
+├── publishedAt: Timestamp
+├── statistics?: { viewCount, likeCount, commentCount }
+├── transcriptionSRT?: string (do portal-web)
+├── transcriptionTXT?: string (do portal-web)
+├── guests?: string[] (do portal-web)
+├── topics?: string[] (do portal-web)
+├── tags?: string[] (geradas por IA)
+├── chapters?: { title: string, timestamp: number }[] (gerados por IA)
+├── compliance?: { status: &#39;ok&#39;|&#39;warning&#39;, items: ComplianceItem[] }
+├── videoType: &#39;episode&#39; | &#39;cut&#39; | &#39;reel&#39; (IAra)
+├── status: VideoStatus (state machine IAra)
+├── deleted: boolean (soft delete)
+├── updatedAt: Timestamp
+└── createdAt: Timestamp
+# REGRA IMUTÁVEL: Compatível com EpisodeEntity (packages/types/src/episode.ts)
+</code></pre>
+<p><strong>White-Label Architecture:</strong></p>
+<p>Cada podcast é um <strong>tenant isolado</strong> com deploy independente:</p>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ Cloud Run Deploy: iara-pptnc                                    │
+│ PODCAST_ID = &#39;pptnc&#39; (hardcoded em src/lib/firebase/config.ts) │
+│ → podcasts/pptnc/users/{userId}/tokens/oauth                   │
+│ → podcasts/pptnc/videos/{videoId}                              │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Cloud Run Deploy: iara-outro-podcast                            │
+│ PODCAST_ID = &#39;outro-podcast&#39; (hardcoded)                        │
+│ → podcasts/outro-podcast/users/{userId}/tokens/oauth           │
+│ → podcasts/outro-podcast/videos/{videoId}                      │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre>
+<ul>
+<li><strong>Mesmo codebase</strong>: cada tenant clona e altera apenas <code>PODCAST_ID</code></li>
+<li><strong>Mesma base Firestore</strong>: isolamento por subcollection</li>
+<li><strong>Escala horizontal independente</strong>: cada Cloud Run service escala separadamente</li>
+<li><strong>Contas Google separadas</strong>: cada tenant tem seu próprio admin com conta Google distinta</li>
+</ul>
+<p><strong>Zod Schemas (validação em runtime):</strong></p>
+<pre><code class="language-typescript">// Validação de output do Gemini
+const GeminiOutputSchema = z.object({
+  title: z.string().min(1).max(100),
+  description: z.string().min(1).max(5000),
+  tags: z.array(z.string()).max(30),
+  chapters: z.array(z.object({
+    title: z.string(),
+    timestamp: z.number().nonnegative()
+  })).optional(),
+  compliance: z.object({
+    status: z.enum([&#39;ok&#39;, &#39;warning&#39;]),
+    items: z.array(z.object({
+      risk: z.string(),
+      argument: z.string(),
+      timestamp: z.number()
+    }))
+  })
+});
+</code></pre>
+<h3>Authentication &amp; Security</h3>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Escolha</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OAuth implementation</td>
+<td>Auth.js v5 (NextAuth)</td>
+<td>Battle-tested, gerencia token lifecycle, suporta custom scopes YouTube</td>
+</tr>
+<tr>
+<td>Token storage</td>
+<td>Firestore subcollection</td>
+<td><code>podcasts/{podcastId}/users/{userId}/tokens/oauth</code> — isolamento por tenant, white-label ready</td>
+</tr>
+<tr>
+<td>Route protection</td>
+<td>Next.js Middleware</td>
+<td>Gate único para todas as rotas, redireciona se não autenticado</td>
+</tr>
+</tbody></table>
+<p><strong>Auth Flow:</strong></p>
+<pre><code>1. User acessa /videos → Middleware detecta sem sessão → redirect /api/auth/signin
+2. Auth.js inicia OAuth flow com Google (scopes: profile, email, youtube.force-ssl, youtube.readonly)
+   - access_type: &#39;offline&#39; (obtém refresh_token na primeira autorização)
+3. User autoriza → callback → Auth.js recebe access_token + refresh_token
+4. Tokens salvos em Firestore: podcasts/{PODCAST_ID}/users/{userId}/tokens/oauth
+   ⚠️ REGRA: refresh_token só é retornado na PRIMEIRA autorização.
+   Salvar imediatamente e NUNCA sobrescrever em logins subsequentes.
+   Callback jwt do Auth.js deve verificar se refresh_token já existe antes de persistir.
+5. Session cookie (httpOnly) com JWT contendo userId
+6. Middleware valida session cookie em cada request
+7. Route Handlers buscam tokens no Firestore para YouTube API calls
+8. Token refresh automático via Auth.js quando access_token expira
+</code></pre>
+<p><strong>Tenant Configuration (<code>src/lib/firebase/config.ts</code>):</strong></p>
+<pre><code class="language-typescript">/** Firebase project ID */
+export const PROJECT_ID = &#39;pptnc-stage&#39;
+
+/** Firestore database ID */
+export const FIRESTORE_DATABASE_ID = &#39;pptnc-stage&#39;
+
+/**
+ * Podcast ID for this tenant deployment.
+ * CRITICAL: Change this value when deploying a new tenant.
+ */
+export const PODCAST_ID = &#39;pptnc&#39;
+</code></pre>
+<p><strong>YouTube OAuth Scopes:</strong></p>
+<ul>
+<li><code>https://www.googleapis.com/auth/youtube.force-ssl</code> (read + write)</li>
+<li>App em &quot;Testing&quot; mode (≤100 users) no MVP — evita verificação de app</li>
+</ul>
+<h3>API &amp; Communication Patterns</h3>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Escolha</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SSE contract</td>
+<td>Hybrid (progress/field/complete/error)</td>
+<td>Alinhado ao UX progressive reveal + feedback de progresso</td>
+</tr>
+<tr>
+<td>Error format</td>
+<td>Standard <code>{ error: { code, message, details? } }</code></td>
+<td>Simples, consistente, suficiente para o escopo</td>
+</tr>
+<tr>
+<td>YouTube client</td>
+<td>Wrapper <code>YouTubeClient</code> com retry/quota</td>
+<td>Centraliza auth, retry, error handling</td>
+</tr>
+<tr>
+<td>Gemini client</td>
+<td>Wrapper <code>GeminiClient</code> com streaming</td>
+<td>Centraliza prompt assembly, streaming, output parsing</td>
+</tr>
+</tbody></table>
+<p><strong>SSE Event Contract:</strong></p>
+<pre><code class="language-typescript">// Event types enviados pelo server
+type SSEEvent =
+  | { event: &#39;progress&#39;, data: { percent: number, message: string } }
+  | { event: &#39;field&#39;, data: { name: FieldName, value: unknown } }
+  | { event: &#39;complete&#39;, data: { videoId: string } }
+  | { event: &#39;error&#39;, data: { code: string, message: string } }
+
+type FieldName = &#39;title&#39; | &#39;description&#39; | &#39;tags&#39; | &#39;chapters&#39; | &#39;compliance&#39;
+
+// Sequência típica:
+// progress(10%, &quot;Lendo transcrição...&quot;)
+// progress(30%, &quot;Gerando título...&quot;)
+// field(&quot;title&quot;, &quot;Como a IA mudou...&quot;)
+// progress(50%, &quot;Gerando descrição...&quot;)
+// field(&quot;description&quot;, &quot;Neste episódio...&quot;)
+// progress(70%, &quot;Gerando capítulos...&quot;)
+// field(&quot;chapters&quot;, [...])
+// progress(85%, &quot;Gerando tags...&quot;)
+// field(&quot;tags&quot;, [...])
+// progress(95%, &quot;Verificando compliance...&quot;)
+// field(&quot;compliance&quot;, { status: &quot;ok&quot;, items: [] })
+// complete({ videoId: &quot;abc123&quot; })
+</code></pre>
+<p><strong>Error Codes (enum):</strong></p>
+<pre><code class="language-typescript">type ErrorCode =
+  | &#39;AUTH_EXPIRED&#39;        // Token expirado, relogin necessário
+  | &#39;YOUTUBE_QUOTA&#39;       // Quota diária excedida
+  | &#39;YOUTUBE_NOT_FOUND&#39;   // Vídeo não encontrado
+  | &#39;YOUTUBE_FORBIDDEN&#39;   // Sem permissão no canal
+  | &#39;GEMINI_TIMEOUT&#39;      // LLM não respondeu a tempo
+  | &#39;GEMINI_RATE_LIMIT&#39;   // Rate limit do Gemini
+  | &#39;GEMINI_INVALID&#39;      // Output do LLM não passou Zod validation
+  | &#39;FIRESTORE_ERROR&#39;     // Erro de persistência
+  | &#39;NETWORK_ERROR&#39;       // Erro de rede genérico
+  | &#39;VALIDATION_ERROR&#39;    // Input inválido
+  | &#39;BATCH_PARTIAL&#39;       // Envio parcial (N de M falharam)
+</code></pre>
+<h3>Frontend Architecture</h3>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Escolha</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>State management</td>
+<td>Zustand + URL state</td>
+<td>Zustand para runtime (videos, processing), URL para navegação (video selecionado)</td>
+</tr>
+<tr>
+<td>Data fetching</td>
+<td>Plain fetch + Zustand</td>
+<td>Fetch manual em Route Handlers, store no Zustand. Sem magic revalidation.</td>
+</tr>
+<tr>
+<td>Form handling</td>
+<td>Controlled + useAutoSave</td>
+<td>useState por campo, auto-save com debounce 1.5s. Alinhado ao UX spec.</td>
+</tr>
+</tbody></table>
+<p><strong>Zustand Store Structure:</strong></p>
+<pre><code class="language-typescript">interface VideoStore {
+  // Data
+  videos: VideoSummary[]
+  selectedVideoDetail: VideoDetail | null
+  // ⚠️ selectedVideoId NÃO está no store — vive na URL (?selected=abc123)
+  // URL é a única fonte de verdade para seleção. Store lê via useSearchParams/nuqs.
+
+  // Processing state
+  processingVideoIds: Set&lt;string&gt;
+  sseStreams: Map&lt;string, SSEStreamState&gt;
+
+  // Actions
+  fetchVideos: () =&gt; Promise&lt;void&gt;
+  fetchVideoDetail: (id: string) =&gt; Promise&lt;void&gt;
+  startProcessing: (id: string, override?: string) =&gt; void
+  updateField: (videoId: string, field: string, value: unknown) =&gt; void
+  sendToYouTube: (videoIds: string[]) =&gt; Promise&lt;BatchResult&gt;
+
+  // Sync
+  syncNewVideos: () =&gt; Promise&lt;number&gt;
+}
+</code></pre>
+<p><strong>URL State:</strong></p>
+<pre><code>/videos?selected=abc123&amp;filter=draft
+</code></pre>
+<h3>Infrastructure &amp; Deployment</h3>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Escolha</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CI/CD</td>
+<td>Cloud Build</td>
+<td>Nativo GCP, trigger por push, integra com Cloud Run</td>
+</tr>
+<tr>
+<td>Environments</td>
+<td>Dev + Prod</td>
+<td>MVP single-user, staging desnecessário</td>
+</tr>
+<tr>
+<td>Container</td>
+<td>Multi-stage Dockerfile</td>
+<td>Standalone output, imagem ~150MB</td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td>Cloud Logging (structured JSON)</td>
+<td>Grátis, suficiente para MVP</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td>Cloud Run env vars</td>
+<td>Simples, definidos no Cloud Build trigger ou console</td>
+</tr>
+</tbody></table>
+<p><strong>Cloud Build Pipeline (cloudbuild.yaml):</strong></p>
+<pre><code class="language-yaml">steps:
+  - name: &#39;node:20&#39;
+    entrypoint: &#39;bash&#39;
+    args: [&#39;-c&#39;, &#39;corepack enable &amp;&amp; corepack prepare pnpm@latest --activate &amp;&amp; pnpm install --frozen-lockfile&#39;]
+  - name: &#39;node:20&#39;
+    entrypoint: &#39;pnpm&#39;
+    args: [&#39;--filter&#39;, &#39;iara&#39;, &#39;lint&#39;]
+  - name: &#39;node:20&#39;
+    entrypoint: &#39;pnpm&#39;
+    args: [&#39;--filter&#39;, &#39;iara&#39;, &#39;test&#39;]
+  - name: &#39;gcr.io/cloud-builders/docker&#39;
+    args: [&#39;build&#39;, &#39;-t&#39;, &#39;gcr.io/$PROJECT_ID/iara&#39;, &#39;-f&#39;, &#39;apps/iara/Dockerfile&#39;, &#39;.&#39;]
+  - name: &#39;gcr.io/cloud-builders/docker&#39;
+    args: [&#39;push&#39;, &#39;gcr.io/$PROJECT_ID/iara&#39;]
+  - name: &#39;gcr.io/google.com/cloudsdktool/cloud-sdk&#39;
+    args: [&#39;gcloud&#39;, &#39;run&#39;, &#39;deploy&#39;, &#39;iara&#39;, &#39;--image&#39;, &#39;gcr.io/$PROJECT_ID/iara&#39;, &#39;--region&#39;, &#39;southamerica-east1&#39;]
+
+# Trigger config:
+# - branch: main
+# - includedFiles: [&#39;apps/iara/**&#39;]
+# - Evita build a cada commit no portal PPTNC
+</code></pre>
+<p><strong>Multi-stage Dockerfile:</strong></p>
+<pre><code class="language-dockerfile"># Build stage
+FROM node:20-alpine AS builder
+RUN corepack enable
+WORKDIR /app
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/iara/ ./apps/iara/
+# ⚠️ Se no futuro houver packages/ compartilhados, adicionar:
+# COPY packages/shared/ ./packages/shared/
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter iara build
+
+# Production stage
+FROM node:20-alpine AS runner
+WORKDIR /app
+COPY --from=builder /app/apps/iara/.next/standalone ./
+COPY --from=builder /app/apps/iara/.next/static ./apps/iara/.next/static
+COPY --from=builder /app/apps/iara/public ./apps/iara/public
+EXPOSE 3000
+ENV PORT=3000
+CMD [&quot;node&quot;, &quot;apps/iara/server.js&quot;]
+</code></pre>
+<p><strong>Structured Logging:</strong></p>
+<pre><code class="language-typescript">// lib/logger.ts
+export function log(severity: &#39;INFO&#39; | &#39;WARNING&#39; | &#39;ERROR&#39;, message: string, context?: Record&lt;string, unknown&gt;) {
+  console.log(JSON.stringify({
+    severity,
+    message,
+    timestamp: new Date().toISOString(),
+    ...context
+  }));
+}
+</code></pre>
+<h3>Testing Architecture Decisions</h3>
+<p><strong>SSE Test Fixtures:</strong></p>
+<pre><code class="language-typescript">// fixtures/sse-sequences.ts
+export const SSE_SUCCESS_SEQUENCE = [
+  { event: &#39;progress&#39;, data: { percent: 10, message: &#39;Lendo transcrição...&#39; } },
+  { event: &#39;progress&#39;, data: { percent: 30, message: &#39;Gerando título...&#39; } },
+  { event: &#39;field&#39;, data: { name: &#39;title&#39;, value: &#39;Como a IA mudou...&#39; } },
+  { event: &#39;field&#39;, data: { name: &#39;description&#39;, value: &#39;...&#39; } },
+  { event: &#39;field&#39;, data: { name: &#39;tags&#39;, value: [&#39;ia&#39;, &#39;podcast&#39;] } },
+  { event: &#39;field&#39;, data: { name: &#39;chapters&#39;, value: [] } },
+  { event: &#39;field&#39;, data: { name: &#39;compliance&#39;, value: { status: &#39;ok&#39;, items: [] } } },
+  { event: &#39;complete&#39;, data: { videoId: &#39;abc123&#39; } },
+];
+
+export const SSE_ERROR_MID_STREAM = [
+  { event: &#39;progress&#39;, data: { percent: 30, message: &#39;Gerando título...&#39; } },
+  { event: &#39;field&#39;, data: { name: &#39;title&#39;, value: &#39;Título parcial&#39; } },
+  { event: &#39;error&#39;, data: { code: &#39;GEMINI_TIMEOUT&#39;, message: &#39;LLM não respondeu&#39; } },
+];
+
+export const SSE_TIMEOUT = [
+  { event: &#39;progress&#39;, data: { percent: 10, message: &#39;Lendo transcrição...&#39; } },
+  // Connection drops — client EventSource triggers onerror
+];
+</code></pre>
+<p><strong>State Machine — Pure Function, Table-Driven Tests:</strong></p>
+<pre><code class="language-typescript">// lib/state/transitions.ts — função pura
+export function transition(current: VideoStatus, action: VideoAction): VideoStatus {
+  const transitions: Record&lt;string, Record&lt;string, VideoStatus&gt;&gt; = {
+    new: { process: &#39;processing&#39;, classify: &#39;new&#39; },
+    processing: { complete: &#39;draft&#39;, error: &#39;new&#39; },
+    draft: { process: &#39;processing&#39;, finalize: &#39;ready&#39;, edit: &#39;draft&#39; },
+    ready: { send: &#39;sending&#39;, edit: &#39;draft&#39; },
+    sending: { success: &#39;sent&#39;, error: &#39;ready&#39; },
+    sent: { /* terminal */ },
+  };
+  const next = transitions[current]?.[action];
+  if (!next) throw new InvalidTransitionError(current, action);
+  return next;
+}
+
+// Testável via table-driven:
+// [[&#39;new&#39;, &#39;process&#39;, &#39;processing&#39;],
+//  [&#39;processing&#39;, &#39;complete&#39;, &#39;draft&#39;],
+//  [&#39;draft&#39;, &#39;finalize&#39;, &#39;ready&#39;],
+//  [&#39;new&#39;, &#39;send&#39;, ERROR],
+//  [&#39;sent&#39;, &#39;process&#39;, ERROR]]
+</code></pre>
+<p><strong>Zod como Contrato de Integração:</strong></p>
+<pre><code class="language-typescript">// test:integration — roda periodicamente contra Gemini real
+// Valida que output real do Gemini passa no GeminiOutputSchema
+// Fixture: transcrição real de episódio + prompt de produção
+// Detecta breaking changes no output format do LLM
+</code></pre>
+<h3>Decision Impact Analysis</h3>
+<p><strong>Implementation Sequence:</strong></p>
+<ol>
+<li>State machine module (lógica pura, zero deps, testável isolado)</li>
+<li>Firestore schema + Zod schemas (data layer)</li>
+<li>Project init (create-next-app + shadcn + Dockerfile)</li>
+<li>Auth.js v5 + OAuth flow + Middleware + token persistence</li>
+<li>YouTubeClient wrapper + sync endpoint</li>
+<li>GeminiClient wrapper + SSE endpoint</li>
+<li>Zustand store + URL state + UI components</li>
+<li>Batch publish + error handling</li>
+<li>Cloud Build trigger + deploy</li>
+</ol>
+<p><strong>Cross-Component Dependencies:</strong></p>
+<ul>
+<li>State machine → Zustand store (importa transition function)</li>
+<li>Zod schemas → GeminiClient (valida output) → SSE events (rejeita se inválido)</li>
+<li>Auth.js tokens → YouTubeClient (precisa de access_token)</li>
+<li>GeminiClient → SSE contract → useSSEStream hook → Zustand store</li>
+<li>Firestore subcollections → todas as queries precisam de podcastId</li>
+<li>URL state (?selected=) → fetchVideoDetail → Zustand selectedVideoDetail</li>
+</ul>
+<h2>Implementation Patterns &amp; Consistency Rules</h2>
+<h3>Pattern Categories Defined</h3>
+<p><strong>Critical Conflict Points Identificados:</strong> 8 áreas onde AI agents poderiam fazer escolhas diferentes</p>
+<h3>Naming Patterns</h3>
+<p><strong>Firestore Field Naming:</strong></p>
+<ul>
+<li>camelCase para todos os campos: <code>generatedTitle</code>, <code>youtubeId</code>, <code>publishedAt</code></li>
+<li>Timestamps como <code>Timestamp</code> do Firestore (não ISO string, não epoch)</li>
+<li>Arrays sempre plural: <code>tags</code>, <code>chapters</code>, <code>items</code></li>
+<li>Nested objects: camelCase interno (<code>compliance.items[].timestamp</code>)</li>
+<li>⚠️ NUNCA snake_case em Firestore fields</li>
+</ul>
+<p><strong>API Route Handler Naming:</strong></p>
+<ul>
+<li>Diretório = recurso: <code>api/videos/</code>, <code>api/process/</code>, <code>api/auth/</code></li>
+<li>Arquivo = ação: <code>route.ts</code> (default), <code>[videoId]/route.ts</code> (paramétrico)</li>
+<li>HTTP methods mapeiam ações:<ul>
+<li><code>GET /api/videos</code> → listar vídeos</li>
+<li><code>POST /api/videos/sync</code> → sincronizar novos</li>
+<li><code>POST /api/process/[videoId]</code> → iniciar processamento SSE</li>
+<li><code>PATCH /api/videos/[videoId]</code> → atualizar campo(s)</li>
+<li><code>POST /api/videos/publish</code> → batch publish</li>
+</ul>
+</li>
+</ul>
+<p><strong>Code Naming (herda project-context.md):</strong></p>
+<ul>
+<li>Arquivos: kebab-case (<code>video-list-item.tsx</code>, <code>use-sse-stream.ts</code>)</li>
+<li>Componentes: PascalCase export (<code>export function VideoListItem()</code>)</li>
+<li>Hooks: camelCase com <code>use</code> (<code>useSSEStream</code>, <code>useAutoSave</code>)</li>
+<li>Types/Interfaces: PascalCase (<code>VideoSummary</code>, <code>SSEEvent</code>)</li>
+<li>Enums: PascalCase nome, usar union types:<pre><code class="language-typescript">type VideoStatus = &#39;new&#39; | &#39;processing&#39; | &#39;draft&#39; | &#39;ready&#39; | &#39;sending&#39; | &#39;sent&#39;
+// NÃO: enum VideoStatus { NEW = &#39;NEW&#39;, ... }
+</code></pre>
+</li>
+<li>Constants: camelCase para objetos, UPPER_SNAKE para primitivos:<pre><code class="language-typescript">const sseEventTypes = [&#39;progress&#39;, &#39;field&#39;, &#39;complete&#39;, &#39;error&#39;] as const
+const MAX_RETRY_ATTEMPTS = 3
+</code></pre>
+</li>
+</ul>
+<h3>Structure Patterns</h3>
+<p><strong>Project Organization:</strong></p>
+<ul>
+<li>Tests co-localizados: <code>video-list-item.test.tsx</code> ao lado de <code>video-list-item.tsx</code></li>
+<li>Fixtures em <code>src/fixtures/</code> (compartilhadas entre testes)</li>
+<li>Componentes por domínio: <code>components/video/</code>, <code>components/ui/</code></li>
+<li>Um componente por arquivo (sem barrel exports em <code>components/</code>)</li>
+<li>Hooks em <code>hooks/</code> (flat, sem subdiretórios)</li>
+<li>Libs em <code>lib/</code> com subdiretórios para módulos complexos (<code>lib/state/</code>)</li>
+</ul>
+<p><strong>Route Handler Pattern (template obrigatório):</strong></p>
+<pre><code class="language-typescript">// src/app/api/[resource]/route.ts
+import { NextRequest, NextResponse } from &#39;next/server&#39;
+import { getServerSession } from &#39;@/lib/auth&#39;
+import { log } from &#39;@/lib/logger&#39;
+
+export const runtime = &#39;nodejs&#39; // OBRIGATÓRIO para todos os Route Handlers
+
+export async function POST(request: NextRequest) {
+  const session = await getServerSession()
+  if (!session) {
+    return NextResponse.json(
+      { error: { code: &#39;AUTH_EXPIRED&#39;, message: &#39;Sessão expirada&#39; } },
+      { status: 401 }
+    )
+  }
+
+  try {
+    // ... lógica
+    return NextResponse.json({ data: result })
+  } catch (error) {
+    log(&#39;ERROR&#39;, &#39;Descrição do erro&#39;, { error, context })
+    return NextResponse.json(
+      { error: { code: &#39;INTERNAL_ERROR&#39;, message: &#39;Erro interno&#39; } },
+      { status: 500 }
+    )
+  }
+}
+</code></pre>
+<p><strong>Component Pattern (compound components):</strong></p>
+<pre><code class="language-typescript">// components/video/video-detail-panel.tsx
+&#39;use client&#39;
+
+interface VideoDetailPanelProps {
+  videoId: string
+}
+
+export function VideoDetailPanel({ videoId }: VideoDetailPanelProps) {
+  return (
+    &lt;VideoDetailContext.Provider value={...}&gt;
+      &lt;VideoDetailHeader /&gt;
+      &lt;VideoDetailMetadata /&gt;
+      &lt;VideoDetailCompliance /&gt;
+      &lt;VideoDetailFooter /&gt;
+    &lt;/VideoDetailContext.Provider&gt;
+  )
+}
+
+// Sub-components no mesmo diretório:
+// components/video/video-detail-header.tsx
+// components/video/video-detail-metadata.tsx
+</code></pre>
+<h3>Format Patterns</h3>
+<p><strong>API Response Format:</strong></p>
+<pre><code class="language-typescript">// Sucesso
+{ data: T }
+
+// Erro
+{ error: { code: ErrorCode, message: string, details?: unknown } }
+
+// ⚠️ NUNCA misturar: { data, error } no mesmo response
+// ⚠️ NUNCA: response sem wrapper (retornar array direto, etc.)
+</code></pre>
+<p><strong>Firestore Document ↔ TypeScript:</strong></p>
+<ul>
+<li>Firestore retorna <code>DocumentSnapshot</code> → extrair com <code>.data()</code></li>
+<li>Sempre validar com Zod antes de usar no app:<pre><code class="language-typescript">const doc = await getDoc(ref)
+const video = VideoDetailSchema.parse(doc.data())
+</code></pre>
+</li>
+<li>Timestamps do Firestore → converter para Date apenas no UI layer</li>
+</ul>
+<p><strong>Firestore Timestamp Imports (CUIDADO — APIs diferentes):</strong></p>
+<pre><code class="language-typescript">// Em Client Components (firebase/firestore):
+import { updateDoc, serverTimestamp } from &#39;firebase/firestore&#39;
+await updateDoc(ref, { updatedAt: serverTimestamp() })
+
+// Em Route Handlers (firebase-admin/firestore):
+import { FieldValue } from &#39;firebase-admin/firestore&#39;
+await ref.update({ updatedAt: FieldValue.serverTimestamp() })
+
+// ⚠️ NUNCA importar serverTimestamp do pacote errado — compila mas falha em runtime
+</code></pre>
+<p><strong>Import Type Pattern (TypeScript strict):</strong></p>
+<pre><code class="language-typescript">// ✅ Zod schema usado em runtime → import normal
+import { VideoDetailSchema } from &#39;@/types/video&#39;
+const video = VideoDetailSchema.parse(data)
+
+// ✅ Tipo derivado do Zod usado apenas em type position → import type
+import type { VideoDetail } from &#39;@/types/video&#39;
+function render(video: VideoDetail) { ... }
+
+// Regra: se usado em runtime (.parse(), .safeParse()), import normal
+// Se usado apenas como anotação de tipo, import type
+</code></pre>
+<p><strong>JSON em SSE Events:</strong></p>
+<ul>
+<li>camelCase para todos os campos</li>
+<li><code>event:</code> header = tipo do evento (<code>progress</code>, <code>field</code>, <code>complete</code>, <code>error</code>)</li>
+<li><code>data:</code> = JSON stringificado do payload</li>
+<li>Cada event termina com <code>\n\n</code></li>
+</ul>
+<h3>Communication Patterns</h3>
+<p><strong>Zustand Action Naming:</strong></p>
+<ul>
+<li>Verbos imperativos: <code>fetchVideos</code>, <code>startProcessing</code>, <code>updateField</code>, <code>sendToYouTube</code></li>
+<li>⚠️ NUNCA substantivos: <code>videosFetch</code>, <code>processingStart</code></li>
+<li>Async actions retornam Promise (caller pode await)</li>
+<li>Actions que disparam SSE: <code>startProcessing</code> inicia stream, updates vêm via callback</li>
+</ul>
+<p><strong>State Transitions (via state machine SOMENTE):</strong></p>
+<pre><code class="language-typescript">// ✅ CORRETO: usar transition function
+import { transition } from &#39;@/lib/state&#39;
+const nextStatus = transition(video.status, &#39;process&#39;)
+await updateDoc(videoRef, { status: nextStatus })
+
+// ❌ PROIBIDO: atribuição direta de status
+await updateDoc(videoRef, { status: &#39;processing&#39; }) // NUNCA
+</code></pre>
+<p><strong>Firestore Write Pattern:</strong></p>
+<pre><code class="language-typescript">// ✅ Field-level merge (auto-save)
+await updateDoc(videoRef, { generatedTitle: newTitle, updatedAt: serverTimestamp() })
+
+// ❌ NUNCA setDoc sem merge (sobrescreve documento inteiro)
+await setDoc(videoRef, data) // PROIBIDO
+
+// ✅ Se precisar criar: setDoc com merge
+await setDoc(videoRef, data, { merge: true })
+</code></pre>
+<h3>Process Patterns</h3>
+<p><strong>Error Handling por Camada:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Pattern</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Route Handler</td>
+<td>try/catch → <code>{ error: { code, message } }</code> + log structured</td>
+</tr>
+<tr>
+<td>Client fetch</td>
+<td><code>.catch()</code> → Zustand error state → UI feedback</td>
+</tr>
+<tr>
+<td>SSE stream</td>
+<td><code>onerror</code> → retry (max 3) → fallback UI</td>
+</tr>
+<tr>
+<td>Firestore</td>
+<td>try/catch → retry once → error state</td>
+</tr>
+<tr>
+<td>Zod validation</td>
+<td><code>.safeParse()</code> → se falhar, <code>GEMINI_INVALID</code> error event</td>
+</tr>
+</tbody></table>
+<p><strong>Loading State Pattern:</strong></p>
+<pre><code class="language-typescript">// Estado simples (fetch)
+const [isLoading, setIsLoading] = useState(false)
+
+// Estado complexo (SSE)
+type StreamStatus = &#39;idle&#39; | &#39;connecting&#39; | &#39;streaming&#39; | &#39;complete&#39; | &#39;error&#39;
+
+// ⚠️ NUNCA usar boolean para SSE — sempre enum
+</code></pre>
+<p><strong>Auto-Save Pattern:</strong></p>
+<pre><code class="language-typescript">const { saveStatus } = useAutoSave(value, async (val) =&gt; {
+  await updateDoc(videoRef, { [fieldName]: val, updatedAt: serverTimestamp() })
+}, 1500)
+
+// saveStatus: &#39;idle&#39; | &#39;saving&#39; | &#39;saved&#39; | &#39;error&#39;
+</code></pre>
+<p><strong>Retry Pattern (SCOPE LIMITADO):</strong></p>
+<pre><code class="language-typescript">// ⚠️ withRetry é APENAS para:
+// - Reads do Firestore (idempotentes)
+// - YouTube API calls (GET, idempotentes)
+// - Gemini API calls (idempotentes)
+//
+// ⚠️ NUNCA usar withRetry para:
+// - Firestore writes (pode duplicar)
+// - YouTube publish (POST/PUT)
+//
+// Para writes: &quot;last write wins&quot; via updatedAt timestamp
+// Para operações atômicas: Firestore transactions
+
+const MAX_RETRIES = 3
+const BACKOFF_BASE = 1000
+
+async function withRetry&lt;T&gt;(fn: () =&gt; Promise&lt;T&gt;, retries = MAX_RETRIES): Promise&lt;T&gt; {
+  for (let i = 0; i &lt; retries; i++) {
+    try { return await fn() }
+    catch (e) {
+      if (i === retries - 1) throw e
+      await sleep(BACKOFF_BASE * Math.pow(2, i))
+    }
+  }
+  throw new Error(&#39;Unreachable&#39;)
+}
+</code></pre>
+<h3>Testing Patterns</h3>
+<p><strong>Test Naming (exemplos IAra-específicos por camada):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Exemplo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>State machine</td>
+<td><code>it(&#39;rejects transition from new to sent&#39;)</code></td>
+</tr>
+<tr>
+<td>State machine</td>
+<td><code>it(&#39;transitions draft to processing on process action&#39;)</code></td>
+</tr>
+<tr>
+<td>Hook (SSE)</td>
+<td><code>it(&#39;emits field events in sequence during streaming&#39;)</code></td>
+</tr>
+<tr>
+<td>Hook (SSE)</td>
+<td><code>it(&#39;retries connection on error up to 3 times&#39;)</code></td>
+</tr>
+<tr>
+<td>Hook (auto-save)</td>
+<td><code>it(&#39;debounces writes by 1500ms&#39;)</code></td>
+</tr>
+<tr>
+<td>Component</td>
+<td><code>it(&#39;shows skeleton while loading video detail&#39;)</code></td>
+</tr>
+<tr>
+<td>Component</td>
+<td><code>it(&#39;disables send button when status is not ready&#39;)</code></td>
+</tr>
+<tr>
+<td>Route Handler</td>
+<td><code>it(&#39;returns 401 when session expired&#39;)</code></td>
+</tr>
+<tr>
+<td>Route Handler</td>
+<td><code>it(&#39;returns BATCH_PARTIAL when 2 of 5 publish fail&#39;)</code></td>
+</tr>
+<tr>
+<td>Zod</td>
+<td><code>it(&#39;rejects Gemini output missing required title field&#39;)</code></td>
+</tr>
+</tbody></table>
+<p><strong>Mock Strategy por Tipo de Teste:</strong></p>
+<pre><code class="language-typescript">// UNIT TESTS — mock no nível do Zustand store
+import { useVideoStore } from &#39;@/stores/video-store&#39;
+
+beforeEach(() =&gt; {
+  useVideoStore.setState({
+    videos: [videoFixture],
+    selectedVideoDetail: detailFixture,
+    processingVideoIds: new Set(),
+  })
+})
+
+// INTEGRATION TESTS — Firebase Emulator real
+// Testar fluxos completos com Firestore real (local)
+// Configurado via test:integration script
+
+// ⚠️ NUNCA usar Firebase Emulator em unit tests
+// ⚠️ NUNCA mockar Firestore em integration tests
+</code></pre>
+<p><strong>ESLint Rules (enforcement automatizável — futuro):</strong></p>
+<pre><code class="language-javascript">// .eslintrc
+{
+  &quot;rules&quot;: {
+    &quot;no-console&quot;: [&quot;error&quot;, { &quot;allow&quot;: [&quot;warn&quot;] }],
+    &quot;import/no-default-export&quot;: &quot;error&quot;
+    // Exceto para page.tsx, layout.tsx, route.ts (Next.js exige)
+  }
+}
+</code></pre>
+<h3>Commit Convention</h3>
+<p><strong>Conventional Commits (obrigatório):</strong></p>
+<pre><code>&lt;type&gt;(&lt;scope&gt;): &lt;description&gt;
+
+feat(video): add processing SSE endpoint
+fix(auth): preserve refresh token on re-login
+refactor(state): extract transition function to module
+test(sse): add mid-stream error fixture
+chore(docker): add multi-stage Dockerfile
+docs(api): document SSE event contract
+</code></pre>
+<p><strong>Types:</strong> <code>feat</code>, <code>fix</code>, <code>refactor</code>, <code>test</code>, <code>chore</code>, <code>docs</code>, <code>style</code>
+<strong>Scopes IAra:</strong> <code>video</code>, <code>auth</code>, <code>sse</code>, <code>gemini</code>, <code>youtube</code>, <code>state</code>, <code>ui</code>, <code>docker</code>, <code>ci</code>, <code>api</code></p>
+<h3>Enforcement Guidelines</h3>
+<p><strong>All AI Agents MUST:</strong></p>
+<ol>
+<li>Usar <code>transition()</code> para qualquer mudança de <code>VideoStatus</code></li>
+<li>Validar com Zod todo dado vindo de API externa antes de persistir</li>
+<li>Incluir <code>export const runtime = &#39;nodejs&#39;</code> em todo Route Handler</li>
+<li>Usar <code>updateDoc</code> com fields explícitos — nunca <code>setDoc</code> sem merge</li>
+<li>Seguir import order: React/Next → External → Internal → Utils → Types</li>
+<li>Nomear arquivos em kebab-case, exports em PascalCase</li>
+<li>Testar co-localizados com pattern <code>it(&#39;verbo + comportamento&#39;)</code></li>
+<li>Incluir <code>podcastId</code> em toda query Firestore</li>
+<li>Usar structured logging (<code>lib/logger.ts</code>) — nunca <code>console.log</code></li>
+<li>Tratar selectedVideoId exclusivamente via URL</li>
+<li>Usar <code>import type</code> quando import é apenas type annotation</li>
+<li>Usar <code>serverTimestamp()</code> do SDK correto (client vs admin)</li>
+<li>Não usar <code>withRetry</code> para operações de escrita</li>
+<li>Seguir conventional commits com scopes definidos</li>
+<li><strong>REGRA IMUTÁVEL:</strong> O schema de <code>videos</code> NUNCA pode ser incompatível com <code>EpisodeEntity</code> do portal-web (<code>packages/types/src/episode.ts</code>). IAra pode ADICIONAR campos, mas NUNCA remover, renomear ou alterar tipo de campos existentes.</li>
+</ol>
+<p><strong>Estes 15 patterns são acceptance criteria da story de project setup.</strong></p>
+<h3>Anti-Patterns (NUNCA fazer no IAra)</h3>
+<table>
+<thead>
+<tr>
+<th>Anti-Pattern</th>
+<th>Correto</th>
+<th>Ref</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>setDoc(ref, data)</code></td>
+<td><code>updateDoc(ref, { field: value })</code></td>
+<td>Firestore Write Pattern</td>
+</tr>
+<tr>
+<td><code>status = &#39;processing&#39;</code></td>
+<td><code>transition(status, &#39;process&#39;)</code></td>
+<td>State Transitions</td>
+</tr>
+<tr>
+<td><code>console.log(error)</code></td>
+<td><code>log(&#39;ERROR&#39;, msg, { error })</code></td>
+<td>Structured Logging</td>
+</tr>
+<tr>
+<td><code>enum VideoStatus {}</code></td>
+<td><code>type VideoStatus = &#39;new&#39; | ...</code></td>
+<td>Code Naming</td>
+</tr>
+<tr>
+<td><code>export default function</code></td>
+<td><code>export function Name</code></td>
+<td>Code Naming</td>
+</tr>
+<tr>
+<td><code>fetch()</code> em useEffect</td>
+<td>Fetch no Zustand action</td>
+<td>Frontend Architecture</td>
+</tr>
+<tr>
+<td><code>{ data, error: null }</code></td>
+<td><code>{ data }</code></td>
+<td>API Response Format</td>
+</tr>
+<tr>
+<td><code>import &#39;../../../lib&#39;</code></td>
+<td><code>import &#39;@/lib/...&#39;</code></td>
+<td>Import Order</td>
+</tr>
+<tr>
+<td><code>serverTimestamp()</code> em Route Handler</td>
+<td><code>FieldValue.serverTimestamp()</code></td>
+<td>Timestamp Imports</td>
+</tr>
+<tr>
+<td><code>withRetry(writeToFirestore)</code></td>
+<td>Direct write + updatedAt</td>
+<td>Retry Pattern</td>
+</tr>
+<tr>
+<td><code>import { Schema }</code> para tipo</td>
+<td><code>import type { T }</code></td>
+<td>Import Type Pattern</td>
+</tr>
+<tr>
+<td>Commit: &quot;updated files&quot;</td>
+<td><code>feat(video): add list component</code></td>
+<td>Commit Convention</td>
+</tr>
+</tbody></table>
+<h2>Project Structure &amp; Boundaries</h2>
+<h3>Complete Project Directory Structure</h3>
+<pre><code>apps/iara/
+├── .env.example                    # Template de variáveis (sem valores)
+├── .env.local                      # Variáveis locais (gitignored)
+├── Dockerfile                      # Multi-stage build (standalone)
+├── firebase.json                   # Emulator config (rodar de apps/iara/)
+├── next.config.mjs                 # standalone output, outputFileTracingRoot
+├── postcss.config.mjs              # @tailwindcss/postcss
+├── tsconfig.json                   # strict, paths @/*
+├── vitest.config.ts                # Registrado no workspace root
+├── vitest.setup.ts                 # Mocks globais (EventSource, fetch)
+├── package.json                    # Scripts: dev, build, test, lint
+├── public/
+│   └── favicon.ico
+├── src/
+│   ├── middleware.ts               # Auth gate — RAIZ de src/
+│   ├── app/
+│   │   ├── globals.css             # Tailwind v4 @theme, design tokens OKLCH
+│   │   ├── layout.tsx              # Root: &lt;html class=&quot;dark&quot;&gt;, AuthProvider
+│   │   ├── page.tsx                # Redirect → /videos
+│   │   ├── api/
+│   │   │   ├── __tests__/          # Testes de Route Handlers
+│   │   │   │   ├── videos.test.ts
+│   │   │   │   ├── process.test.ts
+│   │   │   │   └── auth.test.ts
+│   │   │   ├── auth/
+│   │   │   │   └── [...nextauth]/
+│   │   │   │       └── route.ts    # Auth.js v5 handlers
+│   │   │   ├── videos/
+│   │   │   │   ├── route.ts        # GET: listar, POST: sync
+│   │   │   │   ├── [videoId]/
+│   │   │   │   │   └── route.ts    # GET: detalhe, PATCH: update
+│   │   │   │   └── publish/
+│   │   │   │       └── route.ts    # POST: batch publish
+│   │   │   └── process/
+│   │   │       └── [videoId]/
+│   │   │           └── route.ts    # POST: SSE processamento
+│   │   └── videos/
+│   │       ├── page.tsx            # Master-Detail layout
+│   │       └── loading.tsx         # Skeleton
+│   ├── components/
+│   │   ├── ui/                     # shadcn/ui
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── scroll-area.tsx
+│   │   │   ├── resizable.tsx
+│   │   │   ├── separator.tsx
+│   │   │   ├── skeleton.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── tooltip.tsx
+│   │   │   └── dropdown-menu.tsx
+│   │   └── video/                  # Componentes de domínio
+│   │       ├── video-list.tsx
+│   │       ├── video-list.test.tsx
+│   │       ├── video-list-item.tsx
+│   │       ├── video-list-item.test.tsx
+│   │       ├── video-detail-panel.tsx
+│   │       ├── video-detail-panel.test.tsx
+│   │       ├── video-detail-header.tsx
+│   │       ├── video-detail-metadata.tsx
+│   │       ├── video-detail-compliance.tsx
+│   │       ├── video-detail-override.tsx
+│   │       ├── video-detail-footer.tsx
+│   │       ├── video-detail-context.tsx
+│   │       ├── processing-stream.tsx
+│   │       ├── processing-stream.test.tsx
+│   │       ├── compliance-alert.tsx
+│   │       ├── inbox-empty-state.tsx
+│   │       └── sidebar-nav.tsx
+│   ├── hooks/
+│   │   ├── use-sse-stream.ts
+│   │   ├── use-sse-stream.test.ts
+│   │   ├── use-auto-save.ts
+│   │   ├── use-auto-save.test.ts
+│   │   ├── use-local-storage.ts
+│   │   └── use-reduced-motion.ts
+│   ├── lib/
+│   │   ├── utils.ts                # cn() — OBRIGATÓRIO shadcn
+│   │   ├── auth.ts                 # Auth.js config
+│   │   ├── firebase-client.ts      # Firestore client SDK
+│   │   ├── firebase-admin.ts       # Firestore admin SDK
+│   │   ├── youtube.ts              # YouTubeClient wrapper
+│   │   ├── youtube.test.ts
+│   │   ├── gemini.ts               # GeminiClient wrapper
+│   │   ├── gemini.test.ts
+│   │   ├── logger.ts               # Structured logging
+│   │   ├── retry.ts                # withRetry (reads only)
+│   │   ├── retry.test.ts
+│   │   └── video-state-machine/    # State machine module
+│   │       ├── index.ts
+│   │       ├── transitions.ts
+│   │       ├── transitions.test.ts
+│   │       ├── types.ts
+│   │       └── guards.ts
+│   ├── stores/
+│   │   ├── video-store.ts          # Zustand store
+│   │   └── video-store.test.ts
+│   ├── types/
+│   │   ├── video.ts                # Zod schemas + types
+│   │   ├── sse.ts                  # SSE types
+│   │   ├── api.ts                  # API types
+│   │   └── auth.ts                 # Auth types
+│   ├── fixtures/                   # Factory functions
+│   │   ├── videos.ts
+│   │   ├── sse-sequences.ts
+│   │   └── gemini-output.ts
+│   └── test-utils.tsx              # customRender + re-exports
+</code></pre>
+<p><strong>Notas:</strong></p>
+<ul>
+<li><code>firebase.json</code> em <code>apps/iara/</code> — emulator roda de dentro do app</li>
+<li>Tests de Route Handlers em <code>__tests__/</code> (Next.js ignora)</li>
+<li>Fixtures são factory functions, não constantes</li>
+</ul>
+<h3>Architectural Boundaries</h3>
+<p><strong>API Boundaries:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Método</th>
+<th>Responsabilidade</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/api/auth/[...nextauth]</code></td>
+<td>GET, POST</td>
+<td>OAuth flow</td>
+</tr>
+<tr>
+<td><code>/api/videos</code></td>
+<td>GET</td>
+<td>Listar vídeos</td>
+</tr>
+<tr>
+<td><code>/api/videos</code></td>
+<td>POST</td>
+<td>Sync novos do YouTube</td>
+</tr>
+<tr>
+<td><code>/api/videos/[videoId]</code></td>
+<td>GET, PATCH</td>
+<td>Detalhe e update</td>
+</tr>
+<tr>
+<td><code>/api/videos/publish</code></td>
+<td>POST</td>
+<td>Batch publish</td>
+</tr>
+<tr>
+<td><code>/api/process/[videoId]</code></td>
+<td>POST</td>
+<td>SSE processamento</td>
+</tr>
+</tbody></table>
+<p><strong>⚠️ Refactor Candidate (post-MVP):</strong> Extrair <code>/api/process/[videoId]</code> para <code>lib/services/processing-service.ts</code>.</p>
+<p><strong>Data Boundaries (MVP):</strong></p>
+<ul>
+<li><strong>Client SDK writes permitidos</strong> para auto-save (single-user)</li>
+<li><strong>Route Handlers</strong> para operações complexas (sync, publish, process)</li>
+</ul>
+<h3>Test Utils Pattern</h3>
+<pre><code class="language-typescript">// src/test-utils.tsx
+import { render, RenderOptions } from &#39;@testing-library/react&#39;
+import { ReactElement } from &#39;react&#39;
+
+function AllTheProviders({ children }: { children: React.ReactNode }) {
+  return &lt;div id=&quot;portal-root&quot;&gt;{children}&lt;/div&gt;
+}
+
+function customRender(ui: ReactElement, options?: Omit&lt;RenderOptions, &#39;wrapper&#39;&gt;) {
+  return render(ui, { wrapper: AllTheProviders, ...options })
+}
+
+export * from &#39;@testing-library/react&#39;
+export { customRender as render }
+
+// ⚠️ Importar de &#39;@/test-utils&#39;, NÃO de &#39;@testing-library/react&#39;
+</code></pre>
+<h3>Fixtures Pattern</h3>
+<pre><code class="language-typescript">// src/fixtures/videos.ts
+export function createVideoFixture(overrides?: Partial&lt;VideoSummary&gt;): VideoSummary {
+  return { ...baseVideo, id: `video-${Date.now()}`, ...overrides }
+}
+
+// Uso: createVideoFixture({ status: &#39;draft&#39; })
+</code></pre>
+<h3>Requirements Mapping</h3>
+<table>
+<thead>
+<tr>
+<th>FR</th>
+<th>Arquivos Principais</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FR1 Autenticação</td>
+<td><code>lib/auth.ts</code>, <code>middleware.ts</code>, <code>api/auth/</code></td>
+</tr>
+<tr>
+<td>FR2 Sincronização</td>
+<td><code>api/videos/route.ts</code>, <code>lib/youtube.ts</code></td>
+</tr>
+<tr>
+<td>FR3 Processamento</td>
+<td><code>api/process/</code>, <code>lib/gemini.ts</code>, <code>hooks/use-sse-stream.ts</code></td>
+</tr>
+<tr>
+<td>FR4 Compliance</td>
+<td><code>components/video/video-detail-compliance.tsx</code></td>
+</tr>
+<tr>
+<td>FR5 Revisão/Edição</td>
+<td><code>components/video/video-detail-metadata.tsx</code>, <code>hooks/use-auto-save.ts</code></td>
+</tr>
+<tr>
+<td>FR6 Publicação</td>
+<td><code>api/videos/publish/</code>, <code>lib/youtube.ts</code></td>
+</tr>
+<tr>
+<td>FR7 Portal</td>
+<td><code>api/videos/publish/</code> (cria registro Firestore)</td>
+</tr>
+<tr>
+<td>FR8 Estado</td>
+<td><code>lib/video-state-machine/</code></td>
+</tr>
+<tr>
+<td>FR9 Parametrização</td>
+<td><code>lib/firebase-admin.ts</code> getPodcastConfig()</td>
+</tr>
+</tbody></table>
+<h3>Integration Points</h3>
+<p><strong>Internal:</strong></p>
+<ul>
+<li>VideoList → VideoDetailPanel via URL state</li>
+<li>useAutoSave → Firestore via updateDoc</li>
+<li>useSSEStream → Zustand via callbacks</li>
+<li>Zustand → Route Handlers via fetch</li>
+</ul>
+<p><strong>External:</strong></p>
+<ul>
+<li>youtube.ts → YouTube Data API v3 (OAuth)</li>
+<li>gemini.ts → Gemini API (API key)</li>
+<li>firebase-*.ts → Firestore (client/admin SDK)</li>
+</ul>
+<h2>Architecture Validation Results</h2>
+<h3>Coherence Validation ✅</h3>
+<p><strong>Decision Compatibility:</strong>
+Todas as tecnologias trabalham juntas sem conflitos. Next.js 15+ App Router integra naturalmente com Auth.js v5, Firestore SDK split, e Tailwind v4. SSE via ReadableStream é suportado nativamente com <code>runtime: &#39;nodejs&#39;</code>.</p>
+<p><strong>Pattern Consistency:</strong>
+Patterns de naming, state management, e API responses são consistentes através de todo o documento. State machine usa função pura, nunca atribuição direta. Imports de timestamp diferenciados por contexto (client/admin).</p>
+<p><strong>Structure Alignment:</strong>
+Estrutura de projeto suporta todas as decisões arquiteturais. Boundaries claras entre Route Handlers, componentes, hooks, e libs. Tests organizados por co-localização + <code>__tests__/</code> para APIs.</p>
+<h3>Requirements Coverage Validation ✅</h3>
+<p><strong>Functional Requirements Coverage:</strong>
+Todos os 9 FRs mapeados para arquivos e patterns específicos:</p>
+<table>
+<thead>
+<tr>
+<th>FR</th>
+<th>Suporte Arquitetural</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FR1 Autenticação</td>
+<td><code>lib/auth.ts</code>, <code>middleware.ts</code>, <code>api/auth/</code></td>
+</tr>
+<tr>
+<td>FR2 Sincronização</td>
+<td><code>api/videos/route.ts</code>, <code>lib/youtube.ts</code></td>
+</tr>
+<tr>
+<td>FR3 Processamento</td>
+<td><code>api/process/</code>, <code>lib/gemini.ts</code>, <code>hooks/use-sse-stream.ts</code></td>
+</tr>
+<tr>
+<td>FR4 Compliance</td>
+<td><code>components/video/video-detail-compliance.tsx</code></td>
+</tr>
+<tr>
+<td>FR5 Revisão/Edição</td>
+<td><code>components/video/video-detail-metadata.tsx</code>, <code>hooks/use-auto-save.ts</code></td>
+</tr>
+<tr>
+<td>FR6 Publicação</td>
+<td><code>api/videos/publish/</code>, <code>lib/youtube.ts</code></td>
+</tr>
+<tr>
+<td>FR7 Portal</td>
+<td><code>api/videos/publish/</code> (cria registro Firestore)</td>
+</tr>
+<tr>
+<td>FR8 Estado</td>
+<td><code>lib/video-state-machine/</code></td>
+</tr>
+<tr>
+<td>FR9 Parametrização</td>
+<td><code>lib/firebase-admin.ts</code> getPodcastConfig()</td>
+</tr>
+</tbody></table>
+<p><strong>Non-Functional Requirements Coverage:</strong>
+SSE streaming, persistência, sessão, disponibilidade, segurança e testabilidade totalmente endereçados com decisões arquiteturais e patterns de implementação.</p>
+<h3>Implementation Readiness Validation ✅</h3>
+<p><strong>Decision Completeness:</strong>
+Versões de todas as tecnologias especificadas. 14 regras de enforcement como acceptance criteria. Anti-patterns documentados com exemplos.</p>
+<p><strong>Structure Completeness:</strong>
+94+ arquivos definidos com responsabilidades. Boundaries claras entre camadas.</p>
+<p><strong>Pattern Completeness:</strong>
+Todos os conflict points identificados têm patterns definidos. Naming, communication, e process patterns completos.</p>
+<h3>Architecture Completeness Checklist</h3>
+<p><strong>✅ Requirements Analysis</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Project context thoroughly analyzed</li>
+<li><input checked="" disabled="" type="checkbox"> Scale and complexity assessed (medium, 1-2 users MVP)</li>
+<li><input checked="" disabled="" type="checkbox"> Technical constraints identified (YouTube OAuth Testing mode, quotas)</li>
+<li><input checked="" disabled="" type="checkbox"> Cross-cutting concerns mapped (8 concerns)</li>
+</ul>
+<p><strong>✅ Architectural Decisions</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Critical decisions documented with versions</li>
+<li><input checked="" disabled="" type="checkbox"> Technology stack fully specified (Next.js 15+, React 19, etc.)</li>
+<li><input checked="" disabled="" type="checkbox"> Integration patterns defined (SSE, OAuth, Firestore)</li>
+<li><input checked="" disabled="" type="checkbox"> Performance considerations addressed (debounce, field-level merge)</li>
+</ul>
+<p><strong>✅ Implementation Patterns</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Naming conventions established (14 rules)</li>
+<li><input checked="" disabled="" type="checkbox"> Structure patterns defined (compound components, Route Handler template)</li>
+<li><input checked="" disabled="" type="checkbox"> Communication patterns specified (Zustand actions, SSE events)</li>
+<li><input checked="" disabled="" type="checkbox"> Process patterns documented (error handling, auto-save, retry)</li>
+</ul>
+<p><strong>✅ Project Structure</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Complete directory structure defined (94+ files)</li>
+<li><input checked="" disabled="" type="checkbox"> Component boundaries established</li>
+<li><input checked="" disabled="" type="checkbox"> Integration points mapped (YouTube, Gemini, Firestore)</li>
+<li><input checked="" disabled="" type="checkbox"> Requirements to structure mapping complete</li>
+</ul>
+<h3>Architecture Readiness Assessment</h3>
+<p><strong>Overall Status:</strong> READY FOR IMPLEMENTATION</p>
+<p><strong>Confidence Level:</strong> High — validação completa sem gaps críticos, Party Mode aplicado em todos os steps</p>
+<p><strong>Key Strengths:</strong></p>
+<ul>
+<li>State machine como função pura — zero bugs de transição por construção</li>
+<li>SSE contract explícito — frontend e backend alinhados</li>
+<li>14 enforcement rules — AI agents não desviam</li>
+<li>Firestore subcollections — white-label ready desde MVP</li>
+<li>Testing strategy com fixtures — APIs externas mockadas consistentemente</li>
+</ul>
+<p><strong>Areas for Future Enhancement:</strong></p>
+<ul>
+<li>Staging environment quando usuários aumentarem</li>
+<li>Secret Manager quando secrets crescerem</li>
+<li>Integration test coverage target</li>
+<li>ESLint custom rules automatizadas</li>
+</ul>
+<h3>Implementation Handoff</h3>
+<p><strong>AI Agent Guidelines:</strong></p>
+<ul>
+<li>Follow all architectural decisions exactly as documented</li>
+<li>Use implementation patterns consistently across all components</li>
+<li>Respect project structure and boundaries</li>
+<li>Refer to this document for all architectural questions</li>
+<li>Apply the 14 enforcement rules as acceptance criteria</li>
+</ul>
+<p><strong>First Implementation Priority:</strong></p>
+<ol>
+<li><code>lib/video-state-machine/</code> — pure function, table-driven tests</li>
+<li>Firestore schema + Zod schemas em <code>types/</code></li>
+<li>Project init: <code>create-next-app</code> + <code>shadcn init</code> + Dockerfile</li>
+<li>Auth.js v5 + OAuth flow + middleware</li>
+</ol>
+<h2>Architecture Completion Summary</h2>
+<h3>Workflow Completion</h3>
+<p><strong>Architecture Decision Workflow:</strong> COMPLETED ✅
+<strong>Total Steps Completed:</strong> 8
+<strong>Date Completed:</strong> 2026-01-24
+<strong>Document Location:</strong> <code>_bmad-output/planning-artifacts/architecture-iara.md</code></p>
+<h3>Final Architecture Deliverables</h3>
+<p><strong>📋 Complete Architecture Document</strong></p>
+<ul>
+<li>All architectural decisions documented with specific versions</li>
+<li>Implementation patterns ensuring AI agent consistency</li>
+<li>Complete project structure with all files and directories</li>
+<li>Requirements to architecture mapping</li>
+<li>Validation confirming coherence and completeness</li>
+</ul>
+<p><strong>🏗️ Implementation Ready Foundation</strong></p>
+<ul>
+<li>25+ architectural decisions made</li>
+<li>14 implementation patterns/enforcement rules defined</li>
+<li>6 architectural sections specified</li>
+<li>9 FRs + 8 NFRs fully supported</li>
+</ul>
+<p><strong>📚 AI Agent Implementation Guide</strong></p>
+<ul>
+<li>Technology stack with verified versions (Next.js 15+, React 19, Auth.js v5, Tailwind v4)</li>
+<li>Consistency rules that prevent implementation conflicts</li>
+<li>Project structure with clear boundaries (94+ files)</li>
+<li>Integration patterns and communication standards (SSE, OAuth, Firestore)</li>
+</ul>
+<h3>Development Sequence</h3>
+<ol>
+<li>Initialize project: <code>pnpm create next-app@latest iara</code> + <code>shadcn init</code></li>
+<li>Create <code>lib/video-state-machine/</code> — pure transition function + table-driven tests</li>
+<li>Define Zod schemas in <code>types/</code> for Gemini output validation</li>
+<li>Implement Auth.js v5 with YouTube OAuth + middleware</li>
+<li>Build YouTubeClient + GeminiClient wrappers</li>
+<li>Create SSE endpoint with event contract</li>
+<li>Implement Zustand store + URL state + UI components</li>
+<li>Add batch publish + error handling</li>
+<li>Configure Cloud Build trigger + deploy</li>
+</ol>
+<h3>Quality Assurance Checklist</h3>
+<p><strong>✅ Architecture Coherence</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> All decisions work together without conflicts</li>
+<li><input checked="" disabled="" type="checkbox"> Technology choices are compatible</li>
+<li><input checked="" disabled="" type="checkbox"> Patterns support the architectural decisions</li>
+<li><input checked="" disabled="" type="checkbox"> Structure aligns with all choices</li>
+</ul>
+<p><strong>✅ Requirements Coverage</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> All 9 functional requirements are supported</li>
+<li><input checked="" disabled="" type="checkbox"> All 8 non-functional requirements are addressed</li>
+<li><input checked="" disabled="" type="checkbox"> Cross-cutting concerns are handled (8 identified)</li>
+<li><input checked="" disabled="" type="checkbox"> Integration points are defined (YouTube, Gemini, Firestore)</li>
+</ul>
+<p><strong>✅ Implementation Readiness</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Decisions are specific and actionable</li>
+<li><input checked="" disabled="" type="checkbox"> 14 enforcement rules prevent agent conflicts</li>
+<li><input checked="" disabled="" type="checkbox"> Structure is complete and unambiguous</li>
+<li><input checked="" disabled="" type="checkbox"> Code examples provided for patterns críticos</li>
+</ul>
+<h3>Project Success Factors</h3>
+<p><strong>🎯 Clear Decision Framework</strong>
+Every technology choice was made collaboratively through 8 steps with Party Mode review, ensuring all stakeholders understand the architectural direction.</p>
+<p><strong>🔧 Consistency Guarantee</strong>
+14 enforcement rules ensure that multiple AI agents will produce compatible, consistent code that works together seamlessly.</p>
+<p><strong>📋 Complete Coverage</strong>
+All 9 FRs and 8 NFRs are architecturally supported, with clear mapping from business needs to technical implementation.</p>
+<p><strong>🏗️ Solid Foundation</strong>
+Next.js 15+ App Router with Auth.js v5, Zustand, and Firestore provides a production-ready foundation following current best practices.</p>
+<hr>
+<p><strong>Architecture Status:</strong> READY FOR IMPLEMENTATION ✅</p>
+<p><strong>Next Phase:</strong> Begin implementation using the architectural decisions and patterns documented herein.</p>
+<p><strong>Document Maintenance:</strong> Update this architecture when major technical decisions are made during implementation.</p>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.1 Setup do Projeto e Estrutura Base — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group" open>
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li class="active"><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 1 — Autenticação e Fundação</nav><h1>Story 1.1: Setup do Projeto e Estrutura Base</h1>
+<p>Status: done</p>
+<hr>
+<h2>Story</h2>
+<p>Como um <strong>desenvolvedor</strong>,
+Eu quero ter o projeto Next.js 15+ configurado com shadcn/ui e estrutura de pastas padrão,
+Para que eu possa começar a implementar funcionalidades seguindo a arquitetura definida.</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Projeto Next.js 15+ criado</h3>
+<p><strong>Given</strong> um ambiente de desenvolvimento limpo
+<strong>When</strong> eu executo os comandos de setup do projeto
+<strong>Then</strong> o projeto Next.js 15+ é criado com App Router habilitado</p>
+<h3>AC2: TypeScript strict mode</h3>
+<p><strong>Given</strong> o projeto criado
+<strong>When</strong> eu verifico tsconfig.json
+<strong>Then</strong> TypeScript 5.x está configurado em modo strict</p>
+<h3>AC3: Tailwind CSS v4 configurado</h3>
+<p><strong>Given</strong> o projeto criado
+<strong>When</strong> eu verifico a configuração do Tailwind
+<strong>Then</strong> Tailwind CSS v4 está configurado com OKLCH colors e @theme inline</p>
+<h3>AC4: shadcn/ui inicializado</h3>
+<p><strong>Given</strong> o projeto criado
+<strong>When</strong> eu verifico os componentes
+<strong>Then</strong> shadcn/ui está inicializado com tema dark-only</p>
+<h3>AC5: Estrutura de pastas</h3>
+<p><strong>Given</strong> o projeto criado
+<strong>When</strong> eu verifico a estrutura de diretórios
+<strong>Then</strong> a estrutura de pastas segue o padrão da architecture:</p>
+<ul>
+<li><code>src/app/</code> para rotas</li>
+<li><code>src/components/</code> para componentes</li>
+<li><code>src/lib/</code> para utilitários</li>
+<li><code>src/types/</code> para tipos TypeScript</li>
+</ul>
+<h3>AC6: Vitest configurado</h3>
+<p><strong>Given</strong> o projeto criado
+<strong>When</strong> eu verifico a configuração de testes
+<strong>Then</strong> Vitest está configurado para testes unitários</p>
+<h3>AC7: Structured logging</h3>
+<p><strong>Given</strong> o projeto criado
+<strong>When</strong> eu verifico a lib de logging
+<strong>Then</strong> o arquivo <code>lib/logger.ts</code> existe com função <code>log()</code> para structured logging</p>
+<h3>AC8: Linting configurado</h3>
+<p><strong>Given</strong> o projeto criado
+<strong>When</strong> eu verifico as ferramentas de lint
+<strong>Then</strong> ESLint e Prettier estão configurados</p>
+<h3>AC9: Build funciona</h3>
+<p><strong>Given</strong> o projeto configurado
+<strong>When</strong> eu executo <code>pnpm build</code>
+<strong>Then</strong> o projeto compila sem erros</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Criar projeto Next.js</strong> (AC: 1, 2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Executar <code>pnpm create next-app@latest iara</code> com flags corretas</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Verificar tsconfig.json com strict: true</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Configurar path alias <code>@/*</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Configurar Tailwind CSS v4</strong> (AC: 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Atualizar para Tailwind CSS v4</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Configurar postcss.config.mjs com <code>@tailwindcss/postcss</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Configurar globals.css com @theme e OKLCH colors</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Adicionar <code>tw-animate-css</code> (substitui tailwindcss-animate)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 3: Inicializar shadcn/ui</strong> (AC: 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Executar <code>pnpm dlx shadcn@latest init</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Configurar tema dark-only</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Adicionar componentes base: button, card, scroll-area, skeleton, badge</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 4: Criar estrutura de pastas</strong> (AC: 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/components/ui/</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Criar <code>src/components/video/</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Criar <code>src/hooks/</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Criar <code>src/lib/</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.5 Criar <code>src/stores/</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.6 Criar <code>src/types/</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.7 Criar <code>src/fixtures/</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 5: Configurar Vitest</strong> (AC: 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Instalar vitest e @testing-library/react</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Criar vitest.config.ts</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Criar vitest.setup.ts com mocks (EventSource, fetch)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Criar src/test-utils.tsx com customRender</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 6: Criar lib/logger.ts</strong> (AC: 7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 Implementar função <code>log()</code> com levels: INFO, WARN, ERROR</li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Formato JSON estruturado para Cloud Logging</li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Criar teste unitário</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 7: Configurar ESLint/Prettier</strong> (AC: 8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1 Verificar configuração ESLint do Next.js</li>
+<li><input checked="" disabled="" type="checkbox"> 7.2 Adicionar regras customizadas se necessário</li>
+<li><input checked="" disabled="" type="checkbox"> 7.3 Configurar scripts no package.json</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 8: Configurar layout base</strong> (AC: 9)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 8.1 Configurar root layout com <code>&lt;html className=&quot;dark&quot;&gt;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 8.2 Criar página inicial com redirect para /videos</li>
+<li><input checked="" disabled="" type="checkbox"> 8.3 Executar <code>pnpm build</code> para validar</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Technical Stack (Versões Obrigatórias)</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Version</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Next.js</td>
+<td>15+</td>
+<td>App Router, <code>runtime: &#39;nodejs&#39;</code></td>
+</tr>
+<tr>
+<td>React</td>
+<td>19</td>
+<td>Server Components by default</td>
+</tr>
+<tr>
+<td>TypeScript</td>
+<td>5.x</td>
+<td>strict mode obrigatório</td>
+</tr>
+<tr>
+<td>Tailwind CSS</td>
+<td>v4</td>
+<td>OKLCH colors, <code>@theme</code> inline</td>
+</tr>
+<tr>
+<td>shadcn/ui</td>
+<td>latest</td>
+<td>Radix primitives</td>
+</tr>
+<tr>
+<td>Vitest</td>
+<td>latest</td>
+<td>Co-located tests</td>
+</tr>
+<tr>
+<td>pnpm</td>
+<td>latest</td>
+<td>Package manager</td>
+</tr>
+</tbody></table>
+<h3>Comandos de Setup</h3>
+<pre><code class="language-bash"># Criar projeto dentro do monorepo (se aplicável)
+cd apps/
+pnpm create next-app@latest iara \
+  --typescript \
+  --tailwind \
+  --eslint \
+  --app \
+  --src-dir \
+  --turbopack \
+  --import-alias &quot;@/*&quot; \
+  --use-pnpm
+
+cd iara
+
+# Inicializar shadcn/ui
+pnpm dlx shadcn@latest init
+
+# Adicionar componentes base
+pnpm dlx shadcn@latest add button card scroll-area skeleton badge tooltip separator resizable-panel dropdown-menu
+</code></pre>
+<h3>Configuração Tailwind v4</h3>
+<p><strong>postcss.config.mjs:</strong></p>
+<pre><code class="language-javascript">export default {
+  plugins: {
+    &#39;@tailwindcss/postcss&#39;: {},
+  },
+}
+</code></pre>
+<p><strong>globals.css (exemplo):</strong></p>
+<pre><code class="language-css">@import &#39;tailwindcss&#39;;
+@import &#39;tw-animate-css&#39;;
+
+@theme {
+  --color-background: oklch(0.15 0.01 260);
+  --color-foreground: oklch(0.95 0.01 260);
+  /* ... demais tokens */
+}
+</code></pre>
+<h3>Estrutura de Pastas Final</h3>
+<pre><code>pptnc/apps/iara/
+├── src/
+│   ├── app/
+│   │   ├── globals.css
+│   │   ├── layout.tsx          # Root: &lt;html className=&quot;dark&quot;&gt;
+│   │   ├── page.tsx            # Redirect → /videos
+│   │   └── videos/
+│   │       └── page.tsx
+│   ├── components/
+│   │   ├── ui/                 # shadcn/ui
+│   │   └── video/              # Domain components (empty, .gitkeep)
+│   ├── hooks/                  # (empty, .gitkeep)
+│   ├── lib/
+│   │   ├── utils.ts
+│   │   ├── logger.ts           # Structured logging
+│   │   └── logger.test.ts
+│   ├── stores/                 # (empty, .gitkeep)
+│   ├── types/                  # (empty, .gitkeep)
+│   ├── fixtures/               # (empty, .gitkeep)
+│   └── test-utils.tsx
+├── vitest.config.ts
+├── vitest.setup.ts
+├── postcss.config.mjs
+├── next.config.ts
+├── tsconfig.json
+├── eslint.config.mjs
+├── .prettierrc
+├── components.json
+└── package.json
+</code></pre>
+<h3>lib/logger.ts Template</h3>
+<pre><code class="language-typescript">type LogLevel = &#39;INFO&#39; | &#39;WARN&#39; | &#39;ERROR&#39;
+
+interface LogPayload {
+  [key: string]: unknown
+}
+
+export function log(level: LogLevel, message: string, payload?: LogPayload): void {
+  const entry = {
+    severity: level,
+    message,
+    timestamp: new Date().toISOString(),
+    ...payload,
+  }
+
+  if (level === &#39;ERROR&#39;) {
+    console.error(JSON.stringify(entry))
+  } else {
+    console.log(JSON.stringify(entry))
+  }
+}
+</code></pre>
+<h3>test-utils.tsx Template</h3>
+<pre><code class="language-typescript">import { render, RenderOptions } from &#39;@testing-library/react&#39;
+import { ReactElement } from &#39;react&#39;
+
+function AllTheProviders({ children }: { children: React.ReactNode }) {
+  return &lt;div id=&quot;portal-root&quot;&gt;{children}&lt;/div&gt;
+}
+
+function customRender(ui: ReactElement, options?: Omit&lt;RenderOptions, &#39;wrapper&#39;&gt;) {
+  return render(ui, { wrapper: AllTheProviders, ...options })
+}
+
+export * from &#39;@testing-library/react&#39;
+export { customRender as render }
+</code></pre>
+<hr>
+<h3>Project Structure Notes</h3>
+<ul>
+<li>Esta é a <strong>primeira story</strong> do projeto - não há código existente</li>
+<li>Estrutura segue exatamente o padrão da Architecture document</li>
+<li>Dark mode fixo (sem toggle, sem next-themes)</li>
+<li>Turbopack habilitado para desenvolvimento</li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: architecture-iara.md#Project Structure]</li>
+<li>[Source: architecture-iara.md#Technical Stack]</li>
+<li>[Source: project-context-iara.md#14 Enforcement Rules]</li>
+<li>[Source: epics-iara.md#Story 1.1]</li>
+</ul>
+<hr>
+<h2>Enforcement Rules para esta Story</h2>
+<ol>
+<li><strong>File Naming</strong>: kebab-case para arquivos, PascalCase para exports</li>
+<li><strong>Import Order</strong>: React/Next → External → Internal → Utils → Types</li>
+<li><strong>Structured Logging</strong>: Usar <code>lib/logger.ts</code>, NUNCA <code>console.log</code> (exceto no próprio logger)</li>
+<li><strong>Test Utils</strong>: Sempre importar render de <code>@/test-utils</code></li>
+<li><strong>Dark Mode</strong>: <code>&lt;html className=&quot;dark&quot;&gt;</code> fixo, sem toggle</li>
+</ol>
+<hr>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Corrigido componente resizable.tsx para usar nova API do react-resizable-panels v4.5.1 (Group, Panel, Separator)</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ol>
+<li><p><strong>Task 1</strong>: Projeto Next.js 16.1.4 criado com sucesso em apps/iara/</p>
+<ul>
+<li>TypeScript 5.9.3 com strict mode</li>
+<li>React 19.2.3</li>
+<li>App Router habilitado</li>
+<li>Path alias @/* configurado</li>
+</ul>
+</li>
+<li><p><strong>Task 2</strong>: Tailwind CSS v4.1.18 configurado</p>
+<ul>
+<li>postcss.config.mjs com @tailwindcss/postcss</li>
+<li>globals.css com OKLCH colors e @theme inline</li>
+<li>tw-animate-css 1.4.0 instalado</li>
+</ul>
+</li>
+<li><p><strong>Task 3</strong>: shadcn/ui inicializado</p>
+<ul>
+<li>Tema dark-only (sem light mode)</li>
+<li>Componentes: button, card, scroll-area, skeleton, badge, tooltip, separator, resizable, dropdown-menu</li>
+</ul>
+</li>
+<li><p><strong>Task 4</strong>: Estrutura de pastas criada</p>
+<ul>
+<li>src/components/ui/ (shadcn)</li>
+<li>src/components/video/</li>
+<li>src/hooks/</li>
+<li>src/lib/</li>
+<li>src/stores/</li>
+<li>src/types/</li>
+<li>src/fixtures/</li>
+</ul>
+</li>
+<li><p><strong>Task 5</strong>: Vitest 4.0.18 configurado</p>
+<ul>
+<li>vitest.config.ts com jsdom environment</li>
+<li>vitest.setup.ts com mocks (EventSource, fetch, ResizeObserver, IntersectionObserver)</li>
+<li>test-utils.tsx com customRender e AllTheProviders wrapper</li>
+</ul>
+</li>
+<li><p><strong>Task 6</strong>: lib/logger.ts implementado</p>
+<ul>
+<li>Função log() com INFO, WARN, ERROR</li>
+<li>Formato JSON para Cloud Logging</li>
+<li>5 testes unitários passando</li>
+</ul>
+</li>
+<li><p><strong>Task 7</strong>: ESLint configurado</p>
+<ul>
+<li>eslint.config.mjs do Next.js</li>
+<li>Scripts: lint, lint:fix no package.json</li>
+</ul>
+</li>
+<li><p><strong>Task 8</strong>: Layout base configurado</p>
+<ul>
+<li>RootLayout com <html className="dark"></li>
+<li>HomePage com redirect para /videos</li>
+<li>VideosPage placeholder</li>
+<li>Build passa sem erros</li>
+</ul>
+</li>
+</ol>
+<h3>File List</h3>
+<p><strong>Arquivos criados em <code>../PPTNC/pptnc/apps/iara/</code>:</strong></p>
+<ul>
+<li>src/app/globals.css</li>
+<li>src/app/layout.tsx</li>
+<li>src/app/page.tsx</li>
+<li>src/app/videos/page.tsx</li>
+<li>src/components/ui/button.tsx</li>
+<li>src/components/ui/card.tsx</li>
+<li>src/components/ui/scroll-area.tsx</li>
+<li>src/components/ui/skeleton.tsx</li>
+<li>src/components/ui/badge.tsx</li>
+<li>src/components/ui/tooltip.tsx</li>
+<li>src/components/ui/separator.tsx</li>
+<li>src/components/ui/resizable.tsx</li>
+<li>src/components/ui/dropdown-menu.tsx</li>
+<li>src/components/video/.gitkeep</li>
+<li>src/hooks/.gitkeep</li>
+<li>src/stores/.gitkeep</li>
+<li>src/types/.gitkeep</li>
+<li>src/fixtures/.gitkeep</li>
+<li>src/lib/utils.ts</li>
+<li>src/lib/logger.ts</li>
+<li>src/lib/logger.test.ts</li>
+<li>src/test-utils.tsx</li>
+<li>vitest.config.ts</li>
+<li>vitest.setup.ts</li>
+<li>package.json</li>
+<li>tsconfig.json</li>
+<li>postcss.config.mjs</li>
+<li>next.config.ts</li>
+<li>eslint.config.mjs</li>
+<li>.prettierrc</li>
+<li>components.json</li>
+</ul>
+<hr>
+<h2>Senior Developer Review (AI)</h2>
+<p><strong>Review Date:</strong> 2026-01-24
+<strong>Reviewer:</strong> Claude Opus 4.5 (code-review workflow)
+<strong>Review Outcome:</strong> ✅ Approved (after fixes)</p>
+<h3>Issues Found: 1 High, 4 Medium, 2 Low</h3>
+<h4>Action Items (All Resolved)</h4>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <strong>[HIGH]</strong> AC8 parcialmente implementado: Prettier não estava configurado</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>[MEDIUM]</strong> Estrutura documentada incorretamente: middleware.ts e api/ não são desta story</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>[MEDIUM]</strong> Pastas vazias sem .gitkeep: hooks/, stores/, types/, fixtures/, video/</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>[MEDIUM]</strong> Git não commitado (informational - user responsibility)</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>[LOW]</strong> Arquivos não formatados com Prettier</li>
+</ul>
+<h3>Fixes Applied</h3>
+<ol>
+<li>Instalado <code>prettier</code> e <code>eslint-config-prettier</code></li>
+<li>Criado <code>.prettierrc</code> com configuração padrão</li>
+<li>Atualizado <code>eslint.config.mjs</code> para incluir prettier</li>
+<li>Adicionado scripts <code>format</code> e <code>format:check</code> ao package.json</li>
+<li>Criado <code>.gitkeep</code> em todas as pastas vazias</li>
+<li>Executado <code>pnpm format</code> para formatar todos os arquivos</li>
+<li>Corrigida documentação da estrutura de pastas</li>
+</ol>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-01-24: Story implementation complete - all 8 tasks completed, 5 tests passing, build successful</li>
+<li>2026-01-24: Projeto movido de bmad/apps/iara para pptnc/apps/iara (monorepo correto)</li>
+<li>2026-01-24: Code review completed - 7 issues found and fixed (Prettier, .gitkeep, docs)</li>
+</ul>
+
+  </main>
+</body>
+</html>

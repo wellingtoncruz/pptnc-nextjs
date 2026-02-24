@@ -1,0 +1,2780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UX Design — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li class="active"><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-2/">Fase 2 — Planejamento</a></nav><div class="info-box"><table><tr><th>stepsCompleted</th><td>1,2,3,4,5,6,7,8,9,10,11,12,13,14</td></tr>
+<tr><th>inputDocuments</th><td>prd.md,product-brief-iara-2026-01-23.md,project-context.md</td></tr>
+<tr><th>date</th><td>Fri Jan 23 2026 21:00:00 GMT-0300 (Horário Padrão de Brasília)</td></tr>
+<tr><th>author</th><td>Wellington</td></tr>
+<tr><th>project</th><td>iara</td></tr>
+<tr><th>lastStep</th><td>14</td></tr>
+<tr><th>status</th><td>complete</td></tr></table></div>
+<h1>UX Design Specification - IAra</h1>
+<p><strong>Author:</strong> Wellington
+<strong>Date:</strong> 2026-01-24</p>
+<hr>
+<h2>Executive Summary</h2>
+<h3>Project Vision</h3>
+<p>O <strong>IAra</strong> é uma plataforma web de gestão do pipeline de publicação de podcast com automação via LLM. A interface é uma SPA desktop-first focada em produtividade operacional para um produtor não técnico que trabalha em sessões noturnas. O fluxo core é: Detectar novos vídeos → Processar metadados → Revisar → Publicar, um vídeo por vez. A metáfora visual é uma <strong>esteira de produção</strong> (entrada → processamento → saída), não um dashboard genérico de vídeos.</p>
+<h3>Target Users</h3>
+<p><strong>Carlos (Produtor) — Usuário Principal:</strong></p>
+<ul>
+<li>Não técnico, experiência com YouTube Studio e redes sociais</li>
+<li>Trabalha à noite com tempo limitado</li>
+<li>Gerencia ~22 vídeos/semana em sessões parciais</li>
+<li>Precisa de interface zero-friction, óbvia sem explicação</li>
+<li>Modelo mental: vem do YouTube Studio (lista + edição inline), mas IAra é ferramenta de <strong>processamento</strong>, não gerenciador de vídeos</li>
+</ul>
+<p><strong>Wellington (Admin) — Usuário Secundário (Phase 2 Growth):</strong></p>
+<ul>
+<li>Técnico, gerencia prompts e configurações</li>
+<li>Acessa seção &quot;Configurações&quot; para CRUD de tipos/prompts</li>
+<li>Consulta métricas de reprocessamento</li>
+</ul>
+<h3>Key Design Challenges</h3>
+<ol>
+<li><strong>Usuário não técnico operando sistema complexo</strong> — Abstrair toda a complexidade de LLMs, APIs e configurações. Cada ação óbvia sem explicação.</li>
+<li><strong>Feedback de processamento assíncrono (30-120s)</strong> — Comunicar progresso via SSE de forma reconfortante, sem ansiedade.</li>
+<li><strong>Compliance sem bloqueio</strong> — Alertas com tom suave (amber-200, ícones informativos). Linguagem &quot;dá uma olhada nisso&quot;, não &quot;PERIGO!&quot;.</li>
+<li><strong>Densidade de informação por vídeo</strong> — Título, descrição, tags, capítulos, compliance em uma tela sem sobrecarregar.</li>
+<li><strong>Diferenciação do YouTube Studio</strong> — Comunicar que é ferramenta de processamento, não dashboard de analytics/gerenciamento.</li>
+</ol>
+<h3>Design Opportunities</h3>
+<ol>
+<li><strong>Fluxo &quot;one thing at a time&quot;</strong> — Um vídeo por vez em foco, com sidebar/breadcrumb mínimo de progresso (&quot;X de Y processados&quot;).</li>
+<li><strong>Sensação de progresso</strong> — Indicadores visuais motivam nas sessões noturnas. Lista diminuindo = produtividade tangível.</li>
+<li><strong>SSE como &quot;mágica acontecendo&quot;</strong> — Metadados aparecendo campo a campo ao invés de spinner genérico.</li>
+<li><strong>Tabs/filtros por status</strong> — Novos | Em Processamento | Prontos | Enviados. shadcn-native, sem drag desnecessário. Fluxo visual de esteira.</li>
+<li><strong>Consistência com Portal PPTNC</strong> — shadcn/ui + Tailwind, mesma linguagem visual do ecossistema.</li>
+</ol>
+<h3>Design Foundations</h3>
+<p><strong>Visual:</strong></p>
+<ul>
+<li>Look and feel idêntico ao Portal PPTNC</li>
+<li><strong>Dark mode only</strong> (sem toggle — classe <code>dark</code> fixa no <code>&lt;html&gt;</code>)</li>
+<li>shadcn/ui components + Tailwind CSS</li>
+<li>Desktop-first (responsive básico para tablet, mobile não prioridade)</li>
+<li>Componentes theme-aware internamente, app theme-fixed em dark</li>
+</ul>
+<p><strong>Legibilidade em Dark Mode:</strong></p>
+<ul>
+<li>Textos longos em cinza claro (não branco puro) — reduz fadiga visual</li>
+<li>Contraste adequado para leitura prolongada em sessões noturnas</li>
+<li>Alertas de compliance em tons suaves (amber-200, não yellow-500)</li>
+</ul>
+<h2>Core User Experience</h2>
+<h3>Defining Experience</h3>
+<p><strong>Core Loop:</strong> Selecionar vídeo → Processar → Revisar → Enviar</p>
+<p>Este é o loop que Carlos repete ~22x por semana. Toda a UX da IAra existe para tornar esse loop o mais fluido possível. A interface deve permitir que Carlos entre, processe o que der, e saia — sem cerimônia, sem atrito, sem surpresas.</p>
+<p><strong>Ação mais frequente:</strong> Clicar &quot;Processar&quot; em um vídeo e revisar o resultado.
+<strong>Ação mais crítica:</strong> Revisar metadados e decidir &quot;enviar&quot; ou &quot;reprocessar&quot;.
+<strong>Ação que deve ser effortless:</strong> Tudo que não é decisão humana (detecção, classificação, seleção de prompts, persistência).</p>
+<h3>Platform Strategy</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Decisão</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Plataforma</td>
+<td>Web SPA</td>
+<td>Acesso universal, sem instalação</td>
+</tr>
+<tr>
+<td>Input</td>
+<td>Mouse/teclado</td>
+<td>Desktop-first, produtor em computador</td>
+</tr>
+<tr>
+<td>Offline</td>
+<td>Não suportado</td>
+<td>Depende de APIs externas (YouTube, Gemini)</td>
+</tr>
+<tr>
+<td>Responsividade</td>
+<td>Desktop-first</td>
+<td>Tablet básico, mobile não prioridade</td>
+</tr>
+<tr>
+<td>Framework UI</td>
+<td>shadcn/ui + Tailwind</td>
+<td>Compartilhado com Portal PPTNC</td>
+</tr>
+<tr>
+<td>Tema</td>
+<td>Dark mode only</td>
+<td>Sessões noturnas</td>
+</tr>
+</tbody></table>
+<h3>Effortless Interactions</h3>
+<p><strong>Zero pensamento necessário:</strong></p>
+<ul>
+<li><strong>Verificar novos vídeos</strong> — Um botão, resultado em segundos</li>
+<li><strong>Classificação por tipo</strong> — Automática por duração, sem decisão do produtor</li>
+<li><strong>Seleção de prompts</strong> — Automática por tipo de vídeo (N:N)</li>
+<li><strong>Persistência</strong> — Rascunhos salvos automaticamente, sem &quot;Save&quot;</li>
+<li><strong>Envio para YouTube</strong> — Um clique por vídeo, confirmação persistente (mudança de status visual, não toast temporário)</li>
+</ul>
+<p><strong>Automático (sem intervenção):</strong></p>
+<ul>
+<li>Compliance check executado junto com metadados</li>
+<li>Status do vídeo atualizado automaticamente</li>
+<li>Reconexão SSE se stream cair</li>
+</ul>
+<p><strong>Estados de falha claros:</strong></p>
+<ul>
+<li>Falha no envio → Vídeo volta para &quot;Pronto&quot; com indicação &quot;falha no envio, tente novamente&quot; — nunca fica em limbo</li>
+</ul>
+<h3>Critical Success Moments</h3>
+<table>
+<thead>
+<tr>
+<th>Momento</th>
+<th>O que acontece</th>
+<th>Emoção alvo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Primeiro uso</strong></td>
+<td>Login → Verificar → Lista organizada aparece</td>
+<td>&quot;Isso é simples&quot;</td>
+</tr>
+<tr>
+<td><strong>Primeiro processamento</strong></td>
+<td>Clica Processar → Metadados aparecem campo a campo</td>
+<td>&quot;Mágica acontecendo&quot;</td>
+</tr>
+<tr>
+<td><strong>Resultado bom</strong></td>
+<td>Revisa título/descrição → Exatamente o que queria</td>
+<td>&quot;A IAra entende meu podcast&quot;</td>
+</tr>
+<tr>
+<td><strong>Override funciona</strong></td>
+<td>Instrução adicional → Reprocessa → Resultado melhor</td>
+<td>&quot;Tenho controle&quot;</td>
+</tr>
+<tr>
+<td><strong>Sessão produtiva</strong></td>
+<td>Processa 8 vídeos → Fecha computador cedo</td>
+<td>&quot;Recuperei meu tempo&quot;</td>
+</tr>
+<tr>
+<td><strong>Retorno ao trabalho</strong></td>
+<td>Reabre IAra → Vê exatamente onde parou → Continua sem atrito</td>
+<td>&quot;Como se eu nunca tivesse saído&quot;</td>
+</tr>
+<tr>
+<td><strong>Erro amistoso</strong></td>
+<td>API falha → Mensagem clara → Tenta de novo → Funciona</td>
+<td>&quot;Não perdi nada&quot;</td>
+</tr>
+</tbody></table>
+<h3>Experience Principles</h3>
+<ol>
+<li><strong>&quot;One click, immediate feedback&quot;</strong> — Cada ação do produtor gera resposta visual imediata (nem que seja &quot;processando...&quot;). O resultado chega quando pronto.</li>
+<li><strong>&quot;Mostre, não explique&quot;</strong> — Interface auto-explicativa. Se precisa de tooltip, está complexo demais.</li>
+<li><strong>&quot;Progresso, não perfeição&quot;</strong> — O produtor avança vídeo a vídeo. Rascunhos existem para isso. Nenhum vídeo precisa ser perfeito agora.</li>
+<li><strong>&quot;A máquina trabalha, você decide&quot;</strong> — LLM processa, compliance alerta, mas a decisão final é sempre do produtor.</li>
+<li><strong>&quot;Nada se perde&quot;</strong> — Rascunhos persistem, estado preservado, crash não apaga trabalho. Falha de envio retorna ao estado anterior, nunca limbo.</li>
+</ol>
+<h2>Desired Emotional Response</h2>
+<h3>Primary Emotional Goals</h3>
+<table>
+<thead>
+<tr>
+<th>Emoção</th>
+<th>Descrição</th>
+<th>Quando</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Produtividade tranquila</strong></td>
+<td>Eficiência sem esforço, calma operacional</td>
+<td>Durante todo o uso</td>
+</tr>
+<tr>
+<td><strong>Confiança</strong></td>
+<td>&quot;Sei o que fazer, sei o que esperar&quot;</td>
+<td>Navegação e ações</td>
+</tr>
+<tr>
+<td><strong>Controle</strong></td>
+<td>&quot;A máquina sugere, eu decido&quot;</td>
+<td>Revisão e override</td>
+</tr>
+<tr>
+<td><strong>Alívio</strong></td>
+<td>&quot;Isso antes levava horas&quot;</td>
+<td>Ao finalizar vídeos</td>
+</tr>
+<tr>
+<td><strong>Segurança</strong></td>
+<td>&quot;Nada se perde, posso parar quando quiser&quot;</td>
+<td>Rascunhos e multi-sessão</td>
+</tr>
+</tbody></table>
+<h3>Emotional Journey Mapping</h3>
+<table>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>Emoção Desejada</th>
+<th>Anti-emoção (evitar)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Abrir a IAra</td>
+<td>Familiaridade, &quot;meu espaço de trabalho&quot;</td>
+<td>Sobrecarga, &quot;por onde começo?&quot;</td>
+</tr>
+<tr>
+<td>Verificar novos vídeos</td>
+<td>Curiosidade leve, &quot;o que tenho hoje?&quot;</td>
+<td>Ansiedade, &quot;são muitos!&quot;</td>
+</tr>
+<tr>
+<td>Processar</td>
+<td>Expectativa satisfatória, &quot;mágica acontecendo&quot;</td>
+<td>Ansiedade de espera, &quot;travou?&quot;</td>
+</tr>
+<tr>
+<td>Revisar resultado</td>
+<td>Satisfação, &quot;exatamente o que queria&quot;</td>
+<td>Frustração, &quot;de novo errado&quot;</td>
+</tr>
+<tr>
+<td>Override/reprocessar</td>
+<td>Empoderamento, &quot;tenho controle&quot;</td>
+<td>Impotência, &quot;não sei o que escrever&quot;</td>
+</tr>
+<tr>
+<td>Compliance alert</td>
+<td>Atenção calma, &quot;vou dar uma olhada&quot;</td>
+<td>Medo, &quot;fiz algo errado?&quot;</td>
+</tr>
+<tr>
+<td>Enviar para YouTube</td>
+<td>Concluído, &quot;mais um feito&quot;</td>
+<td>Dúvida, &quot;será que foi?&quot;</td>
+</tr>
+<tr>
+<td>Fechar a IAra</td>
+<td>Realização, &quot;noite produtiva&quot;</td>
+<td>Culpa, &quot;deveria ter feito mais&quot;</td>
+</tr>
+<tr>
+<td>Retornar no dia seguinte</td>
+<td>Continuidade, &quot;exatamente onde parei&quot;</td>
+<td>Perda, &quot;cadê meu trabalho?&quot;</td>
+</tr>
+</tbody></table>
+<h3>Micro-Emotions</h3>
+<p><strong>Confiança vs. Confusão:</strong></p>
+<ul>
+<li>Cada tela tem um propósito claro e uma ação primária óbvia</li>
+<li>Status do vídeo sempre visível, nunca ambíguo</li>
+</ul>
+<p><strong>Satisfação vs. Frustração:</strong></p>
+<ul>
+<li>Metadados aparecendo campo a campo (SSE) = micro-satisfações acumuladas</li>
+<li>Override funciona na primeira tentativa na maioria dos casos</li>
+</ul>
+<p><strong>Calma vs. Ansiedade:</strong></p>
+<ul>
+<li>Dark mode + tipografia leve = ambiente noturno relaxado</li>
+<li>Processamento com feedback visual contínuo, nunca tela congelada</li>
+<li>&quot;X de Y processados&quot; mostra progresso sem pressão</li>
+</ul>
+<p><strong>Segurança vs. Medo:</strong></p>
+<ul>
+<li>Compliance com tom informativo (amber, não red)</li>
+<li>&quot;Nada se perde&quot; visualmente claro (indicador de &quot;salvo&quot; sutil)</li>
+<li>Falha de envio retorna a estado anterior, nunca limbo</li>
+</ul>
+<h3>Design Implications</h3>
+<table>
+<thead>
+<tr>
+<th>Emoção Desejada</th>
+<th>Implicação de Design</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Produtividade tranquila</td>
+<td>Layout limpo, poucos elementos, foco no conteúdo. Sem decoração desnecessária.</td>
+</tr>
+<tr>
+<td>Confiança</td>
+<td>Estados claros, transições suaves, ações previsíveis. Feedback visual para cada clique.</td>
+</tr>
+<tr>
+<td>Controle</td>
+<td>Campo de override sempre acessível, botão &quot;Reprocessar&quot; proeminente. Decisão final é do produtor.</td>
+</tr>
+<tr>
+<td>Alívio</td>
+<td>Contadores de progresso (&quot;3 enviados hoje&quot;), mudança visual de status persistente.</td>
+</tr>
+<tr>
+<td>Segurança</td>
+<td>Indicador sutil de &quot;salvo automaticamente&quot;, estados de falha com caminho claro de recuperação.</td>
+</tr>
+<tr>
+<td>Calma</td>
+<td>Dark mode, cores frias, sem animações agressivas. Tipografia com bom espaçamento.</td>
+</tr>
+</tbody></table>
+<h3>Emotional Design Principles</h3>
+<ol>
+<li><strong>&quot;Ambiente noturno&quot;</strong> — A interface deve parecer um espaço de trabalho noturno calmo, não um cockpit cheio de luzes.</li>
+<li><strong>&quot;Micro-recompensas&quot;</strong> — Cada vídeo processado e enviado é uma pequena vitória visual. Acumular vitórias motiva.</li>
+<li><strong>&quot;Informar, não alarmar&quot;</strong> — Compliance e erros comunicam com neutralidade e clareza, nunca com urgência ou medo.</li>
+<li><strong>&quot;Presença silenciosa&quot;</strong> — O sistema trabalha em background. O produtor só interage quando há decisão humana a tomar.</li>
+<li><strong>&quot;Tempo respeitado&quot;</strong> — Nenhuma interação desperdiça tempo do produtor. Se o sistema pode decidir sozinho, decide.</li>
+</ol>
+<h2>UX Pattern Analysis &amp; Inspiration</h2>
+<h3>Inspiring Products Analysis</h3>
+<p><strong>YouTube Studio:</strong></p>
+<ul>
+<li><strong>Problema que resolve bem:</strong> Gestão de conteúdo de vídeo com edição inline direta na lista</li>
+<li><strong>Padrão de navegação:</strong> Lista vertical com metadados visíveis, clique para expandir/editar</li>
+<li><strong>Força UX:</strong> Familiaridade para Carlos — modelo mental já estabelecido</li>
+<li><strong>Fraqueza UX para IAra:</strong> É um gerenciador de conteúdo, não uma ferramenta de processamento. IAra não deve parecer um dashboard de analytics</li>
+</ul>
+<p><strong>Linear:</strong></p>
+<ul>
+<li><strong>Problema que resolve bem:</strong> Gestão de tarefas com foco e clareza, sem ruído visual</li>
+<li><strong>Padrão de navegação:</strong> Sidebar mínima + área de trabalho ampla, transições suaves</li>
+<li><strong>Força UX:</strong> Clean, keyboard-friendly, estados claros, sensação de progresso ao completar itens</li>
+<li><strong>Fraqueza UX para IAra:</strong> Complexidade de configuração desnecessária para Carlos (filtros, views, labels)</li>
+</ul>
+<h3>Transferable UX Patterns</h3>
+<p><strong>Navigation Patterns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Padrão</th>
+<th>Origem</th>
+<th>Aplicação na IAra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Lista como inbox</td>
+<td>Linear</td>
+<td>Lista principal mostra apenas o que precisa de atenção — vídeos processados e enviados saem da vista</td>
+</tr>
+<tr>
+<td>Edição inline/expandida</td>
+<td>YouTube Studio</td>
+<td>Clicar no vídeo expande detalhes para revisão sem navegar para outra tela</td>
+</tr>
+<tr>
+<td>Sidebar mínima</td>
+<td>Linear</td>
+<td>Navegação lateral reduzida ao essencial (não menu com 10 itens)</td>
+</tr>
+</tbody></table>
+<p><strong>Interaction Patterns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Padrão</th>
+<th>Origem</th>
+<th>Aplicação na IAra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sem status &quot;Processando&quot; visível</td>
+<td>Insight do usuário</td>
+<td>Se o vídeo está aberto, o usuário está operando nele. Se sai, volta para rascunho. Sem estado intermediário exposto</td>
+</tr>
+<tr>
+<td>Items desaparecem ao completar</td>
+<td>Linear</td>
+<td>Vídeos enviados saem da lista principal — são histórico do canal, não itens ativos</td>
+</tr>
+<tr>
+<td>Empty state como celebração</td>
+<td>Linear</td>
+<td>&quot;Tudo processado!&quot; quando inbox vazia — micro-recompensa visual</td>
+</tr>
+<tr>
+<td>Feedback progressivo (SSE)</td>
+<td>—</td>
+<td>Metadados aparecem campo a campo durante geração, não spinner genérico</td>
+</tr>
+</tbody></table>
+<p><strong>Visual Patterns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Padrão</th>
+<th>Origem</th>
+<th>Aplicação na IAra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Thumbnails com opacidade reduzida</td>
+<td>YouTube Studio (adaptado)</td>
+<td>Âncora visual sem competir com metadados textuais — reconhecimento rápido do vídeo</td>
+</tr>
+<tr>
+<td>Dark mode focado</td>
+<td>Linear</td>
+<td>Ambiente noturno calmo, tipografia com bom espaçamento, cores frias</td>
+</tr>
+<tr>
+<td>Cache de thumbnails</td>
+<td>Performance</td>
+<td>Thumbnails cacheadas localmente para lista rápida sem flickering</td>
+</tr>
+</tbody></table>
+<h3>Anti-Patterns to Avoid</h3>
+<table>
+<thead>
+<tr>
+<th>Anti-Padrão</th>
+<th>Por quê evitar</th>
+<th>Alternativa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dashboard com múltiplas listas/tabs de status</td>
+<td>Sobrecarga cognitiva para Carlos. Vídeos &quot;prontos&quot; e &quot;enviados&quot; não precisam de lista dedicada</td>
+<td>Inbox única com itens ativos. Enviados viram histórico</td>
+</tr>
+<tr>
+<td>Status &quot;Processando&quot; como estado persistente</td>
+<td>Se o vídeo está aberto, é óbvio que está sendo operado. Estado intermediário gera ansiedade</td>
+<td>Sem status explícito. Aberto = em uso. Fechou = rascunho</td>
+</tr>
+<tr>
+<td>Spinners genéricos em processamento LLM</td>
+<td>Ansiedade de espera (30-120s). &quot;Travou?&quot;</td>
+<td>SSE com campos aparecendo progressivamente</td>
+</tr>
+<tr>
+<td>Toasts temporários para confirmação de envio</td>
+<td>Informação crítica que desaparece</td>
+<td>Mudança de status visual persistente (item sai da lista)</td>
+</tr>
+<tr>
+<td>Drag &amp; drop para organização</td>
+<td>Complexidade desnecessária. Não há reordenamento manual no fluxo</td>
+<td>Ordenação automática por data/status</td>
+</tr>
+<tr>
+<td>Modal de confirmação para cada ação</td>
+<td>Atrito desnecessário. Carlos sabe o que está fazendo</td>
+<td>Ação direta com undo ou retorno a estado anterior em caso de falha</td>
+</tr>
+</tbody></table>
+<h3>Design Inspiration Strategy</h3>
+<p><strong>Adotar:</strong></p>
+<ul>
+<li>Modelo mental de <strong>inbox</strong> (itens chegam, são processados, desaparecem) — de Linear</li>
+<li><strong>Edição inline/expandida</strong> na lista — de YouTube Studio</li>
+<li><strong>Empty state celebratório</strong> — de Linear</li>
+<li><strong>Dark mode calmo</strong> com tipografia espaçada — de Linear</li>
+</ul>
+<p><strong>Adaptar:</strong></p>
+<ul>
+<li><strong>Lista do YouTube Studio</strong> → remover conceito de &quot;gerenciador permanente&quot;. Na IAra, itens completados saem da vista</li>
+<li><strong>Keyboard shortcuts do Linear</strong> → simplificar para produtor não-técnico (apenas atalhos óbvios como Enter, Esc)</li>
+<li><strong>Thumbnails</strong> → opacidade reduzida como âncora visual, não destaque principal</li>
+</ul>
+<p><strong>Evitar:</strong></p>
+<ul>
+<li>Múltiplos tabs/filtros de status (YouTube Studio has too many views)</li>
+<li>Complexidade de configuração de workspace (Linear power-user features)</li>
+<li>Qualquer animação que pareça &quot;tech demo&quot; em vez de funcional</li>
+</ul>
+<h2>Design System Foundation</h2>
+<h3>Design System Choice</h3>
+<p><strong>shadcn/ui + Tailwind CSS</strong> — Sistema temável com componentes headless (Radix UI primitives) e utilidades CSS.</p>
+<p><strong>Categoria:</strong> Themeable System — balanço entre velocidade de desenvolvimento e flexibilidade visual.</p>
+<h3>Rationale for Selection</h3>
+<table>
+<thead>
+<tr>
+<th>Fator</th>
+<th>Decisão</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Consistência de ecossistema</td>
+<td>shadcn/ui compartilhado com Portal PPTNC</td>
+<td>Mesmos componentes, tokens, padrões — reduz carga cognitiva de manutenção</td>
+</tr>
+<tr>
+<td>Velocidade de desenvolvimento</td>
+<td>Componentes prontos, copy-paste-own</td>
+<td>Dev solo precisa de produtividade máxima sem sacrificar qualidade</td>
+</tr>
+<tr>
+<td>Customização</td>
+<td>Tailwind utilities + CSS variables</td>
+<td>Dark mode fixo, tokens customizados, sem override de framework pesado</td>
+</tr>
+<tr>
+<td>Acessibilidade</td>
+<td>Radix UI primitives built-in</td>
+<td>ARIA patterns nativos sem esforço adicional</td>
+</tr>
+<tr>
+<td>Bundle size</td>
+<td>Tree-shakeable, apenas o que usar</td>
+<td>SPA precisa de performance — sem framework UI monolítico</td>
+</tr>
+<tr>
+<td>Manutenção</td>
+<td>Componentes locais (não dependência npm)</td>
+<td>Atualizações sob controle, sem breaking changes surpresa</td>
+</tr>
+</tbody></table>
+<h3>Implementation Approach</h3>
+<p><strong>Estrutura de componentes:</strong></p>
+<pre><code>src/
+  components/
+    ui/          ← shadcn/ui base (Button, Card, Input, etc.)
+    app/         ← Composições específicas IAra (VideoCard, ProcessingFeed, etc.)
+</code></pre>
+<p><strong>Design tokens via CSS variables (Tailwind):</strong></p>
+<ul>
+<li>Cores: paleta dark-first com semantic tokens (--background, --foreground, --primary, --muted, etc.)</li>
+<li>Tipografia: Inter/system-ui, escala de tamanhos consistente</li>
+<li>Espaçamento: escala Tailwind padrão (4px base)</li>
+<li>Bordas/Radii: consistente com Portal PPTNC</li>
+</ul>
+<p><strong>Componentes core necessários (shadcn/ui):</strong></p>
+<ul>
+<li><code>Button</code>, <code>Card</code>, <code>Badge</code>, <code>Input</code>, <code>Textarea</code> — interações primárias</li>
+<li><code>Skeleton</code> — loading states durante SSE</li>
+<li><code>Alert</code> — compliance warnings (amber tone)</li>
+<li><code>ScrollArea</code> — listas de vídeos</li>
+<li><code>Separator</code>, <code>Tooltip</code> — organização visual</li>
+</ul>
+<h3>Customization Strategy</h3>
+<p><strong>Dark Mode:</strong></p>
+<ul>
+<li>Classe <code>dark</code> fixa no <code>&lt;html&gt;</code> — sem toggle, sem flash</li>
+<li>Tokens de cor otimizados para leitura prolongada noturna</li>
+<li>Backgrounds em zinc/slate-900, textos em zinc-200/300 (não branco puro)</li>
+<li>Accent colors sutis para ações primárias</li>
+</ul>
+<p><strong>Componentes IAra-específicos (não shadcn):</strong></p>
+<ul>
+<li><code>VideoCard</code> — thumbnail + metadados + status badge + ação primária</li>
+<li><code>ProcessingStream</code> — visualização SSE campo a campo</li>
+<li><code>ComplianceAlert</code> — wrapper de Alert com tom amber suave</li>
+<li><code>InboxEmptyState</code> — celebração quando inbox vazia</li>
+<li><code>OverrideInput</code> — textarea com contexto para instruções adicionais</li>
+</ul>
+<p><strong>Princípios de customização:</strong></p>
+<ol>
+<li>Usar shadcn/ui as-is sempre que possível (não reinventar)</li>
+<li>Compor componentes app-level a partir de primitivos shadcn</li>
+<li>Tokens compartilhados com Portal PPTNC via mesma configuração Tailwind</li>
+<li>Animações mínimas — apenas transições de estado (opacity, transform), nunca decorativas</li>
+</ol>
+<h2>Defining Core Experience</h2>
+<h3>The Defining Interaction</h3>
+<p><strong>&quot;Processar → Ver a mágica → Decidir&quot;</strong></p>
+<p>Carlos clica um botão. Em segundos, título, descrição, tags e capítulos começam a aparecer campo a campo na tela. Ele revisa, ajusta se necessário, e envia. Um vídeo resolvido. Próximo.</p>
+<p><strong>Se descrever para um amigo:</strong> &quot;Eu clico um botão e a IAra escreve tudo pra mim. Eu só confiro e mando.&quot;</p>
+<p><strong>Se funcionar perfeitamente:</strong> O produtor sente que tem um assistente que entende o podcast. Cada clique em &quot;Processar&quot; é uma aposta que quase sempre dá certo.</p>
+<h3>User Mental Model</h3>
+<p><strong>De onde Carlos vem:</strong></p>
+<ul>
+<li>YouTube Studio: lista de vídeos + edição manual de metadados, campo por campo</li>
+<li>Processo anterior: assistir trechos, pensar em título, escrever descrição, inventar tags — horas por semana</li>
+</ul>
+<p><strong>Modelo mental que IAra introduz:</strong></p>
+<ul>
+<li><strong>Inbox de trabalho</strong> — itens chegam, são processados, desaparecem</li>
+<li><strong>Máquina que escreve</strong> — eu não crio conteúdo, eu aprovo conteúdo</li>
+<li><strong>Esteira de produção</strong> — entrada → processamento → saída, um por vez</li>
+</ul>
+<p><strong>Onde pode haver confusão:</strong></p>
+<ul>
+<li>&quot;Cadê meus vídeos enviados?&quot; → Não estão na inbox. São histórico do canal</li>
+<li>&quot;Posso editar direto?&quot; → Sim, mas o fluxo ideal é: Processar → Revisar → Ajustar (override) → Enviar</li>
+<li>&quot;O que é override?&quot; → Instruções adicionais para a IA refazer. Ex: &quot;Use um tom mais informal&quot; ou &quot;Mencione o convidado no título&quot;</li>
+</ul>
+<h3>Success Criteria for Core Experience</h3>
+<table>
+<thead>
+<tr>
+<th>Critério</th>
+<th>Indicador de Sucesso</th>
+<th>Anti-indicador</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Velocidade percebida</strong></td>
+<td>Primeiro campo aparece em &lt;3s após clique</td>
+<td>Tela parada por &gt;5s sem feedback</td>
+</tr>
+<tr>
+<td><strong>Qualidade do resultado</strong></td>
+<td>Carlos envia sem editar em &gt;70% dos vídeos</td>
+<td>Precisa reprocessar &gt;50% das vezes</td>
+</tr>
+<tr>
+<td><strong>Confiança no sistema</strong></td>
+<td>Carlos clica &quot;Processar&quot; sem hesitação</td>
+<td>Para e pensa &quot;será que vai funcionar?&quot;</td>
+</tr>
+<tr>
+<td><strong>Clareza do fluxo</strong></td>
+<td>Carlos sabe o próximo passo sem pensar</td>
+<td>Olha a tela e não sabe o que fazer</td>
+</tr>
+<tr>
+<td><strong>Sensação de progresso</strong></td>
+<td>&quot;Já fiz 5 hoje&quot; = satisfação tangível</td>
+<td>&quot;Quanto falta?&quot; sem resposta visual</td>
+</tr>
+<tr>
+<td><strong>Override eficaz</strong></td>
+<td>Uma instrução resolve o ajuste</td>
+<td>Precisa de múltiplos reprocessamentos</td>
+</tr>
+</tbody></table>
+<h3>Novel vs. Established Patterns</h3>
+<p><strong>Padrões estabelecidos (familiar para Carlos):</strong></p>
+<ul>
+<li>Lista vertical de itens (YouTube Studio, email)</li>
+<li>Campos de formulário para metadados (qualquer CMS)</li>
+<li>Botões de ação primária proeminentes</li>
+<li>Status visual por cores/badges</li>
+</ul>
+<p><strong>Padrão novel (diferencial IAra):</strong></p>
+<ul>
+<li><strong>SSE Progressive Reveal</strong> — campos aparecem um a um durante geração LLM<ul>
+<li>Não é um padrão que Carlos conhece de outras ferramentas</li>
+<li>Metáfora: &quot;assistente digitando em tempo real&quot; (familiar de ChatGPT)</li>
+<li>Reduz ansiedade de espera — algo está acontecendo visivelmente</li>
+<li>Gera micro-satisfações — cada campo que aparece é um pequeno &quot;uau&quot;</li>
+</ul>
+</li>
+</ul>
+<p><strong>Educação necessária: mínima</strong></p>
+<ul>
+<li>O SSE progressive reveal é intuitivo — Carlos já viu texto sendo gerado em ChatGPT</li>
+<li>O conceito de &quot;override&quot; pode precisar de um placeholder sugestivo (&quot;Ex: Use tom mais informal&quot;)</li>
+<li>O modelo inbox se auto-explica: itens estão lá → trabalho neles → desaparecem</li>
+</ul>
+<h3>Experience Mechanics</h3>
+<p><strong>1. Initiation — Como o processamento começa:</strong></p>
+<pre><code>Estado: Vídeo na inbox (status: novo/rascunho)
+Gatilho: Botão &quot;Processar&quot; visível no VideoCard
+Contexto: Tipo do vídeo já classificado automaticamente (badge visual)
+Ação: Um clique. Sem confirmação modal. Sem configuração prévia.
+</code></pre>
+<p><strong>2. Interaction — O que acontece durante:</strong></p>
+<pre><code>Imediato (0-1s): Botão muda para estado &quot;gerando...&quot;, área de metadados expande
+Progressive (1-120s): Campos aparecem via SSE:
+  → Título (primeiro, mais rápido — satisfação imediata)
+  → Descrição (aparece em chunks/parágrafos)
+  → Tags (aparecem como badges, uma a uma)
+  → Capítulos (lista com timestamps)
+  → Compliance (badge de status ao final)
+Visual: Skeleton → conteúdo real, campo por campo. Smooth transitions.
+</code></pre>
+<p><strong>3. Feedback — Como Carlos sabe que está funcionando:</strong></p>
+<pre><code>Durante: Campos preenchendo = sistema trabalhando
+Sucesso: Todos os campos preenchidos + compliance badge (verde ou amber)
+Compliance amber: Alerta suave inline &quot;Dá uma olhada: [motivo]&quot;
+Erro: Mensagem clara + botão &quot;Tentar novamente&quot; (vídeo volta a rascunho)
+</code></pre>
+<p><strong>4. Completion — O que Carlos faz depois:</strong></p>
+<pre><code>Revisar: Lê título e descrição (campos editáveis inline)
+Decidir:
+  → Satisfeito → Clica &quot;Enviar para YouTube&quot; → Item sai da inbox
+  → Quase bom → Edita campos diretamente → Envia
+  → Precisa retrabalho → Escreve override → Clica &quot;Reprocessar&quot;
+  → Compliance preocupa → Lê alerta → Ajusta ou ignora
+Próximo: Volta à inbox → Próximo vídeo → Repete loop
+</code></pre>
+<p><strong>5. Retorno (multi-sessão):</strong></p>
+<pre><code>Carlos fecha a IAra no meio de uma sessão.
+Próxima abertura: Inbox exatamente como deixou.
+Rascunhos com metadados parciais: preservados.
+Vídeos processados não enviados: continuam na inbox prontos para revisão.
+Nenhum trabalho perdido.
+</code></pre>
+<h2>Visual Design Foundation</h2>
+<h3>Color System</h3>
+<p><strong>Tema:</strong> Dark mode only — classe <code>dark</code> fixa no <code>&lt;html&gt;</code>, sem toggle.</p>
+<p><strong>Paleta base (CSS Variables → tailwind.config.ts):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Valor (Dark)</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--background</code></td>
+<td>zinc-950 (#09090b)</td>
+<td>Fundo principal da app</td>
+</tr>
+<tr>
+<td><code>--foreground</code></td>
+<td>zinc-100 (#f4f4f5)</td>
+<td>Texto primário (headings)</td>
+</tr>
+<tr>
+<td><code>--card</code></td>
+<td>zinc-900 (#18181b)</td>
+<td>Cards, painéis elevados</td>
+</tr>
+<tr>
+<td><code>--card-foreground</code></td>
+<td>zinc-200 (#e4e4e7)</td>
+<td>Texto em cards</td>
+</tr>
+<tr>
+<td><code>--muted</code></td>
+<td>zinc-800 (#27272a)</td>
+<td>Backgrounds secundários, dividers internos de cards</td>
+</tr>
+<tr>
+<td><code>--muted-foreground</code></td>
+<td>zinc-400 (#a1a1aa)</td>
+<td>Texto secundário, labels, timestamps</td>
+</tr>
+<tr>
+<td><code>--primary</code></td>
+<td>blue-500 (#3b82f6)</td>
+<td>Ação primária: Processar</td>
+</tr>
+<tr>
+<td><code>--primary-foreground</code></td>
+<td>white (#ffffff)</td>
+<td>Texto em botões primários</td>
+</tr>
+<tr>
+<td><code>--success</code></td>
+<td>emerald-500 (#10b981)</td>
+<td>Ação conclusiva: Enviar para YouTube</td>
+</tr>
+<tr>
+<td><code>--success-foreground</code></td>
+<td>white (#ffffff)</td>
+<td>Texto em botão de envio</td>
+</tr>
+<tr>
+<td><code>--destructive</code></td>
+<td>red-500 (#ef4444)</td>
+<td>Ações destrutivas (raro)</td>
+</tr>
+<tr>
+<td><code>--border</code></td>
+<td>zinc-800 (#27272a)</td>
+<td>Bordas de cards e inputs</td>
+</tr>
+<tr>
+<td><code>--input</code></td>
+<td>zinc-800 (#27272a)</td>
+<td>Background de inputs</td>
+</tr>
+<tr>
+<td><code>--ring</code></td>
+<td>blue-400 (#60a5fa)</td>
+<td>Focus ring (mais claro para visibilidade em dark)</td>
+</tr>
+</tbody></table>
+<p><strong>Implementação:</strong> Customizar os valores no <code>globals.css</code> gerado pelo <code>shadcn-ui init</code>, mapeados no <code>tailwind.config.ts</code> — single source of truth. Não criar tokens do zero.</p>
+<p><strong>Hierarquia de ações por cor:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ação</th>
+<th>Cor</th>
+<th>Variante</th>
+<th>Peso cognitivo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Processar</td>
+<td>blue-500 (primary)</td>
+<td>filled</td>
+<td>&quot;Iniciar trabalho&quot;</td>
+</tr>
+<tr>
+<td>Reprocessar</td>
+<td>blue-500 (primary)</td>
+<td>outline</td>
+<td>&quot;Tentar de novo&quot;</td>
+</tr>
+<tr>
+<td>Enviar para YouTube</td>
+<td>emerald-500 (success)</td>
+<td>filled</td>
+<td>&quot;Ato conclusivo&quot;</td>
+</tr>
+<tr>
+<td>Cancelar/Fechar</td>
+<td>zinc-400 (muted)</td>
+<td>ghost</td>
+<td>&quot;Sair sem consequência&quot;</td>
+</tr>
+</tbody></table>
+<p><strong>Cores semânticas de status:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Cor</th>
+<th>Uso na IAra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Novo</td>
+<td>blue-400</td>
+<td>Badge &quot;Novo&quot; em vídeos recém-detectados</td>
+</tr>
+<tr>
+<td>Rascunho</td>
+<td>zinc-400</td>
+<td>Badge &quot;Rascunho&quot; — metadados parciais/em edição</td>
+</tr>
+<tr>
+<td>Pronto</td>
+<td>emerald-400</td>
+<td>Badge &quot;Pronto&quot; — metadados completos, aguardando envio</td>
+</tr>
+<tr>
+<td>Enviado</td>
+<td>zinc-600 (ou sem badge)</td>
+<td>Vídeo sai da inbox</td>
+</tr>
+<tr>
+<td>Erro</td>
+<td>red-400</td>
+<td>Badge &quot;Erro&quot; — falha recuperável</td>
+</tr>
+<tr>
+<td>Compliance OK</td>
+<td>emerald-400</td>
+<td>Badge/ícone discreto de compliance aprovada</td>
+</tr>
+<tr>
+<td>Compliance Alerta</td>
+<td>amber-200</td>
+<td>Badge/texto de compliance com atenção necessária</td>
+</tr>
+</tbody></table>
+<p><strong>Princípios de cor:</strong></p>
+<ol>
+<li>Fundo sempre escuro (zinc-950/900) — zero fadiga visual noturna</li>
+<li>Texto corpo em zinc-200/300 (nunca branco puro #fff para textos longos)</li>
+<li>&quot;Processar&quot; em blue-500, &quot;Enviar&quot; em emerald-500 — hierarquia visual de fluxo</li>
+<li>Compliance warnings em amber-200 — informativo, não alarmante</li>
+<li>Mínimo uso de cores saturadas — reservar para ações e status</li>
+</ol>
+<h3>Typography System</h3>
+<p><strong>Typeface:</strong> Inter via <code>next/font/google</code></p>
+<ul>
+<li><code>const inter = Inter({ subsets: [&#39;latin&#39;] })</code> no <code>layout.tsx</code></li>
+<li>Otimização automática (subset, display swap, no layout shift)</li>
+<li>Consistente com Portal PPTNC</li>
+</ul>
+<p><strong>Type Scale (Tailwind):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nível</th>
+<th>Classe</th>
+<th>Tamanho</th>
+<th>Peso</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H1</td>
+<td>text-2xl</td>
+<td>24px</td>
+<td>semibold (600)</td>
+<td>Título da página (raro — &quot;IAra&quot;)</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>text-xl</td>
+<td>20px</td>
+<td>semibold (600)</td>
+<td>Seções principais</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>text-lg</td>
+<td>18px</td>
+<td>medium (500)</td>
+<td>Sub-seções, títulos de cards</td>
+</tr>
+<tr>
+<td>Body</td>
+<td>text-sm</td>
+<td>14px</td>
+<td>normal (400)</td>
+<td>Texto principal, descrições</td>
+</tr>
+<tr>
+<td>Caption</td>
+<td>text-xs</td>
+<td>12px</td>
+<td>normal (400)</td>
+<td>Labels, timestamps, metadata</td>
+</tr>
+<tr>
+<td>Mono</td>
+<td>font-mono text-xs</td>
+<td>12px</td>
+<td>normal (400)</td>
+<td>Dados técnicos (IDs, duração)</td>
+</tr>
+</tbody></table>
+<p><strong>Line Heights:</strong></p>
+<ul>
+<li>Headings: leading-tight (1.25)</li>
+<li>Body: leading-relaxed (1.625) — otimizado para leitura prolongada noturna</li>
+<li>Captions: leading-normal (1.5)</li>
+</ul>
+<p><strong>Princípios tipográficos:</strong></p>
+<ol>
+<li>Tamanho base 14px (text-sm) — densidade adequada para desktop, legível em dark mode</li>
+<li>Peso semibold apenas para headings — evitar bold excessivo que cansa a vista</li>
+<li>Line-height generoso em textos longos (descrições de vídeo) — conforto noturno</li>
+<li>Números tabulares para durações e contadores — alinhamento visual</li>
+</ol>
+<h3>Spacing &amp; Layout Foundation</h3>
+<p><strong>Sistema de espaçamento:</strong> Tailwind padrão (4px base unit)</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Valor</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>gap-1</td>
+<td>4px</td>
+<td>Espaço entre ícone e texto inline</td>
+</tr>
+<tr>
+<td>gap-2</td>
+<td>8px</td>
+<td>Espaço entre badges, entre elementos de metadados</td>
+</tr>
+<tr>
+<td>gap-3</td>
+<td>12px</td>
+<td>Padding interno de cards compactos</td>
+</tr>
+<tr>
+<td>gap-4</td>
+<td>16px</td>
+<td>Padding interno padrão de cards / gap entre cards collapsed</td>
+</tr>
+<tr>
+<td>gap-6</td>
+<td>24px</td>
+<td>Gap entre card expanded e vizinhos / separação entre seções internas</td>
+</tr>
+<tr>
+<td>gap-8</td>
+<td>32px</td>
+<td>Separação de seções maiores (header → content)</td>
+</tr>
+</tbody></table>
+<p><strong>Tokens de transição:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Valor</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--transition-fast</code></td>
+<td>150ms ease</td>
+<td>Hover states, focus rings, toggles</td>
+</tr>
+<tr>
+<td><code>--transition-normal</code></td>
+<td>200ms ease</td>
+<td>Expansão de cards, mudanças de estado</td>
+</tr>
+</tbody></table>
+<p><strong>Layout Structure:</strong></p>
+<pre><code>┌─────────────────────────────────────────────────────┐
+│ Header (h-14): Logo + Status + User                 │
+├────────┬────────────────────────────────────────────┤
+│Sidebar │  Main Content Area                         │
+│(w-48)  │                                            │
+│        │  ┌─ VideoCard (collapsed) ──────────────┐  │
+│ Nav    │  │ Thumbnail | Title + Meta | Actions   │  │
+│ mínima │  └──────────────────────────────────────┘  │
+│        │        ↕ gap-4 (16px)                      │
+│        │  ┌─ VideoCard (expanded) ───────────────┐  │
+│        │  │ Título [editável]                    │  │
+│        │  │ ─── muted bg divider ───             │  │
+│        │  │ Descrição [editável]                 │  │
+│        │  │ ─── muted bg divider ───             │  │
+│        │  │ Tags | Capítulos                     │  │
+│        │  │ ─── muted bg divider ───             │  │
+│        │  │ Compliance | Override | Ações         │  │
+│        │  └──────────────────────────────────────┘  │
+│        │        ↕ gap-6 (24px)                      │
+│        │  ┌─ VideoCard (collapsed) ──────────────┐  │
+│        │  │ ...                                  │  │
+│        │  └──────────────────────────────────────┘  │
+└────────┴────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Dividers internos (card expandido):</strong></p>
+<ul>
+<li>Background <code>--muted</code> (zinc-800) com height 1px + padding vertical</li>
+<li>Cria respiro visual entre seções sem adicionar ruído de borders</li>
+</ul>
+<p><strong>Layout Principles:</strong></p>
+<ol>
+<li><strong>Sidebar mínima</strong> (w-48, ~192px) — apenas navegação essencial, colapsável</li>
+<li><strong>Área principal expansiva</strong> — conteúdo é rei, máximo espaço para VideoCards</li>
+<li><strong>Cards com padding consistente</strong> (p-4) — respiração sem desperdício</li>
+<li><strong>Gap adaptativo</strong> — gap-4 entre collapsed, gap-6 ao redor de expanded</li>
+<li><strong>Max-width no conteúdo</strong> (max-w-4xl ~896px) — linhas de texto legíveis, centrado</li>
+</ol>
+<p><strong>Skeleton Loading (SSE):</strong></p>
+<ul>
+<li>Animação: pulse suave (opacity 50% → 30%, 1.5s ease-in-out)</li>
+<li>Sem shimmer/gradient — dark mode + shimmer = fadiga visual</li>
+<li>Skeleton substitui campo por campo conforme SSE entrega dados</li>
+<li>Transição skeleton → conteúdo: <code>--transition-normal</code> (200ms ease)</li>
+</ul>
+<h3>Accessibility Considerations</h3>
+<p><strong>Contraste (WCAG AA mínimo):</strong></p>
+<ul>
+<li>Texto corpo (zinc-200 sobre zinc-950): ratio ~15:1 (excelente)</li>
+<li>Texto secundário (zinc-400 sobre zinc-950): ratio ~5.5:1 (AA aprovado)</li>
+<li>Badges coloridos: texto escuro sobre fundo claro para amber/emerald</li>
+<li>Botão primary (white sobre blue-500): ratio ~4.6:1 (AA aprovado)</li>
+<li>Botão success (white sobre emerald-500): ratio ~4.5:1 (AA limite — testar)</li>
+</ul>
+<p><strong>Focus Ring:</strong></p>
+<ul>
+<li><code>ring-2 ring-blue-400 ring-offset-2 ring-offset-zinc-950</code></li>
+<li>blue-400 (mais claro que primary) garante visibilidade sobre fundo escuro</li>
+<li>ring-offset em zinc-950 cria separação clara do elemento</li>
+</ul>
+<p><strong>Interação:</strong></p>
+<ul>
+<li>Focus visible em todos os elementos interativos</li>
+<li>Tab order lógico (sidebar → lista → card expandido → ações)</li>
+<li>Botões com min-height 36px (h-9) para área de clique confortável</li>
+<li>Hover/focus states com <code>--transition-fast</code> (150ms ease)</li>
+</ul>
+<p><strong>Leitura prolongada:</strong></p>
+<ul>
+<li>Line-height generoso (1.625) em descrições</li>
+<li>Max-width em blocos de texto (prose)</li>
+<li>Espaçamento vertical adequado entre parágrafos</li>
+<li>Dividers em muted background — separação sem fadiga</li>
+</ul>
+<h2>Design Direction Decision</h2>
+<h3>Design Directions Explored</h3>
+<p>Quatro variações de layout/interação foram avaliadas dentro dos constraints estabelecidos (dark mode, shadcn/ui, inbox metaphor, VideoCards):</p>
+<table>
+<thead>
+<tr>
+<th>Direção</th>
+<th>Conceito</th>
+<th>Padrão de referência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A - Inbox Expandível</td>
+<td>Cards expandem inline na lista (accordion)</td>
+<td>Gmail mobile, FAQ patterns</td>
+</tr>
+<tr>
+<td>B - Side Panel</td>
+<td>Lista fixa + painel de detalhe lateral</td>
+<td>Gmail desktop, Linear, Outlook</td>
+</tr>
+<tr>
+<td>C - Full Focus</td>
+<td>Um vídeo por tela, navegação sequencial</td>
+<td>Tinder, wizards</td>
+</tr>
+<tr>
+<td>D - Hybrid Drawer</td>
+<td>Lista + drawer lateral overlay</td>
+<td>Notion, admin panels</td>
+</tr>
+</tbody></table>
+<h3>Chosen Direction</h3>
+<p><strong>Direção B: Side Panel (Master-Detail)</strong></p>
+<pre><code>┌──────────────────────────────────────────────────────────┐
+│ Header (h-14): IAra logo | &quot;5 novos · 2 rascunhos&quot; | Av │
+├────────┬────────────────┬────────────────────────────────┤
+│Sidebar │  Lista          │  Detail Panel                  │
+│(w-48)  │  (resizable)    │  (resizable, flex-1)           │
+│        │                 │                                │
+│ • Inbox│  [VideoItem]    │  Título [editável]             │
+│ • Config│ [VideoItem] ● 🟡│ ─── divider ───              │
+│        │  [VideoItem] ●  │  Descrição [editável]          │
+│        │  [VideoItem]    │  ─── divider ───              │
+│        │  ...            │  Tags [badges editáveis]       │
+│        │                 │  Capítulos [lista]             │
+│        │                 │  ─── divider ───              │
+│        │                 │  Compliance [alert inline]     │
+│        │                 │  Override [textarea]           │
+│        │                 │  ─── divider ───              │
+│        │                 │  Episódio | 3 tags | Compl. ✓  │
+│        │                 │  [🔄 Reprocessar] [✅ Enviar]  │
+└────────┴────────────────┴────────────────────────────────┘
+</code></pre>
+<p><strong>Anatomia da Lista (coluna central):</strong></p>
+<ul>
+<li>Header com contador: &quot;X novos · Y rascunhos&quot; — dimensionamento instantâneo da sessão</li>
+<li>Cada item: thumbnail (40x40, rounded, opacity reduzida) + título truncado + badge de status + duração</li>
+<li>Mini-indicador de compliance alert: ponto amber sutil ao lado do badge de status (informação passiva, sem clique necessário)</li>
+<li>Item selecionado: highlight com <code>--muted</code> background + borda left <code>--primary</code></li>
+<li>Quick action no hover: botão &quot;Enviar&quot; discreto para vídeos com status &quot;Pronto&quot; (elimina um clique para quem confia no resultado)</li>
+<li>Scroll independente (shadcn <code>ScrollArea</code>)</li>
+<li>Ordenação: novos primeiro, depois rascunhos</li>
+</ul>
+<p><strong>Anatomia do Detail Panel (coluna direita):</strong></p>
+<ul>
+<li>Header: thumbnail maior + título do vídeo + tipo (badge) + duração</li>
+<li>Seções separadas por dividers <code>--muted</code> background</li>
+<li>Campos editáveis inline (input/textarea com borda sutil ao focus)</li>
+<li>Compliance alert no tom amber-200 (se houver)</li>
+<li>Override textarea com placeholder sugestivo (&quot;Ex: Use tom mais informal&quot;)</li>
+<li>Footer sticky (always visible):<ul>
+<li>Micro-resumo de status: &quot;Episódio completo | 3 tags | Compliance ✓&quot;</li>
+<li>Ações: [🔄 Reprocessar] [✅ Enviar para YouTube]</li>
+<li>Carlos decide sem scrollar para cima</li>
+</ul>
+</li>
+</ul>
+<p><strong>Comportamento pós-envio:</strong></p>
+<ul>
+<li>Item enviado sai da lista com transição suave</li>
+<li>Próximo item na lista é auto-selecionado → detail panel atualiza imediatamente</li>
+<li>Sem empty state intermediário — fluxo contínuo mantém ritmo da sessão</li>
+<li>Se lista vazia após envio → empty state celebratório (&quot;Tudo processado!&quot;)</li>
+</ul>
+<h3>Design Rationale</h3>
+<table>
+<thead>
+<tr>
+<th>Fator</th>
+<th>Por quê Side Panel</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Espaço para metadados</strong></td>
+<td>Painel de detalhe usa toda a largura restante — título, descrição longa, tags, capítulos sem compressão</td>
+</tr>
+<tr>
+<td><strong>Contexto de lista</strong></td>
+<td>Lista sempre visível — Carlos vê quantos vídeos faltam e pode pular entre eles</td>
+</tr>
+<tr>
+<td><strong>Produtividade</strong></td>
+<td>Click na lista → detalhe aparece instantaneamente. Quick action para &quot;Prontos&quot; elimina cliques</td>
+</tr>
+<tr>
+<td><strong>Familiaridade</strong></td>
+<td>Padrão email (Gmail desktop) e task managers (Linear) — Carlos reconhece</td>
+</tr>
+<tr>
+<td><strong>Progresso visual</strong></td>
+<td>Contador &quot;X novos · Y rascunhos&quot; + lista diminuindo = motivação tangível</td>
+</tr>
+<tr>
+<td><strong>Multi-sessão</strong></td>
+<td>Último item selecionado restaurado ao reabrir (localStorage)</td>
+</tr>
+<tr>
+<td><strong>Decisão informada</strong></td>
+<td>Footer sticky com micro-resumo — Carlos envia com confiança sem scroll</td>
+</tr>
+</tbody></table>
+<h3>Implementation Approach</h3>
+<p><strong>Layout (ResizablePanel do shadcn/ui):</strong></p>
+<ul>
+<li>Baseado em <code>react-resizable-panels</code> — resize nativo, sem CSS grid complexo</li>
+<li>Sidebar: fixa (w-48), colapsável</li>
+<li>Lista e Detail: redimensionáveis pelo usuário (drag handle entre colunas)</li>
+<li>Tamanhos persistidos no localStorage</li>
+<li>Cada coluna com <code>ScrollArea</code> isolada (scroll independente)</li>
+</ul>
+<p><strong>Estados do Detail Panel:</strong></p>
+<ul>
+<li><strong>Vazio</strong> (nenhum vídeo selecionado): empty state &quot;Selecione um vídeo para começar&quot;</li>
+<li><strong>Carregando</strong> (SSE em progresso): skeletons com pulse suave, campos aparecendo progressivamente</li>
+<li><strong>Preenchido</strong> (metadados prontos): campos editáveis, ações disponíveis, micro-resumo no footer</li>
+<li><strong>Enviado</strong> (sucesso): transição → próximo item auto-selecionado</li>
+</ul>
+<p><strong>SSE e navegação:</strong></p>
+<ul>
+<li>Hook de SSE vinculado ao vídeo selecionado</li>
+<li>Mudar de vídeo durante processamento: SSE anterior continua em background, atualiza lista silenciosamente</li>
+<li>Detail panel mostra o novo vídeo selecionado sem cancelar streams ativos</li>
+<li>Múltiplos vídeos podem estar processando simultaneamente (lista reflete status em tempo real)</li>
+</ul>
+<p><strong>Persistência:</strong></p>
+<ul>
+<li>Último vídeo selecionado: <code>localStorage</code> (restaurado ao reabrir)</li>
+<li>Tamanhos das colunas: <code>localStorage</code></li>
+<li>Rascunhos de override: Firestore (auto-save debounced)</li>
+</ul>
+<p><strong>Responsividade básica (tablet):</strong></p>
+<ul>
+<li>&lt; 1024px: sidebar colapsa (hamburger), layout 2 colunas (lista + detail)</li>
+<li>&lt; 768px: lista vira tela 1, detail vira tela 2 (navegação push/pop)</li>
+</ul>
+<p><strong>Keyboard shortcuts (power-user, opcional):</strong></p>
+<ul>
+<li><code>↑</code>/<code>↓</code>: navegar entre vídeos na lista</li>
+<li><code>Enter</code>: focar no detail panel</li>
+<li><code>Esc</code>: voltar foco para a lista</li>
+<li><code>Cmd+Enter</code>: enviar vídeo atual</li>
+</ul>
+<h2>User Journey Flows</h2>
+<h3>Jornada 1: Login → Inbox</h3>
+<p><strong>Contexto:</strong> Carlos abre a IAra pela primeira vez ou retorna após sessão anterior.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A[Abre IAra] --&gt; B{Autenticado?}
+    B --&gt;|Não| C[Tela de Login]
+    C --&gt; D[Login via Google/OAuth]
+    D --&gt; E{Sucesso?}
+    E --&gt;|Não| F[Erro: &quot;Falha no login, tente novamente&quot;]
+    F --&gt; C
+    E --&gt;|Sim| G[Redirect → Inbox]
+    B --&gt;|Sim| G
+    G --&gt; H{Tem último vídeo selecionado?}
+    H --&gt;|Sim| I[Lista + Detail panel com último vídeo]
+    H --&gt;|Não| J[Lista + Detail panel vazio]
+    J --&gt; K[&quot;Selecione um vídeo para começar&quot;]
+    I --&gt; L[Carlos continua de onde parou]
+</code></pre>
+<p><strong>Detalhes de interação:</strong></p>
+<ul>
+<li>Login: OAuth com Google (conta já associada ao canal YouTube)</li>
+<li>Redirect pós-login: direto para Inbox, sem onboarding/wizard</li>
+<li>Retorno: localStorage restaura último vídeo selecionado + tamanhos de painel</li>
+<li>Primeiro acesso: lista visível com vídeos (se já detectados) ou empty state &quot;Nenhum vídeo ainda — clique &#39;Verificar novos&#39;&quot;</li>
+</ul>
+<hr>
+<h3>Jornada 2: Detectar Novos Vídeos</h3>
+<p><strong>Contexto:</strong> Carlos quer verificar se há novos vídeos no canal YouTube.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A[Carlos na Inbox] --&gt; B[Clica &quot;Verificar novos&quot;]
+    B --&gt; C[Botão muda para loading state]
+    C --&gt; D[API checa canal YouTube]
+    D --&gt; E{Novos vídeos encontrados?}
+    E --&gt;|Sim| F[Novos itens aparecem na lista]
+    F --&gt; G[Badge &quot;Novo&quot; em cada item]
+    G --&gt; H[Contador atualiza: &quot;+3 novos&quot;]
+    H --&gt; I[Tipo classificado automaticamente por duração]
+    I --&gt; J[Carlos vê novos vídeos prontos para processar]
+    E --&gt;|Não| K[Feedback sutil: &quot;Nenhum vídeo novo&quot;]
+    K --&gt; L[Lista permanece como está]
+    D --&gt; M{Erro na API YouTube?}
+    M --&gt;|Sim| N[&quot;Erro: Não foi possível verificar. Tente novamente.&quot;]
+    N --&gt; O[Botão volta ao estado normal]
+</code></pre>
+<p><strong>Detalhes de interação:</strong></p>
+<ul>
+<li>Botão &quot;Verificar novos&quot; no header da lista (ou sidebar)</li>
+<li>Loading: botão com spinner inline (não bloqueia a tela)</li>
+<li>Novos vídeos: aparecem no topo da lista com badge &quot;Novo&quot; (blue-400)</li>
+<li>Classificação automática: badge de tipo (Episódio, Short, Corte, etc.) baseado em duração</li>
+<li>Sem modal, sem confirmação — ação direta com feedback visual</li>
+</ul>
+<hr>
+<h3>Jornada 3: Processar → Revisar → Enviar (Core Loop)</h3>
+<p><strong>Contexto:</strong> O fluxo principal que Carlos repete ~22x por semana.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A[Carlos seleciona vídeo na lista] --&gt; B[Detail panel mostra info do vídeo]
+    B --&gt; C[Clica &quot;Processar&quot;]
+    C --&gt; D[Botão muda: &quot;Gerando...&quot;]
+    D --&gt; E[SSE inicia - skeleton loading]
+    E --&gt; F[Título aparece - skeleton → texto]
+    F --&gt; G[Descrição aparece em chunks]
+    G --&gt; H[Tags aparecem como badges]
+    H --&gt; I[Capítulos aparecem como lista]
+    I --&gt; J[Compliance badge aparece ao final]
+    J --&gt; K{Compliance status?}
+    K --&gt;|OK ✓| L[Badge emerald discreto]
+    K --&gt;|Alerta ⚠️| M[&quot;Amber: &#39;Dá uma olhada: motivo&#39;&quot;]
+    L --&gt; N{Carlos revisa resultado}
+    M --&gt; N
+    N --&gt; O{Satisfeito?}
+    O --&gt;|Sim| P[Clica &quot;Enviar para YouTube&quot;]
+    P --&gt; Q[Botão loading → &quot;Enviando...&quot;]
+    Q --&gt; R{Envio sucesso?}
+    R --&gt;|Sim| S[Item sai da lista com transição]
+    S --&gt; T[Próximo item auto-selecionado]
+    R --&gt;|Não| U[&quot;Erro: &#39;Falha no envio, tente novamente&#39;&quot;]
+    U --&gt; V[Vídeo permanece na lista como &quot;Pronto&quot;]
+    O --&gt;|Quase| W[Edita campos inline]
+    W --&gt; X[Auto-save debounced → Firestore]
+    X --&gt; P
+    O --&gt;|Não| Y[Jornada 4: Override]
+</code></pre>
+<p><strong>Detalhes de interação:</strong></p>
+<ul>
+<li><strong>Processar:</strong> Um clique, sem modal. SSE progressivo no detail panel</li>
+<li><strong>SSE Progressive Reveal:</strong> Skeleton pulse → campo real, campo por campo. Ordem: Título → Descrição → Tags → Capítulos → Compliance</li>
+<li><strong>Revisão:</strong> Campos são editáveis inline (click to edit ou always editable)</li>
+<li><strong>Enviar:</strong> Botão emerald-500 no footer sticky. Micro-resumo visível (&quot;Episódio | 3 tags | Compliance ✓&quot;)</li>
+<li><strong>Pós-envio:</strong> Item sai da lista (transição 200ms), próximo auto-selecionado. Contador atualiza</li>
+<li><strong>Edição inline:</strong> Auto-save debounced (1.5s após último keystroke) → Firestore. Indicador sutil &quot;Salvo&quot; no footer</li>
+</ul>
+<hr>
+<h3>Jornada 4: Override → Reprocessar</h3>
+<p><strong>Contexto:</strong> Carlos não está satisfeito com o resultado e quer refinar via instrução adicional.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A[Carlos revisa metadados - insatisfeito] --&gt; B[Foca no campo Override]
+    B --&gt; C[&quot;Placeholder: &#39;Ex: Use tom mais informal&#39;&quot;]
+    C --&gt; D[Carlos escreve instrução]
+    D --&gt; E[Clica &quot;Reprocessar&quot;]
+    E --&gt; F[Campos atuais ficam com opacity reduzida]
+    F --&gt; G[SSE reinicia - novos valores sobrescrevem]
+    G --&gt; H[Título atualiza]
+    H --&gt; I[Descrição atualiza]
+    I --&gt; J[Tags atualizam]
+    J --&gt; K[Capítulos atualizam]
+    K --&gt; L[Compliance re-executado]
+    L --&gt; M{Resultado melhor?}
+    M --&gt;|Sim| N[Carlos envia - Jornada 3]
+    M --&gt;|Ainda não| O[Carlos ajusta override e reprocessa novamente]
+    O --&gt; D
+</code></pre>
+<p><strong>Detalhes de interação:</strong></p>
+<ul>
+<li><strong>Override field:</strong> Textarea no detail panel, abaixo da seção de compliance. Placeholder sugestivo</li>
+<li><strong>Reprocessar:</strong> Botão outline (blue-500), ao lado ou abaixo do override field</li>
+<li><strong>Visual durante reprocessamento:</strong> Campos existentes ficam em opacity 50%, novos valores aparecem por cima via SSE</li>
+<li><strong>Histórico de override:</strong> Último override usado fica visível (não apaga após reprocessar). Carlos pode editar e reprocessar novamente</li>
+<li><strong>Convergência:</strong> Na maioria dos casos, 1 override resolve. Se após 2-3 tentativas não converge, indicação sutil &quot;Considere editar diretamente&quot;</li>
+</ul>
+<hr>
+<h3>Jornada 5: Erro e Recuperação</h3>
+<p><strong>Contexto:</strong> Algo deu errado em qualquer etapa do fluxo.</p>
+<pre><code class="language-mermaid">flowchart TD
+    A{Onde ocorreu o erro?} --&gt; B[Detecção de vídeos]
+    A --&gt; C[Processamento LLM]
+    A --&gt; D[Envio para YouTube]
+
+    B --&gt; B1[&quot;&#39;Não foi possível verificar. Tente novamente.&#39;&quot;]
+    B1 --&gt; B2[Botão volta ao normal - retry disponível]
+
+    C --&gt; C1{Tipo de erro}
+    C1 --&gt;|Timeout| C2[&quot;&#39;Processamento demorou demais. Tente novamente.&#39;&quot;]
+    C1 --&gt;|API Gemini| C3[&quot;&#39;Erro no serviço. Tente novamente em alguns segundos.&#39;&quot;]
+    C1 --&gt;|Erro interno| C4[&quot;&#39;Algo deu errado. Tente novamente.&#39;&quot;]
+    C2 --&gt; C5[Vídeo volta para status &quot;Rascunho&quot;]
+    C3 --&gt; C5
+    C4 --&gt; C5
+    C5 --&gt; C6[Botão &quot;Processar&quot; disponível novamente]
+
+    D --&gt; D1[&quot;&#39;Falha no envio. Tente novamente.&#39;&quot;]
+    D1 --&gt; D2[Vídeo permanece como &quot;Pronto&quot;]
+    D2 --&gt; D3[Botão &quot;Enviar&quot; disponível para retry]
+    D3 --&gt; D4[Metadados preservados - nenhum trabalho perdido]
+</code></pre>
+<p><strong>Detalhes de interação:</strong></p>
+<ul>
+<li><strong>Princípio:</strong> Nenhum erro coloca o vídeo em estado irrecuperável (nunca limbo)</li>
+<li><strong>Tom:</strong> Neutro e claro. Sem exclamação, sem vermelho agressivo. Mensagem + ação de recuperação</li>
+<li><strong>Visual:</strong> Alert inline no detail panel (border-left red-400, background sutil). Desaparece ao retry com sucesso</li>
+<li><strong>Retry:</strong> Sempre disponível imediatamente. Sem cooldown forçado para o produtor</li>
+<li><strong>Dados:</strong> Nenhum dado é perdido em erro. Override, edições inline, tudo preservado no Firestore</li>
+</ul>
+<hr>
+<h3>Journey Patterns</h3>
+<p><strong>Padrões de navegação recorrentes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Padrão</th>
+<th>Onde aparece</th>
+<th>Implementação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Click → Detail</td>
+<td>Seleção na lista</td>
+<td>State management: selectedVideoId → detail panel reage</td>
+</tr>
+<tr>
+<td>Action → Loading → Result</td>
+<td>Processar, Enviar, Verificar</td>
+<td>Botão com estados: default → loading → success/error</td>
+</tr>
+<tr>
+<td>SSE Progressive</td>
+<td>Processamento</td>
+<td>EventSource → state updates → re-render por campo</td>
+</tr>
+<tr>
+<td>Auto-save</td>
+<td>Edição inline, override</td>
+<td>Debounce 1.5s → Firestore update → indicador &quot;Salvo&quot;</td>
+</tr>
+<tr>
+<td>Error → Retry</td>
+<td>Todos os pontos de falha</td>
+<td>Alert inline + botão de retry + estado anterior preservado</td>
+</tr>
+</tbody></table>
+<p><strong>Padrões de feedback:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Situação</th>
+<th>Feedback</th>
+<th>Persistência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ação em progresso</td>
+<td>Botão loading + skeleton/pulse</td>
+<td>Até completar</td>
+</tr>
+<tr>
+<td>Sucesso em ação</td>
+<td>Item sai da lista / badge atualiza</td>
+<td>Permanente</td>
+</tr>
+<tr>
+<td>Erro</td>
+<td>Alert inline com mensagem + retry</td>
+<td>Até retry com sucesso</td>
+</tr>
+<tr>
+<td>Auto-save</td>
+<td>Texto sutil &quot;Salvo&quot; no footer</td>
+<td>2s depois desaparece</td>
+</tr>
+<tr>
+<td>Novos vídeos detectados</td>
+<td>Items aparecem na lista + contador</td>
+<td>Permanente</td>
+</tr>
+</tbody></table>
+<h3>Flow Optimization Principles</h3>
+<ol>
+<li><strong>Zero estados de limbo</strong> — Cada vídeo está em um estado claro e acionável. Erro retorna a estado anterior, nunca cria estado intermediário</li>
+<li><strong>Feedback imediato, resultado quando pronto</strong> — Cada clique gera mudança visual instantânea (loading state). O resultado aparece via SSE quando o backend entrega</li>
+<li><strong>Auto-continuidade</strong> — Pós-envio → próximo item. Pós-erro → retry disponível. Pós-login → onde parou. Nunca dead-end</li>
+<li><strong>Edição não-destrutiva</strong> — Override é aditivo (instrução ao LLM), edição inline é manual. Ambos preservados. Reprocessar não apaga edições manuais até SSE sobrescrever</li>
+<li><strong>Progresso visual acumulado</strong> — Contador diminui, lista encurta, empty state celebra. Cada ação move o produtor para &quot;noite produtiva&quot;</li>
+</ol>
+<h2>Component Strategy</h2>
+<h3>Design System Components (shadcn/ui)</h3>
+<p><strong>Componentes utilizados diretamente:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Uso na IAra</th>
+<th>Customização</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Button</code></td>
+<td>Processar, Enviar, Reprocessar, Verificar</td>
+<td>Variantes: primary (blue), success (emerald), outline, ghost</td>
+</tr>
+<tr>
+<td><code>Badge</code></td>
+<td>Status de vídeo, tipo, compliance</td>
+<td>Cores semânticas por status</td>
+</tr>
+<tr>
+<td><code>Input</code></td>
+<td>Título editável inline</td>
+<td>Dark theme tokens</td>
+</tr>
+<tr>
+<td><code>Textarea</code></td>
+<td>Descrição editável, override</td>
+<td>Auto-resize, placeholder sugestivo</td>
+</tr>
+<tr>
+<td><code>Alert</code></td>
+<td>Compliance warnings, erros</td>
+<td>Variante amber (compliance) e red (erro)</td>
+</tr>
+<tr>
+<td><code>Skeleton</code></td>
+<td>Loading SSE progressive</td>
+<td>Pulse suave (não shimmer)</td>
+</tr>
+<tr>
+<td><code>ScrollArea</code></td>
+<td>Lista de vídeos, detail panel</td>
+<td>Scroll independente por coluna</td>
+</tr>
+<tr>
+<td><code>ResizablePanel</code></td>
+<td>Layout 3 colunas</td>
+<td>Persistência de tamanhos em localStorage</td>
+</tr>
+<tr>
+<td><code>Separator</code></td>
+<td>Dividers no detail panel</td>
+<td>Background muted (zinc-800)</td>
+</tr>
+<tr>
+<td><code>Tooltip</code></td>
+<td>Hover em badges/ícones</td>
+<td>Sem uso excessivo — UI auto-explicativa</td>
+</tr>
+<tr>
+<td><code>Avatar</code></td>
+<td>Usuário no header</td>
+<td>OAuth profile image</td>
+</tr>
+</tbody></table>
+<p><strong>Componentes disponíveis mas não usados no MVP:</strong></p>
+<ul>
+<li><code>Dialog/Modal</code> — Evitado por design (zero modals no fluxo core)</li>
+<li><code>Tabs</code> — Não necessário (inbox única, sem tabs de status)</li>
+<li><code>Toast</code> — Evitado (feedback persistente, não temporário)</li>
+<li><code>DropdownMenu</code> — Possível em settings (Growth phase)</li>
+<li><code>Select</code> — Admin UI (Growth phase)</li>
+<li><code>Table</code> — Métricas admin (Growth phase)</li>
+</ul>
+<h3>Custom Components</h3>
+<h4>VideoListItem</h4>
+<p><strong>Purpose:</strong> Item compacto na lista lateral representando um vídeo na inbox.</p>
+<p><strong>Anatomy:</strong></p>
+<pre><code>┌─────────────────────────────────────────┐
+│ [Thumb 40x40] Título truncado...  ⏱12:34│
+│               Episódio 🔵  🟡            │
+│                          [Enviar]→hover  │
+└─────────────────────────────────────────┘
+</code></pre>
+<p><strong>Content:</strong></p>
+<ul>
+<li>Thumbnail (40x40, rounded-md, opacity 70%)</li>
+<li>Título (text-sm, truncate, max 1 linha)</li>
+<li>Tipo de vídeo (badge caption: &quot;Episódio&quot;, &quot;Short&quot;, &quot;Corte&quot;)</li>
+<li>Status badge (Novo 🔵, Rascunho ⚪, Pronto 🟢, Erro 🔴)</li>
+<li>Duração (text-xs, font-mono, muted-foreground)</li>
+<li>Mini-indicador compliance (ponto amber, se aplicável)</li>
+</ul>
+<p><strong>Props:</strong></p>
+<pre><code class="language-typescript">interface VideoListItemProps {
+  video: VideoSummary
+  isSelected: boolean
+  isProcessing: boolean
+  onSelect: (id: string) =&gt; void
+  onQuickSend?: (id: string) =&gt; void
+}
+</code></pre>
+<p><strong>States:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Visual</th>
+<th>Interação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Default</td>
+<td>Background transparent</td>
+<td>Clickável</td>
+</tr>
+<tr>
+<td>Hover</td>
+<td>Background muted sutil + quick action &quot;Enviar&quot; (se Pronto)</td>
+<td>Click seleciona</td>
+</tr>
+<tr>
+<td>Selected</td>
+<td>Background muted + border-left primary solid (2px)</td>
+<td>Detail panel exibe este vídeo</td>
+</tr>
+<tr>
+<td>Processing</td>
+<td>Border-left animated pulse (primary→transparent, 2s cycle)</td>
+<td>SSE ativo em background</td>
+</tr>
+<tr>
+<td>Disabled</td>
+<td>—</td>
+<td>Não aplicável</td>
+</tr>
+</tbody></table>
+<p><strong>Accessibility:</strong> <code>role=&quot;listitem&quot;</code>, <code>aria-selected</code>, <code>aria-label</code> com título completo, navegável por <code>↑</code>/<code>↓</code></p>
+<hr>
+<h4>VideoDetailPanel (Compound Component)</h4>
+<p><strong>Purpose:</strong> Painel de detalhe com metadados completos do vídeo selecionado, editáveis inline.</p>
+<p><strong>Composição:</strong></p>
+<pre><code class="language-typescript">&lt;VideoDetailPanel&gt;        // Context provider + layout
+  &lt;VideoDetailHeader /&gt;   // Thumb + título original + tipo + duração
+  &lt;VideoDetailMetadata /&gt; // Campos editáveis + ProcessingStream
+  &lt;VideoDetailCompliance /&gt; // ComplianceAlert (se houver)
+  &lt;VideoDetailOverride /&gt;   // OverrideInput + Reprocessar
+  &lt;VideoDetailFooter /&gt;     // Sticky: micro-resumo + Enviar
+&lt;/VideoDetailPanel&gt;
+</code></pre>
+<p><strong>Context:</strong> <code>VideoDetailContext</code> fornece dados do vídeo e handlers para todos os sub-componentes. Render isolado: SSE atualizando título só re-renderiza <code>VideoDetailMetadata</code>.</p>
+<p><strong>Anatomy (completa):</strong></p>
+<pre><code>┌─ Header ──────────────────────────────────┐
+│ [Thumb 120px] Título original do YouTube   │
+│               Episódio | ⏱12:34 | 23 Jan  │
+├─ Metadados ───────────────────────────────┤
+│ Título IAra: [input editável]              │
+│ ─── divider ───                            │
+│ Descrição: [textarea editável, auto-resize]│
+│ ─── divider ───                            │
+│ Tags: [badge][badge][badge][+]             │
+│ ─── divider ───                            │
+│ Capítulos:                                 │
+│   00:00 Introdução                         │
+│   02:30 Tema principal                     │
+│   08:15 Conclusão                          │
+├─ Compliance ──────────────────────────────┤
+│ ⚠️ &quot;Dá uma olhada: menção a marca X&quot;      │
+├─ Override ────────────────────────────────┤
+│ [textarea + chips sugestão]                │
+│ [🔄 Reprocessar]                           │
+├─ Footer (sticky) ────────────────────────┤
+│ Episódio | 3 tags | Compliance ✓           │
+│                     [✅ Enviar para YouTube]│
+└────────────────────────────────────────────┘
+</code></pre>
+<p><strong>States:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Visual</th>
+<th>Comportamento</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Empty</td>
+<td>Ilustração + &quot;Selecione um vídeo&quot;</td>
+<td>Nenhum vídeo selecionado</td>
+</tr>
+<tr>
+<td>Loading (SSE)</td>
+<td>Skeletons pulse, campos aparecem progressivamente</td>
+<td>Durante processamento</td>
+</tr>
+<tr>
+<td>Filled</td>
+<td>Campos editáveis, ações disponíveis</td>
+<td>Metadados prontos</td>
+</tr>
+<tr>
+<td>Editing</td>
+<td>Input/textarea com focus ring, &quot;Salvo&quot; indicator</td>
+<td>Carlos editando</td>
+</tr>
+<tr>
+<td>Sending</td>
+<td>Botão Enviar em loading state</td>
+<td>Envio em progresso</td>
+</tr>
+<tr>
+<td>Error</td>
+<td>Alert inline com mensagem + retry</td>
+<td>Falha em ação</td>
+</tr>
+</tbody></table>
+<p><strong>Transição entre vídeos:</strong> Micro-fade (opacity 100→0→100, 100ms total) ao trocar de item selecionado.</p>
+<p><strong>Accessibility:</strong> Landmark <code>main</code>, headings hierárquicos, tab order: campos → override → ações. Lazy-loadable via <code>React.lazy</code>.</p>
+<hr>
+<h4>ProcessingStream</h4>
+<p><strong>Purpose:</strong> Visualização do SSE progressive reveal durante geração de metadados por LLM.</p>
+<p><strong>Hook:</strong></p>
+<pre><code class="language-typescript">const { fields, status, error } = useSSEStream(videoId)
+// fields: { title?: string, description?: string, tags?: string[], chapters?: Chapter[], compliance?: ComplianceResult }
+// status: &#39;idle&#39; | &#39;connecting&#39; | &#39;streaming&#39; | &#39;complete&#39; | &#39;error&#39;
+// error: string | null
+</code></pre>
+<p><strong>Behavior:</strong></p>
+<ul>
+<li>Hook <code>useSSEStream</code> gerencia EventSource lifecycle, reconnection e cleanup</li>
+<li>Cada campo inicia como <code>Skeleton</code> (pulse animation)</li>
+<li>Quando SSE envia dados: skeleton → conteúdo real (transition 200ms)</li>
+<li>Descrição: múltiplos chunks (append progressivo, como chat streaming)</li>
+<li>Tags: cada badge individual (animation stagger 50ms entre elas)</li>
+<li>Compliance: último a aparecer, badge de status final</li>
+</ul>
+<p><strong>State global:</strong> <code>processingVideoIds: Set&lt;string&gt;</code> no app-level. O hook atualiza esse set. <code>VideoListItem</code> consulta para mostrar animated border.</p>
+<p><strong>States:</strong> <code>idle</code> → <code>connecting</code> → <code>streaming</code> → <code>complete</code> | <code>error</code></p>
+<hr>
+<h4>ComplianceAlert</h4>
+<p><strong>Purpose:</strong> Alerta suave para issues de compliance identificados pelo LLM.</p>
+<p><strong>Anatomy:</strong></p>
+<pre><code>┌─ ⚠️ ──────────────────────────────────────┐
+│ Dá uma olhada: [motivo do alerta]          │
+│ Ex: &quot;Menção a marca registrada no título&quot;  │
+└────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Visual:</strong></p>
+<ul>
+<li>Background: amber-200/10 (muito sutil)</li>
+<li>Border-left: amber-200 (2px)</li>
+<li>Ícone: AlertTriangle (amber-200)</li>
+<li>Texto: text-sm, foreground normal (legibilidade)</li>
+<li>Tom: informativo, não urgente</li>
+</ul>
+<p><strong>States:</strong> <code>visible</code> | <code>hidden</code> (compliance OK → nenhum alert renderizado)</p>
+<p><strong>Accessibility:</strong> <code>role=&quot;alert&quot;</code>, <code>aria-live=&quot;polite&quot;</code></p>
+<hr>
+<h4>InboxEmptyState</h4>
+<p><strong>Purpose:</strong> Celebração quando todos os vídeos foram processados e enviados.</p>
+<p><strong>Variantes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Variante</th>
+<th>Quando</th>
+<th>Conteúdo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Inbox vazia (sucesso)</td>
+<td>Todos enviados</td>
+<td>&quot;Tudo processado! Bom trabalho.&quot; + [Verificar novos]</td>
+</tr>
+<tr>
+<td>Sem seleção</td>
+<td>Nenhum item clicado</td>
+<td>&quot;Selecione um vídeo para começar&quot;</td>
+</tr>
+<tr>
+<td>Primeiro uso</td>
+<td>Nenhum vídeo detectado</td>
+<td>&quot;Nenhum vídeo ainda&quot; + [Verificar novos]</td>
+</tr>
+</tbody></table>
+<p><strong>Visual:</strong> Centralizado, ícone minimalista, heading text-lg semibold + caption text-sm muted, botão ghost/outline.</p>
+<hr>
+<h4>OverrideInput</h4>
+<p><strong>Purpose:</strong> Textarea contextual para Carlos fornecer instruções adicionais ao LLM.</p>
+<p><strong>Anatomy:</strong></p>
+<pre><code>┌─ Override ────────────────────────────────┐
+│ Instruções adicionais (opcional):          │
+│ ┌──────────────────────────────────────┐  │
+│ │ Ex: Use tom mais informal            │  │
+│ └──────────────────────────────────────┘  │
+│ [Tom informal] [Mencionar convidado] [+]  │
+│ [🔄 Reprocessar]                           │
+└────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Chips de sugestão:</strong></p>
+<ul>
+<li>2-3 chips clicáveis contextuais ao tipo de vídeo</li>
+<li>Click insere texto no textarea (append)</li>
+<li>MVP: hardcoded por tipo. Growth: configuráveis no admin</li>
+<li>Exemplos:<ul>
+<li>Episódio: &quot;Tom mais informal&quot; | &quot;Mencionar convidado&quot; | &quot;Destacar tema principal&quot;</li>
+<li>Short: &quot;Título curto e impactante&quot; | &quot;Hashtags trending&quot;</li>
+<li>Corte: &quot;Referência ao episódio original&quot; | &quot;Tom provocativo&quot;</li>
+</ul>
+</li>
+</ul>
+<p><strong>States:</strong> Empty (Reprocessar disabled) → Has content (Reprocessar ativo) → After reprocess (override preservado)</p>
+<p><strong>Persistence:</strong> Auto-save debounced → Firestore</p>
+<hr>
+<h3>Shared Types</h3>
+<pre><code class="language-typescript">// types/video.ts
+type VideoStatus = &#39;new&#39; | &#39;draft&#39; | &#39;ready&#39; | &#39;sending&#39; | &#39;sent&#39; | &#39;error&#39;
+type VideoType = &#39;episode&#39; | &#39;short&#39; | &#39;cut&#39; | string
+type ComplianceStatus = &#39;ok&#39; | &#39;warning&#39; | &#39;pending&#39;
+
+interface VideoSummary {
+  id: string
+  title: string
+  thumbnailUrl: string
+  duration: number
+  type: VideoType
+  status: VideoStatus
+  compliance: ComplianceStatus
+  publishedAt: Timestamp
+}
+
+interface VideoDetail extends VideoSummary {
+  originalTitle: string
+  generatedTitle?: string
+  description?: string
+  tags?: string[]
+  chapters?: Chapter[]
+  complianceDetails?: ComplianceResult
+  override?: string
+  updatedAt: Timestamp
+}
+
+interface Chapter {
+  timestamp: string
+  title: string
+}
+
+interface ComplianceResult {
+  status: ComplianceStatus
+  issues: string[]
+}
+</code></pre>
+<h3>Component Implementation Strategy</h3>
+<p><strong>Princípios:</strong></p>
+<ol>
+<li><strong>shadcn/ui first</strong> — Usar componentes base sem modificação sempre que possível</li>
+<li><strong>Composição sobre herança</strong> — Custom components compostos de primitivos shadcn</li>
+<li><strong>Presentational components</strong> — Props pattern <code>{data, onAction}</code>, lógica nos containers</li>
+<li><strong>Compound components</strong> — DetailPanel como composição de sub-componentes com shared context</li>
+<li><strong>Colocation</strong> — <code>src/components/app/</code> (custom) + <code>src/components/ui/</code> (shadcn)</li>
+<li><strong>Types compartilhados</strong> — <code>src/types/video.ts</code> como single source of truth</li>
+<li><strong>Hooks reutilizáveis</strong> — <code>useSSEStream</code>, <code>useAutoSave</code>, <code>useLocalStorage</code></li>
+</ol>
+<h3>Implementation Roadmap</h3>
+<p><strong>Milestone 1 (Fluxo básico — Episódio only):</strong></p>
+<ul>
+<li><code>VideoListItem</code> — lista funcional</li>
+<li><code>VideoDetailPanel</code> (compound) — visualização de metadados (sem SSE, resultado completo)</li>
+<li><code>Button</code> variants (primary, success, outline)</li>
+<li>Layout <code>ResizablePanel</code> (3 colunas)</li>
+<li><code>InboxEmptyState</code> (variantes básicas)</li>
+<li>Shared types (<code>types/video.ts</code>)</li>
+</ul>
+<p><strong>Milestone 2 (Múltiplos tipos + SSE + Compliance):</strong></p>
+<ul>
+<li><code>ProcessingStream</code> + hook <code>useSSEStream</code></li>
+<li><code>ComplianceAlert</code></li>
+<li><code>OverrideInput</code> com chips de sugestão (hardcoded)</li>
+<li><code>Badge</code> variants (todos os status + tipos)</li>
+<li><code>Skeleton</code> customizado (pulse)</li>
+<li>State global <code>processingVideoIds</code></li>
+<li>Animated border-left para items processando</li>
+</ul>
+<p><strong>Milestone 3 (Resiliência + Polish):</strong></p>
+<ul>
+<li>Error states em todos os componentes</li>
+<li>Auto-save indicators (<code>useAutoSave</code> hook)</li>
+<li>Quick action &quot;Enviar&quot; no hover do <code>VideoListItem</code></li>
+<li>Keyboard shortcuts</li>
+<li>Micro-fade na transição entre vídeos</li>
+<li>Persistência localStorage (seleção, tamanhos)</li>
+<li>Lazy loading do <code>VideoDetailPanel</code></li>
+</ul>
+<h2>UX Consistency Patterns</h2>
+<h3>Never Do (Referência Rápida)</h3>
+<table>
+<thead>
+<tr>
+<th>Nunca usar</th>
+<th>Motivo</th>
+<th>Alternativa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Toast notifications</td>
+<td>Temporário demais para info importante</td>
+<td>Feedback persistente (badge, item sai da lista)</td>
+</tr>
+<tr>
+<td>Modals de confirmação</td>
+<td>Atrito no fluxo</td>
+<td>Ação direta + undo/retry em caso de falha</td>
+</tr>
+<tr>
+<td>Spinners sem texto</td>
+<td>&quot;Travou?&quot; — sem contexto</td>
+<td>Spinner + texto (&quot;Gerando...&quot;, &quot;Enviando...&quot;)</td>
+</tr>
+<tr>
+<td>Vermelho saturado (red-500 bg)</td>
+<td>Alarme desnecessário</td>
+<td>Border-left red-400 + background red-500/5</td>
+</tr>
+<tr>
+<td>Confetti/animações celebratórias</td>
+<td>Fora do tom &quot;produtividade tranquila&quot;</td>
+<td>Empty state calmo (&quot;Tudo processado!&quot;)</td>
+</tr>
+<tr>
+<td>Cooldown forçado antes de retry</td>
+<td>Punição ao usuário</td>
+<td>Retry imediato disponível</td>
+</tr>
+<tr>
+<td>Linguagem alarmante (&quot;ERRO!&quot;, &quot;FALHA!&quot;)</td>
+<td>Gera ansiedade</td>
+<td>Tom neutro (&quot;Não foi possível. Tente novamente.&quot;)</td>
+</tr>
+<tr>
+<td><code>prefers-reduced-motion</code> ignorado</td>
+<td>Acessibilidade</td>
+<td>Hook <code>useReducedMotion()</code>, <code>duration-0</code> quando ativo</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Button Hierarchy</h3>
+<p><strong>Regra geral:</strong> Uma ação primária por contexto. Ações secundárias em variantes menos proeminentes.</p>
+<table>
+<thead>
+<tr>
+<th>Nível</th>
+<th>Variante</th>
+<th>Uso</th>
+<th>Exemplo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Primary</strong></td>
+<td>Filled, blue-500</td>
+<td>Ação principal do contexto atual</td>
+<td>&quot;Processar&quot;, &quot;Verificar novos&quot;</td>
+</tr>
+<tr>
+<td><strong>Success</strong></td>
+<td>Filled, emerald-500</td>
+<td>Ação conclusiva/irreversível</td>
+<td>&quot;Enviar para YouTube&quot;</td>
+</tr>
+<tr>
+<td><strong>Secondary</strong></td>
+<td>Outline, blue-500</td>
+<td>Ação alternativa relevante</td>
+<td>&quot;Reprocessar&quot;</td>
+</tr>
+<tr>
+<td><strong>Ghost</strong></td>
+<td>Ghost, muted</td>
+<td>Ação de escape/cancelamento</td>
+<td>&quot;Fechar&quot;, &quot;Voltar&quot;</td>
+</tr>
+<tr>
+<td><strong>Destructive</strong></td>
+<td>Filled, red-500</td>
+<td>Ação destrutiva (raro no MVP)</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><strong>Regras de posicionamento:</strong></p>
+<ul>
+<li>Ação primária/success: sempre à <strong>direita</strong></li>
+<li>Ações secundárias: à <strong>esquerda</strong> da primária</li>
+<li>Ghost/cancel: extrema esquerda ou fora do grupo de ações</li>
+<li>Footer sticky: ações primárias no canto inferior direito</li>
+</ul>
+<p><strong>Estados dos botões:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Visual</th>
+<th>Quando</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Default</td>
+<td>Cor normal, cursor pointer</td>
+<td>Disponível para clique</td>
+</tr>
+<tr>
+<td>Hover</td>
+<td>Cor ligeiramente mais clara (5-10% lighter)</td>
+<td>Mouse sobre</td>
+</tr>
+<tr>
+<td>Active/Pressed</td>
+<td>Cor ligeiramente mais escura</td>
+<td>Clicando</td>
+</tr>
+<tr>
+<td>Loading</td>
+<td>Spinner inline + texto &quot;Gerando...&quot;/&quot;Enviando...&quot;</td>
+<td>Ação em progresso</td>
+</tr>
+<tr>
+<td>Disabled</td>
+<td>Opacity 50%, cursor not-allowed</td>
+<td>Pré-condição não atendida</td>
+</tr>
+</tbody></table>
+<p><strong>Regras de loading:</strong></p>
+<ul>
+<li>Botão disabled durante loading (não permite double-click)</li>
+<li>Texto muda para indicar progresso (&quot;Processar&quot; → &quot;Gerando...&quot;)</li>
+<li>Spinner inline à esquerda do texto</li>
+<li>Loading até SSE completar ou timeout</li>
+</ul>
+<hr>
+<h3>Feedback &amp; Loading States</h3>
+<p><strong>Princípio:</strong> Cada ação gera feedback visual imediato. Resultado chega quando pronto.</p>
+<h4>Loading Patterns</h4>
+<table>
+<thead>
+<tr>
+<th>Contexto</th>
+<th>Pattern</th>
+<th>Duração esperada</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Verificar novos vídeos</td>
+<td>Botão loading (spinner)</td>
+<td>2-5s</td>
+</tr>
+<tr>
+<td>Processar metadados (SSE)</td>
+<td>Skeleton pulse → reveal progressivo</td>
+<td>10-120s</td>
+</tr>
+<tr>
+<td>Enviar para YouTube</td>
+<td>Botão loading → item sai da lista</td>
+<td>3-10s</td>
+</tr>
+<tr>
+<td>Auto-save</td>
+<td>Indicador &quot;Salvo&quot; sutil no footer</td>
+<td>Debounce 1.5s + save ~1s</td>
+</tr>
+<tr>
+<td>Troca de vídeo selecionado</td>
+<td>Micro-fade (100ms)</td>
+<td>Instantâneo</td>
+</tr>
+</tbody></table>
+<h4>Success Patterns</h4>
+<table>
+<thead>
+<tr>
+<th>Contexto</th>
+<th>Feedback</th>
+<th>Persistência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vídeo processado</td>
+<td>Campos preenchidos, badge &quot;Pronto&quot;</td>
+<td>Permanente</td>
+</tr>
+<tr>
+<td>Vídeo enviado</td>
+<td>Item sai da lista, próximo auto-selecionado</td>
+<td>Permanente</td>
+</tr>
+<tr>
+<td>Novos vídeos detectados</td>
+<td>Items aparecem com highlight (blue-500/5, 3s) + contador</td>
+<td>Highlight temporário, items permanentes</td>
+</tr>
+<tr>
+<td>Edição salva</td>
+<td>Texto &quot;Salvo&quot; no footer (após debounce + save sucesso)</td>
+<td>Aparece → desaparece após 2s</td>
+</tr>
+</tbody></table>
+<h4>Auto-Save Pattern</h4>
+<p><strong>Hook:</strong> <code>useAutoSave(value, onSave, delay = 1500)</code></p>
+<pre><code>Keystroke → debounce reset → ... → 1.5s sem digitar → save executa →
+  success: saveStatus = &#39;saved&#39; → 2s → saveStatus = &#39;idle&#39;
+  error: saveStatus = &#39;error&#39; (silent, retry on next edit)
+</code></pre>
+<p><strong>Regras:</strong></p>
+<ul>
+<li>&quot;Salvo&quot; só aparece APÓS debounce completar E save executar com sucesso</li>
+<li>Se Carlos digita, nenhum indicador aparece (save silencioso depois)</li>
+<li>Sem flickering em edições rápidas</li>
+<li><code>saveStatus</code>: <code>&#39;idle&#39; | &#39;saving&#39; | &#39;saved&#39; | &#39;error&#39;</code></li>
+</ul>
+<hr>
+<h3>Inline Editing Patterns</h3>
+<p><strong>Princípio:</strong> Campos sempre editáveis. Sem modo &quot;visualização&quot; separado.</p>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Padrão</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ativação</td>
+<td>Always editable (focus ring ao clicar)</td>
+</tr>
+<tr>
+<td>Borda em repouso</td>
+<td>Sutil (border-zinc-800)</td>
+</tr>
+<tr>
+<td>Borda em focus</td>
+<td>ring-blue-400</td>
+</tr>
+<tr>
+<td>Salvamento</td>
+<td>Auto-save via <code>useAutoSave</code> hook</td>
+</tr>
+<tr>
+<td>Indicador de save</td>
+<td>&quot;Salvo&quot; text-xs muted no footer</td>
+</tr>
+<tr>
+<td>Indicador de origem</td>
+<td>Pencil icon (✏️ text-xs muted) para campos editados manualmente</td>
+</tr>
+</tbody></table>
+<p><strong>Indicador &quot;editado manualmente&quot;:</strong></p>
+<ul>
+<li>Ícone pencil ao lado do label quando Carlos editou o campo</li>
+<li>Diferencia &quot;EU editei&quot; de &quot;a IA gerou&quot;</li>
+<li>Desaparece quando SSE sobrescreve (reprocessamento)</li>
+<li>Flag <code>manuallyEdited: boolean</code> por campo no state</li>
+</ul>
+<hr>
+<h3>Error &amp; Recovery Patterns</h3>
+<p><strong>Princípio:</strong> Nenhum erro é terminal. Todo erro tem recovery path imediato.</p>
+<p><strong>Visual:</strong> Alert inline, border-left red-400 (2px), background red-500/5, ícone AlertCircle.</p>
+<p><strong>Template:</strong> <code>[O que aconteceu]. [O que fazer].</code></p>
+<table>
+<thead>
+<tr>
+<th>Tipo de erro</th>
+<th>Estado do vídeo</th>
+<th>Ação disponível</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Erro no processamento</td>
+<td>Volta para &quot;Rascunho&quot;</td>
+<td>&quot;Processar&quot; disponível</td>
+</tr>
+<tr>
+<td>Timeout no processamento</td>
+<td>Volta para &quot;Rascunho&quot;</td>
+<td>&quot;Processar&quot; disponível</td>
+</tr>
+<tr>
+<td>Erro no envio</td>
+<td>Permanece &quot;Pronto&quot;</td>
+<td>&quot;Enviar&quot; disponível</td>
+</tr>
+<tr>
+<td>Erro na detecção</td>
+<td>Lista inalterada</td>
+<td>&quot;Verificar novos&quot; disponível</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>State Transitions</h3>
+<p><strong>Implementação:</strong> Tailwind plugin (extend animations no <code>tailwind.config.ts</code>):</p>
+<pre><code class="language-typescript">animation: {
+  &#39;fade-in&#39;: &#39;fade-in 200ms ease-in&#39;,
+  &#39;fade-out&#39;: &#39;fade-out 150ms ease-out&#39;,
+  &#39;pulse-border&#39;: &#39;pulse-border 2s ease-in-out infinite&#39;,
+  &#39;slide-in&#39;: &#39;slide-in 200ms ease-out&#39;,
+}
+</code></pre>
+<p><strong>Reduced Motion:</strong> Hook <code>useReducedMotion()</code> + <code>&lt;AnimatedPresence&gt;</code> wrapper. <code>duration-0</code> quando ativo.</p>
+<table>
+<thead>
+<tr>
+<th>Transição</th>
+<th>Duração</th>
+<th>Easing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hover on/off</td>
+<td>150ms</td>
+<td>ease</td>
+</tr>
+<tr>
+<td>Focus ring</td>
+<td>150ms</td>
+<td>ease</td>
+</tr>
+<tr>
+<td>Card selection</td>
+<td>150ms</td>
+<td>ease</td>
+</tr>
+<tr>
+<td>Detail panel swap</td>
+<td>100ms</td>
+<td>ease</td>
+</tr>
+<tr>
+<td>Item leaves list</td>
+<td>200ms</td>
+<td>ease-out</td>
+</tr>
+<tr>
+<td>New item appears + highlight</td>
+<td>200ms + 3s highlight</td>
+<td>ease-in</td>
+</tr>
+<tr>
+<td>Skeleton → content (SSE)</td>
+<td>200ms</td>
+<td>ease</td>
+</tr>
+<tr>
+<td>Processing border pulse</td>
+<td>2000ms loop</td>
+<td>ease-in-out</td>
+</tr>
+<tr>
+<td>Alert appear</td>
+<td>200ms</td>
+<td>ease-out</td>
+</tr>
+<tr>
+<td>Alert disappear</td>
+<td>150ms</td>
+<td>ease-in</td>
+</tr>
+</tbody></table>
+<p><strong>Regras:</strong> Nenhuma &gt; 300ms. <code>ease</code> sempre. Saídas mais rápidas. GPU-accelerated (<code>opacity</code>, <code>transform</code>).</p>
+<hr>
+<h3>Navigation Patterns</h3>
+<p><strong>Sidebar:</strong> Colapsável (w-48 → w-12). MVP: pode omitir (só inbox). Growth: adicionar Config.</p>
+<p><strong>List → Detail:</strong> Click seleciona, ↑/↓ navega, Enter foca detail. Sem routing, state-based.</p>
+<hr>
+<h3>Referência Cruzada: Ação → Patterns</h3>
+<table>
+<thead>
+<tr>
+<th>Ação do usuário</th>
+<th>Patterns aplicados</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Clica &quot;Verificar novos&quot;</td>
+<td>Button loading → Items com highlight 3s ou Error inline</td>
+</tr>
+<tr>
+<td>Clica &quot;Processar&quot;</td>
+<td>Button loading → SSE progressive (skeleton→content) → Badge atualiza</td>
+</tr>
+<tr>
+<td>Edita título/descrição</td>
+<td>Inline editing → Pencil icon → Auto-save → &quot;Salvo&quot;</td>
+</tr>
+<tr>
+<td>Clica &quot;Reprocessar&quot;</td>
+<td>Button loading → SSE progressive → Pencil icons removidos</td>
+</tr>
+<tr>
+<td>Clica &quot;Enviar&quot;</td>
+<td>Button loading → Item leaves list → Auto-select next</td>
+</tr>
+<tr>
+<td>Seleciona outro vídeo</td>
+<td>List highlight → Detail micro-fade → Novo conteúdo</td>
+</tr>
+<tr>
+<td>Erro em qualquer ação</td>
+<td>Alert inline (slide-in) → Retry disponível → Estado preservado</td>
+</tr>
+</tbody></table>
+<h2>Responsive Design &amp; Accessibility</h2>
+<h3>Responsive Strategy</h3>
+<p><strong>Abordagem:</strong> Desktop-first. A IAra é ferramenta de produtividade para produtor em computador. Responsividade é graceful degradation.</p>
+<table>
+<thead>
+<tr>
+<th>Dispositivo</th>
+<th>Prioridade</th>
+<th>Experiência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Desktop (1024px+)</td>
+<td>Primária</td>
+<td>Layout 3 colunas completo (sidebar + lista + detail)</td>
+</tr>
+<tr>
+<td>Tablet (768-1023px)</td>
+<td>Secundária</td>
+<td>Layout 2 colunas (lista + detail), sidebar colapsada</td>
+</tr>
+<tr>
+<td>Mobile (&lt;768px)</td>
+<td>Não prioridade</td>
+<td>Layout sequencial (lista → detail como telas separadas)</td>
+</tr>
+</tbody></table>
+<h3>Breakpoint Strategy</h3>
+<table>
+<thead>
+<tr>
+<th>Breakpoint</th>
+<th>Trigger</th>
+<th>Layout</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>lg</code> (1024px+)</td>
+<td>Desktop padrão</td>
+<td>Sidebar (w-48) + Lista (resizable) + Detail (flex-1)</td>
+</tr>
+<tr>
+<td><code>md</code> (768-1023px)</td>
+<td>Tablet/desktop pequeno</td>
+<td>Sidebar colapsa (hamburger), Lista + Detail lado a lado</td>
+</tr>
+<tr>
+<td><code>sm</code> (&lt;768px)</td>
+<td>Mobile (low priority)</td>
+<td>Navegação push: Lista (tela 1) → Detail (tela 2)</td>
+</tr>
+</tbody></table>
+<p><strong>Comportamento por breakpoint:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Desktop (lg+)</th>
+<th>Tablet (md)</th>
+<th>Mobile (sm)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sidebar</td>
+<td>Visível, w-48</td>
+<td>Colapsada (hamburger)</td>
+<td>Hidden (hamburger)</td>
+</tr>
+<tr>
+<td>Lista</td>
+<td>Coluna fixa, scroll independente</td>
+<td>Coluna fixa, mais estreita</td>
+<td>Tela inteira</td>
+</tr>
+<tr>
+<td>Detail Panel</td>
+<td>Coluna flex-1</td>
+<td>Coluna flex-1</td>
+<td>Tela inteira (push)</td>
+</tr>
+<tr>
+<td>Footer sticky</td>
+<td>Visível no detail</td>
+<td>Visível no detail</td>
+<td>Bottom fixed</td>
+</tr>
+<tr>
+<td>ResizablePanel</td>
+<td>Drag handles ativos</td>
+<td>Sem resize (tamanhos fixos)</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>Quick action hover</td>
+<td>Hover</td>
+<td>Hover</td>
+<td>Long-press ou sempre visível</td>
+</tr>
+<tr>
+<td>Keyboard shortcuts</td>
+<td>Ativos</td>
+<td>Ativos</td>
+<td>Desativados</td>
+</tr>
+</tbody></table>
+<h3>Accessibility Strategy</h3>
+<p><strong>Nível alvo:</strong> WCAG 2.1 AA</p>
+<h4>Contraste de Cores</h4>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Foreground</th>
+<th>Background</th>
+<th>Ratio</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Texto corpo</td>
+<td>zinc-200</td>
+<td>zinc-950</td>
+<td>~15:1</td>
+<td>AA+</td>
+</tr>
+<tr>
+<td>Texto secundário</td>
+<td>zinc-400</td>
+<td>zinc-950</td>
+<td>~5.5:1</td>
+<td>AA</td>
+</tr>
+<tr>
+<td>Botão primary</td>
+<td>white</td>
+<td>blue-500</td>
+<td>~4.6:1</td>
+<td>AA</td>
+</tr>
+<tr>
+<td>Botão success</td>
+<td>white</td>
+<td>emerald-500</td>
+<td>~4.5:1</td>
+<td>AA (limite)</td>
+</tr>
+<tr>
+<td>Compliance alert</td>
+<td>foreground</td>
+<td>amber-200/10 bg</td>
+<td>~14:1</td>
+<td>AA+</td>
+</tr>
+</tbody></table>
+<h4>Keyboard Navigation</h4>
+<table>
+<thead>
+<tr>
+<th>Tecla</th>
+<th>Ação</th>
+<th>Contexto</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Tab</code></td>
+<td>Navega entre elementos focáveis</td>
+<td>Global</td>
+</tr>
+<tr>
+<td><code>↑</code>/<code>↓</code></td>
+<td>Navega entre vídeos na lista</td>
+<td>Lista focada</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Seleciona item / ativa botão</td>
+<td>Lista/botões</td>
+</tr>
+<tr>
+<td><code>Esc</code></td>
+<td>Volta foco para lista</td>
+<td>Detail</td>
+</tr>
+<tr>
+<td><code>Cmd+Enter</code></td>
+<td>Enviar vídeo atual</td>
+<td>Detail panel</td>
+</tr>
+<tr>
+<td><code>Space</code></td>
+<td>Ativa botão focado</td>
+<td>Botões</td>
+</tr>
+</tbody></table>
+<p><strong>Tab order:</strong> Sidebar → Lista header → Lista items → Detail campos → Detail override → Detail footer</p>
+<h4>Landmarks e Semântica</h4>
+<pre><code class="language-html">&lt;header role=&quot;banner&quot;&gt;       &lt;!-- Header da app --&gt;
+&lt;nav role=&quot;navigation&quot;&gt;       &lt;!-- Sidebar --&gt;
+&lt;aside role=&quot;complementary&quot;&gt;  &lt;!-- Lista de vídeos --&gt;
+&lt;main role=&quot;main&quot;&gt;            &lt;!-- Detail panel --&gt;
+&lt;footer role=&quot;contentinfo&quot;&gt;   &lt;!-- Footer sticky --&gt;
+</code></pre>
+<h4>ARIA</h4>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>ARIA attributes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>VideoListItem</td>
+<td><code>role=&quot;listitem&quot;</code>, <code>aria-selected</code>, <code>aria-label=&quot;[título]&quot;</code></td>
+</tr>
+<tr>
+<td>Lista</td>
+<td><code>role=&quot;list&quot;</code>, <code>aria-label=&quot;Inbox de vídeos&quot;</code></td>
+</tr>
+<tr>
+<td>Detail Panel</td>
+<td><code>aria-live=&quot;polite&quot;</code></td>
+</tr>
+<tr>
+<td>ComplianceAlert</td>
+<td><code>role=&quot;alert&quot;</code>, <code>aria-live=&quot;polite&quot;</code></td>
+</tr>
+<tr>
+<td>Error Alert</td>
+<td><code>role=&quot;alert&quot;</code>, <code>aria-live=&quot;assertive&quot;</code></td>
+</tr>
+<tr>
+<td>Button loading</td>
+<td><code>aria-busy=&quot;true&quot;</code></td>
+</tr>
+<tr>
+<td>Skeleton</td>
+<td><code>aria-hidden=&quot;true&quot;</code></td>
+</tr>
+<tr>
+<td>&quot;Salvo&quot; indicator</td>
+<td><code>aria-live=&quot;polite&quot;</code>, <code>role=&quot;status&quot;</code></td>
+</tr>
+</tbody></table>
+<h4>Focus Management</h4>
+<ul>
+<li>Focus ring: <code>ring-2 ring-blue-400 ring-offset-2 ring-offset-zinc-950</code></li>
+<li>Skip link: &quot;Pular para conteúdo principal&quot; (hidden until focused)</li>
+<li>Auto-focus após envio: próximo item na lista</li>
+<li>Restore focus: último elemento focado ao retornar de outra view</li>
+</ul>
+<h4>Reduced Motion</h4>
+<ul>
+<li>Hook <code>useReducedMotion()</code> respeita <code>prefers-reduced-motion: reduce</code></li>
+<li>Quando ativo: <code>duration-0</code> em todas as animações</li>
+<li>SSE progressive: campos aparecem imediatamente (sem animação)</li>
+</ul>
+<h3>Testing Strategy</h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Ferramenta</th>
+<th>Frequência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Contraste</td>
+<td>DevTools Accessibility audit</td>
+<td>A cada novo componente</td>
+</tr>
+<tr>
+<td>Keyboard nav</td>
+<td>Teste manual (tab through)</td>
+<td>A cada nova tela</td>
+</tr>
+<tr>
+<td>Screen reader</td>
+<td>VoiceOver (macOS)</td>
+<td>Antes de cada milestone</td>
+</tr>
+<tr>
+<td>Responsive</td>
+<td>DevTools device mode</td>
+<td>A cada layout change</td>
+</tr>
+<tr>
+<td>Lighthouse</td>
+<td>Lighthouse CI</td>
+<td>Pipeline (score &gt; 90)</td>
+</tr>
+</tbody></table>
+<h3>Implementation Guidelines</h3>
+<p><strong>Responsive:</strong></p>
+<ul>
+<li>Tailwind responsive prefixes: <code>lg:</code>, <code>md:</code>, <code>sm:</code></li>
+<li>Container queries para componentes isolados</li>
+<li>Touch targets: min 44x44px em tablet/mobile (h-11)</li>
+<li><code>ResizablePanel</code> desativado em &lt; md</li>
+</ul>
+<p><strong>Accessibility:</strong></p>
+<ul>
+<li>HTML semântico: <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code></li>
+<li>Headings hierárquicos (h1→h2→h3, sem pulos)</li>
+<li>Labels em todos os inputs</li>
+<li>Thumbnails decorativas: <code>alt=&quot;&quot;</code>, <code>aria-hidden</code></li>
+<li>Color não é o único indicador: status usa cor + texto/ícone</li>
+</ul>
+<p><strong>Dark Mode:</strong></p>
+<ul>
+<li>Tokens semânticos: <code>bg-background</code>, <code>text-foreground</code></li>
+<li><code>class=&quot;dark&quot;</code> fixo no <code>&lt;html&gt;</code> — sem toggle</li>
+<li>Testar contraste com tokens semânticos</li>
+</ul>
+
+  </main>
+</body>
+</html>

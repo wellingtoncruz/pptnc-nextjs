@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12.1 Seção Notícias — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 12 — Notícias</nav><h1>Story 12.1: Seção Notícias com Listagem Paginada e Painel de Detalhe</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor do podcast</strong>,
+I want <strong>uma seção de notícias curadas no IAra com visualização master-detail</strong>,
+so that <strong>eu possa acompanhar rapidamente as notícias relevantes ao podcast sem sair da plataforma</strong>.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1 - Navegação</strong>: Given o produtor está autenticado, When ele visualiza o menu lateral, Then existe um item &quot;Notícias&quot; posicionado entre &quot;Editorial&quot; e &quot;Usuários&quot;, And ao clicar navega para a view de notícias (<code>?view=news</code>).</p>
+</li>
+<li><p><strong>AC2 - Layout Master-Detail</strong>: Given o produtor abre a seção Notícias, When a página carrega, Then o layout é dividido em dois painéis de 50% cada (esquerdo: listagem, direito: detalhe), And o painel direito exibe um estado vazio com mensagem &quot;Selecione uma notícia para ver os detalhes&quot;.</p>
+</li>
+<li><p><strong>AC3 - Listagem em Cards</strong>: Given o produtor está na seção Notícias, When as notícias são carregadas, Then são exibidas em grid de 2 colunas (2 cards por linha), And cada card exibe: título, descrição (truncada ~2 linhas), nome da fonte e data da notícia, And a listagem é ordenada por <code>importedAt</code> descendente (mais recente primeiro).</p>
+</li>
+<li><p><strong>AC4 - Paginação Cursor-Based</strong>: Given existem mais de 16 notícias, When o produtor visualiza a listagem, Then são exibidas no máximo 16 notícias por página, And existe navegação &quot;Próxima&quot;/&quot;Anterior&quot; no rodapé do painel esquerdo, And a paginação utiliza cursor-based (Firestore <code>startAfter</code> com <code>importedAt</code>) para performance, And NÃO carrega todos os documentos em memória.</p>
+</li>
+<li><p><strong>AC5 - Seleção e Detalhe</strong>: Given o produtor visualiza a listagem de notícias, When ele clica em um card, Then o card selecionado recebe destaque visual (borda/fundo diferenciado), And o painel direito exibe: título (heading), data + fonte com link externo para URL original, resumo completo e comentários.</p>
+</li>
+<li><p><strong>AC6 - Estados de Loading e Erro</strong>: Given o produtor abre a seção Notícias, When os dados estão carregando, Then são exibidos skeletons no painel esquerdo, And quando ocorre erro na API é exibida mensagem de erro amigável em português.</p>
+</li>
+<li><p><strong>AC7 - API de Listagem</strong>: Given uma requisição GET <code>/api/news</code>, When autenticada com parâmetros opcionais <code>cursor</code> e <code>limit</code>, Then retorna lista de notícias da collection <code>/podcasts/{podcastId}/news</code> ordenadas por <code>importedAt</code> DESC, And respeita o limit (default 16, max 50), And quando <code>cursor</code> é fornecido usa <code>startAfter</code> para paginação, And retorna <code>nextCursor</code> (valor de <code>importedAt</code> do último item) quando há mais páginas.</p>
+</li>
+<li><p><strong>AC8 - Scroll Independente</strong>: Given o produtor está na seção Notícias com notícia selecionada, When ele rola o painel esquerdo (listagem), Then o painel direito (detalhe) mantém scroll independente, And vice-versa.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Definir tipos e schema Zod para News (AC: #7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>src/types/news.ts</code> com interface <code>News</code> e <code>NewsListResponse</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Criar <code>src/lib/schemas/news.ts</code> com <code>NewsSchema</code> e <code>NewsListResponseSchema</code> (validação Zod)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Campos: <code>id</code>, <code>titulo</code>, <code>descricao</code>, <code>resumo</code>, <code>comentarios</code>, <code>data</code>, <code>fonte</code> (map: <code>nome</code>, <code>url</code>), <code>importedAt</code>, <code>source_email_id</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Testes unitários para schema validation</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar função Firestore admin para listar notícias (AC: #7, #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar <code>src/lib/firebase/news-admin.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Implementar <code>listNews(podcastId, options?: { cursor?, limit? })</code> com query: <code>.collection(&#39;news&#39;).orderBy(&#39;importedAt&#39;, &#39;desc&#39;).limit(limit)</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Quando <code>cursor</code> fornecido, usar <code>.startAfter(cursorTimestamp)</code> — converter ISO string para Firestore Timestamp</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Retornar <code>{ items: News[], nextCursor: string | null }</code> — <code>nextCursor</code> é o <code>importedAt</code> do último item serializado como ISO string, ou <code>null</code> se items &lt; limit</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5 Validar cada documento com <code>NewsSchema.safeParse()</code>, logar warnings para docs inválidos</li>
+<li><input checked="" disabled="" type="checkbox"> 2.6 Testes unitários</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar API route GET /api/news (AC: #7, #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/app/api/news/route.ts</code> com <code>export const runtime = &#39;nodejs&#39;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Validar autenticação com <code>auth()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Extrair query params: <code>cursor</code> (string ISO opcional), <code>limit</code> (number, default 16, max 50)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Chamar <code>listNews(PODCAST_ID, { cursor, limit })</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Retornar <code>{ data: { items, nextCursor } }</code> seguindo padrão de response da app</li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 Structured logging com <code>log()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.7 Testes unitários (auth, params, paginação, cursor, erro)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Criar componente NewsCard (AC: #3, #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/components/news/news-card.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Props: <code>news: News</code>, <code>isSelected: boolean</code>, <code>onSelect: () =&gt; void</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Usar shadcn Card com: título (CardTitle, truncado 2 linhas), descrição (CardDescription, truncado 2 linhas), footer com fonte nome + data</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Estado selecionado: borda <code>border-primary</code> ou fundo <code>bg-accent</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.5 Cursor pointer, hover state</li>
+<li><input checked="" disabled="" type="checkbox"> 4.6 Testes unitários</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Criar componente NewsDetail (AC: #5, #2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Criar <code>src/components/news/news-detail.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Props: <code>news: News | null</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Estado vazio (news === null): mensagem centralizada &quot;Selecione uma notícia para ver os detalhes&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Com notícia: título (h2), data + fonte nome com link externo (ícone ExternalLink), seção &quot;Resumo&quot; com texto completo, seção &quot;Comentários&quot; com texto completo</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Scroll independente via <code>overflow-y-auto</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.6 Testes unitários</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Criar componente NewsPanel (master-detail) (AC: #2, #3, #4, #6, #8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 Criar <code>src/components/news/news-panel.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Layout: flex com 2 painéis de 50% (<code>w-1/2</code>), cada um com scroll independente (<code>overflow-y-auto</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Estado: <code>selectedNews: News | null</code>, <code>items: News[]</code>, <code>isLoading</code>, <code>error</code>, <code>nextCursor</code>, <code>prevCursors: string[]</code> (stack para navegação &quot;Anterior&quot;)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.4 Fetch: GET <code>/api/news?limit=16&amp;cursor=&lt;cursor&gt;</code> via <code>useCallback</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.5 Painel esquerdo: header &quot;Notícias&quot; + grid 2 colunas de NewsCard + paginação (Anterior/Próxima)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.6 Painel direito: NewsDetail com notícia selecionada</li>
+<li><input checked="" disabled="" type="checkbox"> 6.7 Loading: skeleton grid no painel esquerdo</li>
+<li><input checked="" disabled="" type="checkbox"> 6.8 Erro: Alert com mensagem em português</li>
+<li><input checked="" disabled="" type="checkbox"> 6.9 Paginação: botão &quot;Próxima&quot; habilitado quando <code>nextCursor !== null</code>, botão &quot;Anterior&quot; habilitado quando <code>prevCursors.length &gt; 0</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.10 Ao paginar, limpar seleção (<code>selectedNews = null</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.11 Testes unitários</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 7: Integrar na navegação e layout (AC: #1, #2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1 Em <code>src/components/layout/sidebar.tsx</code>: adicionar item &quot;Notícias&quot; com ícone <code>Newspaper</code> (lucide-react) entre &quot;Editorial&quot; e &quot;Usuários&quot;, <code>href: &#39;/videos?view=news&#39;</code>, <code>adminOnly: false</code></li>
+<li><input checked="" disabled="" type="checkbox"> 7.2 Em <code>src/app/videos/videos-layout.tsx</code>: adicionar condicional <code>if (currentView === &#39;news&#39;)</code> renderizando <code>&lt;NewsPanel /&gt;</code> no mesmo padrão do EditorialPanel</li>
+<li><input checked="" disabled="" type="checkbox"> 7.3 Testes: verificar item no sidebar, verificar renderização da view</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 8: Testes de integração e regressão</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 8.1 Verificar que todos os testes existentes continuam passando (regressão)</li>
+<li><input disabled="" type="checkbox"> 8.2 Teste e2e manual: navegar para Notícias, verificar listagem, clicar em card, verificar detalhe, paginar</li>
+<li><input disabled="" type="checkbox"> 8.3 Verificar scroll independente dos painéis</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Padrão de Paginação (NOVO na codebase)</h3>
+<p>A paginação cursor-based com Firestore é um padrão novo. O editorial atual faz paginação in-memory. Para News, usamos:</p>
+<pre><code class="language-typescript">// Primeira página
+query.orderBy(&#39;importedAt&#39;, &#39;desc&#39;).limit(16)
+
+// Próxima página
+query.orderBy(&#39;importedAt&#39;, &#39;desc&#39;).startAfter(cursorTimestamp).limit(16)
+</code></pre>
+<p>O cursor é serializado como ISO string na API response e reconvertido para Firestore Timestamp na query.</p>
+<h3>Navegação &quot;Anterior&quot;</h3>
+<p>Para paginação &quot;Anterior&quot;, manter um stack de cursors (<code>prevCursors</code>). Ao avançar, push do cursor atual. Ao voltar, pop do stack. Primeira página: cursor undefined.</p>
+<h3>Referências de Padrão</h3>
+<ul>
+<li>Sidebar: <code>src/components/layout/sidebar.tsx</code> — seguir padrão de <code>navItems</code></li>
+<li>Layout: <code>src/app/videos/videos-layout.tsx</code> — seguir padrão do <code>EditorialPanel</code></li>
+<li>API: <code>src/app/api/editorial/episodes/route.ts</code> — auth + query + response pattern</li>
+<li>Card: <code>src/components/editorial/episode-card.tsx</code> — shadcn Card usage</li>
+<li>Admin: <code>src/lib/firebase/videos-admin.ts</code> — Firestore admin pattern</li>
+<li>Schema: <code>src/lib/schemas/video.ts</code> — Zod schema pattern</li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ol>
+<li>✅ Autenticação obrigatória em todas as API routes</li>
+<li>✅ Structured logging com <code>log()</code> em operações server-side</li>
+<li>✅ Validação Zod para dados externos (Firestore docs)</li>
+<li>✅ Mensagens de erro em português para o usuário</li>
+<li>✅ Padrão de imports (React → external → internal → utils → types)</li>
+</ol>
+
+  </main>
+</body>
+</html>

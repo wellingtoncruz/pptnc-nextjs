@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.3 Fase 1 — Entrada Inicial e Crítica — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 4 — Wizard de Processamento</nav><h1>Story 4.3: Fase 1 - Input Inicial e Crítica (Tipo 2)</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want informar contexto e receber uma crítica sincera do episódio,
+so that tenho feedback especializado sobre o conteúdo antes de continuar o processamento.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1: Área de Interatividade na Fase 1</strong></p>
+<ul>
+<li>Given o Wizard aberto na Fase 1</li>
+<li>When a fase é renderizada</li>
+<li>Then <strong>Área de Interatividade</strong> mostra:<ul>
+<li>Campos de contexto já preenchidos (via Story 4.0b)</li>
+<li>Botão &quot;Processar Crítica&quot; para iniciar LLM</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AC2: Processamento LLM com Console Feedback</strong></p>
+<ul>
+<li>Given o botão &quot;Processar Crítica&quot; clicado</li>
+<li>When a chamada LLM inicia</li>
+<li>Then <strong>Console Area</strong> mostra:<ul>
+<li>Spinner: &quot;Estou assistindo o episódio para te dar uma opinião sincera...&quot;</li>
+<li>Após retorno: Alert com título &quot;Crítica do Especialista&quot; e texto formatado</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AC3: Persistência da Crítica</strong></p>
+<ul>
+<li>Given a crítica retornada do LLM</li>
+<li>When salva no Firestore</li>
+<li>Then campo <code>phases.1.data</code> contém a estrutura <code>Phase1Response</code></li>
+<li>And fase muda para status <code>completed</code></li>
+<li>And próxima fase (2) é desbloqueada</li>
+</ul>
+</li>
+<li><p><strong>AC4: Comportamento Fase Tipo 2 (Imutável)</strong></p>
+<ul>
+<li>Given esta é uma fase Tipo 2 (Imutável)</li>
+<li>When renderizada após completada</li>
+<li>Then NÃO mostra input de override nem botão de reprocessar</li>
+<li>And crítica é gerada uma única vez</li>
+<li>And exibe apenas o resultado em modo read-only</li>
+</ul>
+</li>
+<li><p><strong>AC5: Exibição da Crítica</strong></p>
+<ul>
+<li>Given a crítica foi processada</li>
+<li>When exibida na Área de Interatividade</li>
+<li>Then mostra:<ul>
+<li>Crítica geral em formato de texto</li>
+<li>Lista de Highlights (pontos fortes)</li>
+<li>Lista de Sugestões (melhorias)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AC6: Tratamento de Erros</strong></p>
+<ul>
+<li>Given a chamada LLM falha</li>
+<li>When erro é recebido</li>
+<li>Then Console Area mostra Alert de erro com mensagem amigável</li>
+<li>And permite tentar novamente (botão fica habilitado)</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar componente Phase1Critique (AC: 1, 4, 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Criar <code>src/components/wizard/phases/phase-1-critique.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Implementar estado de exibição do contexto preenchido (read-only)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Implementar botão &quot;Processar Crítica&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Implementar estado completed com exibição read-only da crítica</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5: Implementar formatação de highlights e suggestions como listas</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Integrar com useWizard hook (AC: 2, 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Adicionar handler para chamar callLLM da fase 1</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Gerenciar spinner/alert no Console Area via wizard.addSpinner/addAlert</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Atualizar estado da fase via wizard.setPhaseData e wizard.setPhaseStatus</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar API Route para processamento (AC: 2, 3, 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Criar <code>src/app/api/wizard/phase/[phase]/route.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Implementar POST handler que recebe videoId e phase</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Buscar video do Firestore</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Chamar callLLM com video e fase</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5: Retornar resultado formatado (success ou error)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Implementar persistência no Firestore (AC: 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Usar <code>updateVideoAdmin</code> existente para salvar resultado em <code>podcasts/{podcastId}/videos/{videoId}</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: API route retorna dados que o componente usa para atualizar estado via wizard hook</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Testes (AC: 1-6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1: Teste unitário do componente Phase1Critique (16 testes)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2: Teste da API route com mock do callLLM (20 testes)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3: Integração testada através dos testes unitários</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Architecture Patterns</h3>
+<ul>
+<li><strong>Fase Tipo 2 (Imutável)</strong>: Uma vez processada, não pode ser reprocessada. O componente deve detectar <code>phases[1].status === &#39;completed&#39;</code> e renderizar em modo read-only.</li>
+<li><strong>Chamada LLM Síncrona</strong>: Usa <code>callLLM</code> de <code>@/lib/llm</code> com timeout de 60s (PHASE_TIMEOUTS[1]).</li>
+<li><strong>Console Pattern</strong>: Usar <code>wizard.addSpinner()</code> ao iniciar, <code>wizard.removeSpinner()</code> ao finalizar, <code>wizard.addAlert()</code> para resultado.</li>
+</ul>
+<h3>Source Tree Components</h3>
+<pre><code>src/
+├── app/api/wizard/phase/[phase]/route.ts  # NEW - API route genérica para fases
+├── components/wizard/
+│   ├── phases/
+│   │   └── phase-1-critique.tsx           # NEW - Componente da Fase 1
+│   └── index.ts                           # UPDATE - export Phase1Critique
+├── lib/
+│   ├── llm/
+│   │   ├── client.ts                      # EXISTING - callLLM
+│   │   ├── prompts.ts                     # EXISTING - Phase 1 prompts
+│   │   └── types.ts                       # EXISTING - Phase1Response
+│   └── wizard/
+│       ├── constants.ts                   # EXISTING - PHASE_METADATA[1]
+│       └── types.ts                       # EXISTING - PhaseState&lt;T&gt;
+└── hooks/
+    └── use-wizard.ts                      # EXISTING - hook para estado
+</code></pre>
+<h3>Response Schema (Phase1Response)</h3>
+<pre><code class="language-typescript">interface Phase1Response {
+  critique: string        // Crítica geral em 2-3 parágrafos
+  highlights: string[]    // Pontos fortes do episódio
+  suggestions: string[]   // Sugestões de melhoria
+}
+</code></pre>
+<h3>Console Messages Pattern</h3>
+<pre><code class="language-typescript">// Início do processamento
+const spinnerId = wizard.addSpinner(1)  // Usa texto padrão de PHASE_METADATA[1]
+
+// Após sucesso
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(1, &#39;Crítica do Especialista&#39;, &#39;Análise concluída com sucesso&#39;, &#39;success&#39;)
+
+// Após erro
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(1, &#39;Erro&#39;, errorMessage, &#39;error&#39;)
+</code></pre>
+<h3>Testing Standards</h3>
+<ul>
+<li>Mock do <code>callLLM</code> para testes de componente</li>
+<li>Mock do fetch para testes da API route</li>
+<li>Usar <code>@testing-library/react</code> com <code>renderHook</code> para testar integração com <code>useWizard</code></li>
+</ul>
+<h3>Project Structure Notes</h3>
+<ul>
+<li>API route em <code>api/wizard/phase/[phase]</code> permite reutilização para todas as 7 fases com LLM</li>
+<li>Componentes de fase em <code>components/wizard/phases/</code> seguem padrão <code>phase-N-*.tsx</code></li>
+<li>Phase 1 exibe contexto do vídeo (coletado na Story 4.0b) antes do botão de processar</li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: epics-iara.md#Story 4.3]</li>
+<li>[Source: architecture-iara.md#LLM Integration]</li>
+<li>[Source: src/lib/llm/types.ts#Phase1Response]</li>
+<li>[Source: src/lib/llm/prompts.ts#BASE_SYSTEM_PROMPTS[1]]</li>
+<li>[Source: src/lib/wizard/constants.ts#PHASE_METADATA[1]]</li>
+<li>[Source: src/hooks/use-wizard.ts#addSpinner, addAlert]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>WizardPhaseSchema adicionado em types.ts para validação Zod das fases</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>Componente Phase1Critique criado com estados: pending, loading, completed, error</li>
+<li>API route genérica criada em <code>/api/wizard/phase/[phase]</code> para processar fases 1-7</li>
+<li>Exportado WizardPhaseSchema para validação de número de fase na API</li>
+<li>Testes cobrem todos os ACs: contexto, processamento, persistência, imutabilidade, exibição e erros</li>
+<li>Total: 36 novos testes (16 componente + 20 API route), todos passando</li>
+<li>Suite completa: 794 testes passando</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li>src/components/wizard/phases/phase-1-critique.tsx (NEW, UPDATED 2026-01-28 - advancement button + setPhaseData on advance)</li>
+<li>src/components/wizard/phases/phase-1-critique.test.tsx (NEW, UPDATED 2026-01-28 - added 5 tests, updated setPhaseData assertion)</li>
+<li>src/components/wizard/wizard-orchestrator.tsx (UPDATED 2026-01-28 - removed setPhaseData from LLM callback)</li>
+<li>src/components/wizard/phases/index.ts (NEW)</li>
+<li>src/components/wizard/index.ts (UPDATED - export Phase1Critique)</li>
+<li>src/app/api/wizard/phase/[phase]/route.ts (NEW)</li>
+<li>src/app/api/wizard/phase/[phase]/route.test.ts (NEW)</li>
+<li>src/lib/wizard/types.ts (UPDATED - added WizardPhaseSchema)</li>
+<li>src/lib/wizard/index.ts (UPDATED - export WizardPhaseSchema)</li>
+</ul>
+<h2>Change Log</h2>
+<ul>
+<li>2026-01-28: Fix breadcrumb navigation bypass - phase only marked completed on user advance</li>
+<li>2026-01-27: Story implementation complete (Tasks 1-5)</li>
+</ul>
+<h2>QA Results</h2>
+<h3>Review Date: 2026-01-28</h3>
+<h3>Reviewed By: Quinn (Test Architect)</h3>
+<h3>Code Quality Assessment</h3>
+<p>Implementação parcialmente completa. O fluxo de processamento LLM e exibição via Console Area está correto. Porém, faltam elementos críticos definidos no processamento_video.md.</p>
+<h3>Compliance Check</h3>
+<ul>
+<li>Coding Standards: ✓</li>
+<li>Project Structure: ✓</li>
+<li>Testing Strategy: ✓</li>
+<li>All ACs Met: ✗ (ver issues abaixo)</li>
+</ul>
+<h3>Issues Encontradas</h3>
+<h4>Issue 1: Falta botão &quot;Avançar&quot; para próxima fase (HIGH)</h4>
+<p><strong>Referência</strong>: processamento_video.md seção 1.1.A</p>
+<blockquote>
+<p>&quot;Ao cumprir os critérios de avanço de cada Fase, o produtor deveria ter um botão ou algo semelhante que permita ele explicitamente avançar de fase.&quot;</p>
+</blockquote>
+<p><strong>Status Atual</strong>: Não existe botão para avançar. Navegação só é possível via breadcrumb.</p>
+<p><strong>Correção Necessária</strong>: Adicionar botão &quot;Avançar&quot; no componente Phase1Critique que:</p>
+<ul>
+<li>Fica desabilitado até critérios serem cumpridos</li>
+<li>Quando clicado, navega para Fase 2</li>
+</ul>
+<h4>Issue 2: Critérios de avanço não validados (HIGH)</h4>
+<p><strong>Referência</strong>: processamento_video.md seção 1.1.A - Critérios de Avanço</p>
+<blockquote>
+<ul>
+<li>Retorno do LLM com sucesso</li>
+<li>Campo <code>critique</code> persistido</li>
+<li>Inputs preenchidos: tema do episódio, co-host e convidados.</li>
+</ul>
+</blockquote>
+<p><strong>Status Atual</strong>:</p>
+<ul>
+<li>✓ Retorno LLM com sucesso - validado pelo orchestrator</li>
+<li>✓ Campo critique persistido - API route persiste</li>
+<li>✓ Inputs preenchidos - validado antes de permitir avanço (botão + breadcrumb)</li>
+</ul>
+<p><strong>Correção Aplicada</strong>: Fase só é marcada como <code>completed</code> quando usuário clica &quot;Avançar&quot; com todos critérios atendidos. Breadcrumb respeita status da fase.</p>
+<h3>Improvements Checklist</h3>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Adicionar botão &quot;Avançar&quot; no Phase1Critique</li>
+<li><input checked="" disabled="" type="checkbox"> Implementar validação de critérios de avanço (tema + convidados preenchidos)</li>
+<li><input checked="" disabled="" type="checkbox"> Desabilitar botão até critérios cumpridos</li>
+<li><input checked="" disabled="" type="checkbox"> Adicionar testes para validação de critérios (5 novos testes)</li>
+<li><input checked="" disabled="" type="checkbox"> Corrigir breadcrumb para respeitar critérios de avanço (não marcar fase como completed antes dos critérios)</li>
+</ul>
+<h3>Security Review</h3>
+<p>Nenhuma vulnerabilidade identificada.</p>
+<h3>Performance Considerations</h3>
+<p>Nenhum problema identificado.</p>
+<h3>Refactoring Performed</h3>
+<ul>
+<li><p><strong>File</strong>: <code>src/components/wizard/phases/phase-1-critique.tsx</code></p>
+<ul>
+<li><strong>Change</strong>: Adicionado botão &quot;Avançar para Fase 2&quot; com validação de critérios</li>
+<li><strong>Why</strong>: Conformidade com processamento_video.md - produtor precisa avançar explicitamente</li>
+<li><strong>How</strong>: Botão desabilitado até: (1) critique recebida, (2) tema preenchido, (3) convidado completo</li>
+</ul>
+</li>
+<li><p><strong>File</strong>: <code>src/components/wizard/phases/phase-1-critique.test.tsx</code></p>
+<ul>
+<li><strong>Change</strong>: Adicionados 5 testes para validação de critérios de avanço</li>
+<li><strong>Why</strong>: Cobertura de testes para nova funcionalidade</li>
+<li><strong>How</strong>: Testes para botão disabled/enabled e chamada goToNextPhase</li>
+</ul>
+</li>
+<li><p><strong>File</strong>: <code>src/components/wizard/wizard-orchestrator.tsx</code> (2026-01-28 Fix #2)</p>
+<ul>
+<li><strong>Change</strong>: Removido <code>setPhaseData</code> do processamento LLM</li>
+<li><strong>Why</strong>: Breadcrumb permitia navegação sem critérios atendidos</li>
+<li><strong>How</strong>:<ul>
+<li>Não marca fase como <code>completed</code> quando LLM retorna</li>
+<li>Mantém status <code>pending</code> até usuário clicar &quot;Avançar&quot;</li>
+<li>Critique armazenada em state local, não no wizard state</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>File</strong>: <code>src/components/wizard/phases/phase-1-critique.tsx</code> (2026-01-28 Fix #2)</p>
+<ul>
+<li><strong>Change</strong>: <code>handleAdvance</code> agora chama <code>setPhaseData</code> antes de <code>goToNextPhase</code></li>
+<li><strong>Why</strong>: Só marca fase como completed quando TODOS critérios atendidos</li>
+<li><strong>How</strong>: <code>wizard.setPhaseData(1, critique)</code> só é chamado ao clicar Avançar</li>
+</ul>
+</li>
+</ul>
+<h3>Files Modified During Review</h3>
+<ul>
+<li>src/components/wizard/phases/phase-1-critique.tsx (UPDATED - 2x)</li>
+<li>src/components/wizard/phases/phase-1-critique.test.tsx (UPDATED - 2x)</li>
+<li>src/components/wizard/wizard-orchestrator.tsx (UPDATED - 2026-01-28)</li>
+</ul>
+<h3>Gate Status</h3>
+<p>Gate: PASS
+Risk profile: LOW
+Quality score: 95/100</p>
+<h3>Recommended Status</h3>
+<p>✓ Ready for Done</p>
+
+  </main>
+</body>
+</html>

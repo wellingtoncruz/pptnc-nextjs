@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5.1 Melhorias de Layout do Wizard — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li class="active"><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 5 — Melhorias do Wizard</nav><h1>Story 5.1: Melhorias de Layout do Wizard</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want uma interface mais informativa e intuitiva no wizard,
+so that eu tenha melhor visibilidade do video sendo processado e feedback visual claro durante operacoes.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1: Titulo do Video Acima do Player</strong></p>
+<ul>
+<li>Given o Wizard aberto com um video selecionado</li>
+<li>When a pagina e renderizada</li>
+<li>Then o titulo do video (<code>video.title</code> ou titulo original do YouTube) aparece acima do player</li>
+<li>And usa tipografia destacada (h2 ou similar)</li>
+</ul>
+</li>
+<li><p><strong>AC2: Metadados Abaixo do Player</strong></p>
+<ul>
+<li>Given o Wizard aberto com um video selecionado</li>
+<li>When a pagina e renderizada</li>
+<li>Then abaixo do player exibe:<ul>
+<li>Data de criacao (<code>video.publishedAt</code>)</li>
+<li>Data da ultima atualizacao (<code>video.updatedAt</code>)</li>
+<li>Duracao do video formatada (HH:MM:SS)</li>
+</ul>
+</li>
+<li>And layout compacto em linha unica</li>
+</ul>
+</li>
+<li><p><strong>AC3: Spinner Visual Durante Processamento LLM</strong></p>
+<ul>
+<li>Given uma fase que depende de processamento LLM</li>
+<li>When o processamento ainda nao iniciou ou esta em andamento</li>
+<li>Then a <strong>Area de Interatividade</strong> mostra um spinner grafico proeminente</li>
+<li>And o spinner ocupa boa parte da area disponivel (minimo 200px altura)</li>
+<li>And substitui a mensagem de texto &quot;O processamento iniciara automaticamente.&quot;</li>
+</ul>
+</li>
+<li><p><strong>AC4: Botao Avancar com Nome da Fase</strong></p>
+<ul>
+<li>Given qualquer fase do wizard com botao de avancar</li>
+<li>When o botao e renderizado</li>
+<li>Then texto do botao e &quot;Avancar para [Nome da Fase]&quot;</li>
+<li>And nomes das fases:<ul>
+<li>Fase 2: &quot;Analise de Edicao&quot;</li>
+<li>Fase 3: &quot;Risco e Conformidade&quot;</li>
+<li>Fase 4: &quot;Capitulos&quot;</li>
+<li>Fase 5: &quot;Titulo&quot;</li>
+<li>Fase 6: &quot;Descricao&quot;</li>
+<li>Fase 7: &quot;Tags&quot;</li>
+<li>Fase 8: &quot;Publicar no YouTube&quot;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AC5: Alertas Colapsaveis no Console</strong></p>
+<ul>
+<li>Given multiplos alertas/spinners na <strong>Console Area</strong></li>
+<li>When um novo item e adicionado ou atualizado</li>
+<li>Then os demais itens colapsam automaticamente</li>
+<li>And apenas o item atual fica expandido/em evidencia</li>
+<li>And usuario pode expandir/colapsar manualmente clicando no item</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Adicionar Titulo e Metadados ao Layout (AC: 1, 2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Criar componente <code>VideoHeader</code> com titulo, datas e duracao</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Integrar <code>VideoHeader</code> no <code>wizard-layout.tsx</code> acima do <code>VideoPreview</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Formatar datas com <code>date-fns</code> (pt-BR locale)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Formatar duracao com funcao utilitaria (HH:MM:SS)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5: Testar <code>VideoHeader</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Implementar Spinner Visual de Processamento (AC: 3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Criar componente <code>ProcessingSpinner</code> com animacao e tamanho adequado</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Substituir mensagem de texto pelo spinner nas fases 1-7</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Manter spinner visivel ate dados estarem disponiveis</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4: Testar <code>ProcessingSpinner</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar PHASE_NAMES e Atualizar Botoes (AC: 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Criar arquivo <code>src/lib/wizard/phase-names.ts</code> com mapa de nomes</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Exportar de <code>src/lib/wizard/index.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Atualizar phase-1-critique.tsx ate phase-7-tags.tsx</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Criar helper function <code>getNextPhaseName(currentPhase)</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Implementar Alertas Colapsaveis (AC: 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Estender <code>ConsoleMessage</code> com campo <code>collapsed: boolean</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: Refatorar <code>ConsoleArea</code> para suportar items colapsaveis</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3: Implementar auto-colapso ao adicionar novo item</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4: Adicionar toggle manual de expandir/colapsar</li>
+<li><input checked="" disabled="" type="checkbox"> 4.5: Atualizar <code>useWizard</code> para gerenciar collapse state</li>
+<li><input checked="" disabled="" type="checkbox"> 4.6: Testar alertas colapsaveis</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Testes de Integracao (AC: 1-5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1: Testar layout completo com todos os componentes</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2: Verificar responsividade em diferentes tamanhos de tela</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura Atual</h3>
+<p>O layout do wizard esta em <code>wizard-layout.tsx</code>:</p>
+<pre><code>┌─────────────────────────────────────────┐
+│ [Breadcrumb: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8] │
+├─────────────────────┬───────────────────┤
+│                     │                   │
+│   Video Preview     │  Interactive      │
+│   (YouTube embed)   │  Panel            │
+│                     │  (fase-specific)  │
+│                     │                   │
+├─────────────────────┴───────────────────┤
+│                                         │
+│   Console Area                          │
+│   (scrollable, stacks alerts)           │
+│                                         │
+└─────────────────────────────────────────┘
+</code></pre>
+<p><strong>Modificacao proposta</strong>: Adicionar <code>VideoHeader</code> acima do <code>VideoPreview</code>.</p>
+<h3>Componentes Existentes a Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Modificacao</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/wizard/wizard-layout.tsx</code></td>
+<td>Integrar VideoHeader, passar video prop</td>
+</tr>
+<tr>
+<td><code>src/components/wizard/console-area.tsx</code></td>
+<td>Adicionar collapse state, toggle UI</td>
+</tr>
+<tr>
+<td><code>src/lib/wizard/types.ts</code></td>
+<td>Estender ConsoleMessage interface</td>
+</tr>
+<tr>
+<td><code>src/hooks/use-wizard.ts</code></td>
+<td>Gerenciar collapse ao adicionar mensagens</td>
+</tr>
+<tr>
+<td><code>src/components/wizard/phases/phase-*.tsx</code></td>
+<td>Usar PHASE_NAMES no botao</td>
+</tr>
+</tbody></table>
+<h3>Componentes Novos a Criar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Descricao</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/wizard/video-header.tsx</code></td>
+<td>Titulo + metadados</td>
+</tr>
+<tr>
+<td><code>src/components/wizard/video-header.test.tsx</code></td>
+<td>Testes</td>
+</tr>
+<tr>
+<td><code>src/components/wizard/processing-spinner.tsx</code></td>
+<td>Spinner visual grande</td>
+</tr>
+<tr>
+<td><code>src/components/wizard/processing-spinner.test.tsx</code></td>
+<td>Testes</td>
+</tr>
+<tr>
+<td><code>src/lib/wizard/phase-names.ts</code></td>
+<td>Mapa de nomes amigaveis</td>
+</tr>
+</tbody></table>
+<h3>PHASE_NAMES Map</h3>
+<pre><code class="language-typescript">// src/lib/wizard/phase-names.ts
+import type { WizardPhase } from &#39;./types&#39;
+
+export const PHASE_NAMES: Record&lt;WizardPhase, string&gt; = {
+  1: &#39;Critica Inicial&#39;,
+  2: &#39;Analise de Edicao&#39;,
+  3: &#39;Risco e Conformidade&#39;,
+  4: &#39;Capitulos&#39;,
+  5: &#39;Titulo&#39;,
+  6: &#39;Descricao&#39;,
+  7: &#39;Tags&#39;,
+  8: &#39;Publicar no YouTube&#39;,
+}
+
+export function getNextPhaseName(currentPhase: WizardPhase): string | null {
+  const nextPhase = currentPhase &lt; 8 ? (currentPhase + 1) as WizardPhase : null
+  return nextPhase ? PHASE_NAMES[nextPhase] : null
+}
+</code></pre>
+<h3>VideoHeader Props e Interface</h3>
+<pre><code class="language-typescript">// src/components/wizard/video-header.tsx
+interface VideoHeaderProps {
+  video: Video
+  className?: string
+}
+
+// Campos a exibir:
+// - video.title (h2, font-semibold)
+// - video.publishedAt (format: &quot;dd MMM yyyy&quot;)
+// - video.updatedAt (format: &quot;dd MMM yyyy HH:mm&quot;)
+// - video.duration (format: HH:MM:SS)
+</code></pre>
+<h3>ProcessingSpinner Props</h3>
+<pre><code class="language-typescript">// src/components/wizard/processing-spinner.tsx
+interface ProcessingSpinnerProps {
+  text?: string
+  className?: string
+}
+
+// Usar Loader2 do lucide-react com animacao spin
+// Minimo 200px altura
+// Texto abaixo do spinner (opcional)
+</code></pre>
+<h3>ConsoleMessage Extended</h3>
+<pre><code class="language-typescript">// src/lib/wizard/types.ts - ESTENDER (nao substituir)
+export interface ConsoleMessage {
+  id: string
+  phase: WizardPhase
+  type: ConsoleMessageType
+  timestamp: Date
+  spinnerText?: string
+  alertTitle?: string
+  alertText?: string
+  alertSeverity?: AlertSeverity
+  collapsed?: boolean  // NEW - default false
+}
+</code></pre>
+<h3>Padrao de Formatacao de Data</h3>
+<p>Usar <code>date-fns</code> com locale pt-BR:</p>
+<pre><code class="language-typescript">import { format } from &#39;date-fns&#39;
+import { ptBR } from &#39;date-fns/locale&#39;
+
+// Para publishedAt
+format(new Date(video.publishedAt), &quot;dd MMM yyyy&quot;, { locale: ptBR })
+
+// Para updatedAt (com hora)
+format(video.updatedAt.toDate(), &quot;dd MMM yyyy &#39;as&#39; HH:mm&quot;, { locale: ptBR })
+
+// Para duracao (segundos -&gt; HH:MM:SS)
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  return `${h.toString().padStart(2, &#39;0&#39;)}:${m.toString().padStart(2, &#39;0&#39;)}:${s.toString().padStart(2, &#39;0&#39;)}`
+}
+</code></pre>
+<h3>Logica de Auto-Colapso no Console</h3>
+<pre><code class="language-typescript">// Em useWizard.ts - modificar addAlert
+const addAlert = useCallback(
+  (phase, title, text, severity = &#39;info&#39;) =&gt; {
+    const messageId = `${idPrefix}-alert-${phase}-${++messageCounter.current}`
+
+    setConsoleMessages((prev) =&gt; {
+      // Colapsa todos os items anteriores
+      const collapsedPrev = prev.map(m =&gt; ({ ...m, collapsed: true }))
+
+      const message: ConsoleMessage = {
+        id: messageId,
+        phase,
+        type: &#39;alert&#39;,
+        timestamp: new Date(),
+        alertTitle: title,
+        alertText: text,
+        alertSeverity: severity,
+        collapsed: false,  // Novo item expandido
+      }
+
+      return [...collapsedPrev, message]
+    })
+
+    return messageId
+  },
+  [idPrefix]
+)
+</code></pre>
+<h3>Integracao com WizardLayout</h3>
+<pre><code class="language-typescript">// wizard-layout.tsx - passar video para VideoHeader
+interface WizardLayoutProps {
+  wizard: UseWizardReturn
+  video: Video  // ADICIONAR
+  interactivePanel: React.ReactNode
+  className?: string
+}
+
+// No render:
+&lt;div className=&quot;lg:w-1/2 p-4 flex flex-col&quot;&gt;
+  &lt;VideoHeader video={video} className=&quot;mb-4&quot; /&gt;
+  &lt;VideoPreview
+    videoId={wizard.state.videoId}
+    className=&quot;max-w-2xl w-full flex-1&quot;
+  /&gt;
+&lt;/div&gt;
+</code></pre>
+<h3>wizard-orchestrator.tsx - Passar Video</h3>
+<pre><code class="language-typescript">// Modificar chamada do WizardLayout
+return (
+  &lt;WizardLayout
+    wizard={wizard}
+    video={videoData}  // ADICIONAR
+    interactivePanel={renderInteractivePanel()}
+    className={className}
+  /&gt;
+)
+</code></pre>
+<h3>Testing Patterns</h3>
+<pre><code class="language-typescript">// Padrao de teste para componentes
+import { render, screen } from &#39;@/test-utils&#39;
+import { vi } from &#39;vitest&#39;
+
+// Mock video
+const mockVideo: Video = {
+  id: &#39;test-123&#39;,
+  title: &#39;Test Video Title&#39;,
+  publishedAt: &#39;2024-01-15T10:00:00Z&#39;,
+  updatedAt: { toDate: () =&gt; new Date(&#39;2024-01-20T15:30:00Z&#39;) } as never,
+  duration: 3661, // 1:01:01
+  // ... outros campos obrigatorios
+}
+
+describe(&#39;VideoHeader&#39;, () =&gt; {
+  it(&#39;renders video title&#39;, () =&gt; {
+    render(&lt;VideoHeader video={mockVideo} /&gt;)
+    expect(screen.getByText(&#39;Test Video Title&#39;)).toBeInTheDocument()
+  })
+
+  it(&#39;formats duration correctly&#39;, () =&gt; {
+    render(&lt;VideoHeader video={mockVideo} /&gt;)
+    expect(screen.getByText(&#39;01:01:01&#39;)).toBeInTheDocument()
+  })
+})
+</code></pre>
+<h3>References</h3>
+<ul>
+<li>[Source: wizard-layout.tsx - Layout atual do wizard]</li>
+<li>[Source: console-area.tsx - Componente de console]</li>
+<li>[Source: use-wizard.ts - Hook de estado do wizard]</li>
+<li>[Source: types.ts - Tipos do wizard]</li>
+<li>[Source: machine.ts - State machine do wizard]</li>
+<li>[Source: video.ts - Tipos do video]</li>
+<li>[Source: Story 5.2 - Correcao Phase 8 completada recentemente]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<p>None</p>
+<h3>Completion Notes List</h3>
+<ul>
+<li>VideoHeader componente criado com titulo (h2) acima do player</li>
+<li>VideoMetadata componente criado com datas e duracao abaixo do player</li>
+<li>ProcessingSpinner com animacao Loader2 e minimo 200px de altura</li>
+<li>PHASE_NAMES mapa implementado em phase-names.ts</li>
+<li>getNextPhaseName helper function implementada</li>
+<li>ConsoleArea com suporte a alertas colapsaveis</li>
+<li>Auto-colapso implementado via useWizard addAlert</li>
+<li>Toggle manual de expandir/colapsar funcionando</li>
+<li>formatTimestamp suporta multiplos formatos de Firestore Timestamp</li>
+<li>42 testes passando (video-header: 19, processing-spinner: 8, wizard-layout: 15)</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li>src/components/wizard/video-header.tsx (CREATED - VideoHeader + VideoMetadata components)</li>
+<li>src/components/wizard/video-header.test.tsx (CREATED - 19 tests)</li>
+<li>src/components/wizard/processing-spinner.tsx (CREATED - spinner visual)</li>
+<li>src/components/wizard/processing-spinner.test.tsx (CREATED - 8 tests)</li>
+<li>src/components/wizard/wizard-layout.tsx (UPDATED - integra VideoHeader e VideoMetadata)</li>
+<li>src/components/wizard/wizard-layout.test.tsx (CREATED - 15 tests)</li>
+<li>src/components/wizard/console-area.tsx (UPDATED - collapsible alerts)</li>
+<li>src/lib/wizard/phase-names.ts (CREATED - PHASE_NAMES map + getNextPhaseName)</li>
+<li>src/lib/wizard/index.ts (UPDATED - exports phase-names)</li>
+<li>src/lib/wizard/types.ts (UPDATED - collapsed field in ConsoleMessage)</li>
+<li>src/hooks/use-wizard.ts (UPDATED - auto-collapse logic in addAlert)</li>
+<li>src/components/wizard/phases/phase-*.tsx (UPDATED - use getNextPhaseName in buttons)</li>
+</ul>
+
+  </main>
+</body>
+</html>

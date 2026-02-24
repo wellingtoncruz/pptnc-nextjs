@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.6 Fase 4 — Capítulos — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 4 — Wizard de Processamento</nav><h1>Story 4.6: Fase 4 - Capítulos (Tipo 2)</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want uma sugestão de divisão de capítulos por assuntos,
+so that o vídeo tenha navegação otimizada no YouTube.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1: Processamento Automático ao Entrar na Fase</strong></p>
+<ul>
+<li>Given o Wizard na Fase 4</li>
+<li>When a fase inicia</li>
+<li>Then processamento LLM é iniciado automaticamente</li>
+<li>And <strong>Área de Interatividade</strong> mostra loading state</li>
+</ul>
+</li>
+<li><p><strong>AC2: Exibição de Capítulos Gerados</strong></p>
+<ul>
+<li>Given capítulos gerados pelo LLM</li>
+<li>When renderizados na Área de Interatividade</li>
+<li>Then cada capítulo mostra:<ul>
+<li>Timestamp clicável (formato MM:SS ou HH:MM:SS)</li>
+<li>Título do capítulo</li>
+</ul>
+</li>
+<li>And primeiro capítulo SEMPRE começa em 00:00</li>
+<li>And clicar no timestamp faz seek no player in-page para o ponto exato</li>
+<li>And timestamps de capítulos NÃO usam context offset (applyContextOffset={false})</li>
+</ul>
+</li>
+<li><p><strong>AC3: Exibição com Lista Vazia</strong></p>
+<ul>
+<li>Given nenhum capítulo retornado pelo LLM (edge case)</li>
+<li>When renderizado</li>
+<li>Then mostra mensagem informativa com opção de retry</li>
+</ul>
+</li>
+<li><p><strong>AC4: Console Area com Feedback</strong></p>
+<ul>
+<li>Given o processamento LLM em andamento</li>
+<li>When a fase está processando</li>
+<li>Then <strong>Console Area</strong> mostra:<ul>
+<li>Spinner: &quot;Fazendo a separação de capítulos...&quot;</li>
+</ul>
+</li>
+<li>And após retorno mostra Alert:<ul>
+<li>Título: &quot;Capítulos&quot;</li>
+<li>Texto: Lista de capítulos com timestamps (formato &quot;00:00 Título&quot;)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AC5: Persistência no Firestore</strong></p>
+<ul>
+<li>Given o retorno do LLM com sucesso</li>
+<li>When os dados são persistidos</li>
+<li>Then campo <code>chapters</code> é salvo na <strong>raiz do objeto video</strong></li>
+<li>And estrutura: <code>Array&lt;{ timestamp: string, title: string }&gt;</code></li>
+</ul>
+</li>
+<li><p><strong>AC6: Critérios de Avanço com Aprovação</strong></p>
+<ul>
+<li>Given os critérios de avanço da Fase 4</li>
+<li>When o botão &quot;Avançar&quot; é clicado</li>
+<li>Then valida:<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>chapters</code> persistido ✓</li>
+</ul>
+</li>
+<li>And Alert Dialog &quot;Aprova os capítulos?&quot;</li>
+<li>And se produtor confirmar &quot;Sim, aprovar&quot;, avança para Fase 5</li>
+<li>And se &quot;Não, revisar&quot;, permanece na Fase 4</li>
+</ul>
+</li>
+<li><p><strong>AC7: Comportamento Fase Tipo 2 (Imutável)</strong></p>
+<ul>
+<li>Given esta é uma fase Tipo 2 (Imutável)</li>
+<li>When renderizada após completada</li>
+<li>Then NÃO mostra input de override nem botão de reprocessar</li>
+<li>And resultado é exibido em modo read-only</li>
+</ul>
+</li>
+<li><p><strong>AC8: Tratamento de Erros</strong></p>
+<ul>
+<li>Given a chamada LLM falha</li>
+<li>When erro é recebido</li>
+<li>Then Console Area mostra Alert de erro com mensagem amigável</li>
+<li>And permite tentar novamente (botão retry habilitado)</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar componente Phase4Chapters (AC: 1, 2, 3, 7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Criar <code>src/components/wizard/phases/phase-4-chapters.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Implementar loading state inicial</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Implementar exibição de lista de capítulos com timestamps clicáveis</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Implementar estado completed com exibição read-only</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5: Implementar estado de erro com retry</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Configurar ClickableTimestamp para Capítulos (AC: 2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Usar <code>ClickableTimestamp</code> com <code>applyContextOffset={false}</code> para capítulos</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Exibir título do capítulo ao lado do timestamp</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Scroll-into-view do player ao clicar (via ClickableTimestamp)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Integrar com Orchestrator e useWizard (AC: 1, 4, 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Atualizar <code>wizard-orchestrator.tsx</code> para renderizar Phase4Chapters</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Implementar processamento automático ao montar fase 4</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Gerenciar spinner/alert no Console Area</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Persistir <code>chapters</code> via API route</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Implementar Botão Avançar com Aprovação (AC: 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Adicionar botão &quot;Avançar para Fase 5&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: Implementar Alert Dialog de aprovação dos capítulos</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3: Usar <code>completePhaseAndAdvance</code> para navegação</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Adicionar Schema e Types para Phase 4 (AC: 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1: Criar/Atualizar <code>Phase4Response</code> em <code>src/lib/llm/types.ts</code> (timestamp: string)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2: Adicionar <code>Chapter</code> type exportado</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3: <code>chapters</code> já existe no <code>VideoSchema</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.4: Atualizar <code>BASE_SYSTEM_PROMPTS[4]</code> em <code>src/lib/llm/prompts.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.5: Atualizar <code>PHASE_JSON_SCHEMAS[4]</code> em <code>src/lib/llm/prompts.ts</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Atualizar API Route para Phase 4 (AC: 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1: Adicionar persistence de <code>chapters</code> em <code>route.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.2: Atualizar testes com mock para Phase 4</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 7: Testes (AC: 1-8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1: Testes unitários do componente Phase4Chapters (20 tests)</li>
+<li><input checked="" disabled="" type="checkbox"> 7.2: Testar cenários: com capítulos, sem capítulos, erro, aprovação de avanço</li>
+<li><input checked="" disabled="" type="checkbox"> 7.3: Testar Alert Dialog de aprovação</li>
+<li><input checked="" disabled="" type="checkbox"> 7.4: Testar que timestamps NÃO usam context offset</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Architecture Patterns</h3>
+<ul>
+<li><strong>Fase Tipo 2 (Imutável)</strong>: Uma vez processada, não pode ser reprocessada. O componente deve detectar <code>phases[4].status === &#39;completed&#39;</code> e renderizar em modo read-only.</li>
+<li><strong>Processamento Automático</strong>: Igual às Fases 2 e 3, inicia processamento automaticamente ao entrar, sem botão manual.</li>
+<li><strong>Console Pattern</strong>: Usar <code>wizard.addSpinner()</code> ao iniciar, <code>wizard.removeSpinner()</code> ao finalizar, <code>wizard.addAlert()</code> para resultado.</li>
+<li><strong>Aprovação de Capítulos</strong>: Alert Dialog do shadcn/ui para aprovar capítulos antes de avançar.</li>
+</ul>
+<h3>UX Patterns (Reutilizar de Stories Anteriores)</h3>
+<h4>1. Console Area - Reverse Order + Animation</h4>
+<p>Messages should be displayed with <strong>newest at top</strong>. New alerts should have attention animation.</p>
+<pre><code class="language-typescript">// In console-area.tsx - JÁ IMPLEMENTADO
+const reversedMessages = [...messages].reverse()
+</code></pre>
+<p>See: <code>src/components/wizard/console-area.tsx</code></p>
+<h4>2. Timestamps - In-Page Player Control</h4>
+<p>Clickable timestamps should <strong>seek the in-page YouTube player</strong>, NOT open new tabs.</p>
+<pre><code class="language-typescript">// Reutilizar ClickableTimestamp
+import { ClickableTimestamp } from &#39;./clickable-timestamp&#39;
+</code></pre>
+<h4>3. Timestamps - NO Context Offset for Chapters</h4>
+<p><strong>IMPORTANTE:</strong> Capítulos NÃO usam offset de contexto. O usuário quer ir direto para o início do capítulo.</p>
+<pre><code class="language-typescript">// Para capítulos, usar applyContextOffset={false}
+&lt;ClickableTimestamp
+  videoId={videoId}
+  timestamp={chapter.timestamp}
+  applyContextOffset={false}  // CRÍTICO: sem offset para capítulos
+/&gt;
+</code></pre>
+<p>Pattern: <code>@pattern TIMESTAMP_NO_OFFSET_FOR_CHAPTERS</code></p>
+<h3>Source Tree Components</h3>
+<pre><code>src/
+├── components/wizard/
+│   ├── phases/
+│   │   ├── phase-4-chapters.tsx           # NEW - Componente da Fase 4
+│   │   ├── phase-4-chapters.test.tsx      # NEW - Testes
+│   │   ├── clickable-timestamp.tsx        # REUTILIZAR (com applyContextOffset={false})
+│   │   └── index.ts                       # UPDATE - export Phase4Chapters
+│   └── wizard-orchestrator.tsx            # UPDATE - adicionar case para fase 4
+├── lib/
+│   ├── llm/
+│   │   ├── types.ts                       # UPDATE - Phase4Response, Chapter type
+│   │   └── prompts.ts                     # UPDATE - BASE_SYSTEM_PROMPTS[4], PHASE_JSON_SCHEMAS[4]
+│   └── schemas/
+│       └── video.ts                       # VERIFY - chapters field exists
+└── app/api/wizard/phase/[phase]/
+    ├── route.ts                           # UPDATE - persist chapters
+    └── route.test.ts                      # UPDATE - mock for Phase 4
+</code></pre>
+<h3>Response Schema (Phase4Response)</h3>
+<pre><code class="language-typescript">interface Chapter {
+  timestamp: string    // Format: &quot;MM:SS&quot; or &quot;HH:MM:SS&quot; - DEVE SER STRING
+  title: string        // Título do capítulo (max 50 chars)
+}
+
+interface Phase4Response {
+  chapters: Chapter[]  // Array de capítulos, primeiro sempre em 00:00
+}
+</code></pre>
+<p><strong>ATENÇÃO:</strong> O schema atual em <code>types.ts</code> tem <code>timestamp: number</code>. Precisa ser alterado para <code>timestamp: string</code> para consistência com as outras fases.</p>
+<h3>Console Messages Pattern</h3>
+<pre><code class="language-typescript">// Início do processamento
+const spinnerId = wizard.addSpinner(4, &#39;Fazendo a separação de capítulos...&#39;)
+
+// Após sucesso - mostra capítulos na mensagem
+const chaptersText = chapters.map(c =&gt; `${c.timestamp} ${c.title}`).join(&#39;\n&#39;)
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(4, &#39;Capítulos&#39;, chaptersText, &#39;success&#39;)
+
+// Após erro
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(4, &#39;Erro&#39;, errorMessage, &#39;error&#39;)
+</code></pre>
+<h3>PHASE_CONFIG Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts - JÁ EXISTE
+4: {
+  personaName: &#39;critic&#39;,
+  attachmentType: &#39;SRT&#39;,
+  promptKey: &#39;chapters&#39;,
+}
+</code></pre>
+<h3>BASE_SYSTEM_PROMPTS Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts - VERIFICAR/ATUALIZAR
+4: `Você é um especialista em estruturação de conteúdo de vídeo.
+Analise a transcrição e sugira capítulos que dividam o conteúdo por assuntos.
+
+Regras:
+- Primeiro capítulo deve começar em 00:00
+- Mínimo de 3 capítulos, máximo de 12
+- Cada capítulo deve ter título curto e descritivo (máx 50 caracteres)
+- Timestamps devem estar em formato &quot;MM:SS&quot; ou &quot;HH:MM:SS&quot;
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;chapters&quot;: [
+    { &quot;timestamp&quot;: &quot;00:00&quot;, &quot;title&quot;: &quot;Introdução&quot; },
+    { &quot;timestamp&quot;: &quot;05:30&quot;, &quot;title&quot;: &quot;Tema principal&quot; },
+    ...
+  ]
+}
+
+IMPORTANTE: O campo &quot;timestamp&quot; DEVE ser uma STRING no formato &quot;HH:MM:SS&quot; ou &quot;MM:SS&quot;, NÃO um número.`,
+</code></pre>
+<h3>PHASE_JSON_SCHEMAS Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts
+4: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;chapters&quot;: [
+    { &quot;timestamp&quot;: &quot;00:00&quot;, &quot;title&quot;: &quot;Introdução&quot; },
+    { &quot;timestamp&quot;: &quot;05:30&quot;, &quot;title&quot;: &quot;Tema principal&quot; },
+    ...
+  ]
+}
+
+IMPORTANTE: O campo &quot;timestamp&quot; DEVE ser uma STRING no formato &quot;HH:MM:SS&quot; ou &quot;MM:SS&quot;.`,
+</code></pre>
+<h3>Critérios de Avanço per processamento_video.md</h3>
+<table>
+<thead>
+<tr>
+<th>Critério</th>
+<th>Validação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Retorno do LLM com sucesso</td>
+<td><code>chaptersResult !== null</code></td>
+</tr>
+<tr>
+<td>Campo <code>chapters</code> persistido</td>
+<td>API route persiste automaticamente</td>
+</tr>
+<tr>
+<td>Aprovação do produtor</td>
+<td>Alert Dialog &quot;Aprova os capítulos?&quot;</td>
+</tr>
+</tbody></table>
+<h3>Testing Standards</h3>
+<ul>
+<li>Mock do <code>callLLM</code> para testes de componente</li>
+<li>Testar cenários: com capítulos, erro, aprovação de avanço</li>
+<li>Usar <code>@testing-library/react</code> com <code>userEvent</code> para interações</li>
+<li>Testar Alert Dialog de aprovação</li>
+<li><strong>Testar que ClickableTimestamp usa <code>applyContextOffset={false}</code></strong></li>
+</ul>
+<h3>Similarity with Phases 2 and 3</h3>
+<p>Phase 4 segue padrão similar às Fases 2 e 3:</p>
+<ul>
+<li>Tipo 2 (Imutável)</li>
+<li>Processamento automático</li>
+<li>Exibe lista com timestamps</li>
+<li>Requer aprovação antes de avançar</li>
+</ul>
+<p><strong>Diferenças principais:</strong></p>
+<ul>
+<li>Timestamps NÃO usam context offset (vai direto para o capítulo)</li>
+<li>Aprovação é &quot;Aprova os capítulos?&quot; (não confirmação de riscos)</li>
+<li>Console Alert mostra a lista de capítulos formatada</li>
+<li>Campo de persistência: <code>chapters</code></li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: epics-iara.md#Story 4.6]</li>
+<li>[Source: processamento_video.md#Fase 4 - Capítulos]</li>
+<li>[Source: src/lib/wizard/constants.ts#PHASE_METADATA[4]]</li>
+<li>[Source: src/components/wizard/phases/phase-3-compliance.tsx - padrão de referência]</li>
+<li>[Source: 4-5-fase-3-analise-risco-conformidade.md - Story anterior com padrões UX]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<p>None</p>
+<h3>Completion Notes List</h3>
+<ul>
+<li><code>Phase4Chapters</code> component created with loading, chapters list, empty state, and error states</li>
+<li><code>Chapter</code> type added with <code>timestamp: string</code> (not number) for consistency with other phases</li>
+<li><code>Phase4Response</code> updated to use <code>chapters: Chapter[]</code> with string timestamps</li>
+<li><code>BASE_SYSTEM_PROMPTS[4]</code> updated to require string timestamps in format &quot;MM:SS&quot; or &quot;HH:MM:SS&quot;</li>
+<li><code>PHASE_JSON_SCHEMAS[4]</code> updated to show string timestamp examples</li>
+<li>ClickableTimestamp uses <code>applyContextOffset={false}</code> for chapters (no 30s offset)</li>
+<li>AlertDialog for chapter approval before advancing (&quot;Aprova os capítulos?&quot;)</li>
+<li>Auto-processing via useEffect when <code>currentPhase === 4</code></li>
+<li>Persistence of <code>chapters</code> added to API route <code>/api/wizard/phase/[phase]</code></li>
+<li>Console alert shows formatted chapter list (one per line: &quot;00:00 Título&quot;)</li>
+<li>Tests: 23 new tests for Phase4Chapters component</li>
+<li>Total tests: 940 passing</li>
+</ul>
+<h3>Post-Implementation Fix</h3>
+<ul>
+<li><strong>ChapterSchema Zod validation</strong> - Updated <code>src/lib/schemas/video.ts</code> to use <code>timestamp: z.string()</code> instead of <code>z.number()</code></li>
+<li>Updated related tests in <code>video.test.ts</code> for string timestamps</li>
+<li>LLM was returning string timestamps (&quot;00:00&quot;) but Zod schema expected numbers (0)</li>
+</ul>
+<h3>Code Review Fixes (Post-Review)</h3>
+<ul>
+<li><strong>Issue 1</strong>: Added warning when first chapter doesn&#39;t start at &quot;00:00&quot; (YouTube requirement)</li>
+<li><strong>Issue 4</strong>: Removed non-existent <code>youtubeId</code> field from test mock</li>
+<li><strong>Issue 5</strong>: Added test &quot;does not show loading state when in error state&quot;</li>
+<li>Added 2 tests for first chapter &quot;00:00&quot; validation (warning shown/not shown)</li>
+<li>Total tests after review: 940 passing</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li>src/components/wizard/phases/phase-4-chapters.tsx (NEW)</li>
+<li>src/components/wizard/phases/phase-4-chapters.test.tsx (NEW)</li>
+<li>src/components/wizard/phases/index.ts (UPDATED - export Phase4Chapters)</li>
+<li>src/components/wizard/wizard-orchestrator.tsx (UPDATED - Phase 4 handling)</li>
+<li>src/lib/llm/types.ts (UPDATED - Chapter type, Phase4Response with string timestamps)</li>
+<li>src/lib/llm/prompts.ts (UPDATED - BASE_SYSTEM_PROMPTS[4], PHASE_JSON_SCHEMAS[4])</li>
+<li>src/lib/llm/prompts.test.ts (UPDATED - fix test for string timestamps)</li>
+<li>src/lib/llm/index.ts (UPDATED - export Chapter type)</li>
+<li>src/app/api/wizard/phase/[phase]/route.ts (UPDATED - persist chapters for Phase 4)</li>
+<li>src/app/api/wizard/phase/[phase]/route.test.ts (UPDATED - mockPhase4Response, persistence test)</li>
+<li>src/lib/schemas/video.ts (UPDATED - ChapterSchema uses string timestamp)</li>
+<li>src/lib/schemas/video.test.ts (UPDATED - tests for string timestamp chapters)</li>
+</ul>
+
+  </main>
+</body>
+</html>

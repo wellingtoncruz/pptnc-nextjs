@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.7 Fase 5 — Título — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 4 — Wizard de Processamento</nav><h1>Story 4.7: Fase 5 - Titulo (Tipo 1)</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want escolher o melhor titulo entre 5 sugestoes geradas pela IA,
+so that o video tenha um titulo otimizado para SEO e engajamento.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1: Processamento Automatico ao Entrar na Fase</strong></p>
+<ul>
+<li>Given o Wizard na Fase 5</li>
+<li>When a fase inicia</li>
+<li>Then processamento LLM e iniciado automaticamente</li>
+<li>And <strong>Area de Interatividade</strong> mostra loading state</li>
+</ul>
+</li>
+<li><p><strong>AC2: Exibicao de 5 Titulos para Selecao</strong></p>
+<ul>
+<li>Given titulos gerados pelo LLM</li>
+<li>When renderizados na Area de Interatividade</li>
+<li>Then mostra lista de 5 titulos como radio buttons</li>
+<li>And produtor pode selecionar UM titulo</li>
+<li>And selecao e salva com auto-save</li>
+</ul>
+</li>
+<li><p><strong>AC3: Input de Complemento de Prompt</strong></p>
+<ul>
+<li>Given a fase renderizada</li>
+<li>When o produtor visualiza</li>
+<li>Then ve input de texto para <code>{additionalContext}</code></li>
+<li>And input tem placeholder com dica de uso</li>
+<li>And input tem maximo de 200 caracteres</li>
+</ul>
+</li>
+<li><p><strong>AC4: Botao Revalidar com Confirmacao</strong></p>
+<ul>
+<li>Given o botao &quot;Revalidar&quot; clicado</li>
+<li>When com complemento de prompt preenchido</li>
+<li>Then Alert Dialog solicita confirmacao</li>
+<li>And mensagem informa que fases 6 e 7 serao marcadas para revalidacao</li>
+<li>And se confirmado: nova chamada LLM com <code>{additionalContext}</code> no prompt</li>
+<li>And fases 6 e 7 sao marcadas com <code>needsRevalidation: true</code> (dados preservados)</li>
+</ul>
+</li>
+<li><p><strong>AC5: Console Area com Feedback</strong></p>
+<ul>
+<li>Given o processamento LLM em andamento</li>
+<li>When a fase esta processando</li>
+<li>Then <strong>Console Area</strong> mostra:<ul>
+<li>Spinner: &quot;Pensando em boas sugestoes de titulo...&quot;</li>
+</ul>
+</li>
+<li>And apos retorno mostra Alert:<ul>
+<li>Titulo: &quot;Titulos&quot;</li>
+<li>Texto: &quot;Escolha o melhor titulo para o video, ou me de uma dica para eu poder ajudar melhor.&quot;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AC6: Persistencia no Firestore</strong></p>
+<ul>
+<li>Given titulo selecionado pelo produtor</li>
+<li>When salvo</li>
+<li>Then campo <code>title</code> e persistido na <strong>raiz do objeto video</strong></li>
+<li>And dado e usado na Fase 6 para gerar descricao (SEO chain)</li>
+</ul>
+</li>
+<li><p><strong>AC7: Criterios de Avanco</strong></p>
+<ul>
+<li>Given os criterios de avanco da Fase 5</li>
+<li>When o botao &quot;Avancar&quot; e clicado</li>
+<li>Then valida:<ul>
+<li>Retorno do LLM com sucesso</li>
+<li>Campo <code>title</code> persistido (titulo selecionado)</li>
+</ul>
+</li>
+<li>And se todos atendidos, avanca para Fase 6</li>
+<li>And se algum faltar, botao permanece desabilitado</li>
+</ul>
+</li>
+<li><p><strong>AC8: Comportamento Fase Tipo 1 (Reprocessavel)</strong></p>
+<ul>
+<li>Given esta e uma fase Tipo 1 (Reprocessavel)</li>
+<li>When renderizada</li>
+<li>Then mostra input de additionalContext</li>
+<li>And mostra botao &quot;Revalidar&quot;</li>
+<li>And permite reprocessamento multiplo</li>
+</ul>
+</li>
+<li><p><strong>AC9: Tratamento de Erros</strong></p>
+<ul>
+<li>Given a chamada LLM falha</li>
+<li>When erro e recebido</li>
+<li>Then Console Area mostra Alert de erro com mensagem amigavel</li>
+<li>And permite tentar novamente (botao retry habilitado)</li>
+</ul>
+</li>
+<li><p><strong>AC10: Exibicao com Dados Persistidos</strong></p>
+<ul>
+<li>Given titulo ja selecionado anteriormente (video.title existe)</li>
+<li>When a fase e aberta</li>
+<li>Then exibe os titulos da ultima geracao (se disponiveis)</li>
+<li>Or processa novamente se nao houver cache</li>
+<li>And titulo selecionado aparece marcado</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar componente Phase5Title (AC: 1, 2, 3, 8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Criar <code>src/components/wizard/phases/phase-5-title.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Implementar loading state inicial</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Implementar lista de 5 titulos com radio buttons</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Implementar input de additionalContext (max 200 chars)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5: Implementar botao Revalidar com Alert Dialog de confirmacao</li>
+<li><input checked="" disabled="" type="checkbox"> 1.6: Implementar estado de erro com retry</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Integrar com Orchestrator e useWizard (AC: 1, 4, 5, 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Atualizar <code>wizard-orchestrator.tsx</code> para renderizar Phase5Title</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Implementar processamento automatico ao montar fase 5</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Gerenciar spinner/alert no Console Area</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4: Implementar logica de revalidacao (marcar fases 6, 7 com needsRevalidation)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Implementar Persistencia de Titulo (AC: 6, 7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Adicionar persistence de <code>title</code> em API route (se necessario)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Implementar auto-save ao selecionar titulo</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Implementar botao &quot;Avancar para Fase 6&quot; com validacao</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Atualizar API Route para Phase 5 (AC: 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Verificar se API route <code>/api/wizard/phase/5</code> persiste <code>title</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: Adicionar suporte a <code>additionalContext</code> no request body</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3: Atualizar testes com mock para Phase 5</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Testes (AC: 1-10)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1: Testes unitarios do componente Phase5Title</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2: Testar cenarios: com titulos, erro, selecao, revalidacao</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3: Testar Alert Dialog de confirmacao de revalidacao</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4: Testar que fases 6 e 7 sao marcadas com needsRevalidation</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Architecture Patterns</h3>
+<ul>
+<li><strong>Fase Tipo 1 (Reprocessavel)</strong>: Pode ser reprocessada com additionalContext. O componente permite reprocessar com novo prompt.</li>
+<li><strong>Processamento Automatico</strong>: Igual as Fases 2-4, inicia processamento automaticamente ao entrar, sem botao manual.</li>
+<li><strong>Console Pattern</strong>: Usar <code>wizard.addSpinner()</code> ao iniciar, <code>wizard.removeSpinner()</code> ao finalizar, <code>wizard.addAlert()</code> para resultado.</li>
+<li><strong>SEO Chain</strong>: O titulo selecionado sera usado pela Fase 6 (Descricao) e Fase 7 (Tags).</li>
+<li><strong>needsRevalidation</strong>: Ao revalidar, fases seguintes sao marcadas mas dados NAO sao apagados.</li>
+</ul>
+<h3>Key Difference from Type 2 Phases</h3>
+<p>Phases 1-4 (Type 2 - Immutable):</p>
+<ul>
+<li>No additionalContext input</li>
+<li>No Revalidar button</li>
+<li>Process once only</li>
+</ul>
+<p>Phase 5 (Type 1 - Reprocessable):</p>
+<ul>
+<li>Shows additionalContext input</li>
+<li>Shows Revalidar button</li>
+<li>Can reprocess multiple times</li>
+<li>Revalidation marks subsequent phases (6, 7) with needsRevalidation</li>
+</ul>
+<h3>Response Schema (Phase5Response)</h3>
+<pre><code class="language-typescript">interface Phase5Response {
+  titles: string[]  // Array of 5 title suggestions
+}
+</code></pre>
+<p>Already defined in <code>src/lib/llm/types.ts</code>.</p>
+<h3>Console Messages Pattern</h3>
+<pre><code class="language-typescript">// Inicio do processamento
+const spinnerId = wizard.addSpinner(5, &#39;Pensando em boas sugestoes de titulo...&#39;)
+
+// Apos sucesso
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(5, &#39;Titulos&#39;, &#39;Escolha o melhor titulo para o video, ou me de uma dica para eu poder ajudar melhor.&#39;, &#39;success&#39;)
+
+// Apos erro
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(5, &#39;Erro&#39;, errorMessage, &#39;error&#39;)
+</code></pre>
+<h3>PHASE_CONFIG Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts - JA EXISTE
+5: {
+  personaName: &#39;writer&#39;,
+  attachmentType: &#39;TXT&#39;,
+  promptKey: &#39;titles&#39;,
+}
+</code></pre>
+<h3>BASE_SYSTEM_PROMPTS Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts - JA EXISTE
+5: `Voce e um especialista em SEO para YouTube e criacao de titulos virais.
+Gere 5 sugestoes de titulo para o video baseado na transcricao e contexto.
+
+Regras:
+- Titulos devem ter entre 40-70 caracteres
+- Use palavras-chave relevantes para SEO
+- Crie curiosidade sem ser clickbait enganoso
+- Considere o tom do podcast e publico-alvo
+
+Sua resposta DEVE ser um JSON valido com a seguinte estrutura:
+{
+  &quot;titles&quot;: [
+    &quot;Titulo 1&quot;,
+    &quot;Titulo 2&quot;,
+    &quot;Titulo 3&quot;,
+    &quot;Titulo 4&quot;,
+    &quot;Titulo 5&quot;
+  ]
+}`,
+</code></pre>
+<h3>Criterios de Avanco per processamento_video.md</h3>
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th>Validacao</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Retorno do LLM com sucesso</td>
+<td><code>titlesResult !== null</code></td>
+</tr>
+<tr>
+<td>Campo <code>title</code> persistido</td>
+<td>Titulo selecionado pelo produtor</td>
+</tr>
+</tbody></table>
+<h3>Component Props Interface</h3>
+<pre><code class="language-typescript">interface Phase5TitleProps {
+  wizard: UseWizardReturn
+  video: Video
+  /** Result from LLM processing (null while processing or if error) */
+  titlesResult: Phase5Response | null
+  /** Error message if processing failed */
+  error?: string | null
+  /** Callback to retry processing after error */
+  onRetry?: () =&gt; void
+  /** Callback when revalidation is requested */
+  onRevalidate?: (additionalContext: string) =&gt; void
+  /** Callback when title is selected */
+  onTitleSelect?: (title: string) =&gt; void
+  className?: string
+}
+</code></pre>
+<h3>UI Components to Use</h3>
+<ul>
+<li><code>RadioGroup</code> / <code>RadioGroupItem</code> from shadcn/ui for title selection</li>
+<li><code>Textarea</code> from shadcn/ui for additionalContext input</li>
+<li><code>Button</code> from shadcn/ui for Revalidar and Avancar buttons</li>
+<li><code>AlertDialog</code> from shadcn/ui for revalidation confirmation</li>
+<li><code>Card</code> from shadcn/ui for layout</li>
+</ul>
+<h3>Testing Standards</h3>
+<ul>
+<li>Mock do <code>callLLM</code> para testes de componente</li>
+<li>Testar cenarios: com titulos, erro, selecao, revalidacao</li>
+<li>Usar <code>@testing-library/react</code> com <code>userEvent</code> para interacoes</li>
+<li>Testar Alert Dialog de confirmacao de revalidacao</li>
+<li>Testar que titulos sao exibidos como radio buttons</li>
+<li>Testar auto-save ao selecionar titulo</li>
+</ul>
+<h3>Source Tree Components</h3>
+<pre><code>src/
+├── components/wizard/
+│   ├── phases/
+│   │   ├── phase-5-title.tsx           # NEW - Componente da Fase 5
+│   │   ├── phase-5-title.test.tsx      # NEW - Testes
+│   │   └── index.ts                    # UPDATE - export Phase5Title
+│   └── wizard-orchestrator.tsx         # UPDATE - adicionar case para fase 5
+└── app/api/wizard/phase/[phase]/
+    ├── route.ts                        # UPDATE - persist title, support additionalContext
+    └── route.test.ts                   # UPDATE - mock for Phase 5
+</code></pre>
+<h3>needsRevalidation Implementation</h3>
+<p>When user clicks &quot;Revalidar&quot; and confirms:</p>
+<ol>
+<li>Call LLM with additionalContext appended to prompt</li>
+<li>Mark phases 6 and 7 with <code>needsRevalidation: true</code></li>
+<li>Do NOT clear data from phases 6 and 7 (preserve existing data)</li>
+<li>When user navigates to phase 6 or 7 with needsRevalidation:<ul>
+<li>Show option: &quot;Manter dados existentes&quot; or &quot;Revalidar com LLM&quot;</li>
+<li>If keep: unmark needsRevalidation, advance</li>
+<li>If revalidate: call LLM again</li>
+</ul>
+</li>
+</ol>
+<pre><code class="language-typescript">// In orchestrator, when revalidating phase 5:
+const handleRevalidatePhase5 = async (additionalContext: string) =&gt; {
+  // Mark subsequent phases for revalidation
+  wizard.setPhaseStatus(6, &#39;pending&#39;) // or add needsRevalidation flag
+  wizard.setPhaseStatus(7, &#39;pending&#39;)
+
+  // Call LLM with additional context
+  await processPhase5Titles(additionalContext)
+}
+</code></pre>
+<h3>Similarity with Phase 4 (but Type 1)</h3>
+<p>Phase 5 follows similar auto-processing pattern as Phase 4:</p>
+<ul>
+<li>Processes automatically on phase entry</li>
+<li>Shows loading state</li>
+<li>Displays results</li>
+<li>Has advance button</li>
+</ul>
+<p><strong>Differences:</strong></p>
+<ul>
+<li>Type 1: Shows additionalContext input and Revalidar button</li>
+<li>Persists selected title, not just LLM result</li>
+<li>Selection via radio buttons instead of just display</li>
+<li>Revalidation marks subsequent phases</li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: epics-iara.md#Story 4.7]</li>
+<li>[Source: processamento_video.md#Fase 5 - Titulo]</li>
+<li>[Source: src/lib/wizard/constants.ts#PHASE_METADATA[5]]</li>
+<li>[Source: src/lib/llm/types.ts#Phase5Response]</li>
+<li>[Source: src/lib/llm/prompts.ts#PHASE_CONFIG[5]]</li>
+<li>[Source: 4-6-fase-4-capitulos.md - Story anterior com padroes]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<p>None</p>
+<h3>Completion Notes List</h3>
+<ul>
+<li><code>Phase5Title</code> component created with loading, titles list (radio buttons), empty state, and error states</li>
+<li>RadioGroup component added via shadcn/ui CLI</li>
+<li>Additional context input with 200 char limit and character counter</li>
+<li>Revalidate button with AlertDialog confirmation showing impact on phases 6 and 7</li>
+<li>Auto-processing via useEffect when <code>currentPhase === 5</code></li>
+<li>Title persistence via new API endpoint <code>/api/videos/[videoId]/title</code></li>
+<li>Orchestrator updated with Phase 5 handling: state, processing, revalidation callbacks</li>
+<li>Console alert shows &quot;Escolha o melhor titulo para o video, ou me de uma dica para eu poder ajudar melhor.&quot;</li>
+<li>Tests: 27 new tests for Phase5Title component</li>
+<li>Total tests: 967 passing</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li>src/components/wizard/phases/phase-5-title.tsx (NEW)</li>
+<li>src/components/wizard/phases/phase-5-title.test.tsx (NEW)</li>
+<li>src/components/wizard/phases/index.ts (UPDATED - export Phase5Title)</li>
+<li>src/components/wizard/wizard-orchestrator.tsx (UPDATED - Phase 5 handling)</li>
+<li>src/components/ui/radio-group.tsx (NEW - shadcn/ui component)</li>
+<li>src/app/api/videos/[videoId]/title/route.ts (NEW - title persistence endpoint)</li>
+</ul>
+
+  </main>
+</body>
+</html>

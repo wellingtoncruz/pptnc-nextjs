@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.5 Fase 3 — Análise de Risco e Conformidade — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 4 — Wizard de Processamento</nav><h1>Story 4.5: Fase 3 - Análise de Risco e Conformidade (Tipo 2)</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want identificar riscos de compliance antes de publicar,
+so that posso revisar conteúdo sensível e evitar problemas.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1: Processamento Automático ao Entrar na Fase</strong></p>
+<ul>
+<li>Given o Wizard na Fase 3</li>
+<li>When a fase inicia</li>
+<li>Then processamento LLM é iniciado automaticamente</li>
+<li>And <strong>Área de Interatividade</strong> mostra loading state</li>
+</ul>
+</li>
+<li><p><strong>AC2: Exibição de Riscos Identificados</strong></p>
+<ul>
+<li>Given riscos de compliance identificados pelo LLM</li>
+<li>When renderizados na Área de Interatividade</li>
+<li>Then cada risco mostra:<ul>
+<li>Timestamp clicável (formato MM:SS ou HH:MM:SS)</li>
+<li>Tipo de risco (menção de marca, linguagem sensível, claims não verificados, etc.)</li>
+<li>Descrição do risco</li>
+</ul>
+</li>
+<li>And clicar no timestamp faz seek no player in-page para o ponto exato</li>
+</ul>
+</li>
+<li><p><strong>AC3: Exibição de Sucesso (Sem Riscos)</strong></p>
+<ul>
+<li>Given nenhum risco identificado pelo LLM</li>
+<li>When renderizado</li>
+<li>Then mostra Card de sucesso: &quot;Não me parece haver riscos de compliance.&quot;</li>
+</ul>
+</li>
+<li><p><strong>AC4: Console Area com Feedback</strong></p>
+<ul>
+<li>Given o processamento LLM em andamento</li>
+<li>When a fase está processando</li>
+<li>Then <strong>Console Area</strong> mostra:<ul>
+<li>Spinner: &quot;Verificando se existem pontos polêmicos ou riscos de conformidade...&quot;</li>
+</ul>
+</li>
+<li>And após retorno mostra Alert:<ul>
+<li>Título: &quot;Riscos e Conformidade&quot;</li>
+<li>Texto: &quot;Verifique acima se existem trechos que você deveria verificar.&quot;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AC5: Persistência no Firestore</strong></p>
+<ul>
+<li>Given o retorno do LLM com sucesso</li>
+<li>When os dados são persistidos</li>
+<li>Then campo <code>riskAndCompliance</code> é salvo na <strong>raiz do objeto video</strong></li>
+<li>And estrutura: <code>Array&lt;{ timestamp: string, risk: string, description: string }&gt;</code></li>
+</ul>
+</li>
+<li><p><strong>AC6: Critérios de Avanço com Confirmação</strong></p>
+<ul>
+<li>Given os critérios de avanço da Fase 3</li>
+<li>When o botão &quot;Avançar&quot; é clicado</li>
+<li>Then valida:<ul>
+<li>Retorno do LLM com sucesso ✓</li>
+<li>Campo <code>riskAndCompliance</code> persistido ✓</li>
+</ul>
+</li>
+<li>And se houver riscos: Alert Dialog &quot;Tem certeza que deseja continuar?&quot;</li>
+<li>And se produtor confirmar &quot;Sim&quot;, avança para Fase 4</li>
+<li>And se &quot;Não&quot;, permanece na Fase 3</li>
+</ul>
+</li>
+<li><p><strong>AC7: Comportamento Fase Tipo 2 (Imutável)</strong></p>
+<ul>
+<li>Given esta é uma fase Tipo 2 (Imutável)</li>
+<li>When renderizada após completada</li>
+<li>Then NÃO mostra input de override nem botão de reprocessar</li>
+<li>And resultado é exibido em modo read-only</li>
+</ul>
+</li>
+<li><p><strong>AC8: Tratamento de Erros</strong></p>
+<ul>
+<li>Given a chamada LLM falha</li>
+<li>When erro é recebido</li>
+<li>Then Console Area mostra Alert de erro com mensagem amigável</li>
+<li>And permite tentar novamente (botão retry habilitado)</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar componente Phase3Compliance (AC: 1, 2, 3, 7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Criar <code>src/components/wizard/phases/phase-3-compliance.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Implementar loading state inicial</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Implementar exibição de lista de riscos com timestamps clicáveis</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Implementar Card de sucesso quando sem riscos</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5: Implementar estado completed com exibição read-only</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Reutilizar ClickableTimestamp (AC: 2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Reutilizar componente <code>ClickableTimestamp</code> de Phase 2</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Exibir tipo de risco (badge colorido por categoria)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Scroll-into-view do player ao clicar</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Integrar com Orchestrator e useWizard (AC: 1, 4, 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Atualizar <code>wizard-orchestrator.tsx</code> para renderizar Phase3Compliance</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Implementar processamento automático ao montar fase 3</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Gerenciar spinner/alert no Console Area</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Persistir <code>riskAndCompliance</code> via API route</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Implementar Botão Avançar com Confirmação (AC: 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Adicionar botão &quot;Avançar para Fase 4&quot;</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: Implementar Alert Dialog de confirmação se houver riscos</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3: Usar <code>completePhaseAndAdvance</code> para navegação</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Adicionar Schema e Types para Phase 3 (AC: 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1: Atualizar <code>Phase3Response</code> em <code>src/lib/llm/types.ts</code> (hasRisks + risks)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2: Adicionar <code>ComplianceRisk</code> type em <code>src/lib/llm/types.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.3: <code>riskAndCompliance</code> já existe no <code>VideoSchema</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.4: <code>PHASE_CONFIG[3]</code> já existe em <code>src/lib/llm/prompts.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.5: Atualizar <code>BASE_SYSTEM_PROMPTS[3]</code> em <code>src/lib/llm/prompts.ts</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Atualizar API Route para Phase 3 (AC: 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1: Adicionar persistence de <code>riskAndCompliance</code> em <code>route.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 6.2: Atualizar testes com mock para Phase 3</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 7: Testes (AC: 1-8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1: Testes unitários do componente Phase3Compliance (19 tests)</li>
+<li><input checked="" disabled="" type="checkbox"> 7.2: Testar cenários: com riscos, sem riscos, erro, confirmação de avanço</li>
+<li><input checked="" disabled="" type="checkbox"> 7.3: Testar Alert Dialog de confirmação</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Architecture Patterns</h3>
+<ul>
+<li><strong>Fase Tipo 2 (Imutável)</strong>: Uma vez processada, não pode ser reprocessada. O componente deve detectar <code>phases[3].status === &#39;completed&#39;</code> e renderizar em modo read-only.</li>
+<li><strong>Processamento Automático</strong>: Igual à Fase 2, inicia processamento automaticamente ao entrar, sem botão manual.</li>
+<li><strong>Console Pattern</strong>: Usar <code>wizard.addSpinner()</code> ao iniciar, <code>wizard.removeSpinner()</code> ao finalizar, <code>wizard.addAlert()</code> para resultado.</li>
+<li><strong>Confirmação de Avanço</strong>: Alert Dialog do shadcn/ui para confirmar continuação se houver riscos identificados.</li>
+</ul>
+<h3>UX Patterns (Reutilizar de Story 4-4)</h3>
+<h4>1. Console Area - Reverse Order + Animation</h4>
+<p>Messages should be displayed with <strong>newest at top</strong>. New alerts should have attention animation.</p>
+<pre><code class="language-typescript">// In console-area.tsx - JÁ IMPLEMENTADO em Story 4-4
+const reversedMessages = [...messages].reverse()
+
+// For new alerts, add CSS classes:
+// animate-pulse ring-2 ring-offset-2 ring-{severity}-500/50
+</code></pre>
+<p>See: <code>src/components/wizard/console-area.tsx</code></p>
+<h4>2. Timestamps - In-Page Player Control</h4>
+<p>Clickable timestamps should <strong>seek the in-page YouTube player</strong>, NOT open new tabs.</p>
+<pre><code class="language-typescript">// Reutilizar ClickableTimestamp de Story 4-4
+import { ClickableTimestamp } from &#39;./clickable-timestamp&#39;
+</code></pre>
+<h4>3. Timestamps - Context Offset (30 seconds)</h4>
+<p><strong>IMPORTANTE para revisores:</strong> Timestamps de críticas/problemas devem dar <strong>30 segundos de contexto</strong>.</p>
+<p>Ao clicar em um timestamp, o vídeo busca <strong>30 segundos ANTES</strong> do momento marcado.
+Isso permite que o revisor ouça o contexto antes da crítica apontada pelo LLM.</p>
+<pre><code class="language-typescript">// Em clickable-timestamp.tsx
+export const TIMESTAMP_CONTEXT_OFFSET_SECONDS = 30
+
+// Seek position = timestamp - 30s (mínimo 0)
+const seekSeconds = applyContextOffset
+  ? Math.max(0, seconds - TIMESTAMP_CONTEXT_OFFSET_SECONDS)
+  : seconds
+</code></pre>
+<p><strong>Uso:</strong></p>
+<ul>
+<li>Com offset (padrão): <code>&lt;ClickableTimestamp timestamp=&quot;05:30&quot; /&gt;</code> → busca 05:00</li>
+<li>Sem offset (capítulos): <code>&lt;ClickableTimestamp timestamp=&quot;05:30&quot; applyContextOffset={false} /&gt;</code> → busca 05:30</li>
+</ul>
+<p>Pattern: <code>@pattern TIMESTAMP_CONTEXT_OFFSET</code></p>
+<h3>Source Tree Components</h3>
+<pre><code>src/
+├── components/wizard/
+│   ├── phases/
+│   │   ├── phase-3-compliance.tsx           # NEW - Componente da Fase 3
+│   │   ├── phase-3-compliance.test.tsx      # NEW - Testes
+│   │   ├── clickable-timestamp.tsx          # REUTILIZAR de Story 4-4
+│   │   └── index.ts                         # UPDATE - export Phase3Compliance
+│   └── wizard-orchestrator.tsx              # UPDATE - adicionar case para fase 3
+├── lib/
+│   ├── llm/
+│   │   ├── types.ts                         # UPDATE - Phase3Response, ComplianceRisk
+│   │   └── prompts.ts                       # UPDATE - PHASE_CONFIG[3], BASE_SYSTEM_PROMPTS[3]
+│   └── schemas/
+│       └── video.ts                         # UPDATE - riskAndCompliance field (se necessário)
+├── types/
+│   └── video.ts                             # UPDATE - ComplianceRisk type
+└── app/api/wizard/phase/[phase]/
+    ├── route.ts                             # UPDATE - persist riskAndCompliance
+    └── route.test.ts                        # UPDATE - mock for Phase 3
+</code></pre>
+<h3>Response Schema (Phase3Response)</h3>
+<pre><code class="language-typescript">interface ComplianceRisk {
+  timestamp: string    // Format: &quot;MM:SS&quot; or &quot;HH:MM:SS&quot;
+  risk: string         // Tipo do risco: &quot;brand_mention&quot;, &quot;sensitive_language&quot;, &quot;unverified_claim&quot;, etc.
+  description: string  // Descrição detalhada do risco
+}
+
+interface Phase3Response {
+  hasRisks: boolean
+  risks: ComplianceRisk[]  // Array vazio se nenhum risco
+}
+</code></pre>
+<h3>Risk Types (Badges Coloridos)</h3>
+<pre><code class="language-typescript">const RISK_TYPE_CONFIG = {
+  brand_mention: { label: &#39;Menção de Marca&#39;, color: &#39;blue&#39; },
+  sensitive_language: { label: &#39;Linguagem Sensível&#39;, color: &#39;red&#39; },
+  unverified_claim: { label: &#39;Claim Não Verificado&#39;, color: &#39;amber&#39; },
+  legal_risk: { label: &#39;Risco Legal&#39;, color: &#39;red&#39; },
+  medical_claim: { label: &#39;Claim Médico&#39;, color: &#39;red&#39; },
+  financial_advice: { label: &#39;Conselho Financeiro&#39;, color: &#39;amber&#39; },
+  competitor_mention: { label: &#39;Menção de Concorrente&#39;, color: &#39;blue&#39; },
+  other: { label: &#39;Outro&#39;, color: &#39;gray&#39; },
+}
+</code></pre>
+<h3>Console Messages Pattern</h3>
+<pre><code class="language-typescript">// Início do processamento
+const spinnerId = wizard.addSpinner(3, &#39;Verificando se existem pontos polêmicos ou riscos de conformidade...&#39;)
+
+// Após sucesso
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(3, &#39;Riscos e Conformidade&#39;, &#39;Verifique acima se existem trechos que você deveria verificar.&#39;, &#39;success&#39;)
+
+// Após erro
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(3, &#39;Erro&#39;, errorMessage, &#39;error&#39;)
+</code></pre>
+<h3>PHASE_CONFIG Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts
+3: {
+  persona: &#39;critic&#39;,
+  attachment: &#39;SRT&#39;,
+  promptKey: &#39;compliance&#39;,
+  persistField: &#39;riskAndCompliance&#39;,
+  type: &#39;immutable&#39;,
+}
+</code></pre>
+<h3>BASE_SYSTEM_PROMPTS Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts
+3: `Você é um especialista em compliance de conteúdo de mídia.
+Analise a transcrição (SRT) procurando por possíveis riscos de compliance.
+
+Procure por:
+- Menções de marcas ou empresas que podem requerer autorização
+- Linguagem sensível ou potencialmente ofensiva
+- Claims médicos, financeiros ou legais não verificados
+- Menções de concorrentes
+- Conteúdo que pode gerar processos ou reclamações
+
+Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+{
+  &quot;hasRisks&quot;: true/false,
+  &quot;risks&quot;: [
+    {
+      &quot;timestamp&quot;: &quot;00:05:30&quot;,
+      &quot;risk&quot;: &quot;tipo_do_risco&quot;,
+      &quot;description&quot;: &quot;Descrição do risco identificado&quot;
+    }
+  ]
+}
+
+IMPORTANTE: O campo &quot;timestamp&quot; DEVE ser uma STRING no formato &quot;HH:MM:SS&quot; ou &quot;MM:SS&quot;.
+Os tipos de risco válidos são: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other.`,
+</code></pre>
+<h3>PHASE_JSON_SCHEMAS Entry</h3>
+<pre><code class="language-typescript">// Em src/lib/llm/prompts.ts
+3: {
+  type: &#39;object&#39;,
+  properties: {
+    hasRisks: { type: &#39;boolean&#39; },
+    risks: {
+      type: &#39;array&#39;,
+      items: {
+        type: &#39;object&#39;,
+        properties: {
+          timestamp: { type: &#39;string&#39; },
+          risk: { type: &#39;string&#39; },
+          description: { type: &#39;string&#39; },
+        },
+        required: [&#39;timestamp&#39;, &#39;risk&#39;, &#39;description&#39;],
+      },
+    },
+  },
+  required: [&#39;hasRisks&#39;, &#39;risks&#39;],
+}
+</code></pre>
+<h3>Critérios de Avanço per processamento_video.md</h3>
+<table>
+<thead>
+<tr>
+<th>Critério</th>
+<th>Validação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Retorno do LLM com sucesso</td>
+<td><code>complianceResult !== null</code></td>
+</tr>
+<tr>
+<td>Campo <code>riskAndCompliance</code> persistido</td>
+<td>API route persiste automaticamente</td>
+</tr>
+<tr>
+<td>Confirmação se houver riscos</td>
+<td>Alert Dialog antes de avançar</td>
+</tr>
+</tbody></table>
+<h3>Testing Standards</h3>
+<ul>
+<li>Mock do <code>callLLM</code> para testes de componente</li>
+<li>Testar cenários: com riscos, sem riscos, erro, confirmação de avanço</li>
+<li>Usar <code>@testing-library/react</code> com <code>userEvent</code> para interações</li>
+<li>Testar Alert Dialog de confirmação</li>
+<li>Testar exibição de badges coloridos por tipo de risco</li>
+</ul>
+<h3>Similarity with Phase 2</h3>
+<p>Phase 3 é <strong>muito similar</strong> à Phase 2:</p>
+<ul>
+<li>Ambas são Tipo 2 (Imutáveis)</li>
+<li>Ambas têm processamento automático</li>
+<li>Ambas exibem lista com timestamps ou Card de sucesso</li>
+<li>Ambas requerem confirmação de avanço se houver problemas</li>
+</ul>
+<p><strong>Diferenças principais:</strong></p>
+<ul>
+<li>Phase 3 tem campo adicional <code>risk</code> (tipo do risco)</li>
+<li>Phase 3 exibe badges coloridos por categoria</li>
+<li>Mensagens de Console diferentes</li>
+<li>Campo de persistência: <code>riskAndCompliance</code> vs <code>editingIssues</code></li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: epics-iara.md#Story 4.5]</li>
+<li>[Source: processamento_video.md#Fase 3 - Análise de Risco e Conformidade]</li>
+<li>[Source: src/lib/wizard/constants.ts#PHASE_METADATA[3]]</li>
+<li>[Source: src/components/wizard/phases/phase-2-edit-check.tsx - padrão de referência]</li>
+<li>[Source: 4-4-fase-2-checagem-de-edicao.md - Story anterior com padrões UX]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<p>None</p>
+<h3>Completion Notes List</h3>
+<ul>
+<li><code>Phase3Compliance</code> component created with loading, success (no risks), and risks states</li>
+<li>Risk type badges with colored variants (destructive for severe, default for medium, etc.)</li>
+<li><code>RISK_TYPE_CONFIG</code> mapping for 8 risk types: brand_mention, sensitive_language, unverified_claim, legal_risk, medical_claim, financial_advice, competitor_mention, other</li>
+<li><code>Phase3Response</code> type updated to use <code>{ hasRisks: boolean, risks: ComplianceRisk[] }</code> with string timestamps</li>
+<li><code>ComplianceRisk</code> type added and exported from both <code>@/lib/llm</code> and <code>@/types/video</code></li>
+<li>Reutilized <code>ClickableTimestamp</code> component from Story 4-4 for in-page player control</li>
+<li>AlertDialog component for confirmation when risks exist (same pattern as Phase 2)</li>
+<li>Auto-processing implemented via useEffect in orchestrator when <code>currentPhase === 3</code></li>
+<li>Persistence of <code>riskAndCompliance</code> added to API route <code>/api/wizard/phase/[phase]</code></li>
+<li>Tests: 19 new tests, all passing</li>
+<li>Total tests: 902 passing</li>
+</ul>
+<h3>Code Review Fixes (Post-Review)</h3>
+<ul>
+<li><strong>Issue 1</strong>: Added retry button for error state (AC8 complete) - error prop, onRetry callback</li>
+<li><strong>Issue 2</strong>: Fixed grammar for singular case (&quot;Foi identificado&quot; vs &quot;Foram identificados&quot;)</li>
+<li><strong>Issue 3</strong>: Added 5 error state tests covering error display, retry button, and disabled advance</li>
+<li><strong>Issue 4</strong>: Exported <code>RISK_TYPE_CONFIG</code> for reusability</li>
+<li><strong>Issue 5</strong>: Test coverage for persisted data loading exists in orchestrator useEffect pattern</li>
+<li><strong>Issue 6</strong>: Made <code>applyContextOffset={true}</code> explicit in ClickableTimestamp usage</li>
+<li><strong>Issue 7</strong>: Added 4 persistence verification tests for Phases 1, 2, 3 and reprocessable phases</li>
+<li>Total tests after review: 915 passing</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li>src/components/wizard/phases/phase-3-compliance.tsx (NEW)</li>
+<li>src/components/wizard/phases/phase-3-compliance.test.tsx (NEW)</li>
+<li>src/components/wizard/phases/index.ts (UPDATED - export Phase3Compliance)</li>
+<li>src/components/wizard/wizard-orchestrator.tsx (UPDATED - Phase 3 handling)</li>
+<li>src/lib/llm/types.ts (UPDATED - Phase3Response with hasRisks/risks, ComplianceRisk type)</li>
+<li>src/lib/llm/prompts.ts (UPDATED - BASE_SYSTEM_PROMPTS[3], PHASE_JSON_SCHEMAS[3])</li>
+<li>src/lib/llm/index.ts (UPDATED - export ComplianceRisk type)</li>
+<li>src/types/video.ts (UPDATED - export RiskAndComplianceItem type)</li>
+<li>src/app/api/wizard/phase/[phase]/route.ts (UPDATED - persist riskAndCompliance for Phase 3)</li>
+<li>src/app/api/wizard/phase/[phase]/route.test.ts (UPDATED - mockPhase3Response)</li>
+</ul>
+
+  </main>
+</body>
+</html>

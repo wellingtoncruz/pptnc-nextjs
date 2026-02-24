@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1.7 Renovação de Token e Gestão de Sessão — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group" open>
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 1 — Autenticação e Fundação</nav><h1>Story 1.7: Token Refresh e Gestão de Sessão Expirada</h1>
+<p>Status: done</p>
+<hr>
+<h2>Story</h2>
+<p>Como um <strong>usuário</strong>,
+Eu quero que minha sessão seja mantida automaticamente,
+Para que eu não precise fazer login frequentemente.</p>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Refresh automático de access_token</h3>
+<p><strong>Given</strong> um access_token próximo da expiração (&lt; 5 min)
+<strong>When</strong> uma requisição autenticada é feita
+<strong>Then</strong> o token é automaticamente renovado usando o refresh_token
+<strong>And</strong> o novo access_token é persistido no Firestore
+<strong>And</strong> a requisição original é completada com sucesso</p>
+<h3>AC2: Tratamento de refresh_token inválido</h3>
+<p><strong>Given</strong> um refresh_token inválido ou revogado
+<strong>When</strong> uma tentativa de refresh é feita
+<strong>Then</strong> o usuário é deslogado
+<strong>And</strong> é redirecionado para <code>/login</code>
+<strong>And</strong> vê mensagem &quot;Sessão expirada, faça login novamente&quot;</p>
+<h3>AC3: Resposta 401 padronizada para API</h3>
+<p><strong>Given</strong> uma requisição API com sessão expirada
+<strong>When</strong> o servidor processa a requisição
+<strong>Then</strong> retorna status 401
+<strong>And</strong> body contém <code>{ error: { code: &#39;AUTH_EXPIRED&#39;, message: &#39;Sessão expirada&#39; } }</code></p>
+<h3>AC4: Detecção de 401 no frontend</h3>
+<p><strong>Given</strong> o frontend recebe resposta 401
+<strong>When</strong> a resposta é processada
+<strong>Then</strong> o usuário é redirecionado para <code>/login</code>
+<strong>And</strong> a URL original é preservada como callbackUrl</p>
+<h3>AC5: Lógica de refresh no jwt callback</h3>
+<p><strong>Given</strong> o callback <code>jwt</code> do Auth.js
+<strong>When</strong> um token está próximo de expirar
+<strong>Then</strong> o refresh é executado automaticamente
+<strong>And</strong> structured logging registra a operação</p>
+<h3>AC6: Testes unitários</h3>
+<p><strong>Given</strong> testes para token refresh
+<strong>When</strong> eu executo <code>pnpm test</code>
+<strong>Then</strong> testes cobrem cenários de token expirado
+<strong>And</strong> testes cobrem refresh bem-sucedido
+<strong>And</strong> testes cobrem refresh_token inválido</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 1: Implementar lógica de token refresh no jwt callback</strong> (AC: 1, 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Verificar <code>expires_at</code> no jwt callback</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Se expirado ou próximo (&lt; 5 min), chamar Google token endpoint</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Atualizar tokens no Firestore via <code>saveUserTokens()</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Atualizar token na sessão</li>
+<li><input checked="" disabled="" type="checkbox"> 1.5 Adicionar structured logging para refresh</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 2: Implementar função de refresh de token</strong> (AC: 1, 2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar <code>src/lib/auth/refresh-token.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Implementar chamada ao Google OAuth token endpoint</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Tratar erro de refresh_token inválido/revogado</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Retornar novo access_token e expires_at</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 3: Tratamento de sessão expirada no frontend</strong> (AC: 3, 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/lib/api/fetch-with-auth.ts</code> ou interceptor</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Detectar resposta 401 de qualquer API</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Redirecionar para <code>/login?callbackUrl={currentPath}</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Mostrar toast &quot;Sessão expirada, faça login novamente&quot;</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 4: Atualizar página de login para mensagem de expiração</strong> (AC: 2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Detectar query param <code>?expired=true</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Mostrar mensagem de sessão expirada se presente</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 <del>Limpar param após exibir mensagem</del> (N/A - message shown inline, no client JS needed)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+<strong>Task 5: Implementar testes</strong> (AC: 6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Criar <code>src/lib/auth/refresh-token.test.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Testar refresh bem-sucedido</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Testar refresh_token inválido</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Testar token próximo de expirar</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Atualizar <code>src/lib/auth.test.ts</code> com cenários de refresh</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Google OAuth Token Refresh</h3>
+<p>Para renovar o access_token usando refresh_token:</p>
+<pre><code class="language-typescript">// POST https://oauth2.googleapis.com/token
+const response = await fetch(&#39;https://oauth2.googleapis.com/token&#39;, {
+  method: &#39;POST&#39;,
+  headers: { &#39;Content-Type&#39;: &#39;application/x-www-form-urlencoded&#39; },
+  body: new URLSearchParams({
+    client_id: process.env.AUTH_GOOGLE_ID!,
+    client_secret: process.env.AUTH_GOOGLE_SECRET!,
+    grant_type: &#39;refresh_token&#39;,
+    refresh_token: storedRefreshToken,
+  }),
+})
+
+// Response
+{
+  access_token: &quot;new-access-token&quot;,
+  expires_in: 3600,
+  scope: &quot;...&quot;,
+  token_type: &quot;Bearer&quot;
+}
+// NOTE: refresh_token NÃO é retornado no refresh (apenas na primeira auth)
+</code></pre>
+<h3>Auth.js jwt Callback com Refresh</h3>
+<pre><code class="language-typescript">callbacks: {
+  async jwt({ token, account }) {
+    // Initial sign in
+    if (account) {
+      return {
+        ...token,
+        accessToken: account.access_token,
+        refreshToken: account.refresh_token,
+        expiresAt: account.expires_at,
+      }
+    }
+
+    // Return existing token if not expired
+    if (Date.now() &lt; (token.expiresAt as number) * 1000 - 5 * 60 * 1000) {
+      return token
+    }
+
+    // Token expired or expiring soon - refresh
+    try {
+      const refreshed = await refreshAccessToken(token.refreshToken as string)
+
+      // Persist to Firestore
+      await saveUserTokens(token.sub!, {
+        accessToken: refreshed.accessToken,
+        expiresAt: refreshed.expiresAt,
+      })
+
+      return {
+        ...token,
+        accessToken: refreshed.accessToken,
+        expiresAt: refreshed.expiresAt,
+      }
+    } catch (error) {
+      log(&#39;ERROR&#39;, &#39;Token refresh failed&#39;, { userId: token.sub, error })
+      return { ...token, error: &#39;RefreshAccessTokenError&#39; }
+    }
+  },
+}
+</code></pre>
+<h3>Frontend - Detecção de 401</h3>
+<pre><code class="language-typescript">// src/lib/api/fetch-with-auth.ts
+export async function fetchWithAuth(url: string, options?: RequestInit) {
+  const response = await fetch(url, options)
+
+  if (response.status === 401) {
+    const currentPath = window.location.pathname + window.location.search
+    window.location.href = `/login?callbackUrl=${encodeURIComponent(currentPath)}&amp;expired=true`
+    throw new SessionExpiredError()
+  }
+
+  return response
+}
+</code></pre>
+<h3>Página de Login - Mensagem de Expiração</h3>
+<pre><code class="language-typescript">// src/app/login/page.tsx
+interface LoginPageProps {
+  searchParams: Promise&lt;{ callbackUrl?: string; expired?: string }&gt;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams
+  const showExpiredMessage = params.expired === &#39;true&#39;
+
+  return (
+    &lt;&gt;
+      {showExpiredMessage &amp;&amp; (
+        &lt;Alert variant=&quot;warning&quot;&gt;
+          Sua sessão expirou. Faça login novamente.
+        &lt;/Alert&gt;
+      )}
+      {/* ... rest of login form */}
+    &lt;/&gt;
+  )
+}
+</code></pre>
+<h3>Enforcement Rules Aplicáveis</h3>
+<ol>
+<li><strong>Rule #9 (Structured Logging)</strong>: Usar <code>log()</code> para todas as operações de refresh</li>
+<li><strong>Rule #13 (No Retry Writes)</strong>: Não usar retry para persistir tokens (já salva no refresh)</li>
+<li><strong>API Response Format</strong>: Erro 401 deve seguir formato <code>{ error: { code, message } }</code></li>
+</ol>
+<h3>Integração com Story 1.5 (Tokens no Firestore)</h3>
+<ul>
+<li>Usar <code>saveUserTokens()</code> de <code>src/lib/firebase/tokens.ts</code></li>
+<li>Usar <code>getUserTokens()</code> para buscar refresh_token se não estiver no JWT</li>
+<li>Path: <code>podcasts/{podcastId}/users/{userId}/tokens/oauth</code></li>
+</ul>
+<h3>Referências</h3>
+<ul>
+<li><a href="https://developers.google.com/identity/protocols/oauth2/web-server#offline">Google OAuth Token Refresh</a></li>
+<li><a href="https://authjs.dev/guides/refresh-token-rotation">Auth.js Refresh Token Rotation</a></li>
+<li>[Source: architecture-iara.md#Authentication &amp; Security]</li>
+<li>[Source: project-context-iara.md#Auth.js v5]</li>
+</ul>
+<hr>
+<h2>References</h2>
+<ul>
+<li><a href="https://developers.google.com/identity/protocols/oauth2/web-server#offline">Google OAuth Token Refresh</a></li>
+<li><a href="https://authjs.dev/guides/refresh-token-rotation">Auth.js Refresh Token Rotation</a></li>
+<li>[Source: architecture-iara.md#Authentication &amp; Security]</li>
+<li>[Source: epics-iara.md#Story 1.7]</li>
+</ul>
+<hr>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Google OAuth token endpoint: <code>https://oauth2.googleapis.com/token</code></li>
+<li>Token refresh uses <code>grant_type: &#39;refresh_token&#39;</code></li>
+<li>Zod validation for Google token response schema</li>
+<li>5-minute buffer for proactive token refresh (300 seconds)</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ol>
+<li><p><strong>Task 1</strong>: JWT callback in <code>auth.ts</code> now checks token expiration</p>
+<ul>
+<li>Uses <code>isTokenExpired()</code> with 5-minute buffer</li>
+<li>Calls <code>refreshAccessToken()</code> when needed</li>
+<li>Persists refreshed tokens to Firestore</li>
+<li>Logs all operations with structured logging</li>
+</ul>
+</li>
+<li><p><strong>Task 2</strong>: Created <code>refresh-token.ts</code> module</p>
+<ul>
+<li><code>refreshAccessToken()</code> calls Google OAuth endpoint</li>
+<li><code>RefreshTokenError</code> class with error codes: <code>INVALID_GRANT</code>, <code>TOKEN_EXPIRED</code>, <code>NETWORK_ERROR</code>, <code>UNKNOWN</code></li>
+<li><code>isTokenExpired()</code> helper with configurable buffer</li>
+<li>Zod schema for response validation</li>
+</ul>
+</li>
+<li><p><strong>Task 3</strong>: Created <code>fetch-with-auth.ts</code> for frontend</p>
+<ul>
+<li><code>fetchWithAuth()</code> detects 401 and redirects to login</li>
+<li><code>fetchJsonWithAuth&lt;T&gt;()</code> convenience wrapper</li>
+<li><code>SessionExpiredError</code> class for error handling</li>
+<li>Preserves current URL (path + query) in callbackUrl</li>
+</ul>
+</li>
+<li><p><strong>Task 4</strong>: Login page updated</p>
+<ul>
+<li>Detects <code>?expired=true</code> query param</li>
+<li>Shows amber warning alert when session expired</li>
+<li>Message in Portuguese: &quot;Sua sessão expirou. Faça login novamente.&quot;</li>
+</ul>
+</li>
+<li><p><strong>Task 5</strong>: 38 new tests added (157 total, all passing)</p>
+<ul>
+<li>15 tests in <code>refresh-token.test.ts</code></li>
+<li>7 tests in <code>auth.test.ts</code> for refresh and session error scenarios</li>
+<li>16 tests in <code>fetch-with-auth.test.ts</code> for frontend 401 handling</li>
+</ul>
+</li>
+</ol>
+<h3>File List</h3>
+<p><strong>Arquivos criados:</strong></p>
+<ul>
+<li>src/lib/auth/refresh-token.ts</li>
+<li>src/lib/auth/refresh-token.test.ts</li>
+<li>src/lib/api/fetch-with-auth.ts</li>
+<li>src/lib/api/fetch-with-auth.test.ts</li>
+</ul>
+<p><strong>Arquivos modificados:</strong></p>
+<ul>
+<li>src/lib/auth.ts (refresh logic in jwt callback, session callback error handling, Session type extended)</li>
+<li>src/lib/auth.test.ts (7 new tests for refresh and session error scenarios)</li>
+<li>src/app/login/page.tsx (expired message, searchParams type updated)</li>
+</ul>
+<hr>
+<h2>Senior Developer Review (AI)</h2>
+<p><strong>Reviewer:</strong> Claude Opus 4.5
+<strong>Date:</strong> 2026-01-25
+<strong>Outcome:</strong> ✅ APPROVED (com correções aplicadas)</p>
+<h3>Issues Encontrados e Corrigidos</h3>
+<table>
+<thead>
+<tr>
+<th>Severidade</th>
+<th>Issue</th>
+<th>Correção</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🔴 HIGH</td>
+<td>AC2 não deslogava usuário no refresh failure</td>
+<td>Session callback agora propaga <code>error: &#39;RefreshAccessTokenError&#39;</code> para cliente</td>
+</tr>
+<tr>
+<td>🟡 MEDIUM</td>
+<td>Falta teste session callback + error flag</td>
+<td>Adicionados 2 testes para error handling no session callback</td>
+</tr>
+<tr>
+<td>🟡 MEDIUM</td>
+<td><code>fetch-with-auth.ts</code> sem testes</td>
+<td>Criado <code>fetch-with-auth.test.ts</code> com 16 testes</td>
+</tr>
+<tr>
+<td>🟡 MEDIUM</td>
+<td><code>TOKEN_EXPIRED</code> code nunca usado (dead code)</td>
+<td>Removido do tipo <code>RefreshTokenError</code></td>
+</tr>
+<tr>
+<td>🟡 MEDIUM</td>
+<td>Log de debug expunha refreshToken length</td>
+<td>Removido dado sensível do log</td>
+</tr>
+<tr>
+<td>🟡 MEDIUM</td>
+<td>Task 4.3 marcação inconsistente</td>
+<td>Corrigido para [x] com nota N/A</td>
+</tr>
+<tr>
+<td>🟢 LOW</td>
+<td>Dev Notes com código desatualizado</td>
+<td>Atualizado para refletir <code>SessionExpiredError</code></td>
+</tr>
+</tbody></table>
+<h3>Métricas Finais</h3>
+<ul>
+<li><strong>Testes:</strong> 157 passando (139 → 157 após review)</li>
+<li><strong>Arquivos modificados no review:</strong> 5</li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-01-25: Story criada com status ready-for-dev via create-story workflow</li>
+<li>2026-01-25: Implementação completa - 5 tasks, 139 testes passando, status: review</li>
+<li>2026-01-25: Code review executado - 7 issues corrigidos, 157 testes passando</li>
+<li>2026-01-25: Story marcada como done</li>
+</ul>
+
+  </main>
+</body>
+</html>

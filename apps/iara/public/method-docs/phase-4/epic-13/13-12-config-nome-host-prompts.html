@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13.12 Configuração de Nome do Host nos Prompts — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 13 — Hardening v2.2.0</nav><h1>Story 13.12: Configurações — nome do host e inclusão nos prompts</h1>
+<p>Status: ready-for-dev</p>
+<hr>
+<h2>Story</h2>
+<p>Como um <strong>produtor de podcast</strong>,
+Eu quero configurar o nome do host/apresentador nas configurações do podcast,
+Para que ele seja incluído automaticamente nas descrições geradas pela IA (Fase 6), junto com os convidados.</p>
+<hr>
+<h2>Contexto</h2>
+<h3>Situação Atual</h3>
+<ul>
+<li>As configurações do podcast (<code>PodcastSchema</code>) não têm campo para nome do host/apresentador</li>
+<li>Os prompts da Fase 6 (descrição) listam convidados, mas não mencionam o host</li>
+<li>A descrição gerada pela LLM não tem como incluir o host corretamente pois não recebe essa informação</li>
+</ul>
+<h3>Fluxo Desejado</h3>
+<ol>
+<li>Admin configura o nome do host em &quot;Informações do Podcast&quot; (campo com auto-save)</li>
+<li>Na Fase 6, o user prompt inclui <code>**Host/Apresentador:** {hostName}</code></li>
+<li>O system prompt da Fase 6 instrui a LLM a mencionar o host na descrição</li>
+<li>Se o host não estiver configurado, mostra &quot;Não informado&quot; no prompt (não bloqueia)</li>
+</ol>
+<h3>Arquivos Envolvidos</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Mudança</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/schemas/podcast.ts</code></td>
+<td>Campo <code>hostName: z.string().max(200).optional()</code></td>
+</tr>
+<tr>
+<td><code>src/types/podcast.ts</code></td>
+<td>Inferido automaticamente (sem mudança manual)</td>
+</tr>
+<tr>
+<td><code>src/lib/llm/types.ts</code></td>
+<td><code>hostName: string</code> no <code>PromptVariables</code></td>
+</tr>
+<tr>
+<td><code>src/lib/llm/interpolation.ts</code></td>
+<td>Parâmetro <code>hostName</code> no <code>extractVariables</code></td>
+</tr>
+<tr>
+<td><code>src/lib/llm/prompts.ts</code></td>
+<td><code>{hostName}</code> no template da Fase 6 + system prompt</td>
+</tr>
+<tr>
+<td><code>src/lib/llm/client.ts</code></td>
+<td>Passar <code>podcast?.hostName</code> no <code>extractVariables</code></td>
+</tr>
+<tr>
+<td><code>src/components/settings/podcast-settings-form.tsx</code></td>
+<td>Novo campo Input com auto-save</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Acceptance Criteria</h2>
+<h3>AC1: Campo hostName no schema e configurações</h3>
+<p><strong>Given</strong> um admin na tela de configurações do podcast
+<strong>When</strong> ele preenche o campo &quot;Nome do Host/Apresentador&quot;
+<strong>Then</strong> o valor é salvo automaticamente no Firestore via API PATCH (auto-save com debounce)</p>
+<h3>AC2: hostName incluído no prompt da Fase 6</h3>
+<p><strong>Given</strong> um podcast com hostName configurado
+<strong>When</strong> a Fase 6 (descrição) é processada pela LLM
+<strong>Then</strong> o user prompt inclui <code>**Host/Apresentador:** {hostName}</code> com o valor configurado</p>
+<h3>AC3: hostName ausente não bloqueia processamento</h3>
+<p><strong>Given</strong> um podcast sem hostName configurado
+<strong>When</strong> a Fase 6 (descrição) é processada pela LLM
+<strong>Then</strong> o user prompt inclui <code>**Host/Apresentador:** Não informado</code>
+<strong>And</strong> o processamento continua normalmente</p>
+<h3>AC4: Testes existentes não quebram</h3>
+<p><strong>Given</strong> a implementação completa
+<strong>When</strong> os testes são executados
+<strong>Then</strong> todos os testes existentes passam sem modificação</p>
+<hr>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 1: Schema e tipos</strong> (AC: 1, 4)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 1.1 Adicionar <code>hostName: z.string().max(200).optional()</code> ao <code>PodcastSchema</code></li>
+<li><input disabled="" type="checkbox"> 1.2 Adicionar <code>hostName: string</code> ao <code>PromptVariables</code> em <code>types.ts</code></li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 2: Interpolação e prompts</strong> (AC: 2, 3, 4)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.1 Adicionar <code>hostName?: string</code> ao <code>extractVariables</code> em <code>interpolation.ts</code></li>
+<li><input disabled="" type="checkbox"> 2.2 Incluir <code>{hostName}</code> no user prompt template da Fase 6 em <code>prompts.ts</code></li>
+<li><input disabled="" type="checkbox"> 2.3 Adicionar instrução sobre host no system prompt da Fase 6</li>
+<li><input disabled="" type="checkbox"> 2.4 Passar <code>podcast?.hostName</code> no call site em <code>client.ts</code></li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 3: UI — campo no formulário</strong> (AC: 1, 4)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 3.1 Adicionar campo Input &quot;Nome do Host/Apresentador&quot; com auto-save em <code>podcast-settings-form.tsx</code></li>
+<li><input disabled="" type="checkbox"> 3.2 Adicionar <code>hostName</code> em <code>updatePodcastViaApi</code></li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+<strong>Task 4: Testes</strong> (AC: 4)</p>
+<ul>
+<li><input disabled="" type="checkbox"> 4.1 Adicionar teste para novo campo no <code>podcast-settings-form.test.tsx</code></li>
+<li><input disabled="" type="checkbox"> 4.2 Adicionar teste para <code>extractVariables</code> com <code>hostName</code> em <code>llm.test.ts</code></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Dev Notes</h2>
+<h3>Padrão de auto-save existente (copiar de <code>youtubeFooter</code>)</h3>
+<p>O campo <code>youtubeFooter</code> já implementa o padrão completo:</p>
+<ul>
+<li>State local com <code>useState</code></li>
+<li>Schema Zod para validação client-side</li>
+<li>Hook <code>useAutoSave</code> com debounce 1500ms</li>
+<li>Função <code>updatePodcastViaApi</code> para PATCH</li>
+<li><code>SaveStatusIndicator</code> para feedback visual</li>
+</ul>
+<h3>Por que apenas Fase 6</h3>
+<p>O epic especifica: &quot;O nome do host deve ser incluído nos prompts que geram descrições (Fase 6)&quot;. Fases 1-5 e 7 não precisam do host — o LLM gera títulos, tags e análises que não referenciam o host diretamente.</p>
+<h3>Esforço Estimado</h3>
+<p>1-2h — Mudanças pontuais seguindo padrões existentes.</p>
+<hr>
+<h2>References</h2>
+<ul>
+<li><a href="epic-13-hardening-v3.html">Epic 13 Doc</a> — Story 13.12 detalhamento</li>
+<li>Padrão de referência: campo <code>youtubeFooter</code> no <code>podcast-settings-form.tsx</code></li>
+</ul>
+<hr>
+<h2>Change Log</h2>
+<ul>
+<li>2026-02-19: Story criada (SM Bob)</li>
+<li>2026-02-19: Implementada — hostName no schema, prompts, interpolação e settings form — 1734 testes passando</li>
+</ul>
+
+  </main>
+</body>
+</html>

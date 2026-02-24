@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.10 Fase 8 — Atualizar YouTube — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 4 — Wizard de Processamento</nav><h1>Story 4.10: Fase 8 - Atualizar YouTube</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want enviar os metadados finalizados para o YouTube,
+so that as alteracoes sejam publicadas no meu canal.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>AC1: Exibicao do Resumo de Metadados</strong></p>
+<ul>
+<li>Given o Wizard na Fase 8</li>
+<li>When a fase e renderizada</li>
+<li>Then <strong>Area de Interatividade</strong> mostra:<ul>
+<li>Titulo final (<code>video.title</code>)</li>
+<li>Preview da descricao (primeiros 200 caracteres de <code>video.description</code>)</li>
+<li>Contagem de tags (<code>video.tags.length</code>)</li>
+<li>Contagem de capitulos (<code>video.chapters.length</code>)</li>
+</ul>
+</li>
+<li>And botao &quot;Enviar para o YouTube&quot;</li>
+</ul>
+</li>
+<li><p><strong>AC2: Inicio do Envio</strong></p>
+<ul>
+<li>Given o botao &quot;Enviar para o YouTube&quot; clicado</li>
+<li>When a requisicao inicia</li>
+<li>Then botao mostra loading state (disabled + spinner)</li>
+<li>And <strong>Console Area</strong> mostra spinner: &quot;Enviando metadados para o YouTube...&quot;</li>
+<li>And status do video muda para <code>sending</code> (via video state machine)</li>
+</ul>
+</li>
+<li><p><strong>AC3: Envio Bem-Sucedido</strong></p>
+<ul>
+<li>Given envio bem-sucedido</li>
+<li>When YouTube retorna 200</li>
+<li>Then status muda para <code>sent</code> (via video state machine)</li>
+<li>And <strong>Console Area</strong> mostra Alert de sucesso:<ul>
+<li>Titulo: &quot;Publicado!&quot;</li>
+<li>Texto: &quot;Os metadados foram atualizados no YouTube com sucesso.&quot;</li>
+</ul>
+</li>
+<li>And botao muda para &quot;Concluido&quot; (disabled, estado final)</li>
+</ul>
+</li>
+<li><p><strong>AC4: Erro no Envio</strong></p>
+<ul>
+<li>Given erro no envio</li>
+<li>When YouTube retorna erro</li>
+<li>Then status permanece <code>ready</code> (nao muda para <code>sending</code>)</li>
+<li>And <strong>Console Area</strong> mostra Alert de erro com mensagem amigavel</li>
+<li>And botao volta ao estado normal para retry</li>
+<li>And permite tentar novamente</li>
+</ul>
+</li>
+<li><p><strong>AC5: Sem Processamento LLM</strong></p>
+<ul>
+<li>Given esta fase</li>
+<li>When renderizada</li>
+<li>Then NAO possui processamento LLM</li>
+<li>And NAO possui input de additionalContext</li>
+<li>And NAO possui botao Revalidar</li>
+<li>And NAO processa automaticamente ao entrar</li>
+</ul>
+</li>
+<li><p><strong>AC6: Validacao Pre-Envio</strong></p>
+<ul>
+<li>Given o botao &quot;Enviar para o YouTube&quot; clicado</li>
+<li>When validacao pre-envio e executada</li>
+<li>Then valida que todos os campos obrigatorios existem:<ul>
+<li><code>video.title</code> nao vazio</li>
+<li><code>video.description</code> nao vazio</li>
+<li><code>video.tags</code> com pelo menos 1 tag</li>
+</ul>
+</li>
+<li>And se algum faltar, mostra erro e nao envia</li>
+</ul>
+</li>
+<li><p><strong>AC7: Formatacao de Chapters na Descricao</strong></p>
+<ul>
+<li>Given chapters existem no video</li>
+<li>When descricao e enviada ao YouTube</li>
+<li>Then chapters sao formatados no inicio da descricao</li>
+<li>And formato: <code>00:00 Titulo do Capitulo\n</code></li>
+<li>And descricao original segue apos os chapters</li>
+</ul>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar componente Phase8Publish (AC: 1, 5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1: Criar <code>src/components/wizard/phases/phase-8-publish.tsx</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2: Implementar card de resumo com titulo, descricao preview, tags count, chapters count</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3: Implementar botao &quot;Enviar para o YouTube&quot; com estados (normal, loading, completed)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.4: Implementar estado de erro com retry</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Implementar Logica de Envio no Orchestrator (AC: 2, 3, 4, 6, 7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1: Atualizar <code>wizard-orchestrator.tsx</code> para renderizar Phase8Publish</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2: Implementar validacao pre-envio (title, description, tags)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3: Implementar chamada ao endpoint <code>/api/youtube/videos/[videoId]</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.4: Gerenciar spinner/alert no Console Area</li>
+<li><input checked="" disabled="" type="checkbox"> 2.5: Implementar formatacao de chapters na descricao</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar/Atualizar Endpoint YouTube Update (AC: 2, 3, 4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1: Criar <code>PUT /api/youtube/videos/[videoId]/route.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2: Implementar chamada YouTube Data API videos.update</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3: Adicionar metodo <code>updateVideo</code> ao YouTubeClient</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4: Implementar transicao de status via video state machine</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Testes (AC: 1-7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1: Testes unitarios do componente Phase8Publish</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2: Testar cenarios: sucesso, erro, retry</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3: Testar validacao pre-envio</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4: Testar formatacao de chapters</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Architecture Patterns</h3>
+<ul>
+<li><strong>Fase Final (Sem LLM)</strong>: Nao possui processamento LLM, apenas chamada a YouTube API.</li>
+<li><strong>Console Pattern</strong>: Usar <code>wizard.addSpinner()</code> ao iniciar envio, <code>wizard.removeSpinner()</code> ao finalizar, <code>wizard.addAlert()</code> para resultado.</li>
+<li><strong>Video State Machine</strong>: Usar <code>transition(status, action)</code> para gerenciar mudancas de status:<ul>
+<li><code>ready</code> -&gt; <code>send</code> -&gt; <code>sending</code></li>
+<li><code>sending</code> -&gt; <code>success</code> -&gt; <code>sent</code></li>
+<li><code>sending</code> -&gt; <code>error</code> -&gt; <code>ready</code></li>
+</ul>
+</li>
+</ul>
+<h3>YouTube Data API - videos.update</h3>
+<pre><code class="language-typescript">// Endpoint: PUT https://www.googleapis.com/youtube/v3/videos
+// Part: snippet (title, description, tags, categoryId)
+
+interface YouTubeUpdateRequest {
+  id: string // videoId
+  snippet: {
+    title: string
+    description: string // com chapters no inicio
+    tags: string[]
+    categoryId: string // manter o existente
+  }
+}
+</code></pre>
+<h3>Chapters Formatting</h3>
+<pre><code class="language-typescript">// Formato YouTube para chapters:
+// 00:00 Introducao
+// 05:30 Topico 1
+// 15:45 Topico 2
+
+function formatChaptersForYouTube(chapters: Chapter[]): string {
+  return chapters
+    .map(c =&gt; `${c.timestamp} ${c.title}`)
+    .join(&#39;\n&#39;)
+}
+
+// Descricao final:
+const finalDescription = chapters.length &gt; 0
+  ? `${formatChaptersForYouTube(chapters)}\n\n${description}`
+  : description
+</code></pre>
+<h3>Component Props Interface</h3>
+<pre><code class="language-typescript">interface Phase8PublishProps {
+  wizard: UseWizardReturn
+  video: Video
+  /** Whether the send operation is in progress */
+  isSending?: boolean
+  /** Whether the video was successfully sent */
+  isSent?: boolean
+  /** Error message if send failed */
+  error?: string | null
+  /** Callback when send button is clicked */
+  onSend?: () =&gt; void
+  /** Callback to retry after error */
+  onRetry?: () =&gt; void
+  className?: string
+}
+</code></pre>
+<h3>Console Messages Pattern</h3>
+<pre><code class="language-typescript">// Inicio do envio
+const spinnerId = wizard.addSpinner(8, &#39;Enviando metadados para o YouTube...&#39;)
+
+// Apos sucesso
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(8, &#39;Publicado!&#39;, &#39;Os metadados foram atualizados no YouTube com sucesso.&#39;, &#39;success&#39;)
+
+// Apos erro
+wizard.removeSpinner(spinnerId)
+wizard.addAlert(8, &#39;Erro&#39;, errorMessage, &#39;error&#39;)
+</code></pre>
+<h3>UI Components to Use</h3>
+<ul>
+<li><code>Card</code> from shadcn/ui for layout</li>
+<li><code>Button</code> from shadcn/ui for send button</li>
+<li><code>Badge</code> from shadcn/ui for counts (tags, chapters)</li>
+<li><code>CheckCircleIcon</code>, <code>UploadIcon</code> from lucide-react</li>
+</ul>
+<h3>API Endpoint Structure</h3>
+<pre><code class="language-typescript">// PUT /api/youtube/videos/[videoId]
+// Request body: { title, description, tags }
+// Response: { data: { videoId, updated: true } }
+// Error: { error: { code, message } }
+</code></pre>
+<h3>YouTubeClient Extension</h3>
+<pre><code class="language-typescript">// Adicionar ao src/lib/youtube/client.ts
+interface UpdateVideoOptions {
+  videoId: string
+  title: string
+  description: string
+  tags: string[]
+}
+
+async updateVideo(options: UpdateVideoOptions): Promise&lt;void&gt; {
+  // 1. Get current video to preserve categoryId
+  // 2. Call videos.update with snippet part
+}
+</code></pre>
+<h3>Testing Standards</h3>
+<ul>
+<li>Mock do YouTubeClient para testes de componente</li>
+<li>Testar cenarios: sucesso, erro, retry</li>
+<li>Usar <code>@testing-library/react</code> com <code>userEvent</code> para interacoes</li>
+<li>Testar validacao pre-envio</li>
+<li>Testar formatacao de chapters na descricao</li>
+</ul>
+<h3>Source Tree Components</h3>
+<pre><code>src/
+├── components/wizard/
+│   ├── phases/
+│   │   ├── phase-8-publish.tsx          # NEW - Componente da Fase 8
+│   │   ├── phase-8-publish.test.tsx     # NEW - Testes
+│   │   └── index.ts                     # UPDATE - export Phase8Publish
+│   └── wizard-orchestrator.tsx          # UPDATE - adicionar case para fase 8
+├── lib/youtube/
+│   └── client.ts                        # UPDATE - adicionar updateVideo method
+└── app/api/youtube/videos/
+    └── [videoId]/
+        └── route.ts                     # NEW - PUT endpoint para update
+</code></pre>
+<h3>Criterios de Avanco</h3>
+<p>Esta e a fase final. Nao ha avanco apos Phase 8.</p>
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th>Validacao</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Todos metadados preenchidos</td>
+<td><code>title</code>, <code>description</code>, <code>tags</code> existem</td>
+</tr>
+<tr>
+<td>Envio bem-sucedido</td>
+<td>Status mudou para <code>sent</code></td>
+</tr>
+</tbody></table>
+<h3>References</h3>
+<ul>
+<li>[Source: epics-iara.md#Story 4.10]</li>
+<li>[Source: processamento_video.md#Fase 8 - Atualizar YouTube]</li>
+<li>[Source: src/lib/youtube/client.ts - YouTubeClient]</li>
+<li>[Source: src/lib/video-state-machine/transitions.ts - State transitions]</li>
+<li>[Source: 4-9-fase-7-tags.md - Story anterior com padroes]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
+<h3>Debug Log References</h3>
+<p>None</p>
+<h3>Completion Notes List</h3>
+<ul>
+<li><code>Phase8Publish</code> component created with metadata summary and send button</li>
+<li>Shows title, description preview, tags count, chapters count in a card</li>
+<li>Send button with states: normal, loading (spinner), completed (Concluido)</li>
+<li>Error state with retry button</li>
+<li>Validation: requires title, description, and at least 1 tag</li>
+<li>No LLM processing (final phase, no additionalContext or revalidate)</li>
+<li>Orchestrator updated with Phase 8 handling: isSending, isSent, phase8Error states</li>
+<li>formatChaptersForYouTube function prepends chapters to description</li>
+<li>handleSendToYouTube calls the YouTube API endpoint</li>
+<li>YouTubeClient.updateVideo method added for videos.update API call</li>
+<li>YouTubeVideoUpdateResponseSchema added to youtube-api.ts</li>
+<li>PUT /api/youtube/videos/[videoId] endpoint created with:<ul>
+<li>Zod validation for title, description, tags</li>
+<li>Video state machine transitions: ready-&gt;sending-&gt;sent (or error-&gt;ready)</li>
+<li>Token refresh handling</li>
+<li>Error handling with proper status codes</li>
+</ul>
+</li>
+<li>Tests: 23 new tests for Phase8Publish component</li>
+<li>Total tests: 1040 passing</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li>src/components/wizard/phases/phase-8-publish.tsx (NEW)</li>
+<li>src/components/wizard/phases/phase-8-publish.test.tsx (NEW)</li>
+<li>src/components/wizard/phases/index.ts (UPDATED - export Phase8Publish)</li>
+<li>src/components/wizard/wizard-orchestrator.tsx (UPDATED - Phase 8 handling)</li>
+<li>src/lib/youtube/client.ts (UPDATED - updateVideo method)</li>
+<li>src/lib/youtube/format-chapters.ts (NEW - chapter formatting utility)</li>
+<li>src/lib/youtube/format-chapters.test.ts (NEW - chapter formatting tests)</li>
+<li>src/lib/youtube/index.ts (UPDATED - export format functions)</li>
+<li>src/lib/schemas/youtube-api.ts (UPDATED - YouTubeVideoUpdateResponseSchema)</li>
+<li>src/app/api/youtube/videos/[videoId]/route.ts (NEW - PUT endpoint)</li>
+</ul>
+<h3>Code Review Fixes Applied</h3>
+<ul>
+<li>Extracted <code>formatChaptersForYouTube</code> to reusable utility with tests</li>
+<li>Added <code>buildDescriptionWithChapters</code> utility function</li>
+<li>Removed unused <code>wizard</code> prop from Phase8Publish component</li>
+<li>Fixed inconsistent success message text</li>
+<li>updateVideo method now documents categoryId handling</li>
+<li>Added 10 new tests for chapter formatting (Total: 1050 tests)</li>
+</ul>
+
+  </main>
+</body>
+</html>
