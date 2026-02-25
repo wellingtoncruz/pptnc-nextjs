@@ -43,7 +43,7 @@ export function SocialColumnsLayout({ video, enabledNetworks }: SocialColumnsLay
   }
 
   return (
-    <div data-testid="social-columns-layout" className="flex h-full overflow-x-auto">
+    <div data-testid="social-columns-layout" className="flex h-full overflow-x-auto custom-scrollbar">
       {enabledNetworks.map(network => (
         <SocialPostColumn
           key={network.id}
