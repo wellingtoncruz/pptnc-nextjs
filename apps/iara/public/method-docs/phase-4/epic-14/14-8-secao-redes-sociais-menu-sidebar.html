@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14.8 Seção Redes Sociais no Menu — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Story 14.8: Seção &quot;Redes Sociais&quot; no Menu Lateral + Sidebar de Vídeos</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want acessar a seção de Redes Sociais pelo menu lateral,
+so that eu possa ver e gerenciar posts sociais dos meus vídeos.</p>
+<h2>Prerequisites</h2>
+<p><strong>BLOQUEANTES — Devem estar implementadas ANTES de iniciar esta story:</strong></p>
+<ul>
+<li><strong>Story 14.3</strong> — Feature toggle <code>socialMedia</code> no <code>FeaturesSchema</code></li>
+<li><strong>Story 14.4</strong> — Campo <code>enabledSocialNetworks: string[]</code> no <code>PodcastSchema</code></li>
+<li><strong>Story 14.6</strong> — API endpoints GET/PUT para social posts (backend ready)</li>
+<li><strong>Story 14.7</strong> — POST endpoint de geração LLM (backend ready)</li>
+</ul>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>Item &quot;Redes Sociais&quot; no sidebar</strong> — Quando <code>features.socialMedia === true</code> E <code>enabledSocialNetworks.length &gt; 0</code>, exibe item &quot;Redes Sociais&quot; com ícone <code>Share2</code> (Lucide) entre &quot;Notícias&quot; e &quot;Usuários&quot;. Clicar navega para <code>?view=social</code>. Destaque visual quando <code>view=social</code> está ativo (classe <code>bg-accent</code>).</p>
+</li>
+<li><p><strong>Ocultação condicional</strong> — Quando <code>features.socialMedia === false</code> OU <code>enabledSocialNetworks.length === 0</code>, o item &quot;Redes Sociais&quot; NÃO é exibido no sidebar. Se features é <code>undefined</code> (backward-compat), NÃO exibe (default <code>false</code>).</p>
+</li>
+<li><p><strong>View social no layout</strong> — Quando <code>?view=social</code> está ativo, exibe layout com sidebar de vídeos à esquerda e área de trabalho à direita. Sidebar reutiliza <code>VideoListPanel</code> com os mesmos filtros de tipo e status.</p>
+</li>
+<li><p><strong>Sem botão sync</strong> — A sidebar de vídeos na seção Redes Sociais NÃO exibe o botão &quot;Verificar novos vídeos&quot;. O <code>VideoListPanel</code> deve suportar omissão do botão quando <code>onSync</code> não é fornecido.</p>
+</li>
+<li><p><strong>Seleção de vídeo</strong> — Ao selecionar um vídeo na sidebar, a URL atualiza para <code>?view=social&amp;selected={videoId}</code>. A área de trabalho à direita carrega o contexto do vídeo selecionado.</p>
+</li>
+<li><p><strong>Estado vazio</strong> — Quando nenhum vídeo está selecionado, a área de trabalho exibe: &quot;Selecione um vídeo para ver os posts sociais&quot; (estado vazio centralizado).</p>
+</li>
+<li><p><strong>Redirecionamento de feature desabilitada</strong> — Se <code>?view=social</code> está ativo mas <code>features.socialMedia === false</code>, redireciona para <code>/videos</code> (mesmo padrão de editorial/news).</p>
+</li>
+<li><p><strong>Acessível para todos os roles</strong> — O item &quot;Redes Sociais&quot; é visível para todos os usuários autenticados (não é <code>adminOnly</code>), desde que as condições de feature toggle sejam atendidas.</p>
+</li>
+<li><p><strong>Testes</strong> — Testes para sidebar (item visível/oculto por features, backward-compat), <code>videos-layout</code> (view social renderiza, redirecionamento), e <code>social-layout</code> (empty state, renderização com vídeo).</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Estender <code>PodcastFeatures</code> e fetch no layout (AC: #1, #2, #7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Em <code>src/components/layout/sidebar.tsx</code>:<ul>
+<li>Estender <code>PodcastFeatures</code> para incluir <code>socialMedia?: boolean</code></li>
+<li>Adicionar <code>enabledSocialNetworks?: string[]</code> ao <code>SidebarProps</code></li>
+<li>Importar <code>Share2</code> de <code>lucide-react</code></li>
+<li>Adicionar variável <code>isSocialView = searchParams.get(&#39;view&#39;) === &#39;social&#39;</code> (ao lado das existentes)</li>
+<li>Adicionar <code>isSocialView</code> à condição <code>isActive</code> do item &quot;Vídeos&quot; (para deselecionar quando social está ativo)</li>
+<li>Inserir item &quot;Redes Sociais&quot; entre &quot;Notícias&quot; e &quot;Usuários&quot; com condição: <code>features?.socialMedia === true &amp;&amp; (enabledSocialNetworks?.length ?? 0) &gt; 0</code></li>
+<li><code>adminOnly: false</code></li>
+<li><code>href: &#39;/videos?view=social&#39;</code></li>
+<li><code>isActive: isSocialView</code></li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Em <code>src/app/videos/videos-layout.tsx</code>:<ul>
+<li>Estender tipo do state <code>podcastFeatures</code> para incluir <code>socialMedia?: boolean</code></li>
+<li>Adicionar state <code>enabledSocialNetworks</code> (default <code>[]</code>)</li>
+<li>No <code>useEffect</code> de fetch, extrair <code>d.data.enabledSocialNetworks</code> e atualizar ambos os states</li>
+<li>Passar <code>enabledSocialNetworks</code> como prop para <code>Sidebar</code></li>
+<li>Importar <code>SocialLayout</code> (a criar na Task 2)</li>
+<li>Adicionar case <code>currentView === &#39;social&#39;</code> antes do case <code>users</code>:<ul>
+<li>Se <code>podcastFeatures?.socialMedia === false</code>, redirect para <code>/videos</code> (padrão de editorial/news)</li>
+<li>Renderizar <code>&lt;SocialLayout /&gt;</code> dentro de <code>&lt;div className=&quot;flex-1 overflow-hidden&quot;&gt;</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar <code>SocialLayout</code> component (AC: #3, #4, #5, #6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar <code>src/components/social/social-layout.tsx</code>:<ul>
+<li>Client component (<code>&#39;use client&#39;</code>)</li>
+<li>Usa <code>useVideos()</code> para obter lista de vídeos</li>
+<li>Usa <code>useSearchParams()</code> para <code>selected</code> e <code>useRouter()</code> para <code>push</code></li>
+<li>Layout flex: sidebar de vídeos (esquerda, shrink-0, ~380px) + área de trabalho (direita, flex-1)</li>
+<li>Sidebar: renderiza <code>VideoListPanel</code> com todas as props <strong>exceto</strong> <code>onSync</code> e <code>isSyncing</code> (sem botão sync)</li>
+<li>Área de trabalho:<ul>
+<li>Se nenhum vídeo selecionado: empty state centralizado com ícone <code>Share2</code> e texto &quot;Selecione um vídeo para ver os posts sociais&quot;</li>
+<li>Se vídeo selecionado: placeholder <code>&lt;div&gt;Posts sociais de {videoId}&lt;/div&gt;</code> (implementação real em Stories 14.9/14.10)</li>
+</ul>
+</li>
+<li><code>handleVideoSelect</code>: navega para <code>?view=social&amp;selected={videoId}</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Ocultar botão sync condicionalmente no VideoListPanel (AC: #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Em <code>src/components/videos/video-list-panel.tsx</code>:<ul>
+<li>Envolver o <code>&lt;Button&gt;</code> de sync (linhas ~201-210) em condição <code>{onSync &amp;&amp; (...)}</code></li>
+<li>Envolver o texto &quot;Clique em Verificar novos&quot; no empty state (linha ~336) em condição <code>{onSync &amp;&amp; (...)}</code></li>
+<li>Alternativa para empty state sem sync: mostrar apenas &quot;Nenhum vídeo encontrado&quot; sem menção ao botão</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Testes (AC: #9)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Em <code>src/components/layout/sidebar.test.tsx</code>, adicionar 6 testes:<ul>
+<li>&quot;exibe Redes Sociais quando features.socialMedia=true e enabledSocialNetworks tem itens&quot;</li>
+<li>&quot;oculta Redes Sociais quando features.socialMedia=false&quot;</li>
+<li>&quot;oculta Redes Sociais quando enabledSocialNetworks está vazio&quot;</li>
+<li>&quot;oculta Redes Sociais quando features é undefined (backward-compat)&quot;</li>
+<li>&quot;destaca Redes Sociais quando view=social está ativo&quot;</li>
+<li>&quot;link Redes Sociais aponta para /videos?view=social&quot;</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Em <code>src/app/videos/videos-layout.test.tsx</code>, adicionar 2 testes:<ul>
+<li>&quot;renderiza SocialLayout quando view=social&quot;</li>
+<li>&quot;redireciona para /videos quando view=social e socialMedia desabilitado&quot;</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Criar <code>src/components/social/social-layout.test.tsx</code> com 4 testes:<ul>
+<li>&quot;exibe empty state quando nenhum vídeo selecionado&quot;</li>
+<li>&quot;exibe VideoListPanel sem botão de sync&quot;</li>
+<li>&quot;exibe placeholder quando vídeo selecionado&quot;</li>
+<li>&quot;navega para URL correta ao selecionar vídeo&quot;</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Em <code>src/components/videos/video-list-panel.test.tsx</code>, adicionar 1 teste:<ul>
+<li>&quot;oculta botão sync quando onSync não é fornecido&quot;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Validar integração</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 <code>npx vitest run</code> — 1901 testes passando, 0 falhas (100 arquivos)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Verificar que testes existentes de sidebar não quebram (backward-compat) — 15 originais + 6 novos = 21 OK</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Verificar que testes existentes de videos-layout não quebram — 9 originais + 2 novos = 11 OK</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura e Padrões</h3>
+<ul>
+<li><p><strong>Condição dupla para visibilidade</strong>: O item &quot;Redes Sociais&quot; no sidebar requer AMBAS as condições verdadeiras: (1) <code>features.socialMedia === true</code> e (2) <code>enabledSocialNetworks.length &gt; 0</code>. Isso evita exibir um menu para uma seção vazia. Diferente de editorial/news que usam <code>!== false</code> (default true), socialMedia usa <code>=== true</code> (default false).</p>
+</li>
+<li><p><strong><code>PodcastFeatures</code> interface estendida</strong>: A interface <code>PodcastFeatures</code> em <code>sidebar.tsx</code> é local (não exportada). Estender com <code>socialMedia?: boolean</code>. A prop <code>enabledSocialNetworks?: string[]</code> é separada (não faz parte de features no Firestore).</p>
+</li>
+<li><p><strong>Fetch único no <code>videos-layout.tsx</code></strong>: O <code>useEffect</code> já faz fetch de <code>/api/podcast</code> e extrai <code>features</code>. Basta também extrair <code>enabledSocialNetworks</code> da mesma response. Não precisa de fetch adicional. A response do endpoint <code>/api/podcast</code> já retorna o podcast completo incluindo <code>enabledSocialNetworks</code>.</p>
+</li>
+<li><p><strong>View routing pattern</strong>: Seguir exatamente o padrão de editorial/news no <code>videos-layout.tsx</code>. Cada view é um <code>if (currentView === &#39;xxx&#39;)</code> que retorna layout completo com sidebar. O case social vai entre news e users na ordem do arquivo.</p>
+</li>
+<li><p><strong><code>VideoListPanel</code> sem sync</strong>: O <code>VideoListPanel</code> já aceita <code>onSync</code> como prop opcional (<code>onSync?: () =&gt; void</code>). Mas o botão é renderizado incondicionalmente. Basta envolver em <code>{onSync &amp;&amp; (...)}</code> para que omitir a prop esconda o botão. Isso é seguro: os testes existentes passam <code>onSync</code> e não serão afetados.</p>
+</li>
+<li><p><strong><code>SocialLayout</code> como componente simples</strong>: Na Story 14.8, a área de trabalho é apenas um placeholder/empty-state. O layout completo de colunas (Story 14.9) e edição (14.10) serão adicionados posteriormente. Manter o componente simples agora.</p>
+</li>
+<li><p><strong>URL state via <code>searchParams</code></strong>: Seleção de vídeo usa <code>?view=social&amp;selected={videoId}</code> — consistente com enforcement rule #10 (selectedVideoId via URL). O <code>SocialLayout</code> usa <code>useSearchParams</code> para ler e <code>useRouter().push()</code> para navegar.</p>
+</li>
+<li><p><strong>Sem <code>LLMProcessingProvider</code></strong>: Diferente da view de Vídeos, a view social NÃO precisa do <code>LLMProcessingProvider</code> nesta story. O processamento LLM social será adicionado na Story 14.9 quando o auto-generate for implementado. Não antecipar.</p>
+</li>
+<li><p><strong>Sem <code>SyncOverlay</code> e <code>SyncResultModal</code></strong>: A view social não tem operação de sync. Não incluir esses componentes.</p>
+</li>
+</ul>
+<h3>Arquivos a Criar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/social/social-layout.tsx</code></td>
+<td>Novo</td>
+<td>Layout split: sidebar de vídeos + área de trabalho (placeholder)</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-layout.test.tsx</code></td>
+<td>Novo</td>
+<td>Testes do layout social</td>
+</tr>
+</tbody></table>
+<h3>Arquivos a Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Modificação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/layout/sidebar.tsx</code></td>
+<td>Estender <code>PodcastFeatures</code>, adicionar item &quot;Redes Sociais&quot; condicional</td>
+</tr>
+<tr>
+<td><code>src/components/layout/sidebar.test.tsx</code></td>
+<td>Adicionar 6 testes para visibilidade do item social</td>
+</tr>
+<tr>
+<td><code>src/app/videos/videos-layout.tsx</code></td>
+<td>Adicionar fetch de <code>enabledSocialNetworks</code>, case <code>view=social</code></td>
+</tr>
+<tr>
+<td><code>src/app/videos/videos-layout.test.tsx</code></td>
+<td>Adicionar 2 testes para view social</td>
+</tr>
+<tr>
+<td><code>src/components/videos/video-list-panel.tsx</code></td>
+<td>Condicionar botão sync com <code>{onSync &amp;&amp; (...)}</code></td>
+</tr>
+</tbody></table>
+<h3>Arquivos NÃO Modificar</h3>
+<ul>
+<li><code>src/lib/schemas/podcast.ts</code> — <code>socialMedia</code> e <code>enabledSocialNetworks</code> já existem no schema (Stories 14.3, 14.4)</li>
+<li><code>src/lib/firebase/social-admin.ts</code> — funções admin já prontas (Stories 14.2, 14.6, 14.7)</li>
+<li><code>src/app/api/videos/[videoId]/social-posts/</code> — API endpoints já prontos (Stories 14.6, 14.7)</li>
+<li><code>src/hooks/use-videos.ts</code> — reutilizar como está para a sidebar de vídeos</li>
+</ul>
+<h3>Código Existente de Referência</h3>
+<p><strong>Sidebar — padrão de item condicional</strong> (<code>sidebar.tsx</code>):</p>
+<pre><code class="language-typescript">// Editorial (default true — usa !== false):
+...(features?.editorial !== false ? [{
+  href: &#39;/videos?view=editorial&#39;,
+  label: &#39;Editorial&#39;,
+  icon: FileText,
+  isActive: isEditorialView,
+  adminOnly: false,
+}] : []),
+
+// Social Media (default false — usa === true + dupla condição):
+...(features?.socialMedia === true &amp;&amp; (enabledSocialNetworks?.length ?? 0) &gt; 0 ? [{
+  href: &#39;/videos?view=social&#39;,
+  label: &#39;Redes Sociais&#39;,
+  icon: Share2,
+  isActive: isSocialView,
+  adminOnly: false,
+}] : []),
+</code></pre>
+<p><strong>Videos-layout — padrão de view routing</strong> (<code>videos-layout.tsx</code>):</p>
+<pre><code class="language-typescript">// Padrão existente (editorial):
+if (currentView === &#39;editorial&#39;) {
+  if (podcastFeatures?.editorial === false) {
+    router.replace(&#39;/videos&#39;)
+    return null
+  }
+  return (
+    &lt;div className=&quot;flex h-screen&quot;&gt;
+      &lt;div className=&quot;shrink-0&quot;&gt;
+        &lt;Sidebar userName={userName} features={podcastFeatures} /&gt;
+      &lt;/div&gt;
+      &lt;div className=&quot;flex-1 overflow-hidden&quot;&gt;
+        &lt;EditorialPanel /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+
+// Novo case social (mesmo padrão):
+if (currentView === &#39;social&#39;) {
+  if (podcastFeatures?.socialMedia === false) {
+    router.replace(&#39;/videos&#39;)
+    return null
+  }
+  return (
+    &lt;div className=&quot;flex h-screen&quot;&gt;
+      &lt;div className=&quot;shrink-0&quot;&gt;
+        &lt;Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} /&gt;
+      &lt;/div&gt;
+      &lt;div className=&quot;flex-1 overflow-hidden&quot;&gt;
+        &lt;SocialLayout /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+</code></pre>
+<p><strong>VideoListPanel — sync button a condicionar</strong> (<code>video-list-panel.tsx</code> ~linhas 201-210):</p>
+<pre><code class="language-typescript">// ANTES:
+&lt;Button variant=&quot;outline&quot; size=&quot;sm&quot; onClick={onSync} disabled={isSyncing} className=&quot;shrink-0 gap-2&quot;&gt;
+  &lt;RefreshCw className={`h-4 w-4 ${isSyncing ? &#39;animate-spin&#39; : &#39;&#39;}`} /&gt;
+  &lt;span className=&quot;hidden sm:inline&quot;&gt;{isSyncing ? &#39;Verificando...&#39; : &#39;Verificar novos&#39;}&lt;/span&gt;
+&lt;/Button&gt;
+
+// DEPOIS:
+{onSync &amp;&amp; (
+  &lt;Button variant=&quot;outline&quot; size=&quot;sm&quot; onClick={onSync} disabled={isSyncing} className=&quot;shrink-0 gap-2&quot;&gt;
+    &lt;RefreshCw className={`h-4 w-4 ${isSyncing ? &#39;animate-spin&#39; : &#39;&#39;}`} /&gt;
+    &lt;span className=&quot;hidden sm:inline&quot;&gt;{isSyncing ? &#39;Verificando...&#39; : &#39;Verificar novos&#39;}&lt;/span&gt;
+  &lt;/Button&gt;
+)}
+</code></pre>
+<p><strong>SocialLayout — esqueleto</strong> (novo componente):</p>
+<pre><code class="language-typescript">&#39;use client&#39;
+
+import { useSearchParams, useRouter, usePathname } from &#39;next/navigation&#39;
+import { useCallback } from &#39;react&#39;
+import { Share2 } from &#39;lucide-react&#39;
+
+import { VideoListPanel } from &#39;@/components/videos/video-list-panel&#39;
+import { useVideos } from &#39;@/hooks/use-videos&#39;
+
+export function SocialLayout() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const selectedVideoId = searchParams.get(&#39;selected&#39;)
+
+  const {
+    videos, isLoading, error, page, totalPages, setPage,
+    typeFilter, setTypeFilter, statusFilter, setStatusFilter,
+  } = useVideos()
+
+  const handleVideoSelect = useCallback((videoId: string) =&gt; {
+    router.push(`${pathname}?view=social&amp;selected=${videoId}`)
+  }, [router, pathname])
+
+  return (
+    &lt;div className=&quot;flex h-full&quot;&gt;
+      {/* Video sidebar */}
+      &lt;div className=&quot;w-[380px] shrink-0 border-r border-border&quot;&gt;
+        &lt;VideoListPanel
+          videos={videos}
+          selectedVideoId={selectedVideoId}
+          onVideoSelect={handleVideoSelect}
+          isLoading={isLoading}
+          error={error}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          typeFilter={typeFilter}
+          onTypeFilterChange={setTypeFilter}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+        /&gt;
+      &lt;/div&gt;
+
+      {/* Work area */}
+      &lt;div className=&quot;flex-1 flex items-center justify-center&quot;&gt;
+        {selectedVideoId ? (
+          &lt;div className=&quot;text-muted-foreground&quot;&gt;
+            {/* Placeholder — Stories 14.9/14.10 implementam o conteúdo */}
+            Posts sociais de {selectedVideoId}
+          &lt;/div&gt;
+        ) : (
+          &lt;div className=&quot;flex flex-col items-center gap-3 text-muted-foreground&quot;&gt;
+            &lt;Share2 className=&quot;h-12 w-12 opacity-30&quot; /&gt;
+            &lt;p className=&quot;text-sm&quot;&gt;Selecione um vídeo para ver os posts sociais&lt;/p&gt;
+          &lt;/div&gt;
+        )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+</code></pre>
+<p><strong>Padrão de teste sidebar — features condicional</strong> (<code>sidebar.test.tsx</code>):</p>
+<pre><code class="language-typescript">it(&#39;hides Editorial when features.editorial is false&#39;, async () =&gt; {
+  render(&lt;Sidebar features={{ editorial: false, news: true }} /&gt;)
+  await waitFor(() =&gt; { expect(screen.getByText(&#39;IAra&#39;)).toBeInTheDocument() })
+  expect(screen.queryByText(&#39;Editorial&#39;)).not.toBeInTheDocument()
+})
+</code></pre>
+<p><strong>Padrão de teste videos-layout — view condicional</strong> (<code>videos-layout.test.tsx</code>):</p>
+<pre><code class="language-typescript">// Mock do view:
+mockGet.mockImplementation((key: string) =&gt; {
+  if (key === &#39;view&#39;) return &#39;editorial&#39;
+  return null
+})
+</code></pre>
+<h3>Backward Compatibility</h3>
+<p>Esta story modifica componentes existentes (sidebar, videos-layout, video-list-panel) de forma aditiva. Nenhum comportamento existente é alterado:</p>
+<ul>
+<li><code>PodcastFeatures</code> ganha campo opcional <code>socialMedia</code> — <code>undefined</code> = não exibe (safe)</li>
+<li><code>SidebarProps</code> ganha campo opcional <code>enabledSocialNetworks</code> — <code>undefined</code> = não exibe (safe)</li>
+<li><code>VideoListPanel</code> — sync button envolvido em <code>{onSync &amp;&amp; (...)}</code> — callers existentes passam <code>onSync</code>, então continuam vendo o botão</li>
+<li>Novos testes são aditivos</li>
+</ul>
+<h3>Learnings das Stories Anteriores</h3>
+<ul>
+<li>Story 14.3: Default <code>false</code> para <code>socialMedia</code> — diferente de <code>editorial</code>/<code>news</code> (default <code>true</code>). Condição de visibilidade usa <code>=== true</code> em vez de <code>!== false</code></li>
+<li>Story 14.4: <code>enabledSocialNetworks</code> é <code>z.array(z.string()).optional()</code> no schema — <code>undefined</code> ou <code>[]</code> significam &quot;nenhuma rede habilitada&quot;</li>
+<li>Story 14.1: <code>localStorage.clear()</code> no <code>beforeEach</code> para evitar leaks entre testes (componentes com <code>useAccordionState</code> ou similar)</li>
+<li>Story 14.6: <code>context.params</code> é <code>Promise</code> no Next.js 15 — sempre <code>await context.params</code></li>
+<li>Story 14.7: Testes com mocks de factories usam <code>vi.fn()</code> com wrappers — não chamar mocks diretamente</li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<table>
+<thead>
+<tr>
+<th>Regra</th>
+<th>Aplicação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#5 Import order</td>
+<td>React/Next → External → Internal → Utils → Types</td>
+</tr>
+<tr>
+<td>#6 Kebab-case files</td>
+<td><code>social-layout.tsx</code>, <code>social-layout.test.tsx</code></td>
+</tr>
+<tr>
+<td>#7 Test naming</td>
+<td><code>it(&#39;verbo + comportamento&#39;)</code>, co-localizados</td>
+</tr>
+<tr>
+<td>#9 Structured logging</td>
+<td><code>log()</code> de <code>@/lib/logger</code> se necessário (nesta story provavelmente não)</td>
+</tr>
+<tr>
+<td>#10 selectedVideoId via URL</td>
+<td><code>?view=social&amp;selected={videoId}</code> — nunca Zustand</td>
+</tr>
+<tr>
+<td>#11 Import type</td>
+<td><code>import type</code> para tipos-only</td>
+</tr>
+</tbody></table>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-14-redes-sociais.md#Story 14.8]</li>
+<li>[Source: epic-14-redes-sociais.md#Regras de Visibilidade]</li>
+<li>[Source: sidebar.tsx — padrão de items condicionais por features]</li>
+<li>[Source: videos-layout.tsx — padrão de view routing]</li>
+<li>[Source: video-list-panel.tsx — props onSync/isSyncing]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #10 (selectedVideoId via URL)]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Full test suite: 1904 tests passing (100 files), +16 from baseline of 1888</li>
+<li>sidebar.test.tsx: 22 tests (15 original + 7 new)</li>
+<li>videos-layout.test.tsx: 11 tests (9 original + 2 new)</li>
+<li>social-layout.test.tsx: 4 tests (new file)</li>
+<li>video-list-panel.test.tsx: 27 tests (24 original + 3 new, 2 existing updated to pass onSync)</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>All 9 Acceptance Criteria implemented and verified through tests</li>
+<li>AC#1: &quot;Redes Sociais&quot; item in sidebar with Share2 icon, dual condition, bg-accent active state</li>
+<li>AC#2: Item hidden when socialMedia=false OR enabledSocialNetworks empty OR features undefined</li>
+<li>AC#3: Social view renders SocialLayout with VideoListPanel sidebar + work area</li>
+<li>AC#4: No sync button — VideoListPanel conditionally renders sync button via <code>{onSync &amp;&amp; (...)}</code></li>
+<li>AC#5: Video selection updates URL to <code>?view=social&amp;selected={videoId}</code></li>
+<li>AC#6: Empty state with Share2 icon and &quot;Selecione um vídeo para ver os posts sociais&quot;</li>
+<li>AC#7: Redirect to /videos when socialMedia === false (same pattern as editorial/news)</li>
+<li>AC#8: adminOnly: false — visible for all authenticated users</li>
+<li>AC#9: 13 new tests covering all acceptance criteria</li>
+<li>VideoListEmptyState now conditionally shows sync hint via showSyncHint prop</li>
+<li>Existing test &quot;renderiza o botão de sincronização&quot; updated to pass onSync (backward-compat fix)</li>
+<li>Existing test &quot;desabilita botão e mostra loading durante sync&quot; updated to pass onSync</li>
+<li>enabledSocialNetworks passed to Sidebar in ALL view branches of videos-layout.tsx</li>
+</ul>
+<h3>Change Log</h3>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Mudança</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-02-24</td>
+<td>Implementação completa: 5 tasks, 13 novos testes, 8 arquivos modificados/criados</td>
+</tr>
+<tr>
+<td>2026-02-24</td>
+<td>Code review: 6 issues (2M+4L) corrigidos, +3 testes (22 sidebar, 27 video-list-panel), 1904 total</td>
+</tr>
+<tr>
+<td>2026-02-24</td>
+<td>Code review #2: 2 issues (1M+1L) corrigidos, +1 teste (12 videos-layout), mock SocialLayout captura enabledSocialNetworks</td>
+</tr>
+</tbody></table>
+<h3>Senior Developer Review</h3>
+<p><strong>Reviewer:</strong> Claude Opus 4.6 (Adversarial Code Review)
+<strong>Date:</strong> 2026-02-24
+<strong>Issues Found:</strong> 0 High, 2 Medium, 4 Low — ALL FIXED</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Sev</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1</td>
+<td>MEDIUM</td>
+<td>SocialLayout não passava <code>onVideoReopened</code> ao VideoListPanel — reabrir vídeo &quot;sent&quot; não atualizava lista</td>
+<td>Adicionado <code>refresh</code> do useVideos como <code>onVideoReopened={refresh}</code></td>
+</tr>
+<tr>
+<td>M2</td>
+<td>MEDIUM</td>
+<td>Nenhum teste verificava showSyncHint no empty state quando onSync fornecido</td>
+<td>Adicionados 2 testes: dica visível com onSync, dica oculta sem onSync</td>
+</tr>
+<tr>
+<td>L1</td>
+<td>LOW</td>
+<td>Sem teste para enabledSocialNetworks undefined (prop omitida)</td>
+<td>Adicionado teste &quot;oculta quando enabledSocialNetworks é undefined&quot;</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>LOW</td>
+<td>Change Log dizia &quot;7 arquivos&quot; mas File List tem 8</td>
+<td>Corrigido para 8</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>LOW</td>
+<td>social-layout.tsx sem data-testid no root div</td>
+<td>Adicionado <code>data-testid=&quot;social-layout&quot;</code></td>
+</tr>
+<tr>
+<td>L4</td>
+<td>LOW</td>
+<td>Mock do Sidebar em videos-layout.test.tsx não capturava enabledSocialNetworks</td>
+<td>Mock atualizado para expor prop via data attribute</td>
+</tr>
+</tbody></table>
+<p><strong>Reviewer #2:</strong> Claude Opus 4.6 (Adversarial Code Review)
+<strong>Date:</strong> 2026-02-24
+<strong>Issues Found:</strong> 0 High (H1 já corrigido), 1 Medium, 1 Low — ALL FIXED
+<strong>Note:</strong> H1 (enabledSocialNetworks não passado para SocialLayout) já estava corrigido no código quando a fix foi aplicada.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Sev</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M2</td>
+<td>MEDIUM</td>
+<td>Mock de SocialLayout em videos-layout.test.tsx não capturava enabledSocialNetworks; sem teste verificando passagem da prop</td>
+<td>Mock atualizado para capturar prop via data-networks; adicionado teste &quot;passa enabledSocialNetworks para SocialLayout&quot;</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>LOW</td>
+<td>Empty catch silencioso em social-layout.tsx fetch <code>/api/social-networks</code></td>
+<td>Comentário descritivo adicionado explicando consequência da falha</td>
+</tr>
+</tbody></table>
+<h3>File List</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Ação</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/layout/sidebar.tsx</code></td>
+<td>Modificado</td>
+<td>Adicionado socialMedia a PodcastFeatures, enabledSocialNetworks a SidebarProps, Share2 icon, isSocialView, item &quot;Redes Sociais&quot; com condição dupla</td>
+</tr>
+<tr>
+<td><code>src/components/layout/sidebar.test.tsx</code></td>
+<td>Modificado</td>
+<td>+6 testes para visibilidade, destaque e href do item social</td>
+</tr>
+<tr>
+<td><code>src/app/videos/videos-layout.tsx</code></td>
+<td>Modificado</td>
+<td>Adicionado enabledSocialNetworks state, socialMedia ao tipo features, case view=social com redirect, enabledSocialNetworks prop em todos os Sidebar renders</td>
+</tr>
+<tr>
+<td><code>src/app/videos/videos-layout.test.tsx</code></td>
+<td>Modificado</td>
+<td>+2 testes (renderiza SocialLayout, redirect quando desabilitado), mock do SocialLayout</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-layout.tsx</code></td>
+<td>Novo</td>
+<td>Layout split: VideoListPanel sidebar (380px, sem sync) + área de trabalho (empty state / placeholder)</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-layout.test.tsx</code></td>
+<td>Novo</td>
+<td>4 testes: empty state, sem sync, placeholder com vídeo, navegação</td>
+</tr>
+<tr>
+<td><code>src/components/videos/video-list-panel.tsx</code></td>
+<td>Modificado</td>
+<td>Sync button condicional via {onSync &amp;&amp; (...)}, empty state com showSyncHint prop</td>
+</tr>
+<tr>
+<td><code>src/components/videos/video-list-panel.test.tsx</code></td>
+<td>Modificado</td>
+<td>+1 teste (oculta sync sem onSync), 2 testes existentes atualizados para passar onSync</td>
+</tr>
+</tbody></table>
+
+  </main>
+</body>
+</html>

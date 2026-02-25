@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14.7 Processamento LLM Sequencial — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Story 14.7: Processamento LLM Sequencial para Posts Sociais</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>sistema</strong>,
+I want processar posts sociais via LLM usando a persona <code>socialmedia</code>,
+so that cada rede social receba um post otimizado para sua plataforma.</p>
+<h2>Prerequisites</h2>
+<p><strong>BLOQUEANTES — Devem estar implementadas ANTES de iniciar esta story:</strong></p>
+<ul>
+<li><strong>Story 14.1</strong> — Persona <code>socialmedia</code> (Gerente de Mídia) no <code>PersonasSchema</code></li>
+<li><strong>Story 14.5</strong> — <code>prompts[videoType].social[networkId]</code> nos schemas de prompts</li>
+<li><strong>Story 14.6</strong> — <code>SocialPostSchema</code>, <code>SocialPostUpdateSchema</code>, <code>getSocialPosts()</code>, <code>upsertSocialPost()</code>, API endpoints GET/PUT</li>
+</ul>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>Endpoint POST <code>/api/videos/[videoId]/social-posts/[networkId]/generate</code></strong> — Recebe <code>{ additionalContext?: string }</code> no body (max 500 chars). Auth obrigatória (401 se sem sessão). Retorna <code>{ data: { networkId, cta, body, hashtags, processedBy: &#39;llm&#39; } }</code> após geração e persistência.</p>
+</li>
+<li><p><strong>Prompt building</strong> — Constrói system prompt seguindo template:</p>
+<pre><code>Seu papel: {persona.socialmedia.role}
+Seu objetivo: {persona.socialmedia.objective}
+Seu contexto: {persona.socialmedia.resume}
+
+## TAREFA
+{prompts[videoType].social[networkId].description}
+
+## Formato
+{prompts[videoType].social[networkId].expectedOutput}
+
+[JSON schema fixo: { cta, body, hashtags }]
+</code></pre>
+<p>Usa <code>callGenAI</code> diretamente (NÃO <code>callLLM</code>/<code>callLLMQueued</code> que são específicos de <code>WizardPhase</code>).</p>
+</li>
+<li><p><strong>Contexto do vídeo no user prompt</strong> — Inclui título, duração formatada, descrição, tipo e tema. Para cut/reel, busca vídeo pai via <code>getVideoAdmin(PODCAST_ID, parentEpisodeId)</code> e inclui bloco extra com dados do pai. <strong>Transcrição condicional por tipo de vídeo:</strong> para <strong>cut e reel</strong>, a transcrição (<code>transcriptionTXT</code>) é anexada como arquivo via <code>createTranscriptionFile()</code> (vídeos curtos — custo-benefício positivo). Para <strong>episodes</strong>, NÃO anexar transcrição (custo de tokens não justifica o benefício para geração de post social).</p>
+</li>
+<li><p><strong>additionalContext</strong> — Se fornecido no body do POST, adiciona ao final do system prompt: <code>&quot;Dê uma atenção especial a essa instrução: {additionalContext}&quot;</code>. O valor é persistido no documento para referência.</p>
+</li>
+<li><p><strong>Processamento sequencial</strong> — Usa <code>llmQueue.enqueue()</code> para garantir processamento sequencial. Compartilha fila com o Wizard (singleton).</p>
+</li>
+<li><p><strong>Parse do retorno LLM</strong> — Resposta parseada como JSON: <code>{ cta: string, body: string, hashtags: string[] }</code>. Validada com <code>SocialPostUpdateSchema.parse()</code> (reusa schema da Story 14.6). Se parse falhar, <code>callGenAI</code> faz retry automático (até 3x).</p>
+</li>
+<li><p><strong>Persistência com <code>processedBy: &#39;llm&#39;</code></strong> — Nova função <code>saveSocialPostFromLLM()</code> em <code>social-admin.ts</code> persiste o post com <code>processedBy: &#39;llm&#39;</code>, <code>generatedAt: serverTimestamp()</code>, <code>updatedAt: serverTimestamp()</code>, e <code>additionalContext</code> opcional.</p>
+</li>
+<li><p><strong>Graceful degradation para persona ausente</strong> — Se <code>podcast.personas.socialmedia</code> é <code>undefined</code>, usa strings vazias para role/objective/resume. Log WARN indicando fallback.</p>
+</li>
+<li><p><strong>Erro: prompt não configurado</strong> — Se <code>prompts[videoType].social[networkId]</code> não existe ou <code>description</code> está vazio, retorna 400 <code>{ error: { code: &#39;MISSING_PROMPT&#39;, message: &#39;Prompt não configurado para {networkId}&#39; } }</code>. NÃO faz chamada ao LLM.</p>
+</li>
+<li><p><strong>Erro: pré-requisitos do vídeo</strong> — Se o vídeo não possui <code>title</code>, <code>theme</code> ou <code>description</code> (otimizados), retorna 400 <code>{ error: { code: &#39;MISSING_PREREQUISITES&#39;, message: &#39;...&#39; } }</code>. NÃO faz chamada ao LLM.</p>
+</li>
+<li><p><strong>Erro LLM</strong> — Erros do <code>callGenAI</code> (rate limit, timeout, parse error) são capturados e retornados como <code>{ error: { code, message } }</code>. Rate limit → 429. Parse/timeout → 500. Post incompleto NÃO é persistido.</p>
+</li>
+<li><p><strong>Testes</strong> — Testes para <code>social-prompts.ts</code> (prompt building), <code>saveSocialPostFromLLM</code> em <code>social-admin.test.ts</code>, e testes da route <code>generate/route.test.ts</code>.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar módulo de prompt building (AC: #2, #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>src/lib/llm/social-prompts.ts</code> com:<ul>
+<li><code>SOCIAL_POST_JSON_SCHEMA</code> — constante com schema JSON fixo do retorno esperado</li>
+<li><code>buildSocialSystemPrompt(persona, promptConfig, additionalContext?)</code> — constrói system prompt</li>
+<li><code>buildSocialUserPrompt(video, parentVideo?)</code> — constrói user prompt com dados do vídeo</li>
+<li><code>shouldAttachTranscription(video)</code> — retorna <code>true</code> para cut/reel com <code>transcriptionTXT</code>, <code>false</code> para episode ou sem transcrição</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Imports necessários:<ul>
+<li><code>formatDuration</code> de <code>@/lib/llm/interpolation</code></li>
+<li>Types: <code>Persona</code> e <code>PromptField</code> de <code>@/types/podcast</code>, <code>Video</code> de <code>@/types/video</code> (via <code>import type</code>)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar helper de collection e <code>saveSocialPostFromLLM</code> no admin (AC: #7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Em <code>src/lib/firebase/social-admin.ts</code>, extrair helper de path compartilhado:<pre><code class="language-typescript">function getSocialPostsCollection(videoId: string) {
+  const db = getAdminDb()
+  return db.collection(&#39;podcasts&#39;).doc(PODCAST_ID)
+    .collection(&#39;videos&#39;).doc(videoId)
+    .collection(&#39;socialPosts&#39;)
+}
+</code></pre>
+Refatorar <code>getSocialPosts()</code> e <code>upsertSocialPost()</code> (da Story 14.6) para usar este helper. Seguindo padrão de <code>getGuestsCollection(podcastId)</code> existente na codebase.</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Adicionar <code>saveSocialPostFromLLM</code>:<pre><code class="language-typescript">export async function saveSocialPostFromLLM(
+  videoId: string,
+  networkId: string,
+  data: { cta: string; body: string; hashtags: string[] },
+  additionalContext?: string
+): Promise&lt;void&gt;
+</code></pre>
+<ul>
+<li>Usa <code>getSocialPostsCollection(videoId).doc(networkId)</code> para construir path</li>
+<li>Seta <code>processedBy: &#39;llm&#39;</code>, <code>generatedAt: FieldValue.serverTimestamp()</code>, <code>updatedAt: FieldValue.serverTimestamp()</code></li>
+<li>Se <code>additionalContext</code> definido, inclui no documento; se <code>undefined</code>, NÃO incluir a chave</li>
+<li>Usa <code>set({ merge: true })</code> (mesmo padrão de <code>upsertSocialPost</code>)</li>
+<li>Log INFO com videoId, networkId</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar endpoint POST generate (AC: #1, #4, #5, #6, #8, #9, #10, #11)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.0 Imports necessários no route handler:<ul>
+<li><code>NextRequest, NextResponse</code> de <code>next/server</code></li>
+<li><code>z</code> de <code>zod</code></li>
+<li><code>auth</code> de <code>@/lib/auth</code></li>
+<li><code>getVideoAdmin</code> de <code>@/lib/firebase/videos-admin</code></li>
+<li><code>getPodcastAdmin</code> de <code>@/lib/firebase/podcasts-admin</code> — retorna <code>Podcast | null</code>, usar <code>podcast ?? undefined</code> ou null check</li>
+<li><code>saveSocialPostFromLLM</code> de <code>@/lib/firebase/social-admin</code></li>
+<li><code>callGenAI</code>, <code>createTranscriptionFile</code>, <code>cleanupTranscriptionFile</code> de <code>@/lib/llm/client</code></li>
+<li><code>llmQueue</code> de <code>@/lib/llm/queue</code></li>
+<li><code>LLMError</code> de <code>@/lib/llm/errors</code></li>
+<li><code>SocialPostUpdateSchema</code> de <code>@/lib/schemas</code></li>
+<li><code>PODCAST_ID</code> de <code>@/lib/firebase/config</code></li>
+<li><code>authExpiredResponse</code>, <code>notFoundResponse</code>, <code>createErrorResponse</code> de <code>@/lib/api/video-field-handler</code></li>
+<li><code>log</code> de <code>@/lib/logger</code></li>
+<li><code>buildSocialSystemPrompt</code>, <code>buildSocialUserPrompt</code>, <code>shouldAttachTranscription</code> de <code>@/lib/llm/social-prompts</code></li>
+<li>Types: <code>import type { Podcast } from &#39;@/types/podcast&#39;</code></li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.ts</code>:<ul>
+<li><code>export const runtime = &#39;nodejs&#39;</code></li>
+<li>Auth check com <code>auth()</code> + <code>authExpiredResponse()</code></li>
+<li>Schema de request body: <code>z.object({ additionalContext: z.string().max(500).optional() })</code></li>
+<li>Fetch video + podcast em paralelo (<code>Promise.all</code>)</li>
+<li>Validar pré-requisitos do vídeo (title, theme, description)</li>
+<li>Validar que prompt existe para networkId + videoType</li>
+<li>Fetch parent video se cut/reel com parentEpisodeId</li>
+<li>Build system + user prompts via funções da Task 1</li>
+<li>Para cut/reel com transcrição: criar arquivo temp via <code>createTranscriptionFile(video.transcriptionTXT!, 0)</code> (phase=0 convenção para social), passar como <code>attachmentPath</code>. Cleanup no <code>finally</code>.</li>
+<li>Para episode: <code>attachmentPath</code> é <code>undefined</code> (sem transcrição)</li>
+<li>Chamar <code>llmQueue.enqueue(() =&gt; callGenAI&lt;...&gt;(systemPrompt, userPrompt, 60000, attachmentPath))</code></li>
+<li>Validar resposta com <code>SocialPostUpdateSchema.parse(data)</code></li>
+<li>Persistir via <code>saveSocialPostFromLLM()</code></li>
+<li>Retornar <code>{ data: { networkId, cta, body, hashtags, processedBy: &#39;llm&#39; } }</code></li>
+<li>Error handling: LLMError (rate limit → 429, outros → 500), ZodError (→ 500 INVALID_RESPONSE), genérico (→ 500)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Criar testes (AC: #12)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/lib/llm/social-prompts.test.ts</code>:<ul>
+<li><code>buildSocialSystemPrompt</code> com persona completa</li>
+<li><code>buildSocialSystemPrompt</code> com persona undefined (fallback vazio)</li>
+<li><code>buildSocialSystemPrompt</code> com additionalContext</li>
+<li><code>buildSocialUserPrompt</code> para episode (sem parent, sem menção a transcrição)</li>
+<li><code>buildSocialUserPrompt</code> para cut com parent video</li>
+<li><code>buildSocialUserPrompt</code> para reel sem parentEpisodeId (apenas dados do vídeo)</li>
+<li>Verificar que JSON schema fixo está presente no system prompt</li>
+<li><code>shouldAttachTranscription</code> retorna false para episode, true para cut/reel com transcriptionTXT</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Em <code>src/lib/firebase/social-admin.test.ts</code>, adicionar testes de <code>saveSocialPostFromLLM</code>:<ul>
+<li>Persiste com processedBy: &#39;llm&#39; e generatedAt</li>
+<li>Persiste additionalContext quando fornecido</li>
+<li>NÃO persiste additionalContext quando undefined</li>
+<li>Usa set({ merge: true })</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Criar <code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.test.ts</code>:<ul>
+<li>Mocks necessários:<pre><code class="language-typescript">vi.mock(&#39;@/lib/auth&#39;, () =&gt; ({ auth: vi.fn() }))
+vi.mock(&#39;@/lib/firebase/podcasts-admin&#39;, () =&gt; ({ getPodcastAdmin: vi.fn() }))
+vi.mock(&#39;@/lib/firebase/videos-admin&#39;, () =&gt; ({ getVideoAdmin: vi.fn() }))
+vi.mock(&#39;@/lib/firebase/social-admin&#39;, () =&gt; ({ saveSocialPostFromLLM: vi.fn() }))
+vi.mock(&#39;@/lib/llm/client&#39;, () =&gt; ({ callGenAI: vi.fn(), createTranscriptionFile: vi.fn(), cleanupTranscriptionFile: vi.fn() }))
+vi.mock(&#39;@/lib/llm/queue&#39;, () =&gt; ({ llmQueue: { enqueue: vi.fn((fn) =&gt; fn()) } }))
+</code></pre>
+</li>
+<li>401 sem sessão</li>
+<li>400 missing prerequisites (video sem title/theme/description)</li>
+<li>400 missing prompt (prompt não configurado para networkId)</li>
+<li>200 geração bem-sucedida para episode (sem transcription attachment)</li>
+<li>200 geração bem-sucedida para cut (com transcription attachment)</li>
+<li>200 com additionalContext (verifica que chega no prompt)</li>
+<li>429 rate limit do LLM</li>
+<li>500 parse error do LLM</li>
+<li>500 erro genérico</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Validar integração</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 <code>npx vitest run</code> — 1878 testes passando (99 arquivos), 0 falhas</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Verificar que para episodes, <code>callGenAI</code> é chamado com <code>undefined</code> para attachmentPath</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Verificar que para cut/reel, <code>callGenAI</code> é chamado com path do arquivo de transcrição</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura e Padrões</h3>
+<ul>
+<li><p><strong><code>callGenAI</code> direto, NÃO <code>callLLM</code>/<code>callLLMQueued</code></strong>: As funções <code>callLLM</code> e <code>callLLMQueued</code> são tipadas com <code>WizardPhase</code> (1-7) e usam <code>PHASE_CONFIG</code>, <code>buildPhasePrompt</code>, <code>validateVideoForPhase</code>, e transcription handling. Para social posts, nenhuma dessas é aplicável. Usar <code>callGenAI&lt;T&gt;()</code> diretamente com <code>llmQueue.enqueue()</code> para processamento sequencial.</p>
+</li>
+<li><p><strong>Transcrição condicional por tipo de vídeo</strong>: Para <strong>cut e reel</strong> (vídeos curtos, transcrições pequenas), a transcrição <code>transcriptionTXT</code> é anexada como arquivo via <code>createTranscriptionFile(content, 0)</code> / <code>cleanupTranscriptionFile(path)</code> — <code>phase=0</code> é a convenção para processamento social (o parâmetro é <code>number</code>, usado no filename do temp). O custo de tokens é baixo e o contexto enriquece o post. Para <strong>episodes</strong> (transcrições longas de 30-60 min), NÃO anexar transcrição — o custo de tokens não justifica o benefício para geração de post social; os metadados (título, descrição, tema) são suficientes. Usar helper <code>shouldAttachTranscription(video): boolean</code> em <code>social-prompts.ts</code> para encapsular a decisão: <code>return video.videoType !== &#39;episode&#39; &amp;&amp; !!video.transcriptionTXT</code>.</p>
+</li>
+<li><p><strong><code>llmQueue</code> é singleton compartilhado</strong>: A fila <code>llmQueue</code> exportada de <code>@/lib/llm/queue</code> é a mesma usada pelo Wizard. Isso garante que processamento social e processamento de fases do Wizard nunca executam em paralelo (evita rate limit do Gemini).</p>
+</li>
+<li><p><strong><code>callGenAI</code> já faz retry de PARSE_ERROR</strong>: O <code>callGenAI</code> internamente faz até 3 retries em caso de <code>PARSE_ERROR</code> (com 1s de delay). Não é necessário adicionar retry no route handler — se o LLM não retornar JSON válido após 3 tentativas, <code>callGenAI</code> lança <code>LLMError</code> com code <code>PARSE_ERROR</code>.</p>
+</li>
+<li><p><strong><code>responseMimeType: &#39;application/json&#39;</code></strong>: O <code>callGenAI</code> já configura Gemini com <code>responseMimeType: &#39;application/json&#39;</code>, o que melhora significativamente a taxa de parse. O <code>SOCIAL_POST_JSON_SCHEMA</code> reforça o formato no prompt.</p>
+</li>
+<li><p><strong><code>SocialPostUpdateSchema</code> reutilizado para validação de LLM</strong>: O schema <code>{ cta, body, hashtags }</code> do 14.6 é idêntico ao formato de retorno do LLM. Usar <code>.parse()</code> para validar antes de persistir.</p>
+</li>
+<li><p><strong><code>saveSocialPostFromLLM</code> separada de <code>upsertSocialPost</code></strong>: A função <code>upsertSocialPost</code> (14.6) hardcoda <code>processedBy: &#39;manual&#39;</code>. Para LLM, criamos função separada que seta <code>processedBy: &#39;llm&#39;</code> e <code>generatedAt</code>. Manter separado evita alterar código já testado da 14.6.</p>
+</li>
+<li><p><strong>Helper <code>getSocialPostsCollection(videoId)</code> compartilhado</strong>: Extrair helper privado que constrói o path <code>podcasts/${PODCAST_ID}/videos/${videoId}/socialPosts</code> e refatorar <code>getSocialPosts</code>, <code>upsertSocialPost</code> e <code>saveSocialPostFromLLM</code> para usá-lo. Evita duplicação de path (seguindo padrão de <code>getGuestsCollection</code> existente).</p>
+</li>
+<li><p><strong>Timeout de 60s (não 120s)</strong>: Prompts sociais recebem ~500-2000 tokens de contexto (vs transcrições de 50K+ do Wizard). Timeout de 60000ms é suficiente e protege melhor contra bloquear a fila por tempo excessivo.</p>
+</li>
+<li><p><strong>Body do request totalmente opcional</strong>: O POST aceita body <code>{ additionalContext?: string }</code> mas também aceita body vazio ou ausente. O pattern <code>request.json().catch(() =&gt; ({}))</code> é usado intencionalmente — diferente de endpoints que exigem body (ex: PUT que valida campos obrigatórios). O <code>additionalContext</code> é para reprocessamento (Story 14.10) e na primeira geração normalmente não é enviado.</p>
+</li>
+<li><p><strong><code>getPodcastAdmin</code> retorna <code>Podcast | null</code></strong>: Se o podcast não existir, retorna <code>null</code>. O route handler deve tratar: <code>if (!podcast) return notFoundResponse(&#39;Podcast&#39;)</code>. Para uso no prompt building, passar <code>podcast.personas?.socialmedia</code> (optional chaining) já que <code>socialmedia</code> é <code>.optional()</code> no schema (Story 14.1).</p>
+</li>
+<li><p><strong>Prompt building puro (sem I/O)</strong>: <code>buildSocialSystemPrompt</code> e <code>buildSocialUserPrompt</code> são funções puras (sem fetch/Firestore). O route handler é responsável por buscar dados e passar como parâmetros. Isso facilita testes unitários.</p>
+</li>
+<li><p><strong>Parent video para cut/reel</strong>: O route handler verifica <code>video.parentEpisodeId</code> para cut/reel e busca o vídeo pai. O pai é passado como parâmetro opcional para <code>buildSocialUserPrompt</code>. Se o pai não for encontrado (edge case: vídeo deletado), o user prompt inclui apenas dados do vídeo atual (graceful degradation).</p>
+</li>
+<li><p><strong>Error codes novos</strong>: <code>MISSING_PROMPT</code> e <code>MISSING_PREREQUISITES</code> são codes de API (não de LLM). Retornados como 400 pelo route handler via <code>createErrorResponse()</code>.</p>
+</li>
+</ul>
+<h3>Arquivos a Criar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/llm/social-prompts.ts</code></td>
+<td>Novo</td>
+<td><code>buildSocialSystemPrompt()</code>, <code>buildSocialUserPrompt()</code>, <code>shouldAttachTranscription()</code>, <code>SOCIAL_POST_JSON_SCHEMA</code></td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.ts</code></td>
+<td>Novo</td>
+<td>POST endpoint para geração LLM</td>
+</tr>
+<tr>
+<td><code>src/lib/llm/social-prompts.test.ts</code></td>
+<td>Novo</td>
+<td>Testes de prompt building</td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.test.ts</code></td>
+<td>Novo</td>
+<td>Testes do endpoint</td>
+</tr>
+</tbody></table>
+<h3>Arquivos a Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Modificação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/firebase/social-admin.ts</code></td>
+<td>Adicionar <code>saveSocialPostFromLLM()</code></td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.test.ts</code></td>
+<td>Adicionar testes de <code>saveSocialPostFromLLM()</code></td>
+</tr>
+</tbody></table>
+<h3>Arquivos NÃO Modificar</h3>
+<ul>
+<li><code>src/lib/llm/client.ts</code> — usar <code>callGenAI</code>, <code>createTranscriptionFile</code>, <code>cleanupTranscriptionFile</code> como estão</li>
+<li><code>src/lib/llm/queue.ts</code> — usar <code>llmQueue</code> como está (singleton compartilhado)</li>
+<li><code>src/lib/llm/prompts.ts</code> — <code>PHASE_CONFIG</code> e <code>buildPhasePrompt</code> são específicos do Wizard, NÃO reutilizar</li>
+<li><code>src/lib/llm/interpolation.ts</code> — importar apenas <code>formatDuration</code> (NÃO <code>extractVariables</code> ou <code>interpolatePrompt</code> que são Wizard-specific)</li>
+<li><code>src/lib/llm/parse-json.ts</code> — <code>callGenAI</code> já usa internamente, não precisa importar no route handler</li>
+<li><code>src/lib/schemas/social.ts</code> — schemas já prontos da Story 14.6</li>
+<li><code>src/lib/schemas/podcast.ts</code> — prompts sociais já no schema da Story 14.5</li>
+</ul>
+<h3>Código Existente de Referência</h3>
+<p><strong><code>callGenAI</code> signature</strong> (<code>client.ts</code>):</p>
+<pre><code class="language-typescript">export async function callGenAI&lt;T&gt;(
+  systemPrompt: string,
+  userPrompt: string,
+  _timeout: number,
+  attachmentPath: string | undefined
+): Promise&lt;{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }&gt;
+</code></pre>
+<p><strong><code>llmQueue.enqueue</code> usage</strong> (<code>queue.ts</code>):</p>
+<pre><code class="language-typescript">import { llmQueue } from &#39;@/lib/llm/queue&#39;
+
+// Para episode (sem transcrição):
+const { data, usage } = await llmQueue.enqueue(() =&gt;
+  callGenAI&lt;ResponseType&gt;(systemPrompt, userPrompt, 60000, undefined)
+)
+
+// Para cut/reel (com transcrição):
+const filePath = await createTranscriptionFile(video.transcriptionTXT!, 0)
+try {
+  const { data, usage } = await llmQueue.enqueue(() =&gt;
+    callGenAI&lt;ResponseType&gt;(systemPrompt, userPrompt, 60000, filePath)
+  )
+} finally {
+  await cleanupTranscriptionFile(filePath)
+}
+</code></pre>
+<p><strong>Route Context com nested params</strong> (padrão do Next.js 15):</p>
+<pre><code class="language-typescript">interface RouteContext {
+  params: Promise&lt;{ videoId: string; networkId: string }&gt;
+}
+
+export async function POST(request: NextRequest, context: RouteContext) {
+  const { videoId, networkId } = await context.params
+  // ...
+}
+</code></pre>
+<p><strong>Error response utilities</strong> (<code>video-field-handler.ts</code>):</p>
+<pre><code class="language-typescript">import { authExpiredResponse, notFoundResponse, createErrorResponse } from &#39;@/lib/api/video-field-handler&#39;
+
+authExpiredResponse()                         // → 401 AUTH_EXPIRED
+notFoundResponse(&#39;Video&#39;)                     // → 404 NOT_FOUND
+createErrorResponse(&#39;CODE&#39;, &#39;message&#39;, 400)   // → custom status
+</code></pre>
+<p><strong><code>getPodcastAdmin</code> usage</strong> (<code>podcasts-admin.ts</code>):</p>
+<pre><code class="language-typescript">import { getPodcastAdmin } from &#39;@/lib/firebase/podcasts-admin&#39;
+const podcast = await getPodcastAdmin(PODCAST_ID)
+</code></pre>
+<p><strong><code>getVideoAdmin</code> usage</strong> (<code>videos-admin.ts</code>):</p>
+<pre><code class="language-typescript">import { getVideoAdmin } from &#39;@/lib/firebase/videos-admin&#39;
+const video = await getVideoAdmin(PODCAST_ID, videoId)
+</code></pre>
+<p><strong><code>LLMError</code> handling</strong> (<code>errors.ts</code>):</p>
+<pre><code class="language-typescript">import { LLMError } from &#39;@/lib/llm/errors&#39;
+
+if (error instanceof LLMError) {
+  const status = error.code === &#39;RATE_LIMIT&#39; ? 429 : 500
+  return createErrorResponse(error.code, error.message, status)
+}
+</code></pre>
+<p><strong>Template do prompt social</strong> (de <code>epic-14-redes-sociais.md</code>):</p>
+<pre><code>Seu papel: {persona.socialmedia.role}
+Seu objetivo: {persona.socialmedia.objective}
+Seu contexto: {persona.socialmedia.resume}
+
+## TAREFA
+{prompts[videoType].social[networkId].description}
+
+## Formato
+{prompts[videoType].social[networkId].expectedOutput}
+</code></pre>
+<p><strong>Template de user prompt — Episode</strong> (de <code>epic-14-redes-sociais.md</code>):</p>
+<pre><code>**Título original:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Descrição:** {video.description}
+**Tipo:** {video.videoType}
+**Tema:** {video.theme}
+</code></pre>
+<p><strong>Template de user prompt — Cut/Reel</strong> (de <code>epic-14-redes-sociais.md</code>):</p>
+<pre><code>**Título original:** {video.title}
+**Duração:** {formatDuration(video.duration)}
+**Descrição:** {video.description}
+**Tipo:** {video.videoType}
+**Tema:** {video.theme}
+
+## Esse vídeo é derivado (corte) do vídeo original:
+
+**Título original:** {parent.title}
+**Duração:** {formatDuration(parent.duration)}
+**Descrição:** {parent.description}
+**Tipo:** {parent.videoType}
+**Tema:** {parent.theme}
+</code></pre>
+<p><strong>JSON Schema fixo do retorno LLM</strong> (constante em <code>social-prompts.ts</code>):</p>
+<pre><code>Retorne sua resposta exclusivamente como JSON no seguinte formato:
+
+{
+  &quot;cta&quot;: &quot;Call to Action curto e impactante para a rede social&quot;,
+  &quot;body&quot;: &quot;Corpo do post, otimizado para a plataforma&quot;,
+  &quot;hashtags&quot;: [&quot;hashtag1&quot;, &quot;hashtag2&quot;, &quot;hashtag3&quot;]
+}
+</code></pre>
+<p><strong>Padrão mock em testes</strong> (adaptar de <code>wizard/phase/route.test.ts</code>):</p>
+<pre><code class="language-typescript">vi.mock(&#39;@/lib/llm/client&#39;, () =&gt; ({
+  callGenAI: vi.fn(),
+  createTranscriptionFile: vi.fn().mockResolvedValue(&#39;/tmp/mock-transcription.txt&#39;),
+  cleanupTranscriptionFile: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock(&#39;@/lib/llm/queue&#39;, () =&gt; ({
+  llmQueue: {
+    enqueue: vi.fn((fn: () =&gt; Promise&lt;unknown&gt;) =&gt; fn()),
+  },
+}))
+
+vi.mock(&#39;@/lib/firebase/podcasts-admin&#39;, () =&gt; ({ getPodcastAdmin: vi.fn() }))
+vi.mock(&#39;@/lib/firebase/videos-admin&#39;, () =&gt; ({ getVideoAdmin: vi.fn() }))
+vi.mock(&#39;@/lib/firebase/social-admin&#39;, () =&gt; ({ saveSocialPostFromLLM: vi.fn() }))
+</code></pre>
+<h3>Backward Compatibility</h3>
+<p>Esta story cria artefatos novos (endpoint de geração, módulo de prompts, função admin). Não modifica nenhum endpoint ou comportamento existente. O Wizard continua funcionando normalmente — <code>callGenAI</code> e <code>llmQueue</code> são reutilizados sem alteração.</p>
+<h3>Learnings das Stories Anteriores</h3>
+<ul>
+<li>Story 14.1: <code>.optional()</code> requer fallback <code>?? DEFAULT</code> → aqui: <code>persona?.role || &#39;&#39;</code> para graceful degradation</li>
+<li>Story 14.2: <code>safeParse</code> com <code>{ ...doc.data(), networkId: doc.id }</code> para injetar doc ID</li>
+<li>Story 14.5: Convention <code>social.{networkId}</code> para paths nested no prompt config</li>
+<li>Story 14.6: <code>context.params</code> é <code>Promise</code> no Next.js 15 → sempre <code>await context.params</code></li>
+<li>Story 14.6: <code>set({ merge: true })</code> para upsert (doc pode não existir ainda)</li>
+<li>Story 14.6: <code>authExpiredResponse()</code> e <code>createErrorResponse()</code> de <code>@/lib/api/video-field-handler</code></li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<table>
+<thead>
+<tr>
+<th>Regra</th>
+<th>Aplicação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#2 Zod before persist</td>
+<td>Validar retorno do LLM com <code>SocialPostUpdateSchema.parse()</code> antes de persistir</td>
+</tr>
+<tr>
+<td>#3 Runtime nodejs</td>
+<td><code>export const runtime = &#39;nodejs&#39;</code> no route handler</td>
+</tr>
+<tr>
+<td>#4 Field-level updates</td>
+<td><code>saveSocialPostFromLLM</code> usa <code>set({ merge: true })</code></td>
+</tr>
+<tr>
+<td>#8 PodcastId</td>
+<td><code>PODCAST_ID</code> em todos os paths de subcollection</td>
+</tr>
+<tr>
+<td>#9 Structured logging</td>
+<td><code>log()</code> de <code>@/lib/logger</code>, nunca <code>console.log</code></td>
+</tr>
+<tr>
+<td>#11 Import type</td>
+<td>Usar <code>import type</code> para Persona, PromptField, Video, Podcast</td>
+</tr>
+<tr>
+<td>#12 Timestamp Admin</td>
+<td><code>FieldValue.serverTimestamp()</code> no Admin SDK</td>
+</tr>
+</tbody></table>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-14-redes-sociais.md#Story 14.7]</li>
+<li>[Source: epic-14-redes-sociais.md#Template de Prompt LLM]</li>
+<li>[Source: epic-14-redes-sociais.md#Dados Complementares por Tipo de Vídeo]</li>
+<li>[Source: epic-14-redes-sociais.md#Schema do Retorno Esperado do LLM]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #2 (Zod before persist)]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #8 (PodcastId)]</li>
+<li>[Source: client.ts — callGenAI signature]</li>
+<li>[Source: queue.ts — llmQueue singleton]</li>
+<li>[Source: video-field-handler.ts — error response utilities]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Test run: 1888 tests passing (99 test files), +43 new tests (17 social-prompts + 6 social-admin + 20 route)</li>
+<li>Baseline: 1845 tests (pre-story 14.7)</li>
+<li>Post-review #1: +5 tests from first code review fixes (1883)</li>
+<li>Post-review #2: +5 tests from second code review fixes (1888)</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>All 5 tasks completed; all 12 acceptance criteria met</li>
+<li><code>social-prompts.ts</code> — pure functions for prompt building, <code>shouldAttachTranscription</code> encapsulates cut/reel logic</li>
+<li><code>saveSocialPostFromLLM</code> — separate from <code>upsertSocialPost</code> to maintain <code>processedBy: &#39;llm&#39;</code> semantics</li>
+<li><code>getSocialPostsCollection</code> — private helper refactored into existing <code>getSocialPosts</code> and <code>upsertSocialPost</code></li>
+<li>Route handler uses <code>llmQueue.enqueue(() =&gt; callGenAI(...))</code> for sequential processing</li>
+<li>Conditional transcription: <code>createTranscriptionFile(content, 0)</code> for cut/reel, <code>undefined</code> for episodes</li>
+<li><code>request.json().catch(() =&gt; ({}))</code> pattern for optional body</li>
+<li><code>getPodcastAdmin</code> null check returns 404 (defensive)</li>
+<li>Test mocks follow existing factory wrapper pattern from social-posts tests</li>
+</ul>
+<h3>Change Log</h3>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Created <code>src/lib/llm/social-prompts.ts</code></td>
+<td>Prompt building module with SOCIAL_POST_JSON_SCHEMA, buildSocialSystemPrompt, buildSocialUserPrompt, shouldAttachTranscription (AC #2, #3)</td>
+</tr>
+<tr>
+<td>Modified <code>src/lib/firebase/social-admin.ts</code></td>
+<td>Added getSocialPostsCollection helper, refactored existing functions, added saveSocialPostFromLLM (AC #7)</td>
+</tr>
+<tr>
+<td>Created <code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.ts</code></td>
+<td>POST endpoint with auth, validation, LLM queue, error handling (AC #1, #4-#11)</td>
+</tr>
+<tr>
+<td>Created <code>src/lib/llm/social-prompts.test.ts</code></td>
+<td>17 tests for prompt building and shouldAttachTranscription (AC #12)</td>
+</tr>
+<tr>
+<td>Modified <code>src/lib/firebase/social-admin.test.ts</code></td>
+<td>Added 6 tests for saveSocialPostFromLLM (AC #12)</td>
+</tr>
+<tr>
+<td>Created <code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.test.ts</code></td>
+<td>20 tests for route handler (AC #12)</td>
+</tr>
+</tbody></table>
+<h3>Senior Developer Review</h3>
+<p><strong>Reviewer</strong>: Claude Opus 4.6 (adversarial code review)
+<strong>Issues Found</strong>: 6 (1 critical, 2 high, 2 medium, 1 low) — ALL FIXED</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Severity</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>CRITICAL</td>
+<td><code>saveSocialPostFromLLM</code> missing Zod validation (Rule #2)</td>
+<td>Added <code>SocialPostUpdateSchema.parse(data)</code> + test</td>
+</tr>
+<tr>
+<td>2</td>
+<td>HIGH</td>
+<td>No test for <code>cleanupTranscriptionFile</code> on LLM error (cut/reel)</td>
+<td>Added test: cut + LLM error → cleanup still called</td>
+</tr>
+<tr>
+<td>3</td>
+<td>HIGH</td>
+<td>No route test for reel video type</td>
+<td>Added test: reel with transcription attachment</td>
+</tr>
+<tr>
+<td>4</td>
+<td>MEDIUM</td>
+<td>No route test for undefined socialmedia persona (AC 8)</td>
+<td>Added test: persona undefined → 200 + WARN log</td>
+</tr>
+<tr>
+<td>5</td>
+<td>MEDIUM</td>
+<td>No route test for parent video not found</td>
+<td>Added test: cut + null parent → 200 + no parent section</td>
+</tr>
+<tr>
+<td>6</td>
+<td>LOW</td>
+<td><code>expectedOutput</code> not validated in prompt config check</td>
+<td>Added <code>!promptConfig.expectedOutput</code> to guard</td>
+</tr>
+</tbody></table>
+<p><strong>Post-review regression</strong>: 1883 tests (99 files), 0 failures.</p>
+<h4>Second Review</h4>
+<p><strong>Reviewer</strong>: Claude Opus 4.6 (adversarial code review #2)
+<strong>Issues Found</strong>: 6 (0 critical, 0 high, 2 medium, 4 low) — ALL FIXED</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Severity</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>MEDIUM</td>
+<td>No test for ZodError from <code>SocialPostUpdateSchema.parse(data)</code> after successful LLM response</td>
+<td>Added test: callGenAI returns <code>{ hashtags: &quot;not-array&quot; }</code> → 500 INVALID_RESPONSE</td>
+</tr>
+<tr>
+<td>2</td>
+<td>MEDIUM</td>
+<td>Silent failure: invalid <code>additionalContext</code> (&gt;500 chars) silently dropped</td>
+<td>Added explicit 400 VALIDATION_ERROR when body has content but fails safeParse + test</td>
+</tr>
+<tr>
+<td>3</td>
+<td>LOW</td>
+<td>Change Log inaccurate: claimed 13/5 tests instead of actual 17/6</td>
+<td>Updated Change Log and Debug Log to reflect real counts</td>
+</tr>
+<tr>
+<td>4</td>
+<td>LOW</td>
+<td>No test for reel WITH parent video in social-prompts.test.ts</td>
+<td>Added test: reel + parent → includes parent section</td>
+</tr>
+<tr>
+<td>5</td>
+<td>LOW</td>
+<td>No test for <code>shouldAttachTranscription</code> with reel without transcriptionTXT</td>
+<td>Added test: reel + no transcription → false</td>
+</tr>
+<tr>
+<td>6</td>
+<td>LOW</td>
+<td>No test for cut/reel WITHOUT parentEpisodeId in route test</td>
+<td>Added test: cut without parentEpisodeId → 200 + single getVideoAdmin call</td>
+</tr>
+</tbody></table>
+<p><strong>Post-review #2 regression</strong>: 1888 tests (99 files), 0 failures.</p>
+<h3>File List</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/llm/social-prompts.ts</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td><code>src/lib/llm/social-prompts.test.ts</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.ts</code></td>
+<td>Modified</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.test.ts</code></td>
+<td>Modified</td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.ts</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.test.ts</code></td>
+<td>Created</td>
+</tr>
+</tbody></table>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retrospectiva Épico 14 — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Retrospective - Epic 14: Redes Sociais — Posts Otimizados para Divulgação</h1>
+<p><strong>Date:</strong> 2026-02-25
+<strong>Facilitator:</strong> Bob (Scrum Master)
+<strong>Participants:</strong> Alice (PO), Charlie (Senior Dev), Dana (QA), Elena (Junior Dev), Sally (UX), Wellington (Project Lead)
+<strong>Epic:</strong> 14 — Redes Sociais (v2.3.0-beta-iara)
+<strong>Previous Retro:</strong> Epic 11 (2026-02-07) — Epics 12 e 13 skipped (optional)</p>
+<hr>
+<h2>Epic Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stories Completed</td>
+<td>13/13 (100%)</td>
+</tr>
+<tr>
+<td>Blocos</td>
+<td>5 (Config, Backend, Frontend, Infra, UX)</td>
+</tr>
+<tr>
+<td>Testes Novos</td>
+<td>~167</td>
+</tr>
+<tr>
+<td>Suite Total</td>
+<td>1970 testes (105+ suites), 0 falhas</td>
+</tr>
+<tr>
+<td>Code Reviews</td>
+<td>13/13 adversarial (50+ issues encontrados e corrigidos)</td>
+</tr>
+<tr>
+<td>Incidentes em Produção</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Tech Debt Novo</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Arquivos Modificados/Criados</td>
+<td>80+</td>
+</tr>
+<tr>
+<td>Novos Endpoints</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Novos Componentes</td>
+<td>6+</td>
+</tr>
+<tr>
+<td>Extensões de Schema</td>
+<td>5</td>
+</tr>
+</tbody></table>
+<h3>Stories Entregues</h3>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Escopo</th>
+<th>Testes</th>
+<th>Review Issues</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>14.1 Schema Persona socialmedia</td>
+<td>Schema + UI 3 PersonaEditors</td>
+<td>6 updated</td>
+<td>3M, 2L</td>
+</tr>
+<tr>
+<td>14.2 Collection socialNetworks + Seed</td>
+<td>Global collection + seed idempotente</td>
+<td>16 new</td>
+<td>3M, 3L</td>
+</tr>
+<tr>
+<td>14.3 Feature Toggle socialMedia</td>
+<td>Toggle opt-in com default false</td>
+<td>~10 updated</td>
+<td>3M, 2L</td>
+</tr>
+<tr>
+<td>14.4 Seção Redes Sociais em Config</td>
+<td>Accordion dinâmico + API endpoint</td>
+<td>11 new</td>
+<td>3M, 2L</td>
+</tr>
+<tr>
+<td>14.5 Prompts por Rede Social</td>
+<td>Record-based social prompts por videoType</td>
+<td>3 new</td>
+<td>1H, 2M, 2L</td>
+</tr>
+<tr>
+<td>14.6 Schema socialPosts + API</td>
+<td>Subcollection CRUD + Zod validation</td>
+<td>37 new</td>
+<td>3M, 3L</td>
+</tr>
+<tr>
+<td>14.7 Processamento LLM Sequencial</td>
+<td>POST generate + persona prompts</td>
+<td>43 new</td>
+<td>1C, 2H, 2M, 1L</td>
+</tr>
+<tr>
+<td>14.8 Seção Redes Sociais no Menu</td>
+<td>Sidebar item + SocialLayout split</td>
+<td>16 new</td>
+<td>2M, 4L</td>
+</tr>
+<tr>
+<td>14.9 Layout Colunas + Processamento</td>
+<td>useSocialPosts hook + abort + retry</td>
+<td>20 new</td>
+<td>1H, 2M, 3L</td>
+</tr>
+<tr>
+<td>14.10 Edição, Reprocessamento, Clipboard</td>
+<td>Auto-save + CopyButton + hashtag parsing</td>
+<td>~15 new</td>
+<td>2H, 3M, 2L</td>
+</tr>
+<tr>
+<td>14.11 Seed Script + Onboarding</td>
+<td>Seed social fields + docs PT-BR</td>
+<td>0 (docs only)</td>
+<td>1M, 2L</td>
+</tr>
+<tr>
+<td>14.12 Ajustes UX Social View</td>
+<td>Filtros, sort, excludeTypes, visual polish</td>
+<td>~5 updated</td>
+<td>1H, 4L</td>
+</tr>
+<tr>
+<td>14.13 Variant Social VideoListPanel</td>
+<td>variant prop, sentAppearance, conditional behavior</td>
+<td>11 new</td>
+<td>2M, 3L</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Sucessos</h2>
+<ol>
+<li><strong>Velocidade excepcional</strong> — 13 stories, 100% de conclusão, alta aderência aos requisitos especificados</li>
+<li><strong>Reutilização de infraestrutura</strong> — <code>callGenAI</code> (Epic 13), <code>llmQueue</code> (Epic 4), schemas Zod, <code>useAutoSave</code>, URL state pattern — nada reinventado</li>
+<li><strong>Abstração do <code>variant</code> no VideoListPanel</strong> — decisão arquitetural acertada que estimula reuso. Bug do editorial corrigido com 1 linha</li>
+<li><strong>Code review adversarial maduro</strong> — 50+ issues encontrados e corrigidos, incluindo 3 critical e ~8 high. Processo pega bugs reais</li>
+<li><strong>Zero tech debt novo</strong> — nenhum item de tech debt criado em 13 stories</li>
+<li><strong>Zero incidentes em produção</strong></li>
+<li><strong>Progressão natural dos blocos</strong> — Config → Backend → Frontend → Infra → UX, cada story com contexto claro</li>
+</ol>
+<hr>
+<h2>Desafios</h2>
+<ol>
+<li><strong>Falta de atenção ao UX</strong> — Todas as regras de negócio cumpridas corretamente, mas ninguém pensou na experiência do produtor. Layout inicial pobre. Duas stories extras (14.12 + 14.13 = ~15% do épico) gastas exclusivamente em remediação de UX (filtros, sort sent-first, excludeTypes, variant behavior)</li>
+<li><strong>AbortController recorrente</strong> — Correções de lifecycle em 14.9 e 14.10 (leak de memória no CopyButton, tracking de abort em retry)</li>
+<li><strong>Code review cego a UX</strong> — Em 50+ issues encontrados, zero eram sobre experiência do usuário. Quality gate puramente técnico</li>
+<li><strong>Bug do variant</strong> — Vídeos &quot;sent&quot; e &quot;episode&quot; sumiram da aba Vídeos porque <code>variant=&#39;editorial&#39;</code> não era explícito. Detectado apenas em uso real no browser, escapou de todos os testes</li>
+<li><strong>Build quebrado não detectado</strong> — 3 erros de TypeScript strict (<code>null</code> vs <code>undefined</code>, cast de Record com <code>social</code>, <code>useRef</code> sem argumento) passaram no vitest mas quebraram <code>next build</code></li>
+</ol>
+<hr>
+<h2>Key Insights</h2>
+<ol>
+<li><strong>UX não pode ser afterthought</strong> — ACs estruturais (&quot;componente renderiza X&quot;) produzem código correto mas não necessariamente usável. ACs devem ser orientados ao que o produtor faz, não ao que o componente renderiza</li>
+<li><strong>Testes verdes ≠ deploy seguro</strong> — <code>vitest run</code> passava mas <code>next build</code> quebrava. Build de produção deve fazer parte da validação obrigatória</li>
+<li><strong>Abstração &gt; duplicação</strong> — Parametrizar comportamento existente (variant) é superior a criar componentes separados. Responsabilidade bem segregada (<code>VideoListPanel</code> → variant → <code>sentAppearance</code> → <code>VideoListItem</code>)</li>
+<li><strong>Lições aplicadas da retro anterior funcionam</strong> — 3/4 action items do Epic 11 cumpridos, impacto positivo real: zero fluxos quebrados, stories atualizadas, baseline verde</li>
+</ol>
+<hr>
+<h2>Follow-through da Retro do Epic 11</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Action Item</th>
+<th>Status</th>
+<th>Evidência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Validação de fluxo end-to-end antes da code review</td>
+<td>✅ Aplicado</td>
+<td>Code reviews encontraram edge cases, não fluxos inteiros quebrados</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Atualizar story file durante refinamentos</td>
+<td>✅ Aplicado</td>
+<td>Todas as 13 stories com Change Log e Completion Notes detalhados</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Corrigir testes pré-existentes quebrados</td>
+<td>✅ Resolvido</td>
+<td>Baseline verde 1953 testes no início do Epic 14</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Extrair statusColors/statusLabels para módulo</td>
+<td>❌ Não endereçado</td>
+<td>P-Low, sem impacto no Epic 14</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Technical Discoveries</h2>
+<table>
+<thead>
+<tr>
+<th>Discovery</th>
+<th>Story</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>shouldAttachTranscription</code> — transcrição condicional por videoType</td>
+<td>14.7</td>
+<td>Pattern para decisão de token cost (cut/reel sim, episode não)</td>
+</tr>
+<tr>
+<td><code>sentAppearance</code> derivado internamente do <code>variant</code></td>
+<td>14.13</td>
+<td>Segregação de responsabilidade — VideoListItem não sabe sobre variants</td>
+</tr>
+<tr>
+<td><code>z.record(z.string(), PromptFieldSchema)</code> incompatível com cast flat</td>
+<td>14.5/build</td>
+<td>Nested Record precisa de cast via <code>unknown</code></td>
+</tr>
+<tr>
+<td><code>useRef&lt;T&gt;()</code> sem argumento falha em TypeScript strict</td>
+<td>build</td>
+<td>Sempre passar <code>undefined</code> como valor inicial</td>
+</tr>
+<tr>
+<td><code>null</code> vs <code>undefined</code> em props opcionais</td>
+<td>build</td>
+<td>`useState&lt;T</td>
+</tr>
+<tr>
+<td><code>AbortController</code> cleanup precisa de ref tracking</td>
+<td>14.9, 14.10</td>
+<td>Pattern: ref para controller, cleanup no useEffect return e no retry</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Action Items</h2>
+<h3>Melhorias de Processo</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Action</th>
+<th>Owner</th>
+<th>Critério de Sucesso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Análise de fluxo UX no planejamento de cada épico — mapear jornada do produtor antes de criar stories</td>
+<td>Alice (PO) + Sally (UX)</td>
+<td>Documento de fluxo UX presente no epic doc antes da primeira story</td>
+</tr>
+<tr>
+<td>2</td>
+<td>ACs de experiência em stories com UI — orientados ao que o usuário faz, não só ao que o componente renderiza</td>
+<td>Bob (SM)</td>
+<td>Zero stories de remediação de UX no próximo épico</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Dimensão UX no code review adversarial — &quot;a interação faz sentido para o usuário final?&quot;</td>
+<td>Charlie (Dev)</td>
+<td>Checklist de review inclui pelo menos 1 item de UX</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Verificação visual no browser antes de marcar story como done</td>
+<td>Dana (QA)</td>
+<td>Task de verificação visual completada em cada story com UI</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Rodar <code>next build</code> como parte da validação de cada story</td>
+<td>Charlie (Dev)</td>
+<td>Zero erros de build no momento do release</td>
+</tr>
+</tbody></table>
+<h3>Technical Debt</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Item</th>
+<th>Prioridade</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TD-0</td>
+<td>Keyboard shortcuts (remanescente Epic 6)</td>
+<td>P2</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>TD-1</td>
+<td>extractVariables API confusa (param não usado)</td>
+<td>P3</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>TD-2</td>
+<td>Teste max-length hostName no formulário</td>
+<td>P3</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>TD-4</td>
+<td>Extrair statusColors/statusLabels para módulo (Epic 11)</td>
+<td>P3</td>
+<td>Open</td>
+</tr>
+</tbody></table>
+<h3>Team Agreements</h3>
+<ul>
+<li>Toda story que cria ou modifica UI deve ter pelo menos 1 AC focado na experiência do produtor</li>
+<li>Verificação visual no browser é obrigatória antes de marcar como done (não apenas testes automatizados)</li>
+<li>Épicos com UI nova devem começar com mapeamento de fluxo do usuário</li>
+</ul>
+<hr>
+<h2>Readiness Assessment</h2>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Testing &amp; Quality</td>
+<td>✅ 1970 testes, 0 falhas, 105+ suites</td>
+</tr>
+<tr>
+<td>TypeScript</td>
+<td>✅ Zero erros em produção (3 corrigidos pós-release)</td>
+</tr>
+<tr>
+<td>Deployment</td>
+<td>⚠️ Tag v2.3.0-beta-iara no remote, deploy Cloud Run pendente</td>
+</tr>
+<tr>
+<td>Technical Health</td>
+<td>✅ Sólida — arquitetura madura, zero tech debt novo</td>
+</tr>
+<tr>
+<td>Unresolved Blockers</td>
+<td>Nenhum</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Next Epic</h2>
+<p>Epic 15 não está definido. Lições desta retrospectiva são válidas para qualquer trabalho futuro. Quando o próximo épico for planejado, aplicar os 5 action items de processo e 3 team agreements.</p>
+
+  </main>
+</body>
+</html>

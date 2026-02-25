@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14.6 Schema socialPosts + API — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Story 14.6: Schema socialPosts, API Endpoints e Subcollection</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>sistema</strong>,
+I want persistir e recuperar posts sociais gerados pela IA no Firestore,
+so that os posts sejam armazenados por vídeo e por rede social com validação e endpoints dedicados.</p>
+<h2>Prerequisites</h2>
+<p><strong>BLOQUEANTES — Devem estar implementadas ANTES de iniciar esta story:</strong></p>
+<ul>
+<li><strong>Story 14.2</strong> — <code>SocialNetworkSchema</code> + <code>getSocialNetworks()</code> + collection global <code>socialNetworks</code></li>
+<li><strong>Story 14.4</strong> — <code>enabledSocialNetworks[]</code> no PodcastSchema</li>
+<li><strong>Story 14.5</strong> — <code>prompts[videoType].social[networkId]</code> nos schemas de prompts</li>
+</ul>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>Schema <code>SocialPostSchema</code></strong> — Em <code>src/lib/schemas/social.ts</code>, valida:</p>
+<pre><code class="language-typescript">{
+  networkId: z.string().min(1),
+  cta: z.string(),
+  body: z.string(),
+  hashtags: z.array(z.string()),
+  additionalContext: z.string().optional(),
+  generatedAt: TimestampSchema,
+  updatedAt: TimestampSchema,
+  processedBy: z.enum([&#39;llm&#39;, &#39;manual&#39;])
+}
+</code></pre>
+</li>
+<li><p><strong>Schema <code>SocialPostUpdateSchema</code></strong> — Para validação do body do PUT: <code>{ cta, body, hashtags }</code> (sem timestamps nem processedBy — gerenciados pelo servidor).</p>
+</li>
+<li><p><strong>Admin <code>getSocialPosts(videoId)</code></strong> — Em <code>social-admin.ts</code>, retorna <code>SocialPost[]</code> da subcollection <code>podcasts/{podcastId}/videos/{videoId}/socialPosts</code>. Documentos inválidos são logados como warning e ignorados (padrão <code>safeParse</code> de <code>getSocialNetworks</code>).</p>
+</li>
+<li><p><strong>Admin <code>upsertSocialPost(videoId, networkId, data)</code></strong> — Em <code>social-admin.ts</code>, faz upsert no documento <code>socialPosts/{networkId}</code> com field-level merge. Seta <code>updatedAt</code> via <code>FieldValue.serverTimestamp()</code> e <code>processedBy: &#39;manual&#39;</code>.</p>
+</li>
+<li><p><strong>GET <code>/api/videos/[videoId]/social-posts</code></strong> — Retorna <code>{ data: SocialPost[] }</code> (pode ser vazio). Auth obrigatória (401 se sem sessão). Response validada com Zod antes de retornar.</p>
+</li>
+<li><p><strong>PUT <code>/api/videos/[videoId]/social-posts/[networkId]</code></strong> — Aceita <code>{ cta, body, hashtags }</code> no body. Valida com Zod ANTES de persistir. Seta <code>processedBy: &#39;manual&#39;</code> e <code>updatedAt: serverTimestamp()</code>. Retorna <code>{ data: { networkId } }</code>. Auth obrigatória (401).</p>
+</li>
+<li><p><strong>Testes</strong> — Testes para schema (<code>social.test.ts</code>), admin operations (<code>social-admin.test.ts</code>), e API routes (<code>route.test.ts</code> para cada endpoint). Todos os testes existentes continuam passando.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar <code>SocialPostSchema</code> e tipos (AC: #1, #2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Adicionar <code>SocialPostSchema</code> em <code>src/lib/schemas/social.ts</code> com todos os campos do epic</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Adicionar <code>SocialPostUpdateSchema</code> (só <code>cta</code>, <code>body</code>, <code>hashtags</code>) para validação do PUT</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Adicionar type <code>SocialPost</code> e <code>SocialPostUpdate</code> em <code>src/types/social.ts</code> via <code>z.infer</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.4 Re-exportar novos schemas/types do barrel <code>src/lib/schemas/index.ts</code> se necessário</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar operações admin no Firestore (AC: #3, #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Em <code>src/lib/firebase/social-admin.ts</code>, adicionar <code>getSocialPosts(videoId: string): Promise&lt;SocialPost[]&gt;</code><ul>
+<li>Path: <code>podcasts/${PODCAST_ID}/videos/${videoId}/socialPosts</code></li>
+<li>Iterar docs, <code>safeParse</code> cada um com <code>SocialPostSchema</code>, skip inválidos com log WARN</li>
+<li>Injetar <code>networkId: doc.id</code> no parse (mesmo padrão de <code>getSocialNetworks</code> com <code>id: doc.id</code>)</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Adicionar <code>upsertSocialPost(videoId: string, networkId: string, data: SocialPostUpdate): Promise&lt;void&gt;</code><ul>
+<li>Path: <code>podcasts/${PODCAST_ID}/videos/${videoId}/socialPosts/${networkId}</code></li>
+<li>Validar <code>data</code> com <code>SocialPostUpdateSchema.parse(data)</code> antes de persistir</li>
+<li>Usar <code>docRef.set({ ...validated, processedBy: &#39;manual&#39;, updatedAt: FieldValue.serverTimestamp() }, { merge: true })</code></li>
+<li>Log INFO com videoId, networkId</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar endpoint GET (AC: #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar <code>src/app/api/videos/[videoId]/social-posts/route.ts</code><ul>
+<li><code>export const runtime = &#39;nodejs&#39;</code></li>
+<li>Auth check com <code>auth()</code> + <code>if (!session)</code> → <code>authExpiredResponse()</code></li>
+<li>Extrair <code>videoId</code> de <code>context.params</code></li>
+<li>Chamar <code>getSocialPosts(videoId)</code> e retornar <code>{ data: posts }</code></li>
+<li>Error handling com log e <code>createErrorResponse</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Criar endpoint PUT (AC: #6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Criar <code>src/app/api/videos/[videoId]/social-posts/[networkId]/route.ts</code><ul>
+<li><code>export const runtime = &#39;nodejs&#39;</code></li>
+<li>Auth check</li>
+<li>Extrair <code>videoId</code> e <code>networkId</code> de <code>context.params</code></li>
+<li>Validar body com <code>SocialPostUpdateSchema.parse(body)</code></li>
+<li>Chamar <code>upsertSocialPost(videoId, networkId, validated)</code></li>
+<li>Retornar <code>{ data: { networkId } }</code></li>
+<li>Error handling: ZodError → 400, outros → 500</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Criar testes (AC: #7)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Testes de schema em <code>social.test.ts</code>: validação positiva, campos obrigatórios, processedBy enum, additionalContext optional</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Testes de admin em <code>social-admin.test.ts</code>: getSocialPosts (vazio, com dados, skip inválidos), upsertSocialPost (valida, persiste, seta processedBy)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Testes de GET route: 401 sem sessão, 200 com array, 200 vazio, 500 erro</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Testes de PUT route: 401 sem sessão, 200 com body válido, 400 body inválido, 500 erro</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Validar integração</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 <code>npx vitest run</code> — todos os testes passando (baseline: 1808, final: 1843)</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Padrões Existentes a Seguir</h3>
+<p><strong>Route Handler pattern</strong> (<code>tags/route.ts:38-91</code>):</p>
+<pre><code class="language-typescript">export const runtime = &#39;nodejs&#39;
+
+interface RouteContext {
+  params: Promise&lt;{ videoId: string }&gt;
+}
+
+export async function PUT(request: NextRequest, context: RouteContext): Promise&lt;NextResponse&gt; {
+  const session = await auth()
+  if (!session) return authExpiredResponse()
+
+  const { videoId } = await context.params
+
+  try {
+    const body = await request.json()
+    const validated = Schema.parse(body)
+    // ... persist
+    log(&#39;INFO&#39;, &#39;Resource updated&#39;, { videoId })
+    return NextResponse.json({ data: { ... } })
+  } catch (error) {
+    return handleVideoFieldError(error, &#39;fieldName&#39;, videoId)
+  }
+}
+</code></pre>
+<p><strong>IMPORTANTE — <code>context.params</code> é <code>Promise</code></strong>: No Next.js 15, <code>context.params</code> retorna <code>Promise</code>. Sempre <code>await context.params</code> antes de desestruturar.</p>
+<p><strong>PUT com nested route</strong> (<code>[videoId]/social-posts/[networkId]/route.ts</code>):</p>
+<pre><code class="language-typescript">interface RouteContext {
+  params: Promise&lt;{ videoId: string; networkId: string }&gt;
+}
+</code></pre>
+<p><strong>Admin safeParse pattern</strong> (<code>social-admin.ts:33-43</code>):</p>
+<pre><code class="language-typescript">for (const doc of snapshot.docs) {
+  const parsed = Schema.safeParse({ ...doc.data(), id: doc.id })
+  if (parsed.success) {
+    items.push(parsed.data)
+  } else {
+    log(&#39;WARN&#39;, &#39;Invalid document skipped&#39;, { id: doc.id, issues: parsed.error.issues })
+  }
+}
+</code></pre>
+<p><strong>Subcollection path</strong> (enforcement rule #8):</p>
+<pre><code class="language-typescript">const postsRef = db
+  .collection(&#39;podcasts&#39;).doc(PODCAST_ID)
+  .collection(&#39;videos&#39;).doc(videoId)
+  .collection(&#39;socialPosts&#39;)
+</code></pre>
+<p><strong>Upsert com merge</strong> (para <code>upsertSocialPost</code>):</p>
+<pre><code class="language-typescript">// Usar set com merge para criar OU atualizar
+await docRef.set({
+  ...validated,
+  processedBy: &#39;manual&#39;,
+  updatedAt: FieldValue.serverTimestamp(),
+}, { merge: true })
+</code></pre>
+<p><strong>Nota</strong>: Aqui <code>set({ merge: true })</code> é preferível a <code>update()</code> porque o documento pode não existir ainda (primeiro save manual ou LLM cria o doc). <code>update()</code> falha se doc não existe. <code>set({ merge: true })</code> cria ou atualiza.</p>
+<p><strong>Error handler reutilizável</strong> (<code>video-field-handler.ts</code>):</p>
+<ul>
+<li><code>authExpiredResponse()</code> → 401 <code>AUTH_EXPIRED</code></li>
+<li><code>notFoundResponse(resource)</code> → 404 <code>NOT_FOUND</code></li>
+<li><code>handleVideoFieldError(error, fieldName, videoId)</code> → 400/500</li>
+<li><code>createErrorResponse(code, message, status)</code> → custom</li>
+</ul>
+<p><strong>Imports</strong>:</p>
+<pre><code class="language-typescript">import { auth } from &#39;@/lib/auth&#39;
+import { PODCAST_ID } from &#39;@/lib/firebase/config&#39;
+import { log } from &#39;@/lib/logger&#39;
+import { authExpiredResponse, handleVideoFieldError } from &#39;@/lib/api/video-field-handler&#39;
+</code></pre>
+<h3>Timestamp no Schema</h3>
+<p>O <code>SocialPostSchema</code> é usado para <strong>leitura</strong> do Firestore — portanto usa <code>TimestampSchema</code> (custom Timestamp validator, já exportado de <code>podcast.ts</code>). O <code>SocialPostUpdateSchema</code> para <strong>escrita</strong> NÃO inclui timestamps (o servidor seta via <code>FieldValue.serverTimestamp()</code>).</p>
+<h3>PODCAST_ID</h3>
+<p>Importar de <code>@/lib/firebase/config</code>:</p>
+<pre><code class="language-typescript">import { PODCAST_ID } from &#39;@/lib/firebase/config&#39;
+</code></pre>
+<p>O <code>PODCAST_ID</code> vem de <code>process.env.PODCAST_ID</code> (enforcement rule #8).</p>
+<h3>Schema de Testes — Mock de Firestore</h3>
+<p>Os testes de <code>social-admin.test.ts</code> devem seguir o padrão existente. Verificar <code>src/lib/firebase/social-admin.test.ts</code> (já existe com 6 testes para <code>getSocialNetworks</code>). Estender esse arquivo com testes para as novas funções.</p>
+<p>Mock pattern existente:</p>
+<pre><code class="language-typescript">vi.mock(&#39;./admin&#39;, () =&gt; ({
+  getAdminDb: vi.fn(),
+}))
+</code></pre>
+<h3>Arquivos a Criar/Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Ação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/schemas/social.ts</code></td>
+<td>Modificar — adicionar <code>SocialPostSchema</code>, <code>SocialPostUpdateSchema</code></td>
+</tr>
+<tr>
+<td><code>src/types/social.ts</code></td>
+<td>Modificar — adicionar <code>SocialPost</code>, <code>SocialPostUpdate</code></td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.ts</code></td>
+<td>Modificar — adicionar <code>getSocialPosts()</code>, <code>upsertSocialPost()</code></td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/route.ts</code></td>
+<td><strong>Criar</strong> — GET endpoint</td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/[networkId]/route.ts</code></td>
+<td><strong>Criar</strong> — PUT endpoint</td>
+</tr>
+<tr>
+<td><code>src/lib/schemas/social.test.ts</code></td>
+<td>Modificar — adicionar testes do SocialPostSchema</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.test.ts</code></td>
+<td>Modificar — adicionar testes de getSocialPosts/upsertSocialPost</td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/route.test.ts</code></td>
+<td><strong>Criar</strong> — testes GET</td>
+</tr>
+<tr>
+<td><code>src/app/api/videos/[videoId]/social-posts/[networkId]/route.test.ts</code></td>
+<td><strong>Criar</strong> — testes PUT</td>
+</tr>
+</tbody></table>
+<h3>Arquivos NÃO Modificar</h3>
+<ul>
+<li><code>src/lib/schemas/podcast.ts</code> — schema de podcast não muda nesta story</li>
+<li><code>src/lib/firebase/videos-admin.ts</code> — operações de vídeo não mudam</li>
+<li><code>src/app/api/podcast/route.ts</code> — endpoint de podcast não muda</li>
+<li><code>src/components/settings/*</code> — nenhuma mudança de UI nesta story</li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<table>
+<thead>
+<tr>
+<th>Regra</th>
+<th>Aplicação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#2 Zod before persist</td>
+<td>Validar body do PUT com <code>SocialPostUpdateSchema.parse()</code></td>
+</tr>
+<tr>
+<td>#3 Runtime nodejs</td>
+<td><code>export const runtime = &#39;nodejs&#39;</code> em ambos route handlers</td>
+</tr>
+<tr>
+<td>#4 Field-level updates</td>
+<td>Usar <code>set({ merge: true })</code> para upsert, nunca <code>setDoc</code> sem merge</td>
+</tr>
+<tr>
+<td>#8 PodcastId</td>
+<td>Incluir <code>PODCAST_ID</code> em todos os paths de subcollection</td>
+</tr>
+<tr>
+<td>#9 Structured logging</td>
+<td>Usar <code>log()</code> de <code>@/lib/logger</code>, nunca <code>console.log</code></td>
+</tr>
+<tr>
+<td>#11 Import type</td>
+<td>Usar <code>import type</code> para types-only</td>
+</tr>
+<tr>
+<td>#12 Timestamp Admin</td>
+<td>Usar <code>FieldValue.serverTimestamp()</code> no Admin SDK</td>
+</tr>
+</tbody></table>
+<h3>Learnings das Stories Anteriores</h3>
+<ul>
+<li>Story 14.2: <code>safeParse</code> com <code>{ ...doc.data(), id: doc.id }</code> para injetar doc ID — usar mesmo padrão com <code>networkId: doc.id</code></li>
+<li>Story 14.4: <code>.optional()</code> vs <code>.default([])</code> — para campos de leitura usar como está, para escrita não incluir timestamps no schema de update</li>
+<li>Story 14.5: Convention <code>social.{networkId}</code> para paths nested — aqui é subcollection real, path é <code>/socialPosts/{networkId}</code></li>
+<li>Story 14.4 code review: inicializar estados como <code>null</code> (não <code>[]</code>) para distinguir &quot;loading&quot; de &quot;loaded empty&quot; — relevante para hooks futuros (Story 14.9)</li>
+</ul>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-14-redes-sociais.md#Story 14.6]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #2 (Zod before persist)]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #4 (Field-level updates)]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #8 (PodcastId)]</li>
+<li>[Source: tags/route.ts — PUT pattern with RouteContext]</li>
+<li>[Source: social-admin.ts — safeParse pattern]</li>
+<li>[Source: video-field-handler.ts — error response utilities]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Test run: 1845 tests passing across 97 test files (+37 new tests from baseline 1808)</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>All 6 tasks implemented and validated in a single pass with zero errors</li>
+<li>Subcollection mock structure in social-admin.test.ts redesigned to support both flat (socialNetworks) and nested (podcasts/.../socialPosts) chains</li>
+<li>Used <code>set({ merge: true })</code> for upsert instead of <code>update()</code> since document may not exist on first write</li>
+<li>PUT endpoint delegates Zod validation to <code>upsertSocialPost()</code> (enforcement rule #2 — Zod before persist)</li>
+<li>Both route handlers follow established patterns: <code>runtime = &#39;nodejs&#39;</code>, async <code>context.params</code>, <code>authExpiredResponse()</code>, structured logging</li>
+</ul>
+<h3>Change Log</h3>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Added SocialPostSchema + SocialPostUpdateSchema to social.ts</td>
+<td>AC #1, #2 — Zod validation for social posts read/write</td>
+</tr>
+<tr>
+<td>Added SocialPost + SocialPostUpdate types to types/social.ts</td>
+<td>Type inference from schemas via z.infer</td>
+</tr>
+<tr>
+<td>Updated barrel export in schemas/index.ts</td>
+<td>Consistent import paths</td>
+</tr>
+<tr>
+<td>Added getSocialPosts() to social-admin.ts</td>
+<td>AC #3 — Read subcollection with safeParse pattern</td>
+</tr>
+<tr>
+<td>Added upsertSocialPost() to social-admin.ts</td>
+<td>AC #4 — Write with merge, serverTimestamp, processedBy:manual</td>
+</tr>
+<tr>
+<td>Created GET /api/videos/[videoId]/social-posts</td>
+<td>AC #5 — List social posts per video</td>
+</tr>
+<tr>
+<td>Created PUT /api/videos/[videoId]/social-posts/[networkId]</td>
+<td>AC #6 — Update single social post</td>
+</tr>
+<tr>
+<td>Added 17 tests in social.test.ts</td>
+<td>AC #7 — Schema validation coverage</td>
+</tr>
+<tr>
+<td>Rewrote social-admin.test.ts with subcollection mock support (+10 new tests)</td>
+<td>AC #7 — Admin operations coverage</td>
+</tr>
+<tr>
+<td>Created route.test.ts for GET endpoint (4 tests)</td>
+<td>AC #7 — GET route coverage</td>
+</tr>
+<tr>
+<td>Created route.test.ts for PUT endpoint (4 tests)</td>
+<td>AC #7 — PUT route coverage</td>
+</tr>
+<tr>
+<td>[Review] Made generatedAt optional in SocialPostSchema</td>
+<td>M1 — Manual-first upserts create docs without generatedAt</td>
+</tr>
+<tr>
+<td>[Review] Added INFO logs to getSocialPosts (empty + count)</td>
+<td>M2 — Consistency with getSocialNetworks pattern</td>
+</tr>
+<tr>
+<td>[Review] Added SyntaxError catch in PUT route</td>
+<td>M3 — Malformed JSON returns 400 instead of 500</td>
+</tr>
+<tr>
+<td>[Review] Extracted .issues from ZodError in PUT route log</td>
+<td>L1 — Better structured logging</td>
+</tr>
+<tr>
+<td>[Review] Completed mock timestamps in GET route test</td>
+<td>L3 — Mock data matches full SocialPost shape</td>
+</tr>
+</tbody></table>
+<h3>Senior Developer Review (AI)</h3>
+<p><strong>Reviewer:</strong> Claude Opus 4.6 | <strong>Date:</strong> 2026-02-24</p>
+<p><strong>Findings:</strong> 0 High, 3 Medium, 3 Low — All fixed automatically</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Sev</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1</td>
+<td>MED</td>
+<td><code>upsertSocialPost</code> creates docs without <code>generatedAt</code> → invisible on read</td>
+<td>Made <code>generatedAt</code> optional in SocialPostSchema</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>MED</td>
+<td><code>getSocialPosts</code> missing success/empty logging</td>
+<td>Added INFO logs matching getSocialNetworks pattern</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>MED</td>
+<td>PUT route returns 500 for malformed JSON body</td>
+<td>Added SyntaxError catch → 400 VALIDATION_ERROR</td>
+</tr>
+<tr>
+<td>L1</td>
+<td>LOW</td>
+<td>ZodError WARN log passes full object instead of <code>.issues</code></td>
+<td>Extracted <code>error.issues</code> for structured logging</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>LOW</td>
+<td>TimestampSchema imported from podcast.ts (pre-existing)</td>
+<td>Skipped — not a regression</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>LOW</td>
+<td>GET route test mock data missing timestamps</td>
+<td>Added mockTimestamp to match full SocialPost shape</td>
+</tr>
+</tbody></table>
+<p><strong>Test Impact:</strong> 1843 → 1845 (+2: optional generatedAt test, malformed JSON test)</p>
+<h3>File List</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>src/lib/schemas/social.ts</td>
+<td>Modified — added SocialPostSchema, SocialPostUpdateSchema</td>
+</tr>
+<tr>
+<td>src/types/social.ts</td>
+<td>Modified — added SocialPost, SocialPostUpdate types</td>
+</tr>
+<tr>
+<td>src/lib/schemas/index.ts</td>
+<td>Modified — added barrel exports for new schemas</td>
+</tr>
+<tr>
+<td>src/lib/firebase/social-admin.ts</td>
+<td>Modified — added getSocialPosts(), upsertSocialPost()</td>
+</tr>
+<tr>
+<td>src/app/api/videos/[videoId]/social-posts/route.ts</td>
+<td>Created — GET endpoint</td>
+</tr>
+<tr>
+<td>src/app/api/videos/[videoId]/social-posts/[networkId]/route.ts</td>
+<td>Created — PUT endpoint</td>
+</tr>
+<tr>
+<td>src/lib/schemas/social.test.ts</td>
+<td>Modified — added 17 tests for SocialPostSchema, SocialPostUpdateSchema</td>
+</tr>
+<tr>
+<td>src/lib/firebase/social-admin.test.ts</td>
+<td>Modified — rewrote with subcollection mock support, added 10 tests</td>
+</tr>
+<tr>
+<td>src/app/api/videos/[videoId]/social-posts/route.test.ts</td>
+<td>Created — 4 tests for GET route</td>
+</tr>
+<tr>
+<td>src/app/api/videos/[videoId]/social-posts/[networkId]/route.test.ts</td>
+<td>Created — 4 tests for PUT route</td>
+</tr>
+</tbody></table>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14.2 Collection socialNetworks + Seed — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Story 14.2: Collection Global <code>socialNetworks</code> + Seed</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>sistema</strong>,
+I want uma collection global de redes sociais disponíveis no Firestore,
+so that novos tenants possam ver e habilitar redes sociais sem alteração de código.</p>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>Schema Zod <code>SocialNetworkSchema</code></strong> — Novo arquivo <code>src/lib/schemas/social.ts</code> com schema validando <code>{ id: string, name: string, icon: string, createdAt: Timestamp }</code>. Exportado no barrel <code>src/lib/schemas/index.ts</code>.</p>
+</li>
+<li><p><strong>Type inferido</strong> — Novo arquivo <code>src/types/social.ts</code> com <code>type SocialNetwork = z.infer&lt;typeof SocialNetworkSchema&gt;</code>. Exportado no barrel <code>src/types/index.ts</code> (se existir) ou importável diretamente.</p>
+</li>
+<li><p><strong>Função <code>getSocialNetworks()</code></strong> — Novo arquivo <code>src/lib/firebase/social-admin.ts</code> com função que retorna <code>SocialNetwork[]</code> validado com Zod, ordenado por <code>name</code> ascendente. Usa <code>safeParse()</code> para resiliência (docs inválidos geram log WARN e são ignorados).</p>
+</li>
+<li><p><strong>Seed script atualizado</strong> — <code>scripts/seed-podcast.ts</code> cria documentos <code>socialNetworks/instagram</code> e <code>socialNetworks/linkedin</code> na collection global. Criação idempotente (verifica existência antes de criar). Executado ANTES da criação do podcast.</p>
+</li>
+<li><p><strong>Seed idempotente</strong> — Se <code>socialNetworks/instagram</code> já existe no Firestore, o seed NÃO sobrescreve. Log informativo: <code>&quot;socialNetworks/instagram already exists, skipping&quot;</code>.</p>
+</li>
+<li><p><strong>Testes</strong> — Testes unitários para <code>getSocialNetworks()</code> e para o schema <code>SocialNetworkSchema</code>.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar schema <code>SocialNetworkSchema</code> (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Criar arquivo <code>src/lib/schemas/social.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Exportar no barrel <code>src/lib/schemas/index.ts</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar type inferido (AC: #2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Criar arquivo <code>src/types/social.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 No barrel <code>src/types/index.ts</code> — não existe; importado diretamente de <code>@/types/social</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Criar <code>getSocialNetworks()</code> (AC: #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Criar arquivo <code>src/lib/firebase/social-admin.ts</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Collection global <code>socialNetworks/{networkId}</code> sem podcastId</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Atualizar seed script (AC: #4, #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Adicionado <code>DEFAULT_SOCIAL_NETWORKS</code> com Instagram e LinkedIn</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Adicionada <code>seedSocialNetworks()</code> com padrão idempotente</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Chamada ANTES do check do podcast em <code>seedPodcast()</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Criar testes (AC: #6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 <code>src/lib/schemas/social.test.ts</code> — 9 testes (parse válido/inválido)</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 <code>src/lib/firebase/social-admin.test.ts</code> — 5 testes (empty, valid, invalid skip, all invalid, id injection)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Validar integração</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 <code>npx vitest run</code> — 1765 testes passando (93 test files), +14 vs baseline</li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 <code>SocialNetworkSchema</code> acessível via barrel <code>@/lib/schemas</code></li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura e Padrões</h3>
+<ul>
+<li><strong>Collection global vs per-podcast</strong>: <code>socialNetworks</code> é global (no root do Firestore, não dentro de <code>podcasts/{podcastId}</code>). Isso permite que qualquer podcast habilite redes do catálogo global. NÃO incluir <code>podcastId</code> no path.</li>
+<li><strong>safeParse() em loops</strong>: Para resiliência a schema evolution, usar <code>safeParse()</code> (não <code>parse()</code>) ao iterar documentos. Docs inválidos geram log WARN e são ignorados, sem quebrar a leitura.</li>
+<li><strong>Seed idempotente</strong>: Verificar <code>existing.exists</code> antes de <code>.set()</code>. Para social networks, iterar cada network independentemente (um pode existir e outro não).</li>
+<li><strong>Seed antes do podcast</strong>: A função <code>seedSocialNetworks()</code> deve ser chamada ANTES do check de existência do podcast, porque a collection é global e deve existir independentemente do podcast.</li>
+<li><strong>Imports</strong>: Seguir padrão <code>@/lib/...</code> para imports internos. Zod primeiro, depois Firebase admin, depois schemas locais, depois logger, depois admin db.</li>
+<li><strong><code>id</code> não é campo do documento</strong>: O <code>id</code> é o Firestore document ID (ex: <code>&#39;instagram&#39;</code>), injetado no read via <code>{ id: doc.id, ...doc.data() }</code>. O <code>.set()</code> no seed NÃO inclui <code>id</code> no data — seguindo padrão de <code>podcasts-admin.ts</code>.</li>
+<li><strong>Seed script não usa <code>@/</code> imports</strong>: O seed script (<code>scripts/seed-podcast.ts</code>) é standalone, usa imports diretos de <code>firebase-admin/*</code>, variável <code>db</code> module-level, e <code>console.log</code> (não structured logger).</li>
+<li><strong>Seed não atualiza DEFAULT_PERSONAS</strong>: NÃO adicionar <code>socialmedia</code> ao <code>DEFAULT_PERSONAS</code> do seed nesta story. Isso é escopo da Story 14.11 (seed + onboarding).</li>
+</ul>
+<h3>Arquivos a Criar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/schemas/social.ts</code></td>
+<td>Novo</td>
+<td>Schema <code>SocialNetworkSchema</code></td>
+</tr>
+<tr>
+<td><code>src/types/social.ts</code></td>
+<td>Novo</td>
+<td>Type <code>SocialNetwork</code> inferido do schema</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.ts</code></td>
+<td>Novo</td>
+<td>Função <code>getSocialNetworks()</code></td>
+</tr>
+<tr>
+<td><code>src/lib/schemas/social.test.ts</code></td>
+<td>Novo</td>
+<td>Testes do schema</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.test.ts</code></td>
+<td>Novo</td>
+<td>Testes do firebase admin</td>
+</tr>
+</tbody></table>
+<h3>Arquivos a Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Modificação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/schemas/index.ts</code></td>
+<td>Adicionar export de <code>SocialNetworkSchema</code> from <code>&#39;./social&#39;</code></td>
+</tr>
+<tr>
+<td><code>scripts/seed-podcast.ts</code></td>
+<td>Adicionar <code>DEFAULT_SOCIAL_NETWORKS</code> + <code>seedSocialNetworks()</code></td>
+</tr>
+</tbody></table>
+<h3>Arquivos NÃO modificar</h3>
+<ul>
+<li><code>src/lib/firebase/admin.ts</code> — singleton de Firebase Admin já está pronto</li>
+<li><code>src/lib/firebase/config.ts</code> — não precisa de nova config</li>
+<li><code>src/lib/schemas/podcast.ts</code> — social networks tem schema separado</li>
+<li><code>src/app/api/podcast/route.ts</code> — não envolvido nesta story</li>
+</ul>
+<h3>Código Existente de Referência</h3>
+<p><strong>Padrão idempotente do seed</strong> (<code>seed-podcast.ts</code>):</p>
+<pre><code class="language-typescript">const existing = await podcastRef.get()
+if (existing.exists) {
+  console.log(`Podcast already exists. Skipping seed.`)
+  return
+}
+</code></pre>
+<p><strong>Padrão safeParse em loops</strong> (<code>news-admin.ts</code>):</p>
+<pre><code class="language-typescript">for (const doc of snapshot.docs) {
+  const parsed = NewsSchema.safeParse({ id: doc.id, ...doc.data() })
+  if (parsed.success) {
+    items.push(parsed.data)
+  } else {
+    log(&#39;WARN&#39;, &#39;Invalid news document skipped&#39;, { newsId: doc.id, issues: parsed.error.issues })
+  }
+}
+</code></pre>
+<p><strong>Padrão de collection helper</strong> (<code>guests-admin.ts</code>):</p>
+<pre><code class="language-typescript">function getGuestsCollection(podcastId: string) {
+  const db = getAdminDb()
+  return db.collection(&#39;podcasts&#39;).doc(podcastId).collection(&#39;guests&#39;)
+}
+</code></pre>
+<p><strong>TimestampSchema</strong> (<code>podcast.ts</code>):</p>
+<pre><code class="language-typescript">export const TimestampSchema = z.custom&lt;FirestoreTimestamp&gt;(
+  (val) =&gt; val !== null &amp;&amp; typeof val === &#39;object&#39; &amp;&amp; &#39;toDate&#39; in val,
+  &#39;Invalid Firestore Timestamp&#39;
+)
+</code></pre>
+<p><strong>Type inference pattern</strong> (<code>types/podcast.ts</code>):</p>
+<pre><code class="language-typescript">import type { z } from &#39;zod&#39;
+import type { PodcastSchema } from &#39;@/lib/schemas/podcast&#39;
+export type Podcast = z.infer&lt;typeof PodcastSchema&gt;
+</code></pre>
+<p><strong>Barrel export pattern</strong> (<code>schemas/index.ts</code>):</p>
+<pre><code class="language-typescript">export { SomeSchema, SOME_CONSTANT } from &#39;./some-module&#39;
+</code></pre>
+<h3>Learnings da Story 14.1</h3>
+<ul>
+<li>Padrão union type deve ser explícito em todas as interfaces/type annotations</li>
+<li><code>.optional()</code> requer fallback (<code>?? DEFAULT_VALUE</code>) nos consumidores</li>
+<li>Testes usam <code>DEFAULT_*</code> constants do schema — update automático ao alterar constantes</li>
+<li>Labels PT-BR devem ser verificados contra o código existente (ex: &quot;Resumo / Contexto&quot;, não &quot;Currículo&quot;)</li>
+</ul>
+<h3>Backward Compatibility</h3>
+<p>Esta story cria artefatos novos (schema, firebase admin, seed). Não modifica nenhum artefato existente de forma destrutiva. Podcasts existentes não são afetados — a collection <code>socialNetworks</code> é adicionada ao Firestore de forma aditiva.</p>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-14-redes-sociais.md#Story 14.2]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #2 (Zod before persist)]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #8 (podcastId in queries)]</li>
+<li>[Source: project-context-iara.md#Enforcement Rule #12 (Timestamp SDK)]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Test run: 1767 tests passing, 93 test files, +16 new tests</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>All 6 tasks completed; all acceptance criteria met</li>
+<li>Schema follows existing pattern (TimestampSchema reuse, Zod inference)</li>
+<li>getSocialNetworks() uses safeParse resilience pattern from news-admin.ts</li>
+<li>Seed script uses idempotent per-network check (not bulk), called before podcast check</li>
+<li>No barrel <code>src/types/index.ts</code> exists; type imported directly from <code>@/types/social</code></li>
+<li>No existing files were modified destructively; all changes are additive</li>
+</ul>
+<h3>Change Log</h3>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Created <code>src/lib/schemas/social.ts</code></td>
+<td>SocialNetworkSchema with Zod validation (AC #1)</td>
+</tr>
+<tr>
+<td>Added export to <code>src/lib/schemas/index.ts</code></td>
+<td>Barrel export for schema accessibility (AC #1)</td>
+</tr>
+<tr>
+<td>Created <code>src/types/social.ts</code></td>
+<td>Type inference from schema (AC #2)</td>
+</tr>
+<tr>
+<td>Created <code>src/lib/firebase/social-admin.ts</code></td>
+<td>getSocialNetworks() with safeParse resilience (AC #3)</td>
+</tr>
+<tr>
+<td>Updated <code>scripts/seed-podcast.ts</code></td>
+<td>Added DEFAULT_SOCIAL_NETWORKS + seedSocialNetworks() (AC #4, #5)</td>
+</tr>
+<tr>
+<td>Created <code>src/lib/schemas/social.test.ts</code></td>
+<td>10 unit tests for schema validation (AC #6)</td>
+</tr>
+<tr>
+<td>Created <code>src/lib/firebase/social-admin.test.ts</code></td>
+<td>6 unit tests for admin function (AC #6)</td>
+</tr>
+</tbody></table>
+<h3>Senior Developer Review</h3>
+<p><strong>Reviewer:</strong> Code Review Workflow (adversarial)
+<strong>Date:</strong> 2026-02-24
+<strong>Issues Found:</strong> 3 Medium, 3 Low — all fixed</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Severity</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WARN log assertion missing <code>issues</code> field check</td>
+<td>Medium</td>
+<td>Added <code>issues: expect.any(Array)</code> to assertion</td>
+</tr>
+<tr>
+<td>Missing <code>rejects empty icon</code> test (asymmetric coverage)</td>
+<td>Medium</td>
+<td>Added test for <code>icon: &#39;&#39;</code></td>
+</tr>
+<tr>
+<td>Spread order <code>{ id, ...data() }</code> allows data to overwrite ID</td>
+<td>Medium</td>
+<td>Changed to <code>{ ...data(), id: doc.id }</code> for safety</td>
+</tr>
+<tr>
+<td><code>createdAt</code> not asserted in positive parse tests</td>
+<td>Low</td>
+<td>Added <code>expect(result.createdAt).toBe(now)</code></td>
+</tr>
+<tr>
+<td>Missing file-level JSDoc header</td>
+<td>Low</td>
+<td>Added module-level JSDoc with CRITICAL warning</td>
+</tr>
+<tr>
+<td>No test for Firestore error propagation</td>
+<td>Low</td>
+<td>Added <code>mockRejectedValue</code> test</td>
+</tr>
+</tbody></table>
+<p><strong>Result:</strong> All issues fixed. 1767 tests passing (+2 from review fixes).</p>
+<h3>File List</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/schemas/social.ts</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td><code>src/lib/schemas/index.ts</code></td>
+<td>Modified</td>
+</tr>
+<tr>
+<td><code>src/types/social.ts</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.ts</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td><code>scripts/seed-podcast.ts</code></td>
+<td>Modified</td>
+</tr>
+<tr>
+<td><code>src/lib/schemas/social.test.ts</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td><code>src/lib/firebase/social-admin.test.ts</code></td>
+<td>Created</td>
+</tr>
+</tbody></table>
+
+  </main>
+</body>
+</html>

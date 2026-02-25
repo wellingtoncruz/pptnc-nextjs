@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14.11 Seed Script + Onboarding — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Story 14.11: Atualizar Seed Script e Guia de Onboarding</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>administrador deployando um novo podcast</strong>,
+I want que o seed script e a documentação de onboarding incluam redes sociais,
+so that novos tenants já tenham a infraestrutura de social media configurada.</p>
+<h2>Prerequisites</h2>
+<p><strong>BLOQUEANTES — Devem estar implementadas ANTES de iniciar esta story:</strong></p>
+<ul>
+<li><strong>Story 14.1</strong> — Persona <code>socialmedia</code> no schema</li>
+<li><strong>Story 14.2</strong> — Collection global <code>socialNetworks</code> + seed (referência)</li>
+<li><strong>Story 14.3</strong> — Feature toggle <code>socialMedia</code> no schema</li>
+<li><strong>Story 14.4</strong> — Campo <code>enabledSocialNetworks</code> no schema</li>
+<li><strong>Story 14.5</strong> — Prompts <code>social</code> por videoType no schema</li>
+</ul>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>Seed cria <code>socialNetworks</code> se não existirem</strong> — Ao executar o seed para um novo podcast, cria documentos Instagram e LinkedIn na collection global <code>socialNetworks</code> (se não existirem). Já implementado na Story 14.2 — verificar que funciona corretamente.</p>
+</li>
+<li><p><strong>Podcast inclui <code>features.socialMedia: false</code></strong> — O documento do podcast criado pelo seed inclui <code>socialMedia: false</code> no objeto <code>features</code>. Desabilitado por padrão — admin ativa manualmente após configurar persona e prompts.</p>
+</li>
+<li><p><strong>Podcast inclui <code>enabledSocialNetworks: []</code></strong> — O documento do podcast criado pelo seed inclui <code>enabledSocialNetworks</code> como array vazio. Nenhuma rede habilitada por padrão.</p>
+</li>
+<li><p><strong>Podcast inclui <code>personas.socialmedia</code></strong> — O documento inclui <code>socialmedia: { role: &#39;&#39;, objective: &#39;&#39;, resume: &#39;&#39; }</code> no objeto <code>personas</code>. Campos vazios para o admin preencher via UI.</p>
+</li>
+<li><p><strong>Podcast inclui <code>prompts.*.social: {}</code></strong> — O documento inclui <code>social: {}</code> (objeto vazio) em cada tipo de prompt: <code>episode</code>, <code>cut</code>, <code>reel</code>. Prompts configurados pelo admin via UI por rede.</p>
+</li>
+<li><p><strong>Seed idempotente</strong> — Quando executado em podcast existente, NÃO sobrescreve dados. Mantém comportamento atual: &quot;Podcast already exists. Skipping seed.&quot;</p>
+</li>
+<li><p><strong>Onboarding atualizado</strong> — O guia <code>docs/onboarding.md</code> inclui nova seção &quot;Configuração de Redes Sociais&quot; em Configuração Pós-Deploy (seção 9), após &quot;9.3 Features&quot;. Seção cobre: (a) habilitar feature toggle, (b) habilitar redes individuais, (c) configurar persona socialmedia, (d) configurar prompts por rede, (e) adicionar novas redes via Firestore Console.</p>
+</li>
+<li><p><strong>Checklist atualizado</strong> — O &quot;Checklist de Verificação&quot; no final do onboarding inclui item para redes sociais: &quot;Seção Redes Sociais aparece no menu (se habilitada)&quot;.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Atualizar <code>DEFAULT_PERSONAS</code> no seed (AC: #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Em <code>scripts/seed-podcast.ts</code>, linha 87-90:<ul>
+<li>Adicionar <code>socialmedia: { ...DEFAULT_PERSONA }</code> ao objeto <code>DEFAULT_PERSONAS</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Atualizar <code>DEFAULT_PROMPTS</code> no seed (AC: #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Em <code>scripts/seed-podcast.ts</code>, linhas 62-83:<ul>
+<li>Adicionar <code>social: {}</code> ao final de <code>DEFAULT_PROMPTS.episode</code></li>
+<li>Adicionar <code>social: {}</code> ao final de <code>DEFAULT_PROMPTS.cut</code></li>
+<li>Adicionar <code>social: {}</code> ao final de <code>DEFAULT_PROMPTS.reel</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Atualizar <code>podcastData</code> no seed (AC: #2, #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Em <code>scripts/seed-podcast.ts</code>, linhas 136-150:<ul>
+<li>Adicionar <code>socialMedia: false</code> ao objeto <code>features</code> (após <code>includeLivestreams</code>)</li>
+<li>Adicionar <code>enabledSocialNetworks: []</code> como campo do <code>podcastData</code> (entre <code>features</code> e <code>createdAt</code>)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Verificar seed de socialNetworks (AC: #1, #6)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Verificar que <code>seedSocialNetworks()</code> continua sendo chamada antes do podcast check (linha 124)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Verificar que o seed NÃO modifica podcast existente (linhas 129-134)</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Executar mentalmente: seed novo podcast → todos os campos sociais presentes; seed existente → skip</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Atualizar onboarding guide (AC: #7, #8)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Em <code>docs/onboarding.md</code>, após seção 9.3 (Features):<ul>
+<li>Adicionar nova subseção &quot;9.4 Redes Sociais&quot; com 5 sub-passos</li>
+<li>Renumerar seções subsequentes: 9.4 → 9.5 (Promover admin), 9.5 → 9.6 (Outros usuários), 9.5 (sync) → 9.7</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Conteúdo da seção &quot;9.4 Redes Sociais&quot;:<ul>
+<li>9.4.1: Habilitar feature toggle em Configurações &gt; Recursos</li>
+<li>9.4.2: Habilitar redes individuais em Configurações &gt; Redes Sociais</li>
+<li>9.4.3: Configurar persona &quot;Gerente de Mídia&quot; em Configurações &gt; Personas</li>
+<li>9.4.4: Configurar prompts por rede em Configurações &gt; Prompts por Tipo</li>
+<li>9.4.5: (Opcional) Adicionar novas redes via Firestore Console</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Em &quot;Checklist de Verificação&quot; (linhas 327-333):<ul>
+<li>Adicionar: <code>- [ ] Seção Redes Sociais aparece no menu (se habilitada)</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Validação</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 <code>npx vitest run</code> — todos os testes passando (seed script não tem testes unitários, mas verificar que nada quebra)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Verificar que o TypeScript compila sem erros: <code>npx tsc --noEmit</code> no seed script (ou <code>pnpm build</code>)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Revisar idempotência: ler o fluxo do seed e confirmar que podcast existente é preservado</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura e Padrões</h3>
+<ul>
+<li><p><strong>Seed já tem 90% pronto</strong>: A Story 14.2 já implementou <code>DEFAULT_SOCIAL_NETWORKS</code> e <code>seedSocialNetworks()</code>. As mudanças necessárias são apenas nos defaults do podcast: persona, features, prompts, enabledSocialNetworks. Total: ~10 linhas de código.</p>
+</li>
+<li><p><strong>socialNetworks é collection global</strong>: Path é <code>socialNetworks/{networkId}</code> (root do Firestore). NÃO é subcollection de podcast. O seed cria esses documentos globais ANTES de criar o podcast — isso já está correto no código atual.</p>
+</li>
+<li><p><strong>Idempotência</strong>: O seed atual já é idempotente — se o podcast existe, faz skip completo (linhas 129-134). Não há lógica de merge/update. Portanto, as novas adições ao <code>podcastData</code> só afetam podcasts NOVOS. Para podcasts existentes que precisam de social, o admin configura manualmente via UI (que é o fluxo normal documentado no onboarding).</p>
+</li>
+<li><p><strong>Default <code>socialMedia: false</code></strong>: Segue o padrão de default-off estabelecido na Story 14.3. O admin ativa manualmente em Configurações &gt; Recursos após configurar persona e prompts. Não faz sentido ativar por padrão em um podcast novo que ainda não tem prompts configurados.</p>
+</li>
+<li><p><strong>Objeto <code>social: {}</code></strong>: Objeto vazio (não <code>undefined</code> ou <code>null</code>). Isso garante que o campo existe no Firestore e pode receber chaves dinamicamente quando o admin configura prompts via UI (Story 14.5). O schema já aceita <code>z.record(z.string(), PromptFieldSchema).optional()</code>, então <code>{}</code> é válido.</p>
+</li>
+<li><p><strong>Onboarding PT-BR</strong>: Todo o conteúdo do guia é em Português Brasileiro. Manter consistência com o restante do documento. Tom instrucional, direto, com exemplos práticos.</p>
+</li>
+</ul>
+<h3>Arquivos a Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Modificação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>scripts/seed-podcast.ts</code></td>
+<td>Adicionar persona socialmedia, prompts social, features socialMedia, enabledSocialNetworks</td>
+</tr>
+<tr>
+<td><code>docs/onboarding.md</code></td>
+<td>Nova seção 9.4 Redes Sociais + item no checklist</td>
+</tr>
+</tbody></table>
+<h3>Arquivos NÃO Modificar</h3>
+<ul>
+<li><code>src/lib/schemas/podcast.ts</code> — schemas já incluem todos os campos necessários (Stories 14.1, 14.3, 14.4, 14.5)</li>
+<li><code>src/lib/schemas/social.ts</code> — schemas já prontos (Story 14.2, 14.6)</li>
+<li><code>src/lib/firebase/social-admin.ts</code> — funções admin já prontas</li>
+<li><code>src/app/api/**</code> — endpoints já prontos</li>
+<li><code>src/components/**</code> — componentes frontend não são tocados nesta story</li>
+</ul>
+<h3>Código Existente de Referência</h3>
+<p><strong>Seed script — DEFAULT_PERSONAS (atual, linha 87-90):</strong></p>
+<pre><code class="language-typescript">const DEFAULT_PERSONAS = {
+  critic: { ...DEFAULT_PERSONA },
+  writer: { ...DEFAULT_PERSONA },
+}
+
+// DEPOIS:
+const DEFAULT_PERSONAS = {
+  critic: { ...DEFAULT_PERSONA },
+  writer: { ...DEFAULT_PERSONA },
+  socialmedia: { ...DEFAULT_PERSONA },
+}
+</code></pre>
+<p><strong>Seed script — DEFAULT_PROMPTS (atual, linhas 62-83):</strong></p>
+<pre><code class="language-typescript">const DEFAULT_PROMPTS = {
+  episode: {
+    critique: { ...DEFAULT_PROMPT_FIELD },
+    editing: { ...DEFAULT_PROMPT_FIELD },
+    compliance: { ...DEFAULT_PROMPT_FIELD },
+    chapters: { ...DEFAULT_PROMPT_FIELD },
+    titles: { ...DEFAULT_PROMPT_FIELD },
+    description: { ...DEFAULT_PROMPT_FIELD },
+    tags: { ...DEFAULT_PROMPT_FIELD },
+    // ADICIONAR:
+    social: {},
+  },
+  cut: {
+    titles: { ...DEFAULT_PROMPT_FIELD },
+    thumbs: { ...DEFAULT_PROMPT_FIELD },
+    description: { ...DEFAULT_PROMPT_FIELD },
+    tags: { ...DEFAULT_PROMPT_FIELD },
+    // ADICIONAR:
+    social: {},
+  },
+  reel: {
+    titles: { ...DEFAULT_PROMPT_FIELD },
+    description: { ...DEFAULT_PROMPT_FIELD },
+    tags: { ...DEFAULT_PROMPT_FIELD },
+    // ADICIONAR:
+    social: {},
+  },
+}
+</code></pre>
+<p><strong>Seed script — podcastData (atual, linhas 136-150):</strong></p>
+<pre><code class="language-typescript">const podcastData = {
+  name: podcastName,
+  channelId,
+  ownerId: &#39;seed-script&#39;,
+  prompts: DEFAULT_PROMPTS,
+  personas: DEFAULT_PERSONAS,
+  videoTypes: DEFAULT_VIDEO_TYPES,
+  features: {
+    editorial: true,
+    news: true,
+    includeLivestreams: false,
+    // ADICIONAR:
+    socialMedia: false,
+  },
+  // ADICIONAR:
+  enabledSocialNetworks: [],
+  createdAt: FieldValue.serverTimestamp(),
+  updatedAt: FieldValue.serverTimestamp(),
+}
+</code></pre>
+<p><strong>Onboarding — nova seção 9.4 (conteúdo a adicionar):</strong></p>
+<pre><code class="language-markdown">### 9.4 Redes Sociais
+
+A funcionalidade de posts para redes sociais está **desabilitada por padrão**. Para configurar:
+
+#### 9.4.1 Habilitar Feature Toggle
+
+1. Acesse **Configurações → Recursos**
+2. Encontre o toggle **&quot;Redes Sociais&quot;** e ative-o
+3. Isso permite que a seção de configuração de redes apareça
+
+#### 9.4.2 Habilitar Redes Individuais
+
+1. Acesse **Configurações → Redes Sociais** (aparece após ativar o toggle)
+2. Para cada rede que deseja usar (Instagram, LinkedIn), clique no toggle para ativar
+3. A seção **&quot;Redes Sociais&quot;** no menu lateral aparecerá automaticamente quando pelo menos uma rede estiver habilitada
+
+#### 9.4.3 Configurar Persona &quot;Gerente de Mídia&quot;
+
+1. Acesse **Configurações → Personas do LLM**
+2. Expanda a seção **&quot;Gerente de Mídia&quot;**
+3. Configure:
+   - **Papel**: Descrição do papel profissional (ex: &quot;Especialista em copywriting para redes sociais&quot;)
+   - **Objetivo**: Objetivo dos posts (ex: &quot;Criar posts engajadores que divulguem o podcast&quot;)
+   - **Resumo**: Contexto adicional sobre o estilo desejado
+4. Os campos são salvos automaticamente (auto-save com debounce)
+
+#### 9.4.4 Configurar Prompts por Rede
+
+1. Acesse **Configurações → Prompts por Tipo de Vídeo**
+2. Para cada tipo (Episódios, Cortes, Reels), localize a subseção **&quot;Redes Sociais&quot;**
+3. Para cada rede habilitada, configure:
+   - **Descrição do Prompt**: Instruções específicas para aquela rede
+   - **Saída Esperada**: Exemplo ou formato esperado do post
+
+&gt; **Dica**: Para Instagram, foque em hashtags populares e CTAs diretos. Para LinkedIn, use tom profissional com insights relevantes.
+
+#### 9.4.5 (Opcional) Adicionar Novas Redes Sociais
+
+Para adicionar redes além de Instagram e LinkedIn:
+
+1. Acesse o [Firestore Console](https://console.cloud.google.com/firestore) do seu projeto
+2. Selecione o database correto (ex: `pptnc-stage`)
+3. Navegue até a collection `socialNetworks` (raiz)
+4. Crie um documento com ID = networkId (ex: `tiktok`)
+5. Adicione os campos:
+   - `name` (string): Nome da rede (ex: &quot;TikTok&quot;)
+   - `icon` (string): Emoji (ex: &quot;🎵&quot;)
+   - `createdAt` (timestamp): Data atual
+6. A nova rede aparecerá em **Configurações → Redes Sociais** automaticamente
+</code></pre>
+<p><strong>Onboarding — item adicional no checklist:</strong></p>
+<pre><code class="language-markdown">- [ ] Seção Redes Sociais aparece no menu (se habilitada)
+</code></pre>
+<h3>Renumeração de seções no onboarding</h3>
+<p>Ao inserir 9.4 (Redes Sociais), as seções seguintes devem ser renumeradas:</p>
+<ul>
+<li>9.4 (atual: Promover admin) → <strong>9.5</strong></li>
+<li>9.5 (atual: Adicionar usuários) → <strong>9.6</strong></li>
+<li>9.5 (atual: Sincronização, duplicada) → <strong>9.7</strong></li>
+</ul>
+<p>Nota: O onboarding atual tem duas seções &quot;9.5&quot; (adicionar usuários e sincronização). Corrigir essa duplicação na renumeração.</p>
+<h3>Learnings das Stories Anteriores</h3>
+<ul>
+<li>Story 14.2: <code>seedSocialNetworks()</code> já implementada e idempotente — não recriar</li>
+<li>Story 14.3: Default <code>false</code> para <code>socialMedia</code> — consistente com o seed</li>
+<li>Story 14.4: <code>enabledSocialNetworks: []</code> default vazio — consistente</li>
+<li>Story 14.5: <code>social: z.record(z.string(), PromptFieldSchema).optional()</code> — <code>{}</code> é válido</li>
+<li>Story 14.1: <code>PersonaSchema.optional()</code> para socialmedia — <code>{ role: &#39;&#39;, objective: &#39;&#39;, resume: &#39;&#39; }</code> é válido</li>
+<li>Story 13.14: Onboarding guide em <code>docs/onboarding.md</code> — PT-BR, tom instrucional</li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<table>
+<thead>
+<tr>
+<th>Regra</th>
+<th>Aplicação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#5 Import order</td>
+<td>Não aplicável (seed script usa imports diretos do firebase-admin)</td>
+</tr>
+<tr>
+<td>#6 Kebab-case files</td>
+<td><code>seed-podcast.ts</code> e <code>onboarding.md</code> já existem com nomes corretos</td>
+</tr>
+<tr>
+<td>#9 Structured logging</td>
+<td>Seed script usa <code>console.log</code> (não <code>log()</code>) — manter padrão existente</td>
+</tr>
+<tr>
+<td>#16 Ambiguity Escalation</td>
+<td>Se dúvida sobre conteúdo do onboarding, PERGUNTAR</td>
+</tr>
+</tbody></table>
+<h3>Nota sobre Testes</h3>
+<p>O seed script (<code>scripts/seed-podcast.ts</code>) NÃO tem testes unitários — é um script CLI de infraestrutura. A validação é manual: executar e verificar no Firestore Console. Os testes do app (<code>npx vitest run</code>) devem continuar passando sem alteração.</p>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-14-redes-sociais.md#Story 14.11]</li>
+<li>[Source: scripts/seed-podcast.ts — seed script atual]</li>
+<li>[Source: docs/onboarding.md — guia de onboarding PT-BR]</li>
+<li>[Source: lib/schemas/podcast.ts — schemas com campos social já definidos]</li>
+<li>[Source: Story 14.2 — seedSocialNetworks() já implementada]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6 (claude-opus-4-6)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>Nenhum issue técnico encontrado. Mudanças são puramente aditivas no seed e documentação.</li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>All 8 ACs implemented</li>
+<li>Seed script: 3 aditivas (persona socialmedia, prompts social:{}, features socialMedia + enabledSocialNetworks)</li>
+<li>seedSocialNetworks() já existente (Story 14.2), verificada idempotência</li>
+<li>Onboarding: nova seção 9.4 Redes Sociais com 5 sub-passos, renumeração de seções corrigindo duplicação 9.5, item adicionado ao checklist</li>
+<li>1953 testes passando, TypeScript compila sem erros, zero regressão</li>
+</ul>
+<h3>Change Log</h3>
+<p>2 arquivos modificados, 1953 testes (105 suites), 0 falhas</p>
+<h3>Senior Developer Review</h3>
+<p><strong>Reviewed by</strong>: Claude Opus 4.6 (adversarial code review)
+<strong>Result</strong>: APPROVED with 3 fixes applied</p>
+<p><strong>Seed script</strong> (<code>scripts/seed-podcast.ts</code>): Clean, correct, schema-compliant. No issues found.</p>
+<p><strong>Onboarding</strong> (<code>docs/onboarding.md</code>): 3 documentation issues found and fixed:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Severity</th>
+<th>Issue</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1</td>
+<td>MEDIUM</td>
+<td>Section 9.3 used English &quot;Features&quot; instead of PT-BR &quot;Recursos&quot; (UI label mismatch with new section 9.4.1)</td>
+<td>Changed header and body to &quot;Recursos&quot;</td>
+</tr>
+<tr>
+<td>L1</td>
+<td>LOW</td>
+<td>Section 9.2 used shortened &quot;Prompts&quot; instead of &quot;Prompts por Tipo de Vídeo&quot; (UI label mismatch with new section 9.4.4)</td>
+<td>Changed body to full label</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>LOW</td>
+<td>Section 9.3 didn&#39;t list &quot;Redes Sociais&quot; toggle alongside Editorial and Notícias</td>
+<td>Added bullet with cross-reference to section 9.4</td>
+</tr>
+</tbody></table>
+<h3>File List</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Arquivo</th>
+<th>Status</th>
+<th>Testes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>scripts/seed-podcast.ts</code></td>
+<td>Modificado</td>
+<td>n/a (script CLI)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>docs/onboarding.md</code></td>
+<td>Modificado</td>
+<td>n/a (documentação)</td>
+</tr>
+</tbody></table>
+
+  </main>
+</body>
+</html>

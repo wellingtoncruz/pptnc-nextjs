@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14.12 Ajustes UX Social View — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Story 14.12: Ajustes de UX na Social View</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want que a seção de Redes Sociais tenha filtros otimizados, layout mais agradável e CTA multi-line,
+so that eu consiga usar a feature de forma eficiente e prazerosa.</p>
+<h2>Prerequisites</h2>
+<p><strong>BLOQUEANTES — Devem estar implementadas ANTES de iniciar esta story:</strong></p>
+<ul>
+<li><strong>Stories 14.1–14.11</strong> — Todo o épico 14 implementado</li>
+</ul>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>Filtro default &quot;todos&quot; com sent-first</strong> — Na social view, o <code>statusFilter</code> default é <code>&#39;all&#39;</code> (não <code>&#39;not_sent&#39;</code>). Vídeos com status <code>sent</code> aparecem primeiro na lista, seguidos dos demais. Ambos os grupos ordenados por mais recente (publishedAt desc).</p>
+</li>
+<li><p><strong>Excluir episódios do filtro de tipo</strong> — Na social view, o filtro de tipo de vídeo NÃO exibe a tab &quot;Episódios&quot;. Tabs disponíveis: &quot;Todos&quot;, &quot;Cortes&quot;, &quot;Reels&quot;. Nota: &quot;Todos&quot; na social view significa cortes + reels (exclui episódios).</p>
+</li>
+<li><p><strong>CTA multi-line</strong> — O campo CTA no <code>SocialPostEditor</code> é um <code>&lt;Textarea&gt;</code> com auto-resize (mín 2 linhas), não um <code>&lt;Input&gt;</code> single-line. Preserva auto-save e copy-to-clipboard existentes.</p>
+</li>
+<li><p><strong>Visual polish nas colunas</strong> — Cada coluna social tem:</p>
+<ul>
+<li>Card com <code>rounded-lg border shadow-sm</code> e padding interno</li>
+<li>Header com fundo sutil colorido por rede (usando a cor/identidade da rede)</li>
+<li>Ícone da rede em destaque no header (tamanho maior)</li>
+<li>Labels de seção (CTA, Corpo, Hashtags) com estilo <code>text-xs uppercase tracking-wide text-muted-foreground</code></li>
+<li>Hashtags renderizadas como pills/badges com fundo muted</li>
+<li>Espaçamento generoso entre seções</li>
+</ul>
+</li>
+<li><p><strong>Testes atualizados</strong> — Testes existentes adaptados para os novos behaviors. Novos testes onde necessário.</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Filtro default &quot;todos&quot; + sort sent-first na social view (AC: #1)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Em <code>social-layout.tsx</code>: passar <code>statusFilter=&#39;all&#39;</code> como initial option ao <code>useVideos</code></li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Em <code>social-layout.tsx</code>: após receber <code>videos</code> do hook, fazer sort client-side: <code>sent</code> primeiro (por publishedAt desc), depois os demais (por publishedAt desc)</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Passar os vídeos re-ordenados ao <code>VideoListPanel</code></li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Excluir episódios do filtro na social view (AC: #2)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Em <code>VideoListPanel</code>: adicionar prop opcional <code>excludeTypes?: VideoTypeFilter[]</code> que filtra as tabs renderizadas</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Em <code>social-layout.tsx</code>: passar <code>excludeTypes={[&#39;episode&#39;]}</code> ao <code>VideoListPanel</code></li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Em <code>social-layout.tsx</code>: definir <code>typeFilter</code> inicial como <code>&#39;all&#39;</code> (que na social view será cortes+reels)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Filtrar episódios client-side dos videos recebidos (para garantir que &quot;Todos&quot; não inclua episódios)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: CTA multi-line (AC: #3)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Em <code>social-post-editor.tsx</code>: trocar <code>&lt;Input&gt;</code> do CTA por <code>&lt;Textarea&gt;</code> com <code>rows={2}</code> e <code>className=&quot;min-h-[56px] resize-none font-medium&quot;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Atualizar <code>flex items-center</code> para <code>flex items-start</code> no wrapper do CTA (alinhar CopyButton ao topo)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Visual polish (AC: #4)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Em <code>social-post-column.tsx</code>: adicionar card wrapper com <code>rounded-lg border shadow-sm bg-card</code></li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 Em <code>social-post-column.tsx</code>: header com fundo sutil (bg-accent/30), ícone maior (text-2xl com role=img), nome em font-semibold</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Em <code>social-post-editor.tsx</code>: adicionar labels de seção com <code>htmlFor</code>/<code>id</code> para a11y</li>
+<li><input checked="" disabled="" type="checkbox"> 4.4 Em <code>social-post-editor.tsx</code>: hashtag pills renderizadas como <code>rounded-full bg-muted</code> badges abaixo do textarea</li>
+<li><input checked="" disabled="" type="checkbox"> 4.5 Ajustar spacing: <code>space-y-5</code> entre seções (era <code>space-y-4</code>)</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Testes (AC: #5)</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Atualizar <code>social-layout.test.tsx</code>: corrigir mockVideos videoType de &#39;episode&#39; para &#39;cut&#39;</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Novo teste: <code>excludeTypes</code> oculta tabs no VideoListPanel</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Novo teste: sort sent-first + filtro episódios na social-layout</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Novo teste: verifica <code>useVideos</code> chamado com <code>statusFilter: &#39;all&#39;</code></li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Novo teste: verifica <code>excludeTypes</code> passado ao VideoListPanel</li>
+<li><input checked="" disabled="" type="checkbox"> 5.6 Atualizar <code>social-post-column.test.tsx</code>: header assertion via role=&quot;img&quot;</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Validação</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 <code>npx vitest run</code> — 1958 testes passando, 0 falhas</li>
+<li><input disabled="" type="checkbox"> 6.2 Verificar visualmente no browser: sort correto, tabs sem episódio, CTA multi-line, layout polido</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura e Padrões</h3>
+<ul>
+<li><p><strong>Sort client-side</strong>: O sort sent-first é feito em <code>social-layout.tsx</code> após receber os videos do <code>useVideos</code> hook. Não alterar o backend nem o hook — manter o re-sort como lógica local da social view. Usar <code>useMemo</code> para memoizar.</p>
+</li>
+<li><p><strong>Excluir episódios</strong>: Duas camadas: (1) tabs do <code>VideoListPanel</code> filtradas via <code>excludeTypes</code> prop, (2) videos filtrados client-side para remover episódios. Não alterar a query do backend — manter filtro client-side.</p>
+</li>
+<li><p><strong>CTA textarea</strong>: O schema <code>SocialPostUpdateSchema</code> já aceita string sem restrições. Não precisa de mudança no backend. O auto-save continua funcionando porque <code>useAutoSave</code> não se importa se o valor vem de Input ou Textarea.</p>
+</li>
+<li><p><strong>Visual polish</strong>: Usar classes existentes do Tailwind/shadcn. Não adicionar CSS customizado. Badge pode usar o componente <code>Badge</code> do shadcn ou simplesmente <code>inline-flex px-2 py-0.5 rounded-full bg-muted text-xs</code>.</p>
+</li>
+</ul>
+<h3>Arquivos a Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Modificação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/social/social-layout.tsx</code></td>
+<td>statusFilter default, sort sent-first, excludeTypes, filtro episódios</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-editor.tsx</code></td>
+<td>CTA textarea, labels, hashtag pills, spacing</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-column.tsx</code></td>
+<td>Card wrapper, header visual</td>
+</tr>
+<tr>
+<td><code>src/components/videos/video-list-panel.tsx</code></td>
+<td>Prop excludeTypes para filtrar tabs</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-layout.test.tsx</code></td>
+<td>Testes sort e filter</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-editor.test.tsx</code></td>
+<td>Teste CTA textarea</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-column.test.tsx</code></td>
+<td>Teste classes card/header</td>
+</tr>
+<tr>
+<td><code>src/components/videos/video-list-panel.test.tsx</code></td>
+<td>Teste excludeTypes</td>
+</tr>
+</tbody></table>
+<h3>Enforcement Rules Aplicáveis</h3>
+<table>
+<thead>
+<tr>
+<th>Regra</th>
+<th>Aplicação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#5 Import order</td>
+<td>React/Next → External → Internal → Utils → Types</td>
+</tr>
+<tr>
+<td>#6 Kebab-case files</td>
+<td>Arquivos existentes já nomeados corretamente</td>
+</tr>
+<tr>
+<td>#7 Test naming</td>
+<td><code>it(&#39;verbo + comportamento&#39;)</code>, co-localizados</td>
+</tr>
+</tbody></table>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6</p>
+<h3>Completion Notes List</h3>
+<ul>
+<li>Task 4.5 spacing ajustado para <code>space-y-5</code> (não <code>space-y-6</code>) — mais equilibrado visualmente</li>
+</ul>
+<h3>Change Log</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Mudança</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/social/social-layout.tsx</code></td>
+<td><code>useVideos({ statusFilter: &#39;all&#39; })</code>, useMemo com filter episodes + sort sent-first, <code>excludeTypes={[&#39;episode&#39;]}</code></td>
+</tr>
+<tr>
+<td><code>src/components/videos/video-list-panel.tsx</code></td>
+<td>Prop <code>excludeTypes?: VideoTypeFilter[]</code>, filter no render de TabsTrigger</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-editor.tsx</code></td>
+<td>CTA <code>&lt;Input&gt;</code> → <code>&lt;Textarea rows={2}&gt;</code>, labels com <code>htmlFor</code>/<code>id</code>, hashtag pills, spacing <code>space-y-5</code></td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-column.tsx</code></td>
+<td>Card wrapper <code>rounded-lg border shadow-sm bg-card</code>, header com <code>bg-accent/30</code>, ícone <code>text-2xl</code> com <code>role=&quot;img&quot;</code>, reprocess section dentro do card</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-layout.test.tsx</code></td>
+<td>Fix videoType, +3 novos testes (useVideos call, excludeTypes, sort sent-first)</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-column.test.tsx</code></td>
+<td>Header assertion via <code>getByRole(&#39;img&#39;)</code> + <code>getByText</code> separados</td>
+</tr>
+<tr>
+<td><code>src/components/videos/video-list-panel.test.tsx</code></td>
+<td>+2 novos testes para <code>excludeTypes</code> prop</td>
+</tr>
+</tbody></table>
+<h3>Senior Developer Review</h3>
+<p><strong>Code Review #1</strong> (2026-02-24):</p>
+<ul>
+<li>H1: Hashtag pills não implementadas → FIXADO (adicionadas como <code>rounded-full bg-muted</code> badges)</li>
+<li>M1: Sem teste para <code>excludeTypes</code> → FIXADO (+2 testes em video-list-panel.test.tsx)</li>
+<li>M2: Sem teste para sort sent-first → FIXADO (+1 teste em social-layout.test.tsx)</li>
+<li>M3: Labels sem <code>htmlFor</code> (a11y) → FIXADO (htmlFor + id em todos os 3 campos)</li>
+<li>L1: Sem verificação da call <code>useVideos({ statusFilter: &#39;all&#39; })</code> → FIXADO (+1 teste)</li>
+<li>Total: 5 issues corrigidos, +5 testes novos, 1958 testes verdes</li>
+</ul>
+<h3>File List</h3>
+<ul>
+<li><code>src/components/social/social-layout.tsx</code></li>
+<li><code>src/components/social/social-post-editor.tsx</code></li>
+<li><code>src/components/social/social-post-column.tsx</code></li>
+<li><code>src/components/videos/video-list-panel.tsx</code></li>
+<li><code>src/components/social/social-layout.test.tsx</code></li>
+<li><code>src/components/social/social-post-column.test.tsx</code></li>
+<li><code>src/components/videos/video-list-panel.test.tsx</code></li>
+</ul>
+
+  </main>
+</body>
+</html>

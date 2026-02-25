@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14.10 Edição, Reprocessamento e Clipboard — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 14 — Redes Sociais</nav><h1>Story 14.10: Edição Inline, Reprocessamento e Copy to Clipboard</h1>
+<p>Status: done</p>
+<h2>Story</h2>
+<p>As a <strong>produtor</strong>,
+I want editar os posts gerados, reprocessar com instruções adicionais, e copiar para a área de transferência,
+so that eu possa ajustar os textos e usá-los nas redes sociais.</p>
+<h2>Prerequisites</h2>
+<p><strong>BLOQUEANTES — Devem estar implementadas ANTES de iniciar esta story:</strong></p>
+<ul>
+<li><strong>Story 14.6</strong> — API endpoints PUT social-posts (backend ready)</li>
+<li><strong>Story 14.7</strong> — POST endpoint de geração LLM com <code>additionalContext</code> (backend ready)</li>
+<li><strong>Story 14.9</strong> — <code>SocialPostColumn</code> com exibição de posts (componente base a estender)</li>
+</ul>
+<h2>Acceptance Criteria</h2>
+<ol>
+<li><p><strong>Edição do CTA</strong> — Ao clicar no CTA de um post exibido, o campo se torna editável (input text). Auto-save com debounce 1.5s via PUT <code>/api/videos/{videoId}/social-posts/{networkId}</code>. <code>processedBy</code> muda para <code>&#39;manual&#39;</code>. Indicador &quot;Salvo&quot; aparece após save bem-sucedido.</p>
+</li>
+<li><p><strong>Edição do Body</strong> — Ao clicar no body, o campo se torna editável (textarea com auto-resize). Auto-save com debounce 1.5s. <code>processedBy</code> muda para <code>&#39;manual&#39;</code>.</p>
+</li>
+<li><p><strong>Edição de Hashtags</strong> — Campo é textarea de texto livre (NÃO badges/chips). Auto-save com debounce 1.5s. Hashtags são parseadas como array antes de salvar: split por espaço ou vírgula, remover duplicatas, adicionar <code>#</code> se ausente.</p>
+</li>
+<li><p><strong>Reprocessamento com additionalContext</strong> — Botão &quot;Reprocessar&quot; exibe textarea de <code>additionalContext</code> (max 500 chars). Botão &quot;Gerar novamente&quot; confirma e chama <code>POST /api/videos/{videoId}/social-posts/{networkId}/generate</code> com <code>{ additionalContext }</code>. Spinner substitui conteúdo durante processamento. Ao completar: exibe novo post, dados anteriores sobrescritos.</p>
+</li>
+<li><p><strong>Copiar CTA</strong> — Botão &quot;Copiar&quot; ao lado do CTA usa <code>navigator.clipboard.writeText()</code>. Feedback visual: ícone muda de <code>Copy</code> para <code>Check</code> por 2 segundos.</p>
+</li>
+<li><p><strong>Copiar Body</strong> — Botão &quot;Copiar&quot; ao lado do body copia texto para clipboard com mesmo feedback visual.</p>
+</li>
+<li><p><strong>Copiar Hashtags</strong> — Botão &quot;Copiar&quot; nas hashtags copia como texto separado por espaço com <code>#</code>. Mesmo feedback visual.</p>
+</li>
+<li><p><strong>Testes</strong> — Testes para <code>SocialPostEditor</code> (edição inline, auto-save com debounce, hashtags parsing), <code>CopyButton</code> (clipboard, feedback visual), reprocessamento (modal, POST call, spinner, resultado).</p>
+</li>
+</ol>
+<h2>Tasks / Subtasks</h2>
+<ul>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 1: Criar componente <code>CopyButton</code> (AC: #5, #6, #7)</p>
+<ul>
+<li>[x]1.1 Criar <code>src/components/social/copy-button.tsx</code>:<ul>
+<li>Props: <code>text: string</code>, <code>label?: string</code> (para acessibilidade)</li>
+<li>State local: <code>copied: boolean</code> (timeout de 2s)</li>
+<li><code>onClick</code>: <code>navigator.clipboard.writeText(text)</code>, setar <code>copied = true</code>, <code>setTimeout</code> para reset</li>
+<li>Ícone: <code>Copy</code> (lucide-react) → <code>Check</code> quando <code>copied</code></li>
+<li>Usar <code>Button variant=&quot;ghost&quot; size=&quot;icon-sm&quot;</code> (existente no codebase)</li>
+<li><code>aria-label</code>: &quot;Copiar {label}&quot; / &quot;Copiado&quot;</li>
+</ul>
+</li>
+<li>[x]1.2 Criar <code>src/components/social/copy-button.test.tsx</code>:<ul>
+<li>&quot;copies text to clipboard on click&quot;</li>
+<li>&quot;shows Check icon for 2 seconds after copy&quot;</li>
+<li>&quot;resets to Copy icon after timeout&quot;</li>
+<li>&quot;handles clipboard error gracefully&quot;</li>
+<li>Mock: <code>Object.assign(navigator, { clipboard: { writeText: vi.fn() } })</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 2: Criar componente <code>SocialPostEditor</code> com auto-save (AC: #1, #2, #3)</p>
+<ul>
+<li>[x]2.1 Criar <code>src/components/social/social-post-editor.tsx</code>:<ul>
+<li>Props: <code>videoId: string</code>, <code>networkId: string</code>, <code>post: SocialPost</code>, <code>onPostUpdated: (post: SocialPost) =&gt; void</code></li>
+<li>State local: <code>editCta: string</code>, <code>editBody: string</code>, <code>editHashtags: string</code> (texto livre)</li>
+<li>Inicializar states a partir de <code>post.cta</code>, <code>post.body</code>, <code>post.hashtags.join(&#39; &#39;)</code></li>
+<li>Compor <code>combinedValue</code> como objeto <code>{ cta: editCta, body: editBody, hashtags: parseHashtags(editHashtags) }</code></li>
+<li>Usar <code>useAutoSave(combinedValue, saveFn, 1500)</code> para auto-save</li>
+<li><code>saveFn</code>: PUT <code>/api/videos/{videoId}/social-posts/{networkId}</code> com <code>{ cta, body, hashtags }</code></li>
+<li>Após save: chamar <code>onPostUpdated</code> com post atualizado (cta, body, hashtags, processedBy: &#39;manual&#39;)</li>
+<li><strong>CTA field</strong>: <code>&lt;Input&gt;</code> com <code>onChange</code> atualiza <code>editCta</code> + <code>CopyButton</code></li>
+<li><strong>Body field</strong>: <code>&lt;Textarea&gt;</code> com auto-resize (CSS <code>field-sizing-content</code>) + <code>CopyButton</code></li>
+<li><strong>Hashtags field</strong>: <code>&lt;Textarea&gt;</code> de texto livre + <code>CopyButton</code> (texto copiado: hashtags com <code>#</code> separadas por espaço)</li>
+<li><code>SaveStatusIndicator</code> discreto abaixo dos campos (reutilizar o existente)</li>
+</ul>
+</li>
+<li>[x]2.2 Criar helper <code>parseHashtags(text: string): string[]</code>:<ul>
+<li>Split por <code>/[\s,]+/</code> (whitespace ou vírgula)</li>
+<li>Filter strings vazias</li>
+<li>Map: adicionar <code>#</code> se ausente</li>
+<li>Deduplicar (case-insensitive, manter primeiro)</li>
+<li>Retornar <code>string[]</code></li>
+</ul>
+</li>
+<li>[x]2.3 Criar <code>src/components/social/social-post-editor.test.tsx</code>:<ul>
+<li>&quot;renders CTA, body, hashtags from post&quot;</li>
+<li>&quot;auto-saves after 1.5s debounce on CTA change&quot;</li>
+<li>&quot;auto-saves after 1.5s debounce on body change&quot;</li>
+<li>&quot;parses hashtags correctly before saving&quot; (test.each com vários inputs)</li>
+<li>&quot;shows SaveStatusIndicator during save cycle&quot;</li>
+<li>&quot;calls onPostUpdated after successful save&quot;</li>
+<li>&quot;renders CopyButton for each field&quot;</li>
+<li>Mock: <code>vi.useFakeTimers()</code> para testar debounce</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 3: Adicionar reprocessamento ao <code>SocialPostColumn</code> (AC: #4)</p>
+<ul>
+<li>[x]3.1 Em <code>src/components/social/social-post-column.tsx</code> (criado na Story 14.9):<ul>
+<li>Adicionar props: <code>onReprocess: (networkId: string, additionalContext?: string) =&gt; Promise&lt;void&gt;</code></li>
+<li>State local: <code>showReprocessForm: boolean</code>, <code>additionalContext: string</code>, <code>isReprocessing: boolean</code>, <code>reprocessError: string | null</code></li>
+<li>Botão &quot;Reprocessar&quot; (com ícone <code>RefreshCw</code>) abaixo do editor</li>
+<li>Ao clicar: <code>showReprocessForm = true</code></li>
+<li>Form inline: <code>&lt;Textarea&gt;</code> para additionalContext (max 500 chars) + botão &quot;Gerar novamente&quot; + botão &quot;Cancelar&quot;</li>
+<li>Ao confirmar: <code>isReprocessing = true</code>, chamar <code>onReprocess(networkId, additionalContext)</code></li>
+<li>Durante processamento: substituir conteúdo por <code>ProcessingSpinner</code></li>
+<li>Ao completar: novo post substituído automaticamente (vem do parent via <code>useSocialPosts</code>)</li>
+<li>Ao erro: exibir mensagem + manter botão &quot;Reprocessar&quot;</li>
+</ul>
+</li>
+<li>[x]3.2 Atualizar <code>src/components/social/social-post-column.test.tsx</code> (criado na Story 14.9):<ul>
+<li>&quot;shows Reprocessar button when post exists&quot;</li>
+<li>&quot;shows additionalContext form when Reprocessar clicked&quot;</li>
+<li>&quot;calls onReprocess with additionalContext&quot;</li>
+<li>&quot;shows spinner during reprocessing&quot;</li>
+<li>&quot;hides reprocess form after successful reprocess&quot;</li>
+<li>&quot;shows error when reprocess fails&quot;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 4: Integrar reprocessamento no hook <code>useSocialPosts</code> (AC: #4)</p>
+<ul>
+<li>[x]4.1 Em <code>src/hooks/use-social-posts.ts</code> (criado na Story 14.9):<ul>
+<li>Adicionar <code>reprocessNetwork(networkId: string, additionalContext?: string): Promise&lt;void&gt;</code></li>
+<li>Faz POST <code>/api/videos/{videoId}/social-posts/{networkId}/generate</code> com <code>{ additionalContext }</code></li>
+<li>Ao sucesso: atualizar post na lista (<code>setPosts(prev =&gt; prev.map(...))</code>)</li>
+<li>Ao erro: setar error no <code>errors</code> map</li>
+<li>Adicionar <code>reprocessingNetworkId: string | null</code> ao retorno</li>
+</ul>
+</li>
+<li>[x]4.2 Atualizar <code>src/hooks/use-social-posts.test.ts</code> (criado na Story 14.9):<ul>
+<li>&quot;reprocesses a specific network with additionalContext&quot;</li>
+<li>&quot;updates post after successful reprocess&quot;</li>
+<li>&quot;handles reprocess error&quot;</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 5: Integrar <code>SocialPostEditor</code> no <code>SocialPostColumn</code> + wire tudo (AC: #1-#7)</p>
+<ul>
+<li>[x]5.1 Em <code>src/components/social/social-post-column.tsx</code>:<ul>
+<li>Quando post existe: renderizar <code>SocialPostEditor</code> em vez do display estático</li>
+<li>Adicionar prop <code>onPostUpdated: (post: SocialPost) =&gt; void</code> (para atualizar no parent)</li>
+<li>Wiring: <code>SocialColumnsLayout</code> passa callback que atualiza o post no <code>useSocialPosts</code></li>
+</ul>
+</li>
+<li>[x]5.2 Em <code>src/components/social/social-columns-layout.tsx</code> (criado na Story 14.9):<ul>
+<li>Extrair <code>updatePost</code> e <code>reprocessNetwork</code> de <code>useSocialPosts</code></li>
+<li>Passar como props para cada <code>SocialPostColumn</code></li>
+</ul>
+</li>
+<li>[x]5.3 Atualizar testes de <code>SocialColumnsLayout</code> para verificar integração</li>
+</ul>
+</li>
+<li><p><input checked="" disabled="" type="checkbox"> 
+Task 6: Testes de integração e regressão (AC: #8)</p>
+<ul>
+<li>[x]6.1 <code>npx vitest run</code> — todos os testes passando, 0 falhas</li>
+<li>[x]6.2 Verificar que testes de Stories 14.8 e 14.9 continuam verdes</li>
+<li>[x]6.3 Verificar edge cases:<ul>
+<li>Editar e salvar CTA vazio (deve impedir)</li>
+<li>Editar body vazio (deve impedir)</li>
+<li>Hashtags só com espaços (deve resultar em <code>[]</code>)</li>
+<li>Reprocessar enquanto auto-save pendente (auto-save deve ser cancelado)</li>
+<li>Copy-to-clipboard em navegador sem suporte (graceful fallback)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2>Dev Notes</h2>
+<h3>Arquitetura e Padrões</h3>
+<ul>
+<li><p><strong><code>useAutoSave</code> hook existente</strong>: O hook <code>src/hooks/use-auto-save.ts</code> já implementa exatamente o padrão necessário: debounce 1.5s, deep comparison via <code>JSON.stringify</code>, status cycle <code>idle → pending → saving → saved → idle</code>, error handling. NÃO reimplementar — usar diretamente.</p>
+</li>
+<li><p><strong><code>SaveStatusIndicator</code> existente</strong>: O componente <code>src/components/settings/save-status-indicator.tsx</code> já renderiza indicadores &quot;Alterações pendentes...&quot;, &quot;Salvando...&quot;, &quot;Salvo&quot; baseado no <code>saveStatus</code>. Reutilizar diretamente.</p>
+</li>
+<li><p><strong>Composição de <code>combinedValue</code></strong>: O <code>useAutoSave</code> recebe um valor genérico <code>T</code> e compara via <code>JSON.stringify</code>. Para os 3 campos (CTA, body, hashtags), compor um objeto <code>{ cta, body, hashtags }</code> como valor único. Assim, qualquer mudança em qualquer campo dispara o debounce e salva todos os 3 campos de uma vez via PUT.</p>
+</li>
+<li><p><strong>ParseHashtags como pura function</strong>: Extrair <code>parseHashtags(text: string): string[]</code> como função pura (não hook). Facilita testes isolados via <code>test.each</code>. Regras: split <code>/[\s,]+/</code>, filter vazias, map <code>s =&gt; s.startsWith(&#39;#&#39;) ? s : &#39;#&#39; + s</code>, dedup case-insensitive.</p>
+</li>
+<li><p><strong>CopyButton standalone</strong>: Componente simples e reutilizável. Sem dependência de contexto externo. Recebe <code>text</code>, copia, gerencia state local de <code>copied</code>. Pode ser reutilizado em qualquer lugar do app futuramente.</p>
+</li>
+<li><p><strong>Reprocessamento como prop callback</strong>: O <code>SocialPostColumn</code> não faz o POST diretamente. Recebe <code>onReprocess</code> como callback do parent (<code>SocialColumnsLayout</code>), que delega para <code>useSocialPosts.reprocessNetwork()</code>. Isso mantém a separação de responsabilidades: coluna = UI, hook = lógica.</p>
+</li>
+<li><p><strong>Auto-save vs reprocessamento</strong>: Se o produtor edita um campo e depois clica &quot;Reprocessar&quot; antes do debounce completar, o auto-save pendente deve ser cancelado. O reprocessamento sobrescreve tudo com novo conteúdo LLM. Implementar: ao iniciar reprocessamento, reinicializar os estados de edição com o novo post quando ele retornar.</p>
+</li>
+<li><p><strong>EditableText NÃO usado aqui</strong>: O componente <code>EditableText</code> existente é click-to-edit com <code>Input</code> (single line, Enter saves, Escape cancels). Para social posts, queremos campos sempre editáveis (Input/Textarea always visible) com auto-save via debounce. Padrão diferente: usar Input/Textarea diretamente + <code>useAutoSave</code>, não <code>EditableText</code>.</p>
+</li>
+</ul>
+<h3>Fluxo de Dados</h3>
+<pre><code>SocialColumnsLayout
+├─ useSocialPosts(videoId, enabledNetworks, hasPrerequisites)
+│  ├─ posts: SocialPost[]
+│  ├─ updatePost(networkId, updatedPost): void  ← novo
+│  ├─ reprocessNetwork(networkId, additionalContext?): Promise&lt;void&gt;  ← novo
+│  └─ reprocessingNetworkId: string | null  ← novo
+└─ SocialPostColumn × N
+   ├─ post exists → SocialPostEditor
+   │  ├─ Input (CTA) + CopyButton
+   │  ├─ Textarea (Body) + CopyButton
+   │  ├─ Textarea (Hashtags) + CopyButton
+   │  ├─ SaveStatusIndicator
+   │  └─ useAutoSave(combinedValue, saveFn, 1500)
+   │     └─ PUT /api/videos/{videoId}/social-posts/{networkId}
+   ├─ Botão &quot;Reprocessar&quot;
+   │  └─ Form inline: Textarea + &quot;Gerar novamente&quot;
+   │     └─ POST /api/videos/{videoId}/social-posts/{networkId}/generate
+   └─ ProcessingSpinner (durante reprocessamento)
+</code></pre>
+<h3>Arquivos a Criar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/social/copy-button.tsx</code></td>
+<td>Novo</td>
+<td>Botão copiar com feedback Copy → Check (2s)</td>
+</tr>
+<tr>
+<td><code>src/components/social/copy-button.test.tsx</code></td>
+<td>Novo</td>
+<td>Testes do botão copiar</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-editor.tsx</code></td>
+<td>Novo</td>
+<td>Editor com auto-save: CTA + Body + Hashtags + CopyButtons</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-editor.test.tsx</code></td>
+<td>Novo</td>
+<td>Testes do editor com debounce</td>
+</tr>
+</tbody></table>
+<h3>Arquivos a Modificar</h3>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Modificação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/components/social/social-post-column.tsx</code></td>
+<td>Integrar <code>SocialPostEditor</code> + botão &quot;Reprocessar&quot; + form inline</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-post-column.test.tsx</code></td>
+<td>Adicionar testes de reprocessamento</td>
+</tr>
+<tr>
+<td><code>src/components/social/social-columns-layout.tsx</code></td>
+<td>Passar <code>updatePost</code> e <code>reprocessNetwork</code> para colunas</td>
+</tr>
+<tr>
+<td><code>src/hooks/use-social-posts.ts</code></td>
+<td>Adicionar <code>reprocessNetwork</code>, <code>updatePost</code>, <code>reprocessingNetworkId</code></td>
+</tr>
+<tr>
+<td><code>src/hooks/use-social-posts.test.ts</code></td>
+<td>Adicionar testes de reprocess</td>
+</tr>
+</tbody></table>
+<h3>Arquivos NÃO Modificar</h3>
+<ul>
+<li><code>src/hooks/use-auto-save.ts</code> — reutilizar como está (já testado, 254 linhas de testes)</li>
+<li><code>src/components/settings/save-status-indicator.tsx</code> — reutilizar como está</li>
+<li><code>src/components/ui/editable-text.tsx</code> — NÃO usar (padrão diferente do necessário)</li>
+<li><code>src/app/api/videos/[videoId]/social-posts/[networkId]/route.ts</code> — PUT endpoint já pronto</li>
+<li><code>src/app/api/videos/[videoId]/social-posts/[networkId]/generate/route.ts</code> — POST endpoint já pronto</li>
+<li><code>src/lib/firebase/social-admin.ts</code> — funções admin já prontas</li>
+<li><code>src/lib/schemas/social.ts</code> — schemas prontos</li>
+</ul>
+<h3>Código Existente de Referência</h3>
+<p><strong>API Response Shapes:</strong></p>
+<pre><code class="language-typescript">// PUT /api/videos/{videoId}/social-posts/{networkId}
+// Request: { cta: string, body: string, hashtags: string[] }
+// Response (200): { data: { networkId: string } }
+// Errors: 400 VALIDATION_ERROR, 500 INTERNAL_ERROR
+
+// POST /api/videos/{videoId}/social-posts/{networkId}/generate
+// Request (optional): { additionalContext?: string }  // max 500 chars
+// Response (200): { data: { networkId, cta, body, hashtags, processedBy: &#39;llm&#39; } }
+// Errors: 400 MISSING_PREREQUISITES, 400 MISSING_PROMPT, 429 RATE_LIMIT, 500 PARSE_ERROR/INTERNAL_ERROR
+</code></pre>
+<p><strong>useAutoSave — usage pattern</strong> (<code>hooks/use-auto-save.ts</code>):</p>
+<pre><code class="language-typescript">// O hook aceita valor genérico T, compara via JSON.stringify
+const combinedValue = useMemo(() =&gt; ({
+  cta: editCta,
+  body: editBody,
+  hashtags: parseHashtags(editHashtags),
+}), [editCta, editBody, editHashtags])
+
+const { saveStatus, error } = useAutoSave(
+  combinedValue,
+  async (value) =&gt; {
+    const response = await fetch(
+      `/api/videos/${videoId}/social-posts/${networkId}`,
+      {
+        method: &#39;PUT&#39;,
+        headers: { &#39;Content-Type&#39;: &#39;application/json&#39; },
+        body: JSON.stringify(value),
+      }
+    )
+    if (!response.ok) {
+      const err = await response.json().catch(() =&gt; ({}))
+      throw new Error(err.error?.message || &#39;Erro ao salvar post&#39;)
+    }
+    onPostUpdated({ ...post, ...value, processedBy: &#39;manual&#39; })
+  },
+  1500
+)
+</code></pre>
+<p><strong>SaveStatusIndicator — usage</strong> (<code>settings/save-status-indicator.tsx</code>):</p>
+<pre><code class="language-typescript">import { SaveStatusIndicator } from &#39;@/components/settings/save-status-indicator&#39;
+
+&lt;SaveStatusIndicator status={saveStatus} /&gt;
+// Renderiza: &quot;Alterações pendentes...&quot; (amber) | &quot;Salvando...&quot; (muted) | &quot;Salvo&quot; (green) | null
+</code></pre>
+<p><strong>CopyButton — esqueleto:</strong></p>
+<pre><code class="language-typescript">&#39;use client&#39;
+
+import { useState, useCallback } from &#39;react&#39;
+import { Check, Copy } from &#39;lucide-react&#39;
+
+import { Button } from &#39;@/components/ui/button&#39;
+
+interface CopyButtonProps {
+  text: string
+  label?: string
+}
+
+export function CopyButton({ text, label = &#39;texto&#39; }: CopyButtonProps) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(async () =&gt; {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() =&gt; setCopied(false), 2000)
+    } catch {
+      // Silently fail — clipboard API may not be available
+    }
+  }, [text])
+
+  return (
+    &lt;Button
+      variant=&quot;ghost&quot;
+      size=&quot;icon-sm&quot;
+      onClick={handleCopy}
+      aria-label={copied ? &#39;Copiado&#39; : `Copiar ${label}`}
+    &gt;
+      {copied ? (
+        &lt;Check className=&quot;size-4 text-green-500&quot; /&gt;
+      ) : (
+        &lt;Copy className=&quot;size-4 text-muted-foreground&quot; /&gt;
+      )}
+    &lt;/Button&gt;
+  )
+}
+</code></pre>
+<p><strong>parseHashtags — implementação:</strong></p>
+<pre><code class="language-typescript">export function parseHashtags(text: string): string[] {
+  const raw = text.split(/[\s,]+/).filter(Boolean)
+  const withHash = raw.map(s =&gt; (s.startsWith(&#39;#&#39;) ? s : `#${s}`))
+  // Deduplicar case-insensitive, manter primeiro
+  const seen = new Set&lt;string&gt;()
+  return withHash.filter(h =&gt; {
+    const lower = h.toLowerCase()
+    if (seen.has(lower)) return false
+    seen.add(lower)
+    return true
+  })
+}
+</code></pre>
+<p><strong>SocialPostEditor — esqueleto:</strong></p>
+<pre><code class="language-typescript">&#39;use client&#39;
+
+import { useMemo, useState } from &#39;react&#39;
+
+import { Input } from &#39;@/components/ui/input&#39;
+import { Textarea } from &#39;@/components/ui/textarea&#39;
+import { SaveStatusIndicator } from &#39;@/components/settings/save-status-indicator&#39;
+import { CopyButton } from &#39;./copy-button&#39;
+import { useAutoSave } from &#39;@/hooks/use-auto-save&#39;
+import { parseHashtags } from &#39;./parse-hashtags&#39;
+import type { SocialPost } from &#39;@/types/social&#39;
+
+interface SocialPostEditorProps {
+  videoId: string
+  networkId: string
+  post: SocialPost
+  onPostUpdated: (post: SocialPost) =&gt; void
+}
+
+export function SocialPostEditor({ videoId, networkId, post, onPostUpdated }: SocialPostEditorProps) {
+  const [editCta, setEditCta] = useState(post.cta)
+  const [editBody, setEditBody] = useState(post.body)
+  const [editHashtags, setEditHashtags] = useState(post.hashtags.join(&#39; &#39;))
+
+  const combinedValue = useMemo(() =&gt; ({
+    cta: editCta,
+    body: editBody,
+    hashtags: parseHashtags(editHashtags),
+  }), [editCta, editBody, editHashtags])
+
+  const { saveStatus } = useAutoSave(
+    combinedValue,
+    async (value) =&gt; {
+      const response = await fetch(
+        `/api/videos/${videoId}/social-posts/${networkId}`,
+        {
+          method: &#39;PUT&#39;,
+          headers: { &#39;Content-Type&#39;: &#39;application/json&#39; },
+          body: JSON.stringify(value),
+        }
+      )
+      if (!response.ok) {
+        const err = await response.json().catch(() =&gt; ({}))
+        throw new Error(err.error?.message || &#39;Erro ao salvar post&#39;)
+      }
+      onPostUpdated({ ...post, ...value, processedBy: &#39;manual&#39; })
+    },
+    1500
+  )
+
+  const hashtagsText = useMemo(
+    () =&gt; parseHashtags(editHashtags).join(&#39; &#39;),
+    [editHashtags]
+  )
+
+  return (
+    &lt;div className=&quot;space-y-4&quot;&gt;
+      {/* CTA */}
+      &lt;div className=&quot;space-y-1&quot;&gt;
+        &lt;div className=&quot;flex items-center gap-2&quot;&gt;
+          &lt;Input
+            value={editCta}
+            onChange={(e) =&gt; setEditCta(e.target.value)}
+            className=&quot;font-medium&quot;
+            placeholder=&quot;Call to Action&quot;
+          /&gt;
+          &lt;CopyButton text={editCta} label=&quot;CTA&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      {/* Body */}
+      &lt;div className=&quot;space-y-1&quot;&gt;
+        &lt;div className=&quot;flex items-start gap-2&quot;&gt;
+          &lt;Textarea
+            value={editBody}
+            onChange={(e) =&gt; setEditBody(e.target.value)}
+            className=&quot;min-h-[120px] resize-none&quot;
+            placeholder=&quot;Corpo do post&quot;
+          /&gt;
+          &lt;CopyButton text={editBody} label=&quot;corpo&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      {/* Hashtags */}
+      &lt;div className=&quot;space-y-1&quot;&gt;
+        &lt;div className=&quot;flex items-start gap-2&quot;&gt;
+          &lt;Textarea
+            value={editHashtags}
+            onChange={(e) =&gt; setEditHashtags(e.target.value)}
+            className=&quot;min-h-[60px] resize-none text-sm text-muted-foreground&quot;
+            placeholder=&quot;#hashtag1 #hashtag2&quot;
+          /&gt;
+          &lt;CopyButton text={hashtagsText} label=&quot;hashtags&quot; /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;SaveStatusIndicator status={saveStatus} /&gt;
+    &lt;/div&gt;
+  )
+}
+</code></pre>
+<p><strong>Reprocessamento — inline form pattern:</strong></p>
+<pre><code class="language-typescript">// Dentro de SocialPostColumn, abaixo do SocialPostEditor:
+{post &amp;&amp; !isReprocessing &amp;&amp; (
+  &lt;div className=&quot;px-4 pb-4&quot;&gt;
+    {showReprocessForm ? (
+      &lt;div className=&quot;space-y-3 border border-border rounded-md p-3&quot;&gt;
+        &lt;Textarea
+          value={additionalContext}
+          onChange={(e) =&gt; setAdditionalContext(e.target.value)}
+          maxLength={500}
+          className=&quot;min-h-[80px] resize-none&quot;
+          placeholder=&quot;Ex: Foque mais no convidado principal...&quot;
+        /&gt;
+        &lt;div className=&quot;flex items-center gap-2&quot;&gt;
+          &lt;Button size=&quot;sm&quot; onClick={handleReprocess}&gt;
+            &lt;RefreshCw className=&quot;size-4 mr-2&quot; /&gt;
+            Gerar novamente
+          &lt;/Button&gt;
+          &lt;Button size=&quot;sm&quot; variant=&quot;ghost&quot; onClick={() =&gt; setShowReprocessForm(false)}&gt;
+            Cancelar
+          &lt;/Button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    ) : (
+      &lt;Button variant=&quot;outline&quot; size=&quot;sm&quot; onClick={() =&gt; setShowReprocessForm(true)}&gt;
+        &lt;RefreshCw className=&quot;size-4 mr-2&quot; /&gt;
+        Reprocessar
+      &lt;/Button&gt;
+    )}
+  &lt;/div&gt;
+)}
+</code></pre>
+<p><strong>Teste de clipboard mock:</strong></p>
+<pre><code class="language-typescript">// No beforeEach:
+Object.assign(navigator, {
+  clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+})
+
+// No teste:
+it(&#39;copies text to clipboard on click&#39;, async () =&gt; {
+  render(&lt;CopyButton text=&quot;Hello World&quot; /&gt;)
+  await userEvent.click(screen.getByRole(&#39;button&#39;))
+  expect(navigator.clipboard.writeText).toHaveBeenCalledWith(&#39;Hello World&#39;)
+})
+</code></pre>
+<p><strong>Teste de debounce com fake timers:</strong></p>
+<pre><code class="language-typescript">beforeEach(() =&gt; {
+  vi.useFakeTimers()
+})
+afterEach(() =&gt; {
+  vi.useRealTimers()
+})
+
+it(&#39;auto-saves after 1.5s debounce on CTA change&#39;, async () =&gt; {
+  render(&lt;SocialPostEditor videoId=&quot;v1&quot; networkId=&quot;instagram&quot; post={mockPost} onPostUpdated={vi.fn()} /&gt;)
+
+  await userEvent.type(screen.getByPlaceholderText(&#39;Call to Action&#39;), &#39;X&#39;)
+  expect(mockFetch).not.toHaveBeenCalled()
+
+  await vi.advanceTimersByTimeAsync(1500)
+  expect(mockFetch).toHaveBeenCalledWith(
+    &#39;/api/videos/v1/social-posts/instagram&#39;,
+    expect.objectContaining({ method: &#39;PUT&#39; })
+  )
+})
+</code></pre>
+<p><strong>Teste de parseHashtags:</strong></p>
+<pre><code class="language-typescript">it.each([
+  [&#39;#ai #podcast&#39;, [&#39;#ai&#39;, &#39;#podcast&#39;]],
+  [&#39;ai, podcast tech&#39;, [&#39;#ai&#39;, &#39;#podcast&#39;, &#39;#tech&#39;]],
+  [&#39;#AI #ai #Ai&#39;, [&#39;#AI&#39;]],  // dedup case-insensitive, keep first
+  [&#39;  &#39;, []],
+  [&#39;&#39;, []],
+  [&#39;#hello,,  #world  &#39;, [&#39;#hello&#39;, &#39;#world&#39;]],
+])(&#39;parseHashtags(&quot;%s&quot;) =&gt; %j&#39;, (input, expected) =&gt; {
+  expect(parseHashtags(input)).toEqual(expected)
+})
+</code></pre>
+<h3>Decisão: Campos sempre visíveis vs click-to-edit</h3>
+<p>O componente <code>EditableText</code> existente usa click-to-edit (display → input → display). Para o <code>SocialPostEditor</code>, os campos devem ser <strong>sempre editáveis</strong> (Input/Textarea sempre visíveis), porque:</p>
+<ol>
+<li>O produtor vai editar frequentemente — click-to-edit adiciona fricção</li>
+<li>Auto-save com <code>useAutoSave</code> funciona melhor com controlled inputs permanentes</li>
+<li>Os 3 campos salvam juntos (um único PUT) — se um campo está em modo display, editar outro exigiria lógica complicada</li>
+</ol>
+<h3>Decisão: saveStatus único vs por campo</h3>
+<p>Usar um único <code>useAutoSave</code> com <code>combinedValue</code> (objeto com os 3 campos). Vantagens:</p>
+<ul>
+<li>Um único PUT salva tudo (economiza requests)</li>
+<li>Um único <code>SaveStatusIndicator</code> (UI mais limpa)</li>
+<li>Deep comparison via <code>JSON.stringify</code> detecta mudanças em qualquer campo</li>
+</ul>
+<h3>Post prop sync</h3>
+<p>Quando o post é atualizado externamente (e.g., via reprocessamento LLM), os state locais (<code>editCta</code>, <code>editBody</code>, <code>editHashtags</code>) precisam ser sincronizados. Usar <code>useEffect</code> com dependência em <code>post</code>:</p>
+<pre><code class="language-typescript">useEffect(() =&gt; {
+  setEditCta(post.cta)
+  setEditBody(post.body)
+  setEditHashtags(post.hashtags.join(&#39; &#39;))
+}, [post.cta, post.body, post.hashtags])
+</code></pre>
+<p>Nota: Isso pode causar re-render e resetar o timer do <code>useAutoSave</code>. Isso é desejável — após reprocessamento, o timer reseta e o <code>lastSavedValueRef</code> do hook será atualizado pelo <code>isFirstRender</code> skip.</p>
+<h3>Backward Compatibility</h3>
+<p>Esta story modifica componentes criados nas Stories 14.9 (<code>social-post-column.tsx</code>, <code>social-columns-layout.tsx</code>, <code>use-social-posts.ts</code>) de forma aditiva. Cria novos componentes (<code>copy-button.tsx</code>, <code>social-post-editor.tsx</code>). Nenhum componente existente do app é alterado.</p>
+<h3>Learnings das Stories Anteriores</h3>
+<ul>
+<li>Story 14.1: <code>localStorage.clear()</code> no <code>beforeEach</code> para evitar leaks</li>
+<li>Story 14.4: <code>useAccordionState</code> usa localStorage — limpar sempre</li>
+<li>Story 14.6: <code>context.params</code> é <code>Promise</code> no Next.js 15 — já tratado no backend</li>
+<li>Story 14.7: <code>additionalContext</code> é <code>z.string().max(500).optional()</code> — schema já valida</li>
+<li>Story 14.7: <code>SocialPostUpdateSchema.parse(data)</code> antes de persistir — backend já faz</li>
+<li>Story 14.9: <code>useSocialPosts</code> hook gerencia posts — estender com <code>updatePost</code> e <code>reprocessNetwork</code></li>
+<li>Story 14.9: <code>ProcessingSpinner</code> de <code>wizard/processing-spinner.tsx</code> reutilizável</li>
+</ul>
+<h3>Enforcement Rules Aplicáveis</h3>
+<table>
+<thead>
+<tr>
+<th>Regra</th>
+<th>Aplicação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#2 Zod validation</td>
+<td>Não aplicável (frontend). Backend já valida PUT body com Zod</td>
+</tr>
+<tr>
+<td>#5 Import order</td>
+<td>React/Next → lucide-react → @/components → @/hooks → @/lib → @/types</td>
+</tr>
+<tr>
+<td>#6 Kebab-case files</td>
+<td><code>copy-button.tsx</code>, <code>social-post-editor.tsx</code>, <code>parse-hashtags.ts</code></td>
+</tr>
+<tr>
+<td>#7 Test naming</td>
+<td><code>it(&#39;verbo + comportamento&#39;)</code>, co-localizados</td>
+</tr>
+<tr>
+<td>#9 Structured logging</td>
+<td><code>log()</code> se necessário (provavelmente não nesta story)</td>
+</tr>
+<tr>
+<td>#10 selectedVideoId via URL</td>
+<td>Já implementado nas Stories 14.8/14.9 — manter</td>
+</tr>
+<tr>
+<td>#11 Import type</td>
+<td><code>import type</code> para tipos-only</td>
+</tr>
+<tr>
+<td>#16 Ambiguity Escalation</td>
+<td>Se dúvida sobre UX do reprocess form, PERGUNTAR</td>
+</tr>
+</tbody></table>
+<h3>References</h3>
+<ul>
+<li>[Source: epic-14-redes-sociais.md#Story 14.10]</li>
+<li>[Source: hooks/use-auto-save.ts — auto-save hook com debounce 1.5s]</li>
+<li>[Source: components/settings/save-status-indicator.tsx — indicador de save status]</li>
+<li>[Source: components/ui/editable-text.tsx — padrão click-to-edit (NÃO usar, referência)]</li>
+<li>[Source: app/api/videos/[videoId]/social-posts/[networkId]/route.ts — PUT endpoint]</li>
+<li>[Source: app/api/videos/[videoId]/social-posts/[networkId]/generate/route.ts — POST reprocess]</li>
+<li>[Source: lib/schemas/social.ts — SocialPostUpdateSchema (cta, body, hashtags)]</li>
+</ul>
+<h2>Dev Agent Record</h2>
+<h3>Agent Model Used</h3>
+<p>Claude Opus 4.6 (claude-opus-4-6)</p>
+<h3>Debug Log References</h3>
+<ul>
+<li>CopyButton: <code>Object.assign(navigator, { clipboard })</code> fails in jsdom (read-only). Fix: <code>Object.defineProperty(navigator, &#39;clipboard&#39;, { configurable: true })</code></li>
+<li>CopyButton: <code>userEvent.click</code> with <code>vi.useFakeTimers()</code> causes timeout. Fix: use <code>fireEvent.click</code> + <code>act()</code> for timer-dependent tests</li>
+<li>SocialPostEditor: <code>vi.useFakeTimers()</code> without <code>shouldAdvanceTime: true</code> blocks <code>userEvent.type</code>. Fix: <code>vi.useFakeTimers({ shouldAdvanceTime: true })</code></li>
+<li>SocialPostEditor: <code>onPostUpdated</code> callback not called after <code>vi.advanceTimersByTimeAsync</code> — async fetch mock needs explicit promise resolution. Fix: use pending promise pattern with manual <code>resolveSave()</code> + <code>await act()</code></li>
+</ul>
+<h3>Completion Notes List</h3>
+<ul>
+<li>All 8 ACs implemented and tested</li>
+<li>CopyButton: reusable standalone component with clipboard API + 2s feedback</li>
+<li>parseHashtags: pure function, extracted to its own file for testability</li>
+<li>SocialPostEditor: always-editable fields (not click-to-edit) with combined auto-save via useAutoSave</li>
+<li>Reprocessing: inline form with additionalContext (max 500 chars), delegates to hook via callback</li>
+<li>Post sync: useEffect on post.cta/body/hashtags re-initializes editor state after reprocessing</li>
+<li>useSocialPosts hook extended with reprocessNetwork, updatePost, reprocessingNetworkId</li>
+<li>SocialPostColumn: static display replaced with SocialPostEditor when post exists</li>
+</ul>
+<h3>Change Log</h3>
+<p>11 arquivos (5 novos + 6 modificados), 1953 testes (105 suites), 0 falhas</p>
+<h3>Senior Developer Review</h3>
+<p>Adversarial code review 2026-02-24. 7 issues found (2 HIGH, 3 MEDIUM, 2 LOW). All HIGH and MEDIUM fixed:</p>
+<p><strong>H1 FIXED</strong>: <code>reprocessNetwork</code> error handling disconnect — hook agora re-throws errors (em vez de engolir no errors map), permitindo que <code>SocialPostColumn.handleReprocess</code> capture e exiba via <code>reprocessError</code> local state. Error map reservado para erros de geração inicial.</p>
+<p><strong>H2 FIXED</strong>: <code>reprocessNetwork</code> fetch sem AbortController — adicionado <code>signal: abortControllerRef.current?.signal</code> para cancelar reprocessamento quando vídeo muda, prevenindo atualização de posts do vídeo errado.</p>
+<p><strong>M1 FIXED</strong>: <code>CopyButton</code> setTimeout leak — adicionado <code>useRef</code> + <code>clearTimeout</code> para limpar timeouts anteriores em cliques rápidos + cleanup no unmount.</p>
+<p><strong>M2 FIXED</strong>: Validação de CTA/body vazio — <code>saveFn</code> agora retorna early sem fazer PUT quando <code>cta.trim()</code> ou <code>body.trim()</code> é vazio.</p>
+<p><strong>M3 FIXED</strong>: <code>useEffect</code> hashtags array dep — extraída variável <code>hashtagsJoined = post.hashtags.join(&#39; &#39;)</code> como dep estável (string, comparação por valor) em vez de array reference.</p>
+<p><strong>L1 FIXED</strong>: File count no Change Log corrigido de &quot;9 arquivos (4+5)&quot; para &quot;11 arquivos (5+6)&quot;.</p>
+<p><strong>L2 NOT FIXED (LOW)</strong>: Mock do SocialColumnsLayout não verifica callback props — aceitável para o nível de integração deste teste.</p>
+<h3>File List</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Arquivo</th>
+<th>Status</th>
+<th>Testes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>src/components/social/copy-button.tsx</code></td>
+<td>Novo</td>
+<td>4</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>src/components/social/copy-button.test.tsx</code></td>
+<td>Novo</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>src/components/social/parse-hashtags.ts</code></td>
+<td>Novo</td>
+<td>6 (in editor test)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>src/components/social/social-post-editor.tsx</code></td>
+<td>Novo</td>
+<td>6</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>src/components/social/social-post-editor.test.tsx</code></td>
+<td>Novo</td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>src/components/social/social-post-column.tsx</code></td>
+<td>Modificado</td>
+<td>13 (+6)</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>src/components/social/social-post-column.test.tsx</code></td>
+<td>Modificado</td>
+<td>—</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>src/components/social/social-columns-layout.tsx</code></td>
+<td>Modificado</td>
+<td>6 (+2)</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>src/components/social/social-columns-layout.test.tsx</code></td>
+<td>Modificado</td>
+<td>—</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>src/hooks/use-social-posts.ts</code></td>
+<td>Modificado</td>
+<td>12 (+4)</td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>src/hooks/use-social-posts.test.ts</code></td>
+<td>Modificado</td>
+<td>—</td>
+</tr>
+</tbody></table>
+
+  </main>
+</body>
+</html>
