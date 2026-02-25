@@ -78,7 +78,7 @@ export function SettingsPanel() {
       </div>
       <ScrollArea className="flex-1 overflow-hidden">
         <div className="p-6">
-          <SettingsPageClient podcast={podcast} socialNetworks={socialNetworks} />
+          <SettingsPageClient podcast={podcast} socialNetworks={socialNetworks ?? undefined} />
         </div>
       </ScrollArea>
     </div>

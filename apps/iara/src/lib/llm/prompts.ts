@@ -510,14 +510,14 @@ export function buildPhasePrompt(
   // Try to get prompt from the video type's prompts
   // Fallback chain: videoType -> episode -> BASE_SYSTEM_PROMPTS
   let phasePrompt = getPhasePromptFromVideoType(
-    prompts[videoType] as Record<string, { description: string; expectedOutput: string } | undefined>,
+    prompts[videoType] as unknown as Record<string, { description: string; expectedOutput: string } | undefined>,
     config.promptKey
   )
 
   // If not found and not already episode, try episode prompts as fallback
   if (!phasePrompt && videoType !== 'episode') {
     phasePrompt = getPhasePromptFromVideoType(
-      prompts.episode as Record<string, { description: string; expectedOutput: string } | undefined>,
+      prompts.episode as unknown as Record<string, { description: string; expectedOutput: string } | undefined>,
       config.promptKey
     )
   }
