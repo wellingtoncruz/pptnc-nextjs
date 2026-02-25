@@ -160,6 +160,91 @@ describe('SettingsPageClient', () => {
     })
   })
 
+  it('shows Social Networks accordion when socialMedia feature is enabled and networks provided', () => {
+    const podcastWithSocialMedia = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true },
+    }
+    const mockNetworks = [
+      { id: 'instagram', name: 'Instagram', icon: '📷' },
+    ]
+
+    render(<SettingsPageClient podcast={podcastWithSocialMedia} socialNetworks={mockNetworks} />)
+
+    expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+  })
+
+  it('hides Social Networks accordion when socialMedia feature is disabled', () => {
+    const podcastNoSocial = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false },
+    }
+    const mockNetworks = [
+      { id: 'instagram', name: 'Instagram', icon: '📷' },
+    ]
+
+    render(<SettingsPageClient podcast={podcastNoSocial} socialNetworks={mockNetworks} />)
+
+    expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
+  })
+
+  it('hides Social Networks accordion when socialNetworks is null', () => {
+    const podcastWithSocialMedia = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithSocialMedia} socialNetworks={null as never} />)
+
+    expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
+  })
+
+  it('sends nested social prompt via social. path in PATCH body', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcastWithSocial = {
+      ...mockPodcast,
+      enabledSocialNetworks: ['instagram'],
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true },
+    }
+    const mockNetworks = [{ id: 'instagram', name: 'Instagram', icon: '📷' }]
+
+    render(<SettingsPageClient podcast={podcastWithSocial} socialNetworks={mockNetworks} />)
+
+    // Open the Prompts accordion section
+    await user.click(screen.getByText('Prompts por Tipo de Vídeo'))
+
+    // Open the Episode accordion inside prompts
+    const accordionTriggers = screen.getAllByText('Episódios')
+    await user.click(accordionTriggers[0])
+
+    await waitFor(() => {
+      expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
+    })
+
+    // Find the social prompt textarea (last one after the 7 episode fields)
+    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
+    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    await user.clear(socialTextarea)
+    await user.type(socialTextarea, 'Instagram post prompt')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/podcast',
+        expect.objectContaining({ method: 'PATCH' })
+      )
+    })
+
+    // Verify the body contains the nested social prompt structure
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0]
+    const body = JSON.parse(fetchCall[1]?.body as string)
+    expect(body.prompts.episode.social.instagram.description).toBe('Instagram post prompt')
+  })
+
   it('shows error when API call fails for duration settings', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     global.fetch = vi.fn().mockResolvedValue({

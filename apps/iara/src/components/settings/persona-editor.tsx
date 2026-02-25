@@ -24,7 +24,7 @@ const ObjectiveSchema = z.string().max(MAX_OBJECTIVE_LENGTH, `Objetivo deve ter 
 const ResumeSchema = z.string().max(MAX_RESUME_LENGTH, `Resumo deve ter no máximo ${MAX_RESUME_LENGTH} caracteres`)
 
 interface PersonaEditorProps {
-  personaKey: 'critic' | 'writer'
+  personaKey: 'critic' | 'writer' | 'socialmedia'
   label: string
   initialValue: Persona
   onSave: (value: Persona) => Promise<void>

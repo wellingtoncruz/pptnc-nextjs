@@ -220,6 +220,87 @@ describe('Sidebar', () => {
     expect(screen.getByText('Notícias')).toBeInTheDocument()
   })
 
+  it('exibe Redes Sociais quando features.socialMedia=true e enabledSocialNetworks tem itens', async () => {
+    render(<Sidebar features={{ socialMedia: true }} enabledSocialNetworks={['instagram', 'twitter']} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+  })
+
+  it('oculta Redes Sociais quando features.socialMedia=false', async () => {
+    render(<Sidebar features={{ socialMedia: false }} enabledSocialNetworks={['instagram']} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
+  })
+
+  it('oculta Redes Sociais quando enabledSocialNetworks está vazio', async () => {
+    render(<Sidebar features={{ socialMedia: true }} enabledSocialNetworks={[]} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
+  })
+
+  it('oculta Redes Sociais quando features é undefined (backward-compat)', async () => {
+    render(<Sidebar enabledSocialNetworks={['instagram']} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
+  })
+
+  it('oculta Redes Sociais quando enabledSocialNetworks é undefined (omitido)', async () => {
+    render(<Sidebar features={{ socialMedia: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
+  })
+
+  it('destaca Redes Sociais quando view=social está ativo', async () => {
+    const { useSearchParams } = await import('next/navigation')
+    vi.mocked(useSearchParams).mockReturnValue({
+      get: vi.fn((key: string) => (key === 'view' ? 'social' : null)),
+    } as any)
+
+    render(<Sidebar features={{ socialMedia: true }} enabledSocialNetworks={['instagram']} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+    })
+
+    const socialLink = screen.getByText('Redes Sociais').closest('a')
+    expect(socialLink).toHaveClass('bg-accent')
+
+    // Vídeos should NOT be active when social is active
+    const videosLink = screen.getByText('Vídeos').closest('a')
+    expect(videosLink).not.toHaveClass('bg-accent')
+  })
+
+  it('link Redes Sociais aponta para /videos?view=social', async () => {
+    render(<Sidebar features={{ socialMedia: true }} enabledSocialNetworks={['instagram']} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+    })
+
+    const socialLink = screen.getByText('Redes Sociais').closest('a')
+    expect(socialLink).toHaveAttribute('href', '/videos?view=social')
+  })
+
   it('exibe Editorial para usuários não-admin', async () => {
     // Mock non-admin user
     const { useSession } = await import('next-auth/react')

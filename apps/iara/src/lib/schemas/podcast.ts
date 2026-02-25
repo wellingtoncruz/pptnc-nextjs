@@ -75,7 +75,7 @@ export const PromptFieldSchema = z.object({
 /**
  * Episode prompts - prompts specific to full episodes.
  *
- * Includes: critique, editing, compliance, chapters, titles, description, tags
+ * Includes: critique, editing, compliance, chapters, titles, description, tags, social (optional)
  */
 export const EpisodePromptsSchema = z.object({
   critique: PromptFieldSchema,
@@ -85,29 +85,35 @@ export const EpisodePromptsSchema = z.object({
   titles: PromptFieldSchema,
   description: PromptFieldSchema,
   tags: PromptFieldSchema,
+  /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
+  social: z.record(z.string(), PromptFieldSchema).optional(),
 })
 
 /**
  * Cut prompts - prompts specific to video cuts.
  *
- * Includes: titles, thumbs, description, tags
+ * Includes: titles, thumbs, description, tags, social (optional)
  */
 export const CutPromptsSchema = z.object({
   titles: PromptFieldSchema,
   thumbs: PromptFieldSchema,
   description: PromptFieldSchema,
   tags: PromptFieldSchema,
+  /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
+  social: z.record(z.string(), PromptFieldSchema).optional(),
 })
 
 /**
  * Reel prompts - prompts specific to short reels.
  *
- * Includes: titles, description, tags
+ * Includes: titles, description, tags, social (optional)
  */
 export const ReelPromptsSchema = z.object({
   titles: PromptFieldSchema,
   description: PromptFieldSchema,
   tags: PromptFieldSchema,
+  /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
+  social: z.record(z.string(), PromptFieldSchema).optional(),
 })
 
 /**
@@ -140,10 +146,12 @@ export const PersonaSchema = z.object({
  * Includes:
  * - critic: Persona for critique/review tasks
  * - writer: Persona for content writing tasks
+ * - socialmedia: Persona for social media post generation (optional, backward-compatible)
  */
 export const PersonasSchema = z.object({
   critic: PersonaSchema,
   writer: PersonaSchema,
+  socialmedia: PersonaSchema.optional(),
 })
 
 /**
@@ -224,6 +232,7 @@ export const DEFAULT_PERSONA = {
 export const DEFAULT_PERSONAS = {
   critic: { ...DEFAULT_PERSONA },
   writer: { ...DEFAULT_PERSONA },
+  socialmedia: { ...DEFAULT_PERSONA },
 }
 
 /**
@@ -243,12 +252,16 @@ export const PodcastSchema = z.object({
   hostName: z.string().max(200, 'Nome do host deve ter no máximo 200 caracteres').optional(),
   /** YouTube footer text appended to video descriptions. */
   youtubeFooter: z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional(),
+  /** IDs of social networks enabled for this podcast. Undefined/absent = none enabled. */
+  enabledSocialNetworks: z.array(z.string()).optional(),
   /** Feature toggles for optional sections and sync behavior. */
   features: z.object({
     editorial: z.boolean().default(true),
     news: z.boolean().default(true),
     /** Include videos generated from livestreams in sync. Default: false (skip lives). */
     includeLivestreams: z.boolean().default(false),
+    /** Enable social media posts section. Default: false (hidden until explicitly enabled). */
+    socialMedia: z.boolean().default(false),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

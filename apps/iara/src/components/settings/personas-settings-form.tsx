@@ -1,26 +1,28 @@
 'use client'
 
 import { PersonaEditor } from './persona-editor'
+import { DEFAULT_PERSONA } from '@/lib/schemas/podcast'
 import type { Personas, Persona } from '@/types/podcast'
 
 interface PersonasSettingsFormProps {
   personas: Personas
-  onSavePersona: (personaKey: 'critic' | 'writer', value: Persona) => Promise<void>
+  onSavePersona: (personaKey: 'critic' | 'writer' | 'socialmedia', value: Persona) => Promise<void>
 }
 
 /**
  * Labels for personas in PT-BR.
  */
-const PERSONA_LABELS: Record<'critic' | 'writer', string> = {
+const PERSONA_LABELS: Record<'critic' | 'writer' | 'socialmedia', string> = {
   critic: 'Crítico',
   writer: 'Redator',
+  socialmedia: 'Gerente de Mídia',
 }
 
 /**
  * Form for editing LLM personas.
  *
  * Features:
- * - Two persona editors (critic, writer)
+ * - Three persona editors (critic, writer, socialmedia)
  * - PersonaEditor for each persona with auto-save
  * - Labels in PT-BR
  *
@@ -41,6 +43,12 @@ export function PersonasSettingsForm({ personas, onSavePersona }: PersonasSettin
         label={PERSONA_LABELS.writer}
         initialValue={personas.writer}
         onSave={(value) => onSavePersona('writer', value)}
+      />
+      <PersonaEditor
+        personaKey="socialmedia"
+        label={PERSONA_LABELS.socialmedia}
+        initialValue={personas.socialmedia ?? DEFAULT_PERSONA}
+        onSave={(value) => onSavePersona('socialmedia', value)}
       />
     </div>
   )

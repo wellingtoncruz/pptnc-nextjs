@@ -191,6 +191,21 @@ describe('EpisodePromptsSchema', () => {
     const incomplete = { critique: validPromptField }
     expect(() => EpisodePromptsSchema.parse(incomplete)).toThrow(ZodError)
   })
+
+  it('accepts optional social prompts record', () => {
+    const withSocial = {
+      ...validPrompts.episode,
+      social: { instagram: validPromptField, linkedin: validPromptField },
+    }
+    const result = EpisodePromptsSchema.parse(withSocial)
+    expect(result.social?.instagram).toEqual(validPromptField)
+    expect(result.social?.linkedin).toEqual(validPromptField)
+  })
+
+  it('works without social field (backward compat)', () => {
+    const result = EpisodePromptsSchema.parse(validPrompts.episode)
+    expect(result.social).toBeUndefined()
+  })
 })
 
 describe('CutPromptsSchema', () => {
@@ -206,6 +221,20 @@ describe('CutPromptsSchema', () => {
     const incomplete = { titles: validPromptField }
     expect(() => CutPromptsSchema.parse(incomplete)).toThrow(ZodError)
   })
+
+  it('accepts optional social prompts record', () => {
+    const withSocial = {
+      ...validPrompts.cut,
+      social: { instagram: validPromptField },
+    }
+    const result = CutPromptsSchema.parse(withSocial)
+    expect(result.social?.instagram).toEqual(validPromptField)
+  })
+
+  it('works without social field (backward compat)', () => {
+    const result = CutPromptsSchema.parse(validPrompts.cut)
+    expect(result.social).toBeUndefined()
+  })
 })
 
 describe('ReelPromptsSchema', () => {
@@ -219,6 +248,20 @@ describe('ReelPromptsSchema', () => {
   it('rejects missing fields', () => {
     const incomplete = { titles: validPromptField }
     expect(() => ReelPromptsSchema.parse(incomplete)).toThrow(ZodError)
+  })
+
+  it('accepts optional social prompts record', () => {
+    const withSocial = {
+      ...validPrompts.reel,
+      social: { linkedin: validPromptField },
+    }
+    const result = ReelPromptsSchema.parse(withSocial)
+    expect(result.social?.linkedin).toEqual(validPromptField)
+  })
+
+  it('works without social field (backward compat)', () => {
+    const result = ReelPromptsSchema.parse(validPrompts.reel)
+    expect(result.social).toBeUndefined()
   })
 })
 
@@ -292,6 +335,21 @@ describe('PersonasSchema', () => {
   it('rejects missing writer', () => {
     const incomplete = { critic: validPersona }
     expect(() => PersonasSchema.parse(incomplete)).toThrow(ZodError)
+  })
+
+  it('accepts personas without socialmedia (backward-compat)', () => {
+    const withoutSocialmedia = { critic: validPersona, writer: validPersona }
+    const result = PersonasSchema.parse(withoutSocialmedia)
+    expect(result.critic).toBeDefined()
+    expect(result.writer).toBeDefined()
+    expect(result.socialmedia).toBeUndefined()
+  })
+
+  it('accepts personas with socialmedia', () => {
+    const withSocialmedia = { critic: validPersona, writer: validPersona, socialmedia: validPersona }
+    const result = PersonasSchema.parse(withSocialmedia)
+    expect(result.socialmedia).toBeDefined()
+    expect(result.socialmedia?.role).toBe(validPersona.role)
   })
 })
 
@@ -377,6 +435,57 @@ describe('PodcastSchema', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { personas: _removed, ...withoutPersonas } = validPodcast
     expect(() => PodcastSchema.parse(withoutPersonas)).toThrow(ZodError)
+  })
+})
+
+describe('PodcastSchema features defaults', () => {
+  it('defaults socialMedia to false when not provided', () => {
+    const withFeatures = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false } }
+    const result = PodcastSchema.parse(withFeatures)
+    expect(result.features?.socialMedia).toBe(false)
+  })
+
+  it('defaults all features when features object is omitted', () => {
+    // features is .optional() — when omitted, result.features is undefined
+    const result = PodcastSchema.parse(validPodcast)
+    expect(result.features).toBeUndefined()
+  })
+
+  it('preserves socialMedia true when explicitly set', () => {
+    const withSocial = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true } }
+    const result = PodcastSchema.parse(withSocial)
+    expect(result.features?.socialMedia).toBe(true)
+  })
+})
+
+describe('PodcastSchema enabledSocialNetworks', () => {
+  it('accepts enabledSocialNetworks array', () => {
+    const withNetworks = { ...validPodcast, enabledSocialNetworks: ['instagram', 'linkedin'] }
+    const result = PodcastSchema.parse(withNetworks)
+    expect(result.enabledSocialNetworks).toEqual(['instagram', 'linkedin'])
+  })
+
+  it('works without enabledSocialNetworks (backward compat)', () => {
+    const result = PodcastSchema.parse(validPodcast)
+    expect(result.enabledSocialNetworks).toBeUndefined()
+  })
+
+  it('accepts empty enabledSocialNetworks array', () => {
+    const withEmpty = { ...validPodcast, enabledSocialNetworks: [] }
+    const result = PodcastSchema.parse(withEmpty)
+    expect(result.enabledSocialNetworks).toEqual([])
+  })
+})
+
+describe('PodcastUpdateSchema enabledSocialNetworks', () => {
+  it('accepts partial update with enabledSocialNetworks', () => {
+    const result = PodcastUpdateSchema.parse({ enabledSocialNetworks: ['instagram'] })
+    expect(result.enabledSocialNetworks).toEqual(['instagram'])
+  })
+
+  it('does not inject enabledSocialNetworks into unrelated updates', () => {
+    const result = PodcastUpdateSchema.parse({ name: 'Updated' })
+    expect(result).not.toHaveProperty('enabledSocialNetworks')
   })
 })
 
@@ -520,9 +629,10 @@ describe('DEFAULT_PROMPTS', () => {
 })
 
 describe('DEFAULT_PERSONAS', () => {
-  it('has critic and writer', () => {
+  it('has critic, writer and socialmedia', () => {
     expect(DEFAULT_PERSONAS.critic).toBeDefined()
     expect(DEFAULT_PERSONAS.writer).toBeDefined()
+    expect(DEFAULT_PERSONAS.socialmedia).toBeDefined()
   })
 
   it('validates against PersonasSchema', () => {

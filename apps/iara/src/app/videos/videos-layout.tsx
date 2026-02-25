@@ -14,6 +14,7 @@ import { SettingsPanel } from '@/components/settings/settings-panel'
 import { EditorialPanel } from '@/components/editorial/editorial-panel'
 import { UserListPanel } from '@/components/users/user-list-panel'
 import { NewsPanel } from '@/components/news/news-panel'
+import { SocialLayout } from '@/components/social/social-layout'
 import { useVideos } from '@/hooks/use-videos'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { log } from '@/lib/logger'
@@ -35,12 +36,16 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
 
   const currentView = searchParams.get('view')
 
-  // Podcast feature toggles (editorial, news)
-  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean }>()
+  // Podcast feature toggles (editorial, news, socialMedia)
+  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean }>()
+  const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   useEffect(() => {
     fetch('/api/podcast')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.data?.features) setPodcastFeatures(d.data.features) })
+      .then(d => {
+        if (d?.data?.features) setPodcastFeatures(d.data.features)
+        if (d?.data?.enabledSocialNetworks) setEnabledSocialNetworks(d.data.enabledSocialNetworks)
+      })
       .catch(() => { /* features default to enabled on error */ })
   }, [])
 
@@ -144,7 +149,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
         </div>
         <div className="flex-1">
           <SettingsPanel />
@@ -163,7 +168,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
         </div>
         <div className="flex-1 overflow-hidden">
           <EditorialPanel />
@@ -182,12 +187,33 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
         </div>
         <div className="flex-1 overflow-hidden">
           <NewsPanel />
         </div>
       </div>
+    )
+  }
+
+  // When in social view, show sidebar and social layout
+  // Redirect if feature is disabled
+  if (currentView === 'social') {
+    if (podcastFeatures?.socialMedia === false) {
+      router.replace('/videos')
+      return null
+    }
+    return (
+      <LLMProcessingProvider>
+        <div className="flex h-screen">
+          <div className="shrink-0">
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <SocialLayout enabledSocialNetworks={enabledSocialNetworks} />
+          </div>
+        </div>
+      </LLMProcessingProvider>
     )
   }
 
@@ -199,7 +225,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -214,7 +240,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -226,7 +252,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
         </div>
         <div className="flex-1">
           <UserListPanel />
@@ -252,7 +278,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         error={syncError}
       />
       <MasterDetailLayout
-        sidebar={<Sidebar userName={userName} features={podcastFeatures} />}
+        sidebar={<Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />}
         list={
           <VideoListPanel
             videos={videos}
@@ -270,6 +296,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
             onVideoReopened={refresh}
+            variant="editorial"
           />
         }
         detail={<VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} onVideoStatusChange={refresh} />}

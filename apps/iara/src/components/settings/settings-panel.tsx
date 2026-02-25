@@ -13,6 +13,7 @@ import type { SerializedPodcast } from '@/types/podcast'
  */
 export function SettingsPanel() {
   const [podcast, setPodcast] = useState<SerializedPodcast | null>(null)
+  const [socialNetworks, setSocialNetworks] = useState<Array<{ id: string; name: string; icon: string }> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,7 +33,19 @@ export function SettingsPanel() {
       }
     }
 
+    async function fetchSocialNetworks() {
+      try {
+        const response = await fetch('/api/social-networks')
+        if (!response.ok) return
+        const data = await response.json()
+        if (data?.data) setSocialNetworks(data.data)
+      } catch {
+        // graceful degradation — empty list
+      }
+    }
+
     fetchPodcast()
+    fetchSocialNetworks()
   }, [])
 
   if (isLoading) {
@@ -65,7 +78,7 @@ export function SettingsPanel() {
       </div>
       <ScrollArea className="flex-1 overflow-hidden">
         <div className="p-6">
-          <SettingsPageClient podcast={podcast} />
+          <SettingsPageClient podcast={podcast} socialNetworks={socialNetworks} />
         </div>
       </ScrollArea>
     </div>

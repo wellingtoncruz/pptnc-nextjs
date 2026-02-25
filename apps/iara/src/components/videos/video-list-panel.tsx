@@ -34,6 +34,10 @@ interface VideoListPanelProps {
   onStatusFilterChange?: (status: VideoStatusFilter) => void
   // Reopen callback (refreshes list after sent → draft)
   onVideoReopened?: () => void
+  // Exclude specific video types from type filter tabs
+  excludeTypes?: VideoTypeFilter[]
+  // Variant: 'editorial' (default) = Videos tab behavior, 'social' = Social tab behavior
+  variant?: 'editorial' | 'social'
 }
 
 const typeLabels: Record<VideoTypeFilter, string> = {
@@ -79,7 +83,12 @@ export function VideoListPanel({
   statusFilter = 'not_sent',
   onStatusFilterChange,
   onVideoReopened,
+  excludeTypes,
+  variant = 'editorial',
 }: VideoListPanelProps) {
+  const isSocial = variant === 'social'
+  const sentAppearance = isSocial ? 'highlighted' : 'dimmed'
+
   // Derive "only new" from statusFilter (not_sent means all except sent)
   const onlyNewVideos = statusFilter === 'not_sent'
 
@@ -119,9 +128,9 @@ export function VideoListPanel({
         return -1 // No navigable video found
       }
 
-      // Navigate to video: select if normal, open reopen dialog if sent
+      // Navigate to video: select if normal, open reopen dialog if sent (editorial only)
       const navigateToVideo = (video: VideoSummary) => {
-        if (video.status === 'sent') {
+        if (video.status === 'sent' && !isSocial) {
           handleReopenRequest(video.id)
         } else {
           onVideoSelect(video.id)
@@ -160,7 +169,7 @@ export function VideoListPanel({
         }
       }
     },
-    [videos, selectedVideoId, onVideoSelect, handleReopenRequest]
+    [videos, selectedVideoId, onVideoSelect, handleReopenRequest, isSocial]
   )
 
   // Auto-scroll to selected item
@@ -183,31 +192,35 @@ export function VideoListPanel({
       <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4 overflow-hidden">
         <h2 className="min-w-0 truncate text-lg font-semibold">Vídeos</h2>
         <div className="flex shrink-0 items-center gap-3">
-          {/* Only new videos switch */}
-          <div className="flex items-center gap-2">
-            <Switch
-              id="only-new-videos"
-              checked={onlyNewVideos}
-              onCheckedChange={handleOnlyNewToggle}
+          {/* Only new videos switch — hidden in social variant */}
+          {!isSocial && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="only-new-videos"
+                checked={onlyNewVideos}
+                onCheckedChange={handleOnlyNewToggle}
+                size="sm"
+              />
+              <Label
+                htmlFor="only-new-videos"
+                className="cursor-pointer text-xs text-muted-foreground whitespace-nowrap"
+              >
+                Só novos
+              </Label>
+            </div>
+          )}
+          {onSync && (
+            <Button
+              variant="outline"
               size="sm"
-            />
-            <Label
-              htmlFor="only-new-videos"
-              className="cursor-pointer text-xs text-muted-foreground whitespace-nowrap"
+              onClick={onSync}
+              disabled={isSyncing}
+              className="shrink-0 gap-2"
             >
-              Só novos
-            </Label>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onSync}
-            disabled={isSyncing}
-            className="shrink-0 gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">{isSyncing ? 'Verificando...' : 'Verificar novos'}</span>
-          </Button>
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isSyncing ? 'Verificando...' : 'Verificar novos'}</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -218,7 +231,9 @@ export function VideoListPanel({
           onValueChange={(value) => onTypeFilterChange?.(value as VideoTypeFilter)}
         >
           <TabsList className="w-full">
-            {(Object.keys(typeLabels) as VideoTypeFilter[]).map((type) => (
+            {(Object.keys(typeLabels) as VideoTypeFilter[])
+              .filter((type) => !excludeTypes?.includes(type))
+              .map((type) => (
               <TabsTrigger key={type} value={type} className="flex-1 text-xs">
                 {typeLabels[type]}
               </TabsTrigger>
@@ -236,7 +251,7 @@ export function VideoListPanel({
         {!isLoading && error && <VideoListErrorState message={error} />}
 
         {/* Empty state */}
-        {!isLoading && !error && !hasVideos && <VideoListEmptyState />}
+        {!isLoading && !error && !hasVideos && <VideoListEmptyState showSyncHint={!!onSync} />}
 
         {/* Video list */}
         {!isLoading && !error && hasVideos && (
@@ -254,7 +269,8 @@ export function VideoListPanel({
                 video={video}
                 isSelected={selectedVideoId === video.id}
                 onSelect={onVideoSelect ?? (() => {})}
-                onReopenRequest={handleReopenRequest}
+                onReopenRequest={isSocial ? undefined : handleReopenRequest}
+                sentAppearance={sentAppearance}
               />
             ))}
           </div>
@@ -289,12 +305,14 @@ export function VideoListPanel({
       )}
     </div>
 
-    <ReopenVideoDialog
-      videoId={reopenVideoId}
-      open={isReopenDialogOpen}
-      onOpenChange={setIsReopenDialogOpen}
-      onSuccess={handleReopenSuccess}
-    />
+    {!isSocial && (
+      <ReopenVideoDialog
+        videoId={reopenVideoId}
+        open={isReopenDialogOpen}
+        onOpenChange={setIsReopenDialogOpen}
+        onSuccess={handleReopenSuccess}
+      />
+    )}
     </>
   )
 }
@@ -324,7 +342,7 @@ function VideoListLoadingState() {
 /**
  * Empty state shown when no videos are available.
  */
-function VideoListEmptyState() {
+function VideoListEmptyState({ showSyncHint = true }: { showSyncHint?: boolean }) {
   return (
     <div
       data-testid="video-list-empty"
@@ -332,9 +350,11 @@ function VideoListEmptyState() {
     >
       <Inbox className="h-12 w-12 text-muted-foreground/50" />
       <h3 className="mt-4 text-lg font-medium">Nenhum vídeo encontrado</h3>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Clique em &quot;Verificar novos&quot; para buscar vídeos do seu canal.
-      </p>
+      {showSyncHint && (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Clique em &quot;Verificar novos&quot; para buscar vídeos do seu canal.
+        </p>
+      )}
     </div>
   )
 }

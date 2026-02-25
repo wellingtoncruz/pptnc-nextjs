@@ -12,6 +12,12 @@ vi.mock('@/lib/logger', () => ({
 // Import after mocks
 import { PromptsSettingsForm } from './prompts-settings-form'
 
+const defaultProps = {
+  prompts: DEFAULT_PROMPTS,
+  enabledSocialNetworks: [] as string[],
+  socialNetworks: [] as Array<{ id: string; name: string; icon: string }>,
+}
+
 describe('PromptsSettingsForm', () => {
   const mockOnSavePromptField = vi.fn<
     (videoType: 'episode' | 'cut' | 'reel', fieldName: string, value: PromptField) => Promise<void>
@@ -28,10 +34,8 @@ describe('PromptsSettingsForm', () => {
   })
 
   it('renders accordion with three video types', () => {
-    // Note: Title "Prompts por Tipo de Vídeo" is now rendered by parent AccordionTrigger
-    // in settings-page-client.tsx (Story 8.2 refactor)
     render(
-      <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
     )
 
     expect(screen.getByText('Episódios')).toBeInTheDocument()
@@ -43,7 +47,7 @@ describe('PromptsSettingsForm', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
     render(
-      <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
     )
 
     await user.click(screen.getByText('Episódios'))
@@ -64,7 +68,7 @@ describe('PromptsSettingsForm', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
     render(
-      <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
     )
 
     await user.click(screen.getByText('Cortes'))
@@ -79,7 +83,7 @@ describe('PromptsSettingsForm', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
     render(
-      <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
     )
 
     await user.click(screen.getByText('Episódios'))
@@ -106,7 +110,7 @@ describe('PromptsSettingsForm', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
     render(
-      <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
     )
 
     // Expand episode
@@ -129,7 +133,7 @@ describe('PromptsSettingsForm', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
     render(
-      <PromptsSettingsForm prompts={DEFAULT_PROMPTS} onSavePromptField={mockOnSavePromptField} />
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
     )
 
     // Check episode fields
@@ -145,6 +149,119 @@ describe('PromptsSettingsForm', () => {
     await user.click(screen.getByText('Cortes'))
     await waitFor(() => {
       expect(screen.getByText('Thumbnails')).toBeInTheDocument()
+    })
+  })
+
+  it('does NOT render social prompts subsection when enabledSocialNetworks is empty', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Crítica')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
+  })
+
+  it('renders social prompts subsection with enabled networks', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm
+        {...defaultProps}
+        enabledSocialNetworks={['instagram']}
+        socialNetworks={[{ id: 'instagram', name: 'Instagram', icon: '📷' }]}
+        onSavePromptField={mockOnSavePromptField}
+      />
+    )
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+      expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
+    })
+  })
+
+  it('renders social prompts in Cut section when networks enabled', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm
+        {...defaultProps}
+        enabledSocialNetworks={['linkedin']}
+        socialNetworks={[{ id: 'linkedin', name: 'LinkedIn', icon: '💼' }]}
+        onSavePromptField={mockOnSavePromptField}
+      />
+    )
+
+    await user.click(screen.getByText('Cortes'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+      expect(screen.getByText('💼 LinkedIn')).toBeInTheDocument()
+    })
+  })
+
+  it('renders social prompts in Reel section when networks enabled', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm
+        {...defaultProps}
+        enabledSocialNetworks={['instagram']}
+        socialNetworks={[{ id: 'instagram', name: 'Instagram', icon: '📷' }]}
+        onSavePromptField={mockOnSavePromptField}
+      />
+    )
+
+    await user.click(screen.getByText('Reels'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+      expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
+    })
+  })
+
+  it('calls onSavePromptField with social.networkId fieldName for social prompt', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm
+        {...defaultProps}
+        enabledSocialNetworks={['instagram']}
+        socialNetworks={[{ id: 'instagram', name: 'Instagram', icon: '📷' }]}
+        onSavePromptField={mockOnSavePromptField}
+      />
+    )
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
+    })
+
+    // Find the social prompt description textarea (last one after the 7 episode fields)
+    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
+    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    await user.clear(socialTextarea)
+    await user.type(socialTextarea, 'Social prompt description')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(mockOnSavePromptField).toHaveBeenCalledWith(
+        'episode',
+        'social.instagram',
+        expect.objectContaining({ description: 'Social prompt description' })
+      )
     })
   })
 })

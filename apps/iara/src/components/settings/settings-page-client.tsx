@@ -13,6 +13,7 @@ import { FeaturesSettingsForm } from './features-settings-form'
 import { PromptsSettingsForm } from './prompts-settings-form'
 import { PersonasSettingsForm } from './personas-settings-form'
 import { DurationSettingsForm } from './duration-settings-form'
+import { SocialNetworksSettingsForm } from './social-networks-settings-form'
 import { ResyncSection } from './resync-section'
 import { useAccordionState } from '@/hooks/use-accordion-state'
 import { log } from '@/lib/logger'
@@ -24,6 +25,7 @@ import type { SerializedPodcast, PromptField, Persona, Prompts, Personas } from 
 const SECTION_IDS = {
   PODCAST: 'podcast',
   FEATURES: 'features',
+  SOCIAL_NETWORKS: 'social_networks',
   DURATION: 'duration',
   PERSONAS: 'personas',
   PROMPTS: 'prompts',
@@ -42,6 +44,7 @@ const STORAGE_KEY = 'settings-accordion-state'
 
 interface SettingsPageClientProps {
   podcast: SerializedPodcast
+  socialNetworks?: Array<{ id: string; name: string; icon: string }>
 }
 
 /**
@@ -55,7 +58,7 @@ interface SettingsPageClientProps {
  *
  * @see docs/stories/8-2-secoes-colapsaveis.md
  */
-export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
+export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClientProps) {
   // Accordion state with localStorage persistence
   const [openSections, setOpenSections] = useAccordionState(STORAGE_KEY, DEFAULT_SECTIONS)
 
@@ -81,12 +84,26 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
     ) => {
       // Update ref immediately to capture this change for subsequent saves
       const currentPrompts = promptsRef.current
+      const currentVideoType = currentPrompts[videoType]
+      let updatedVideoType
+
+      if (fieldName.startsWith('social.')) {
+        const networkId = fieldName.slice('social.'.length)
+        const currentSocial = currentVideoType.social ?? {}
+        updatedVideoType = {
+          ...currentVideoType,
+          social: { ...currentSocial, [networkId]: value },
+        }
+      } else {
+        updatedVideoType = {
+          ...currentVideoType,
+          [fieldName]: value,
+        }
+      }
+
       const updatedPrompts = {
         ...currentPrompts,
-        [videoType]: {
-          ...currentPrompts[videoType],
-          [fieldName]: value,
-        },
+        [videoType]: updatedVideoType,
       }
       promptsRef.current = updatedPrompts
 
@@ -110,7 +127,7 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
   )
 
   const handleSavePersona = useCallback(
-    async (personaKey: 'critic' | 'writer', value: Persona) => {
+    async (personaKey: 'critic' | 'writer' | 'socialmedia', value: Persona) => {
       // Update ref immediately to capture this change for subsequent saves
       const currentPersonas = personasRef.current
       const updatedPersonas = {
@@ -135,6 +152,23 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
       }
     },
     [] // No dependencies - uses refs instead
+  )
+
+  const handleSaveEnabledNetworks = useCallback(
+    async (enabledSocialNetworks: string[]) => {
+      const response = await fetch('/api/podcast', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabledSocialNetworks }),
+      })
+      if (!response.ok) {
+        const error = await response.json()
+        const message = error?.error?.message || 'Erro ao salvar'
+        log('ERROR', 'Failed to save enabled social networks', { error: message })
+        throw new Error(message)
+      }
+    },
+    []
   )
 
   const handleSaveVideoTypes = useCallback(
@@ -182,9 +216,26 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
             editorial: podcast.features?.editorial ?? true,
             news: podcast.features?.news ?? true,
             includeLivestreams: podcast.features?.includeLivestreams ?? false,
+            socialMedia: podcast.features?.socialMedia ?? false,
           }} />
         </AccordionContent>
       </AccordionItem>
+
+      {/* Social Networks Settings (conditional on socialMedia feature toggle) */}
+      {podcast.features?.socialMedia && socialNetworks && (
+        <AccordionItem value={SECTION_IDS.SOCIAL_NETWORKS} className="border rounded-lg">
+          <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
+            Redes Sociais
+          </AccordionTrigger>
+          <AccordionContent className="px-6 pb-6">
+            <SocialNetworksSettingsForm
+              socialNetworks={socialNetworks}
+              enabledNetworks={podcast.enabledSocialNetworks ?? []}
+              onSave={handleSaveEnabledNetworks}
+            />
+          </AccordionContent>
+        </AccordionItem>
+      )}
 
       {/* Duration Settings */}
       <AccordionItem value={SECTION_IDS.DURATION} className="border rounded-lg">
@@ -212,7 +263,12 @@ export function SettingsPageClient({ podcast }: SettingsPageClientProps) {
           Prompts por Tipo de Vídeo
         </AccordionTrigger>
         <AccordionContent forceOverflow className="px-6 pb-6">
-          <PromptsSettingsForm prompts={podcast.prompts} onSavePromptField={handleSavePromptField} />
+          <PromptsSettingsForm
+            prompts={podcast.prompts}
+            enabledSocialNetworks={podcast.enabledSocialNetworks ?? []}
+            socialNetworks={socialNetworks ?? []}
+            onSavePromptField={handleSavePromptField}
+          />
         </AccordionContent>
       </AccordionItem>
 

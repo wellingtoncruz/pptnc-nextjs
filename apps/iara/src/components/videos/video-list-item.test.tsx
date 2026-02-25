@@ -226,7 +226,7 @@ describe('VideoListItem', () => {
       expect(item).not.toHaveClass('cursor-not-allowed')
     })
 
-    it('não chama onSelect ao clicar em vídeo sent', async () => {
+    it('chama onSelect ao clicar em vídeo sent quando onReopenRequest não é fornecido', async () => {
       const onSelect = vi.fn()
       const user = userEvent.setup()
       const video = createMockVideo({ status: 'sent' })
@@ -234,7 +234,7 @@ describe('VideoListItem', () => {
 
       await user.click(screen.getByRole('option'))
 
-      expect(onSelect).not.toHaveBeenCalled()
+      expect(onSelect).toHaveBeenCalledWith(video.id)
     })
 
     it('chama onReopenRequest ao clicar em vídeo sent', async () => {
@@ -269,7 +269,7 @@ describe('VideoListItem', () => {
       expect(onSelect).not.toHaveBeenCalled()
     })
 
-    it('não chama onSelect ao pressionar Enter em vídeo sent', async () => {
+    it('chama onSelect ao pressionar Enter em vídeo sent quando onReopenRequest não é fornecido', async () => {
       const onSelect = vi.fn()
       const user = userEvent.setup()
       const video = createMockVideo({ status: 'sent' })
@@ -279,7 +279,7 @@ describe('VideoListItem', () => {
       item.focus()
       await user.keyboard('{Enter}')
 
-      expect(onSelect).not.toHaveBeenCalled()
+      expect(onSelect).toHaveBeenCalledWith(video.id)
     })
 
     it('tem tabIndex=0 para vídeo sent (interativo)', () => {
@@ -331,6 +331,57 @@ describe('VideoListItem', () => {
       render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} />)
 
       await user.click(screen.getByRole('option'))
+      expect(onSelect).toHaveBeenCalledWith(video.id)
+    })
+  })
+
+  describe('sentAppearance highlighted (Story 14.13)', () => {
+    it('aplica opacity-60 em vídeo NÃO-sent quando sentAppearance=highlighted', () => {
+      const video = createMockVideo({ status: 'draft' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} sentAppearance="highlighted" />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveClass('opacity-60')
+    })
+
+    it('não aplica opacity-60 em vídeo sent quando sentAppearance=highlighted', () => {
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={vi.fn()} sentAppearance="highlighted" />)
+
+      const item = screen.getByRole('option')
+      expect(item).not.toHaveClass('opacity-60')
+    })
+
+    it('aplica ring de seleção em vídeo sent selecionado quando sentAppearance=highlighted', () => {
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={true} onSelect={vi.fn()} sentAppearance="highlighted" />)
+
+      const item = screen.getByRole('option')
+      expect(item).toHaveClass('ring-2')
+      expect(item).toHaveClass('ring-blue-400')
+    })
+
+    it('chama onSelect diretamente ao clicar em vídeo sent sem onReopenRequest', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} sentAppearance="highlighted" />)
+
+      await user.click(screen.getByRole('option'))
+
+      expect(onSelect).toHaveBeenCalledWith(video.id)
+    })
+
+    it('chama onSelect diretamente ao pressionar Enter em vídeo sent sem onReopenRequest', async () => {
+      const onSelect = vi.fn()
+      const user = userEvent.setup()
+      const video = createMockVideo({ status: 'sent' })
+      render(<VideoListItem video={video} isSelected={false} onSelect={onSelect} sentAppearance="highlighted" />)
+
+      const item = screen.getByRole('option')
+      item.focus()
+      await user.keyboard('{Enter}')
+
       expect(onSelect).toHaveBeenCalledWith(video.id)
     })
   })

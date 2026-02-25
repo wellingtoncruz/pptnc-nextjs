@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Users, Settings, LogOut } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Users, Settings, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
@@ -18,18 +18,20 @@ const STORAGE_KEY = 'sidebar-collapsed'
 interface PodcastFeatures {
   editorial?: boolean
   news?: boolean
+  socialMedia?: boolean
 }
 
 interface SidebarProps {
   userName?: string
   features?: PodcastFeatures
+  enabledSocialNetworks?: string[]
 }
 
 /**
  * Collapsible sidebar with navigation links.
  * Collapsed state is persisted to localStorage.
  */
-export function Sidebar({ userName, features }: SidebarProps) {
+export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -60,13 +62,14 @@ export function Sidebar({ userName, features }: SidebarProps) {
     const isUsersView = searchParams.get('view') === 'users'
     const isEditorialView = searchParams.get('view') === 'editorial'
     const isNewsView = searchParams.get('view') === 'news'
+    const isSocialView = searchParams.get('view') === 'social'
 
     const items = [
       {
         href: '/videos',
         label: 'Vídeos',
         icon: Video,
-        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView,
+        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView && !isSocialView,
         adminOnly: false,
       },
       ...(features?.editorial !== false ? [{
@@ -83,6 +86,13 @@ export function Sidebar({ userName, features }: SidebarProps) {
         label: 'Notícias',
         icon: Newspaper,
         isActive: isNewsView,
+        adminOnly: false,
+      }] : []),
+      ...(features?.socialMedia === true && (enabledSocialNetworks?.length ?? 0) > 0 ? [{
+        href: '/videos?view=social',
+        label: 'Redes Sociais',
+        icon: Share2,
+        isActive: isSocialView,
         adminOnly: false,
       }] : []),
       {
@@ -105,7 +115,7 @@ export function Sidebar({ userName, features }: SidebarProps) {
 
     // Filter out admin-only items for non-admin users
     return items.filter((item) => !item.adminOnly || isAdmin)
-  }, [pathname, searchParams, isAdmin, features])
+  }, [pathname, searchParams, isAdmin, features, enabledSocialNetworks])
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {

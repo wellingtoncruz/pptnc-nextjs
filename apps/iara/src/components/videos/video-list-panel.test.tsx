@@ -37,8 +37,8 @@ describe('VideoListPanel', () => {
       expect(screen.getByText('Vídeos')).toBeInTheDocument()
     })
 
-    it('renderiza o botão de sincronização', () => {
-      render(<VideoListPanel />)
+    it('renderiza o botão de sincronização quando onSync é fornecido', () => {
+      render(<VideoListPanel onSync={vi.fn()} />)
 
       expect(screen.getByRole('button', { name: /verificar novos/i })).toBeInTheDocument()
     })
@@ -56,10 +56,17 @@ describe('VideoListPanel', () => {
     })
 
     it('desabilita botão e mostra loading durante sync', () => {
-      render(<VideoListPanel isSyncing={true} />)
+      render(<VideoListPanel onSync={vi.fn()} isSyncing={true} />)
 
       const syncButton = screen.getByRole('button', { name: /verificando/i })
       expect(syncButton).toBeDisabled()
+    })
+
+    it('oculta botão sync quando onSync não é fornecido', () => {
+      render(<VideoListPanel />)
+
+      expect(screen.queryByRole('button', { name: /verificar novos/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /verificando/i })).not.toBeInTheDocument()
     })
   })
 
@@ -75,6 +82,20 @@ describe('VideoListPanel', () => {
       render(<VideoListPanel />)
 
       expect(screen.getByTestId('video-list-empty')).toBeInTheDocument()
+    })
+
+    it('mostra dica de sync no empty state quando onSync é fornecido', () => {
+      render(<VideoListPanel videos={[]} onSync={vi.fn()} />)
+
+      expect(screen.getByText('Nenhum vídeo encontrado')).toBeInTheDocument()
+      expect(screen.getByText(/buscar vídeos do seu canal/)).toBeInTheDocument()
+    })
+
+    it('oculta dica de sync no empty state quando onSync não é fornecido', () => {
+      render(<VideoListPanel videos={[]} />)
+
+      expect(screen.getByText('Nenhum vídeo encontrado')).toBeInTheDocument()
+      expect(screen.queryByText(/buscar vídeos do seu canal/)).not.toBeInTheDocument()
     })
   })
 
@@ -371,6 +392,109 @@ describe('VideoListPanel', () => {
       // Sent videos open reopen dialog instead of selecting
       expect(onVideoSelect).not.toHaveBeenCalled()
       expect(screen.getByText('Deseja reabrir esse vídeo para edição dos metadados?')).toBeInTheDocument()
+    })
+  })
+
+  describe('variant social (Story 14.13)', () => {
+    it('oculta toggle "Só novos" quando variant=social', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} variant="social" />)
+
+      expect(screen.queryByLabelText('Só novos')).not.toBeInTheDocument()
+    })
+
+    it('renderiza toggle "Só novos" quando variant=editorial (default)', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} />)
+
+      expect(screen.getByLabelText('Só novos')).toBeInTheDocument()
+    })
+
+    it('não renderiza ReopenVideoDialog quando variant=social', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId={null}
+          onVideoSelect={onVideoSelect}
+          variant="social"
+        />
+      )
+
+      // Click on sent video — should call onVideoSelect directly
+      await user.click(screen.getByRole('option'))
+      expect(onVideoSelect).toHaveBeenCalledWith('video-1')
+      // No reopen dialog should appear
+      expect(screen.queryByText('Deseja reabrir esse vídeo para edição dos metadados?')).not.toBeInTheDocument()
+    })
+
+    it('seleciona vídeo sent diretamente via ArrowDown quando variant=social', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'new' }),
+        createMockVideo({ id: 'video-2', status: 'sent' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId="video-1"
+          onVideoSelect={onVideoSelect}
+          variant="social"
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{ArrowDown}')
+
+      expect(onVideoSelect).toHaveBeenCalledWith('video-2')
+    })
+
+    it('seleciona vídeo sent diretamente via ArrowUp quando variant=social', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+        createMockVideo({ id: 'video-2', status: 'new' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId="video-2"
+          onVideoSelect={onVideoSelect}
+          variant="social"
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{ArrowUp}')
+
+      expect(onVideoSelect).toHaveBeenCalledWith('video-1')
+    })
+  })
+
+  describe('excludeTypes', () => {
+    it('oculta tabs dos tipos excluídos', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} excludeTypes={['episode']} />)
+
+      expect(screen.getByRole('tab', { name: 'Todos' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Cortes' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Reels' })).toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Episódios' })).not.toBeInTheDocument()
+    })
+
+    it('renderiza todas as tabs quando excludeTypes não é fornecido', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} />)
+
+      expect(screen.getByRole('tab', { name: 'Episódios' })).toBeInTheDocument()
     })
   })
 })

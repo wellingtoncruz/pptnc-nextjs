@@ -10,6 +10,7 @@ interface PodcastFeatures {
   editorial: boolean
   news: boolean
   includeLivestreams: boolean
+  socialMedia: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -30,25 +31,27 @@ async function updateFeaturesViaApi(features: PodcastFeatures): Promise<void> {
 }
 
 /**
- * Settings form for feature toggles.
- * Toggles editorial and news sections on/off.
- * Saves immediately on toggle change.
+ * Settings form for feature toggles (editorial, news, includeLivestreams, socialMedia).
+ * Saves immediately on toggle change with optimistic update and rollback on error.
  */
 export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [editorial, setEditorial] = useState(features.editorial)
   const [news, setNews] = useState(features.news)
   const [includeLivestreams, setIncludeLivestreams] = useState(features.includeLivestreams)
+  const [socialMedia, setSocialMedia] = useState(features.socialMedia)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const setters: Record<string, (v: boolean) => void> = {
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia'
+  const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
     includeLivestreams: setIncludeLivestreams,
+    socialMedia: setSocialMedia,
   }
 
-  async function handleToggle(key: 'editorial' | 'news' | 'includeLivestreams', value: boolean) {
-    const updated = { editorial, news, includeLivestreams, [key]: value }
+  async function handleToggle(key: FeatureKey, value: boolean) {
+    const updated = { editorial, news, includeLivestreams, socialMedia, [key]: value }
 
     setters[key](value)
 
@@ -116,6 +119,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-includeLivestreams"
             checked={includeLivestreams}
             onCheckedChange={(value) => handleToggle('includeLivestreams', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-socialMedia">Redes Sociais</Label>
+            <p className="text-xs text-muted-foreground">
+              Habilita a seção de posts para redes sociais no menu lateral.
+            </p>
+          </div>
+          <Switch
+            id="feature-socialMedia"
+            checked={socialMedia}
+            onCheckedChange={(value) => handleToggle('socialMedia', value)}
             disabled={saving}
           />
         </div>

@@ -68,17 +68,20 @@ const DEFAULT_PROMPTS = {
     titles: { ...DEFAULT_PROMPT_FIELD },
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },
+    social: {},
   },
   cut: {
     titles: { ...DEFAULT_PROMPT_FIELD },
     thumbs: { ...DEFAULT_PROMPT_FIELD },
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },
+    social: {},
   },
   reel: {
     titles: { ...DEFAULT_PROMPT_FIELD },
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },
+    social: {},
   },
 }
 
@@ -87,10 +90,42 @@ const DEFAULT_PERSONA = { role: '', objective: '', resume: '' }
 const DEFAULT_PERSONAS = {
   critic: { ...DEFAULT_PERSONA },
   writer: { ...DEFAULT_PERSONA },
+  socialmedia: { ...DEFAULT_PERSONA },
+}
+
+const DEFAULT_SOCIAL_NETWORKS = {
+  instagram: { name: 'Instagram', icon: '📸' },
+  linkedin: { name: 'LinkedIn', icon: '💼' },
+}
+
+async function seedSocialNetworks() {
+  console.log('Seeding social networks...')
+  const networksRef = db.collection('socialNetworks')
+
+  for (const [networkId, data] of Object.entries(DEFAULT_SOCIAL_NETWORKS)) {
+    const docRef = networksRef.doc(networkId)
+    const existing = await docRef.get()
+
+    if (existing.exists) {
+      console.log(`  socialNetworks/${networkId} already exists, skipping`)
+      continue
+    }
+
+    await docRef.set({
+      ...data,
+      createdAt: FieldValue.serverTimestamp(),
+    })
+    console.log(`  socialNetworks/${networkId} created`)
+  }
+
+  console.log('Social networks seeded.')
 }
 
 async function seedPodcast() {
   console.log(`Seeding podcast "${podcastId}" in project ${PROJECT_ID} (db: ${FIRESTORE_DATABASE_ID})`)
+
+  // Seed global social networks BEFORE podcast check (global infrastructure)
+  await seedSocialNetworks()
 
   const podcastRef = db.collection('podcasts').doc(podcastId)
 
@@ -113,7 +148,9 @@ async function seedPodcast() {
       editorial: true,
       news: true,
       includeLivestreams: false,
+      socialMedia: false,
     },
+    enabledSocialNetworks: [],
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   }

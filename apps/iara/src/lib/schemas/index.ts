@@ -70,3 +70,5 @@ export {
   GuestDocCreateSchema,
   GuestScrapeRequestSchema,
 } from './guest'
+
+export { SocialNetworkSchema, SocialPostSchema, SocialPostUpdateSchema } from './social'

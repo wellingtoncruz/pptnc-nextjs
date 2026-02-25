@@ -285,20 +285,71 @@ Acesse **Configurações** e configure:
 
 ### 9.2 Prompts e Personas
 
-Em **Configurações > Prompts**, configure os prompts por tipo de vídeo:
+Em **Configurações > Prompts por Tipo de Vídeo**, configure os prompts por tipo de vídeo:
 - **Episode** — episódios completos
 - **Cut** — cortes de 3-20 minutos
 - **Reel** — shorts/reels até 3 minutos
 
 Cada tipo tem fases com prompts editáveis: crítica, edição, compliance, capítulos, título, descrição, tags.
 
-### 9.3 Features
+### 9.3 Recursos
 
-Em **Configurações > Features**, habilite/desabilite seções opcionais:
+Em **Configurações > Recursos**, habilite/desabilite seções opcionais:
 - **Editorial** — seção de acompanhamento editorial
 - **Notícias** — seção de notícias curadas
+- **Redes Sociais** — posts para redes sociais (ver seção 9.4)
 
-### 9.4 Promover primeiro usuário a admin
+### 9.4 Redes Sociais
+
+A funcionalidade de posts para redes sociais está **desabilitada por padrão**. Para configurar:
+
+#### 9.4.1 Habilitar Feature Toggle
+
+1. Acesse **Configurações → Recursos**
+2. Encontre o toggle **"Redes Sociais"** e ative-o
+3. Isso permite que a seção de configuração de redes apareça
+
+#### 9.4.2 Habilitar Redes Individuais
+
+1. Acesse **Configurações → Redes Sociais** (aparece após ativar o toggle)
+2. Para cada rede que deseja usar (Instagram, LinkedIn), clique no toggle para ativar
+3. A seção **"Redes Sociais"** no menu lateral aparecerá automaticamente quando pelo menos uma rede estiver habilitada
+
+#### 9.4.3 Configurar Persona "Gerente de Mídia"
+
+1. Acesse **Configurações → Personas do LLM**
+2. Expanda a seção **"Gerente de Mídia"**
+3. Configure:
+   - **Papel**: Descrição do papel profissional (ex: "Especialista em copywriting para redes sociais")
+   - **Objetivo**: Objetivo dos posts (ex: "Criar posts engajadores que divulguem o podcast")
+   - **Resumo**: Contexto adicional sobre o estilo desejado
+4. Os campos são salvos automaticamente (auto-save com debounce)
+
+#### 9.4.4 Configurar Prompts por Rede
+
+1. Acesse **Configurações → Prompts por Tipo de Vídeo**
+2. Para cada tipo (Episódios, Cortes, Reels), localize a subseção **"Redes Sociais"**
+3. Para cada rede habilitada, configure:
+   - **Descrição do Prompt**: Instruções específicas para aquela rede
+   - **Saída Esperada**: Exemplo ou formato esperado do post
+
+> **Dica**: Para Instagram, foque em hashtags populares e CTAs diretos. Para LinkedIn, use tom profissional com insights relevantes.
+
+#### 9.4.5 (Opcional) Adicionar Novas Redes Sociais
+
+Para adicionar redes além de Instagram e LinkedIn:
+
+1. Acesse o [Firestore Console](https://console.cloud.google.com/firestore) do seu projeto
+2. Selecione o database correto (ex: `pptnc-stage`)
+3. Navegue até a collection `socialNetworks` (raiz)
+4. Crie um documento com ID = networkId (ex: `tiktok`)
+5. Adicione os campos:
+   - `name` (string): Nome da rede (ex: "TikTok")
+   - `icon` (string): Emoji (ex: "🎵")
+   - `createdAt` (timestamp): Data atual
+6. A nova rede aparecerá em **Configurações → Redes Sociais** automaticamente
+
+### 9.5 Promover primeiro usuário a admin
 
 O primeiro usuário que fizer login é criado com role `user` (padrão). Para ter acesso às configurações, é necessário promovê-lo a admin **manualmente no Firestore**:
 
@@ -310,13 +361,13 @@ O primeiro usuário que fizer login é criado com role `user` (padrão). Para te
 
 > **Nota**: O Google User ID é o ID numérico da conta Google (ex: `117853...`). Será o único documento na subcollection `users` neste momento.
 
-### 9.5 Adicionar outros usuários
+### 9.6 Adicionar outros usuários
 
 Para adicionar mais usuários após o primeiro admin:
 1. O novo usuário faz login normalmente
 2. O admin acessa **Usuários** e altera o role para "admin"
 
-### 9.5 Sincronização Inicial
+### 9.7 Sincronização Inicial
 
 1. Acesse a página de **Vídeos**
 2. Clique em **Sincronizar** para importar vídeos do canal YouTube
@@ -331,6 +382,7 @@ Para adicionar mais usuários após o primeiro admin:
 - [ ] Wizard processa pelo menos a Fase 1 (LLM funcionando)
 - [ ] Fase 8 envia metadados para o YouTube
 - [ ] Logs no Cloud Logging mostram `podcastId` correto
+- [ ] Seção Redes Sociais aparece no menu (se habilitada)
 
 ---
 

@@ -14,6 +14,7 @@ interface VideoListItemProps {
   isSelected: boolean
   onSelect: (videoId: string) => void
   onReopenRequest?: (videoId: string) => void
+  sentAppearance?: 'dimmed' | 'highlighted'
 }
 
 const statusColors: Record<VideoStatus, string> = {
@@ -50,14 +51,14 @@ const typeLabels: Record<VideoType, string> = {
  * Individual video item for display in the video list.
  * Shows thumbnail, title, status badge, and type badge.
  *
- * Sent videos are clickable and open a reopen dialog.
+ * Sent videos open reopen dialog when `onReopenRequest` is provided (editorial variant),
+ * or select directly when it's not (social variant).
  *
- * Note: Videos without transcription are NOT blocked. Transcription is
- * fetched on-demand when the producer selects a video in the Wizard.
  * @see Story 5.6 - Transcrição On-Demand
  * @see Story 11-2 - Reabrir Episódio (sent videos clickable)
+ * @see Story 14.13 - Variant Social (sentAppearance prop)
  */
-export function VideoListItem({ video, isSelected, onSelect, onReopenRequest }: VideoListItemProps) {
+export function VideoListItem({ video, isSelected, onSelect, onReopenRequest, sentAppearance = 'dimmed' }: VideoListItemProps) {
   const { isProcessing: isLLMProcessing } = useLLMProcessing()
   // Prefer storageThumbnailUrl (works for draft/private videos), fall back to YouTube URL
   const thumbnailUrl = video.storageThumbnailUrl || getBestThumbnailUrl(video.thumbnails)
@@ -69,9 +70,9 @@ export function VideoListItem({ video, isSelected, onSelect, onReopenRequest }: 
   const handleClick = () => {
     if (isSelectionBlocked) return
 
-    // Sent videos open reopen dialog instead of selecting
-    if (isSent) {
-      onReopenRequest?.(video.id)
+    // Sent videos: open reopen dialog if callback provided, otherwise select directly
+    if (isSent && onReopenRequest) {
+      onReopenRequest(video.id)
       return
     }
 
@@ -82,8 +83,8 @@ export function VideoListItem({ video, isSelected, onSelect, onReopenRequest }: 
     if (isSelectionBlocked) return
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      if (isSent) {
-        onReopenRequest?.(video.id)
+      if (isSent && onReopenRequest) {
+        onReopenRequest(video.id)
         return
       }
       onSelect(video.id)
@@ -103,8 +104,11 @@ export function VideoListItem({ video, isSelected, onSelect, onReopenRequest }: 
         isSelectionBlocked
           ? 'cursor-wait opacity-70'
           : 'cursor-pointer hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        isSent && 'opacity-60',
-        isSelected && !isSent && 'ring-2 ring-blue-400 bg-accent'
+        // dimmed (default/editorial): sent videos are subtle, non-sent are active
+        // highlighted (social): sent videos are active, non-sent are subtle
+        sentAppearance === 'dimmed' && isSent && 'opacity-60',
+        sentAppearance === 'highlighted' && !isSent && 'opacity-60',
+        isSelected && !(sentAppearance === 'dimmed' && isSent) && 'ring-2 ring-blue-400 bg-accent'
       )}
     >
       {/* Thumbnail - uses VideoThumbnail with YouTube fallback */}
