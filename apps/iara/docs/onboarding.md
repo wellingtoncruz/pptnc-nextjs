@@ -298,6 +298,7 @@ Em **Configurações > Recursos**, habilite/desabilite seções opcionais:
 - **Editorial** — seção de acompanhamento editorial
 - **Notícias** — seção de notícias curadas
 - **Redes Sociais** — posts para redes sociais (ver seção 9.4)
+- **Tráfego Pago** — guia de otimização AdWords (ver seção 9.5)
 
 ### 9.4 Redes Sociais
 
@@ -349,7 +350,45 @@ Para adicionar redes além de Instagram e LinkedIn:
    - `createdAt` (timestamp): Data atual
 6. A nova rede aparecerá em **Configurações → Redes Sociais** automaticamente
 
-### 9.5 Promover primeiro usuário a admin
+### 9.5 Tráfego Pago (AdWords)
+
+A funcionalidade de guia de otimização AdWords para tráfego pago está **desabilitada por padrão**. Para configurar:
+
+#### 9.5.1 Habilitar Feature Toggle
+
+1. Acesse **Configurações → Recursos**
+2. Encontre o toggle **"Tráfego Pago"** e ative-o
+3. Isso habilita a aba "Tráfego Pago" no menu lateral
+
+#### 9.5.2 Configurar Persona "Especialista em AdWords"
+
+1. Acesse **Configurações → Personas do LLM**
+2. Expanda a seção **"Especialista em AdWords"**
+3. Configure:
+   - **Papel**: Descrição do papel profissional (ex: "Especialista em campanhas Google Ads e tráfego pago")
+   - **Objetivo**: Objetivo dos guias (ex: "Criar guias de otimização AdWords para campanhas de divulgação de episódios")
+   - **Resumo**: Contexto adicional sobre o estilo e foco desejado
+4. Os campos são salvos automaticamente (auto-save com debounce)
+
+#### 9.5.3 Configurar Prompt AdWords para Episódios
+
+1. Acesse **Configurações → Prompts por Tipo de Vídeo**
+2. Na seção **Episódios**, localize o campo **"AdWords"**
+3. Configure:
+   - **Descrição do Prompt**: Instruções para geração do guia de otimização
+   - **Saída Esperada**: Formato esperado do guia e keywords
+
+> **Nota**: O prompt AdWords está disponível **apenas para episódios** (não para cortes ou reels).
+
+#### 9.5.4 Usar a Aba Tráfego Pago
+
+1. Acesse a aba **Tráfego Pago** no menu lateral
+2. Selecione um episódio que já tenha título, descrição e transcrição
+3. O guia de otimização será gerado automaticamente na primeira vez
+4. Use o botão **"Copiar Keywords"** para copiar as palavras-chave para suas campanhas
+5. Use o botão **"Reprocessar"** para regenerar o guia com contexto adicional
+
+### 9.6 Promover primeiro usuário a admin
 
 O primeiro usuário que fizer login é criado com role `user` (padrão). Para ter acesso às configurações, é necessário promovê-lo a admin **manualmente no Firestore**:
 
@@ -361,13 +400,13 @@ O primeiro usuário que fizer login é criado com role `user` (padrão). Para te
 
 > **Nota**: O Google User ID é o ID numérico da conta Google (ex: `117853...`). Será o único documento na subcollection `users` neste momento.
 
-### 9.6 Adicionar outros usuários
+### 9.7 Adicionar outros usuários
 
 Para adicionar mais usuários após o primeiro admin:
 1. O novo usuário faz login normalmente
 2. O admin acessa **Usuários** e altera o role para "admin"
 
-### 9.7 Sincronização Inicial
+### 9.8 Sincronização Inicial
 
 1. Acesse a página de **Vídeos**
 2. Clique em **Sincronizar** para importar vídeos do canal YouTube
@@ -383,6 +422,7 @@ Para adicionar mais usuários após o primeiro admin:
 - [ ] Fase 8 envia metadados para o YouTube
 - [ ] Logs no Cloud Logging mostram `podcastId` correto
 - [ ] Seção Redes Sociais aparece no menu (se habilitada)
+- [ ] Aba Tráfego Pago aparece no menu (se habilitada)
 
 ---
 

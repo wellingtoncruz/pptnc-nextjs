@@ -182,12 +182,18 @@ ${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') ||
     // Create transcription file and call LLM via shared infrastructure
     const transcriptionFilePath = await createTranscriptionFile(transcription, 5)
 
+    // Build debug context only when llmDebugMode is enabled
+    const debugContext = podcast?.features?.llmDebugMode
+      ? { component: 'wizard/phase-5b', videoId, videoType: video.videoType || 'cut', podcastId: PODCAST_ID }
+      : undefined
+
     try {
       const { data, usage } = await callGenAI<Phase5BResponse>(
         systemPrompt,
         userPrompt,
         120000,
-        transcriptionFilePath
+        transcriptionFilePath,
+        debugContext
       )
 
       // Validate response structure

@@ -206,6 +206,20 @@ describe('EpisodePromptsSchema', () => {
     const result = EpisodePromptsSchema.parse(validPrompts.episode)
     expect(result.social).toBeUndefined()
   })
+
+  it('accepts optional adwords prompt', () => {
+    const withAdwords = {
+      ...validPrompts.episode,
+      adwords: validPromptField,
+    }
+    const result = EpisodePromptsSchema.parse(withAdwords)
+    expect(result.adwords).toEqual(validPromptField)
+  })
+
+  it('works without adwords field (backward compat)', () => {
+    const result = EpisodePromptsSchema.parse(validPrompts.episode)
+    expect(result.adwords).toBeUndefined()
+  })
 })
 
 describe('CutPromptsSchema', () => {
@@ -235,6 +249,12 @@ describe('CutPromptsSchema', () => {
     const result = CutPromptsSchema.parse(validPrompts.cut)
     expect(result.social).toBeUndefined()
   })
+
+  it('strips adwords field (not supported for cuts)', () => {
+    const withAdwords = { ...validPrompts.cut, adwords: validPromptField }
+    const result = CutPromptsSchema.parse(withAdwords)
+    expect(result).not.toHaveProperty('adwords')
+  })
 })
 
 describe('ReelPromptsSchema', () => {
@@ -262,6 +282,12 @@ describe('ReelPromptsSchema', () => {
   it('works without social field (backward compat)', () => {
     const result = ReelPromptsSchema.parse(validPrompts.reel)
     expect(result.social).toBeUndefined()
+  })
+
+  it('strips adwords field (not supported for reels)', () => {
+    const withAdwords = { ...validPrompts.reel, adwords: validPromptField }
+    const result = ReelPromptsSchema.parse(withAdwords)
+    expect(result).not.toHaveProperty('adwords')
   })
 })
 
@@ -351,6 +377,19 @@ describe('PersonasSchema', () => {
     expect(result.socialmedia).toBeDefined()
     expect(result.socialmedia?.role).toBe(validPersona.role)
   })
+
+  it('accepts personas without adwords (backward-compat)', () => {
+    const withoutAdwords = { critic: validPersona, writer: validPersona }
+    const result = PersonasSchema.parse(withoutAdwords)
+    expect(result.adwords).toBeUndefined()
+  })
+
+  it('accepts personas with adwords', () => {
+    const withAdwords = { critic: validPersona, writer: validPersona, adwords: validPersona }
+    const result = PersonasSchema.parse(withAdwords)
+    expect(result.adwords).toBeDefined()
+    expect(result.adwords?.role).toBe(validPersona.role)
+  })
 })
 
 describe('VideoTypeEnum', () => {
@@ -436,6 +475,21 @@ describe('PodcastSchema', () => {
     const { personas: _removed, ...withoutPersonas } = validPodcast
     expect(() => PodcastSchema.parse(withoutPersonas)).toThrow(ZodError)
   })
+
+  it('validates podcast with adwords persona', () => {
+    const withAdwords = {
+      ...validPodcast,
+      personas: { ...validPersonas, adwords: validPersona },
+    }
+    const result = PodcastSchema.parse(withAdwords)
+    expect(result.personas.adwords).toBeDefined()
+    expect(result.personas.adwords?.role).toBe(validPersona.role)
+  })
+
+  it('validates podcast without adwords persona (backward-compat)', () => {
+    const result = PodcastSchema.parse(validPodcast)
+    expect(result.personas.adwords).toBeUndefined()
+  })
 })
 
 describe('PodcastSchema features defaults', () => {
@@ -455,6 +509,30 @@ describe('PodcastSchema features defaults', () => {
     const withSocial = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true } }
     const result = PodcastSchema.parse(withSocial)
     expect(result.features?.socialMedia).toBe(true)
+  })
+
+  it('defaults adwords to false when not provided', () => {
+    const withFeatures = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false } }
+    const result = PodcastSchema.parse(withFeatures)
+    expect(result.features?.adwords).toBe(false)
+  })
+
+  it('preserves adwords true when explicitly set', () => {
+    const withAdwords = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: true } }
+    const result = PodcastSchema.parse(withAdwords)
+    expect(result.features?.adwords).toBe(true)
+  })
+
+  it('defaults llmDebugMode to false when not provided', () => {
+    const withFeatures = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false } }
+    const result = PodcastSchema.parse(withFeatures)
+    expect(result.features?.llmDebugMode).toBe(false)
+  })
+
+  it('preserves llmDebugMode true when explicitly set', () => {
+    const withDebug = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: true } }
+    const result = PodcastSchema.parse(withDebug)
+    expect(result.features?.llmDebugMode).toBe(true)
   })
 })
 
@@ -600,7 +678,7 @@ describe('DEFAULT_PROMPTS', () => {
     expect(DEFAULT_PROMPTS.reel).toBeDefined()
   })
 
-  it('episode has all required prompts', () => {
+  it('episode has all required prompts including adwords', () => {
     expect(DEFAULT_PROMPTS.episode.critique).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.editing).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.compliance).toBeDefined()
@@ -608,6 +686,7 @@ describe('DEFAULT_PROMPTS', () => {
     expect(DEFAULT_PROMPTS.episode.titles).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.description).toBeDefined()
     expect(DEFAULT_PROMPTS.episode.tags).toBeDefined()
+    expect(DEFAULT_PROMPTS.episode.adwords).toEqual({ description: '', expectedOutput: '' })
   })
 
   it('cut has all required prompts', () => {
@@ -629,10 +708,12 @@ describe('DEFAULT_PROMPTS', () => {
 })
 
 describe('DEFAULT_PERSONAS', () => {
-  it('has critic, writer and socialmedia', () => {
-    expect(DEFAULT_PERSONAS.critic).toBeDefined()
-    expect(DEFAULT_PERSONAS.writer).toBeDefined()
-    expect(DEFAULT_PERSONAS.socialmedia).toBeDefined()
+  it('has critic, writer, socialmedia and adwords with empty defaults', () => {
+    const emptyPersona = { role: '', objective: '', resume: '' }
+    expect(DEFAULT_PERSONAS.critic).toEqual(emptyPersona)
+    expect(DEFAULT_PERSONAS.writer).toEqual(emptyPersona)
+    expect(DEFAULT_PERSONAS.socialmedia).toEqual(emptyPersona)
+    expect(DEFAULT_PERSONAS.adwords).toEqual(emptyPersona)
   })
 
   it('validates against PersonasSchema', () => {

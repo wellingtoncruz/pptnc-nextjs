@@ -127,6 +127,11 @@ export async function POST(
       hasPodcastConfig: !!(podcast?.personas && podcast?.prompts),
     })
 
+    // Build debug context only when llmDebugMode is enabled (zero overhead when disabled)
+    const debugContext = podcast?.features?.llmDebugMode
+      ? { component: `wizard/phase-${phase}`, videoId, videoType: video.videoType || 'episode', podcastId: PODCAST_ID }
+      : undefined
+
     // Call LLM for this phase with podcast configuration (using queue)
     // Per llm.md: uses podcast.personas and podcast.prompts for dynamic prompt building
     // Queue ensures sequential processing to prevent rate-limit issues
@@ -134,6 +139,7 @@ export async function POST(
       promptOverride,
       additionalContext,
       previousPhaseData,
+      debugContext,
     })
 
     if (!result.success) {

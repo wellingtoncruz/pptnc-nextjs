@@ -100,7 +100,7 @@ export function ConsoleArea({ messages, className }: ConsoleAreaProps) {
   return (
     <div
       ref={scrollContainerRef}
-      className={cn('h-full overflow-y-auto', className)}
+      className={cn('h-full overflow-y-auto custom-scrollbar', className)}
     >
       <div className="space-y-3 p-4">
         {reversedMessages.map((message) => (

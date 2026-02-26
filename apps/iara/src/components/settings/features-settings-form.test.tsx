@@ -11,7 +11,7 @@ vi.mock('@/lib/logger', () => ({
 
 import { FeaturesSettingsForm } from './features-settings-form'
 
-const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false }
+const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false }
 
 describe('FeaturesSettingsForm', () => {
   beforeEach(() => {
@@ -29,6 +29,7 @@ describe('FeaturesSettingsForm', () => {
     expect(screen.getByLabelText('Notícias')).toBeInTheDocument()
     expect(screen.getByLabelText('Incluir vídeos de lives')).toBeInTheDocument()
     expect(screen.getByLabelText('Redes Sociais')).toBeInTheDocument()
+    expect(screen.getByLabelText('Tráfego Pago')).toBeInTheDocument()
   })
 
   it('renders editorial toggle as unchecked when disabled', () => {
@@ -63,7 +64,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: false, news: true, includeLivestreams: false, socialMedia: false } }),
+        body: JSON.stringify({ features: { editorial: false, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -79,7 +80,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -95,7 +96,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: true, socialMedia: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: true, socialMedia: false, adwords: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -111,7 +112,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -158,6 +159,27 @@ describe('FeaturesSettingsForm', () => {
     expect(socialSwitch).toHaveAttribute('data-state', 'unchecked')
   })
 
+  it('reverts adwords toggle on API error', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({ error: { message: 'Server error' } }),
+    })
+
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const adwordsSwitch = screen.getByLabelText('Tráfego Pago')
+    await act(async () => {
+      adwordsSwitch.click()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Server error')).toBeInTheDocument()
+    })
+
+    // Should revert to unchecked state
+    expect(adwordsSwitch).toHaveAttribute('data-state', 'unchecked')
+  })
+
   it('shows description text', () => {
     render(<FeaturesSettingsForm features={defaultFeatures} />)
 
@@ -168,5 +190,77 @@ describe('FeaturesSettingsForm', () => {
     render(<FeaturesSettingsForm features={defaultFeatures} />)
 
     expect(screen.getByText('Habilita a seção de posts para redes sociais no menu lateral.')).toBeInTheDocument()
+  })
+
+  it('renders adwords toggle as unchecked by default', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const adwordsSwitch = screen.getByLabelText('Tráfego Pago')
+    expect(adwordsSwitch).toHaveAttribute('data-state', 'unchecked')
+  })
+
+  it('renders adwords toggle as checked when enabled', () => {
+    render(<FeaturesSettingsForm features={{ ...defaultFeatures, adwords: true }} />)
+
+    const adwordsSwitch = screen.getByLabelText('Tráfego Pago')
+    expect(adwordsSwitch).toHaveAttribute('data-state', 'checked')
+  })
+
+  it('calls API when adwords toggle is changed', async () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const adwordsSwitch = screen.getByLabelText('Tráfego Pago')
+    await act(async () => {
+      adwordsSwitch.click()
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: true, llmDebugMode: false } }),
+      }))
+    })
+  })
+
+  it('shows adwords description text', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    expect(screen.getByText('Habilita a aba Tráfego Pago para geração de guias de otimização AdWords')).toBeInTheDocument()
+  })
+
+  it('renders llmDebugMode toggle as unchecked by default', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const debugSwitch = screen.getByLabelText('Modo de Depuração LLM')
+    expect(debugSwitch).toHaveAttribute('data-state', 'unchecked')
+  })
+
+  it('renders llmDebugMode toggle as checked when enabled', () => {
+    render(<FeaturesSettingsForm features={{ ...defaultFeatures, llmDebugMode: true }} />)
+
+    const debugSwitch = screen.getByLabelText('Modo de Depuração LLM')
+    expect(debugSwitch).toHaveAttribute('data-state', 'checked')
+  })
+
+  it('calls API when llmDebugMode toggle is changed', async () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const debugSwitch = screen.getByLabelText('Modo de Depuração LLM')
+    await act(async () => {
+      debugSwitch.click()
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: true } }),
+      }))
+    })
+  })
+
+  it('shows llmDebugMode description text', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    expect(screen.getByText('Registra prompts e respostas do LLM para análise e otimização')).toBeInTheDocument()
   })
 })

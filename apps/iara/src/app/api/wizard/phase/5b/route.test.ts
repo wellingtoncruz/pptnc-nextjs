@@ -201,7 +201,8 @@ describe('POST /api/wizard/phase/5b', () => {
         expect.stringContaining('títulos curtos'),
         expect.stringContaining('Contexto do Corte'),
         120000,
-        '/tmp/test-transcription.txt'
+        '/tmp/test-transcription.txt',
+        undefined
       )
     })
 
@@ -218,7 +219,8 @@ describe('POST /api/wizard/phase/5b', () => {
         expect.stringContaining('Focus on the main guest'),
         expect.any(String),
         expect.any(Number),
-        expect.any(String)
+        expect.any(String),
+        undefined
       )
     })
 
@@ -250,7 +252,8 @@ describe('POST /api/wizard/phase/5b', () => {
         expect.stringContaining('Thumbnail Expert'),
         expect.any(String),
         expect.any(Number),
-        expect.any(String)
+        expect.any(String),
+        undefined
       )
     })
   })

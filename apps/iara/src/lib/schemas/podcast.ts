@@ -75,7 +75,7 @@ export const PromptFieldSchema = z.object({
 /**
  * Episode prompts - prompts specific to full episodes.
  *
- * Includes: critique, editing, compliance, chapters, titles, description, tags, social (optional)
+ * Includes: critique, editing, compliance, chapters, titles, description, tags, social (optional), adwords (optional)
  */
 export const EpisodePromptsSchema = z.object({
   critique: PromptFieldSchema,
@@ -87,6 +87,8 @@ export const EpisodePromptsSchema = z.object({
   tags: PromptFieldSchema,
   /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
   social: z.record(z.string(), PromptFieldSchema).optional(),
+  /** AdWords/paid traffic optimization prompt. Episode-only (not available for cuts/reels). */
+  adwords: PromptFieldSchema.optional(),
 })
 
 /**
@@ -147,11 +149,13 @@ export const PersonaSchema = z.object({
  * - critic: Persona for critique/review tasks
  * - writer: Persona for content writing tasks
  * - socialmedia: Persona for social media post generation (optional, backward-compatible)
+ * - adwords: Persona for AdWords/paid traffic guide generation (optional, backward-compatible)
  */
 export const PersonasSchema = z.object({
   critic: PersonaSchema,
   writer: PersonaSchema,
   socialmedia: PersonaSchema.optional(),
+  adwords: PersonaSchema.optional(),
 })
 
 /**
@@ -187,6 +191,7 @@ export const DEFAULT_EPISODE_PROMPTS = {
   titles: { ...DEFAULT_PROMPT_FIELD },
   description: { ...DEFAULT_PROMPT_FIELD },
   tags: { ...DEFAULT_PROMPT_FIELD },
+  adwords: { ...DEFAULT_PROMPT_FIELD },
 }
 
 /**
@@ -233,6 +238,7 @@ export const DEFAULT_PERSONAS = {
   critic: { ...DEFAULT_PERSONA },
   writer: { ...DEFAULT_PERSONA },
   socialmedia: { ...DEFAULT_PERSONA },
+  adwords: { ...DEFAULT_PERSONA },
 }
 
 /**
@@ -262,6 +268,10 @@ export const PodcastSchema = z.object({
     includeLivestreams: z.boolean().default(false),
     /** Enable social media posts section. Default: false (hidden until explicitly enabled). */
     socialMedia: z.boolean().default(false),
+    /** Enable AdWords/paid traffic guide section. Default: false (hidden until explicitly enabled). */
+    adwords: z.boolean().default(false),
+    /** Enable LLM debug mode: logs prompts and responses to Firestore. Default: false. */
+    llmDebugMode: z.boolean().default(false),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

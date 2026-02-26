@@ -8,6 +8,7 @@ import { GCP_REGION, PROJECT_ID, VERTEX_AI_MODEL } from '@/lib/firebase/config'
 import { log } from '@/lib/logger'
 import type { WizardPhase } from '@/lib/wizard'
 import type { Podcast } from '@/types/podcast'
+import type { DebugContext } from '@/types/llm-log'
 import type { Video } from '@/types/video'
 
 import { createLLMError, LLMError } from './errors'
@@ -138,7 +139,8 @@ export async function callGenAI<T>(
   systemPrompt: string,
   userPrompt: string,
   _timeout: number,
-  attachmentPath: string | undefined
+  attachmentPath: string | undefined,
+  debugContext?: DebugContext
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   const client = getAI()
   const modelName = VERTEX_AI_MODEL || DEFAULT_MODEL
@@ -148,6 +150,9 @@ export async function callGenAI<T>(
     { text: userPrompt },
   ]
 
+  // Track attachment metadata for debug logging
+  let attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined
+
   if (attachmentPath) {
     const base64Content = await readFileAsBase64(attachmentPath)
     parts.push({
@@ -156,9 +161,19 @@ export async function callGenAI<T>(
         data: base64Content,
       },
     })
+
+    // Compute attachment size: base64 inflates ~33%, so original ≈ base64 * 3/4
+    const originalSizeBytes = Math.ceil(base64Content.length * 3 / 4)
+    attachmentInfo = {
+      sizeKB: Math.round(originalSizeBytes / 1024 * 100) / 100,
+      // Rough estimate: ~4 bytes per token for Portuguese text
+      estimatedTokens: Math.round(originalSizeBytes / 4),
+    }
+
     log('INFO', 'Added transcription attachment to request', {
       attachmentPath,
       base64Length: base64Content.length,
+      sizeKB: attachmentInfo.sizeKB,
     })
   }
 
@@ -268,6 +283,28 @@ export async function callGenAI<T>(
         promptTokens: usageMetadata?.promptTokenCount || 0,
         completionTokens: usageMetadata?.candidatesTokenCount || 0,
         totalTokens: usageMetadata?.totalTokenCount || 0,
+      }
+
+      // Save debug log if debugContext provided (llmDebugMode enabled at caller)
+      if (debugContext) {
+        try {
+          const { saveLlmLog } = await import('@/lib/firebase/llm-log-admin')
+          await saveLlmLog(debugContext.podcastId, {
+            component: debugContext.component,
+            model: modelName,
+            videoId: debugContext.videoId,
+            videoType: debugContext.videoType,
+            prompt: { system: systemPrompt, user: userPrompt },
+            response: text,
+            attachment: attachmentInfo,
+            usage,
+          })
+        } catch (logError) {
+          // Never fail the LLM call because of debug logging
+          log('WARN', 'Failed to save LLM debug log', {
+            error: logError instanceof Error ? logError.message : JSON.stringify(logError),
+          })
+        }
       }
 
       return { data, usage }
@@ -425,7 +462,8 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       systemPrompt,
       userPrompt,
       timeout,
-      transcriptionFilePath
+      transcriptionFilePath,
+      options?.debugContext
     )
 
     return {

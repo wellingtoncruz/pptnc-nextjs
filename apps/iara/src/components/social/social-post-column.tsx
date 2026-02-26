@@ -69,7 +69,7 @@ export function SocialPostColumn({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-5">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
         {isLoading ? (
           <ProcessingSpinner className="h-full" />
         ) : error ? (

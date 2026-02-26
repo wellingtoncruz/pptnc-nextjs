@@ -11,6 +11,8 @@ interface PodcastFeatures {
   news: boolean
   includeLivestreams: boolean
   socialMedia: boolean
+  adwords: boolean
+  llmDebugMode: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -31,7 +33,7 @@ async function updateFeaturesViaApi(features: PodcastFeatures): Promise<void> {
 }
 
 /**
- * Settings form for feature toggles (editorial, news, includeLivestreams, socialMedia).
+ * Settings form for feature toggles (editorial, news, includeLivestreams, socialMedia, adwords).
  * Saves immediately on toggle change with optimistic update and rollback on error.
  */
 export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
@@ -39,19 +41,23 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [news, setNews] = useState(features.news)
   const [includeLivestreams, setIncludeLivestreams] = useState(features.includeLivestreams)
   const [socialMedia, setSocialMedia] = useState(features.socialMedia)
+  const [adwords, setAdwords] = useState(features.adwords)
+  const [llmDebugMode, setLlmDebugMode] = useState(features.llmDebugMode)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia'
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'llmDebugMode'
   const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
     includeLivestreams: setIncludeLivestreams,
     socialMedia: setSocialMedia,
+    adwords: setAdwords,
+    llmDebugMode: setLlmDebugMode,
   }
 
   async function handleToggle(key: FeatureKey, value: boolean) {
-    const updated = { editorial, news, includeLivestreams, socialMedia, [key]: value }
+    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, llmDebugMode, [key]: value }
 
     setters[key](value)
 
@@ -134,6 +140,36 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-socialMedia"
             checked={socialMedia}
             onCheckedChange={(value) => handleToggle('socialMedia', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-adwords">Tráfego Pago</Label>
+            <p className="text-xs text-muted-foreground">
+              Habilita a aba Tráfego Pago para geração de guias de otimização AdWords
+            </p>
+          </div>
+          <Switch
+            id="feature-adwords"
+            checked={adwords}
+            onCheckedChange={(value) => handleToggle('adwords', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-llmDebugMode">Modo de Depuração LLM</Label>
+            <p className="text-xs text-muted-foreground">
+              Registra prompts e respostas do LLM para análise e otimização
+            </p>
+          </div>
+          <Switch
+            id="feature-llmDebugMode"
+            checked={llmDebugMode}
+            onCheckedChange={(value) => handleToggle('llmDebugMode', value)}
             disabled={saving}
           />
         </div>

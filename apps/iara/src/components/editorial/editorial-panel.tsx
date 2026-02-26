@@ -78,7 +78,7 @@ export function EditorialPanel() {
         </div>
 
         {/* Content */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-6">
             {isLoading && episodes.length === 0 ? (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

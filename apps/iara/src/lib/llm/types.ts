@@ -148,6 +148,8 @@ export interface LLMCallOptions {
   timeout?: number
   /** Previous phase data for SEO chain */
   previousPhaseData?: Record<string, unknown>
+  /** Debug context for LLM logging (only when llmDebugMode enabled) */
+  debugContext?: import('@/types/llm-log').DebugContext
 }
 
 /**

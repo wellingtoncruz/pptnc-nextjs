@@ -227,7 +227,7 @@ export function Phase0ParentSelection({
 
         {/* Episode list */}
         {hasEpisodes ? (
-          <div className="max-h-[400px] space-y-2 overflow-y-auto pr-2">
+          <div className="max-h-[400px] space-y-2 overflow-y-auto custom-scrollbar pr-2">
             {episodes.map((episode) => (
               <EpisodeCard
                 key={episode.id}

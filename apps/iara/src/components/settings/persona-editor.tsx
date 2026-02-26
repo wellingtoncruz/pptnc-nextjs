@@ -14,7 +14,7 @@ import {
   MAX_RESUME_LENGTH,
 } from '@/lib/schemas/podcast'
 import { SaveStatusIndicator } from './save-status-indicator'
-import type { Persona } from '@/types/podcast'
+import type { Persona, PersonaKey } from '@/types/podcast'
 
 /**
  * Client-side validation schemas using shared constants.
@@ -24,7 +24,7 @@ const ObjectiveSchema = z.string().max(MAX_OBJECTIVE_LENGTH, `Objetivo deve ter 
 const ResumeSchema = z.string().max(MAX_RESUME_LENGTH, `Resumo deve ter no máximo ${MAX_RESUME_LENGTH} caracteres`)
 
 interface PersonaEditorProps {
-  personaKey: 'critic' | 'writer' | 'socialmedia'
+  personaKey: PersonaKey
   label: string
   initialValue: Persona
   onSave: (value: Persona) => Promise<void>

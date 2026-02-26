@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { act, render, screen, waitFor } from '@/test-utils'
 import { DEFAULT_PERSONAS } from '@/lib/schemas'
-import type { Persona, Personas } from '@/types/podcast'
+import type { Persona, PersonaKey, Personas } from '@/types/podcast'
 
 vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('@/lib/logger', () => ({
 import { PersonasSettingsForm } from './personas-settings-form'
 
 describe('PersonasSettingsForm', () => {
-  const mockOnSavePersona = vi.fn<(personaKey: 'critic' | 'writer' | 'socialmedia', value: Persona) => Promise<void>>()
+  const mockOnSavePersona = vi.fn<(personaKey: PersonaKey, value: Persona) => Promise<void>>()
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -35,6 +35,7 @@ describe('PersonasSettingsForm', () => {
     expect(screen.getByText('Crítico')).toBeInTheDocument()
     expect(screen.getByText('Redator')).toBeInTheDocument()
     expect(screen.getByText('Gerente de Mídia')).toBeInTheDocument()
+    expect(screen.getByText('Especialista em AdWords')).toBeInTheDocument()
   })
 
   it('renders input fields for all personas', () => {
@@ -42,17 +43,17 @@ describe('PersonasSettingsForm', () => {
       <PersonasSettingsForm personas={DEFAULT_PERSONAS} onSavePersona={mockOnSavePersona} />
     )
 
-    // Should have 3 'Papel' inputs (one for each persona)
+    // Should have 4 'Papel' inputs (one for each persona)
     const roleInputs = screen.getAllByLabelText('Papel')
-    expect(roleInputs).toHaveLength(3)
+    expect(roleInputs).toHaveLength(4)
 
-    // Should have 3 'Objetivo' textareas
+    // Should have 4 'Objetivo' textareas
     const objectiveTextareas = screen.getAllByLabelText('Objetivo')
-    expect(objectiveTextareas).toHaveLength(3)
+    expect(objectiveTextareas).toHaveLength(4)
 
-    // Should have 3 'Resumo / Contexto' textareas
+    // Should have 4 'Resumo / Contexto' textareas
     const resumeTextareas = screen.getAllByLabelText('Resumo / Contexto')
-    expect(resumeTextareas).toHaveLength(3)
+    expect(resumeTextareas).toHaveLength(4)
   })
 
   it('calls onSavePersona with correct personaKey when critic is updated', async () => {
@@ -104,21 +105,24 @@ describe('PersonasSettingsForm', () => {
   })
 
   it('renders socialmedia with empty fields when persona is undefined (backward-compat)', () => {
-    const personasWithoutSocialmedia = {
+    const personasWithoutOptionals = {
       critic: DEFAULT_PERSONAS.critic,
       writer: DEFAULT_PERSONAS.writer,
     } as Personas
 
     render(
-      <PersonasSettingsForm personas={personasWithoutSocialmedia} onSavePersona={mockOnSavePersona} />
+      <PersonasSettingsForm personas={personasWithoutOptionals} onSavePersona={mockOnSavePersona} />
     )
 
-    // Should still render all 3 personas — socialmedia falls back to DEFAULT_PERSONA
+    // Should still render all 4 personas — optional ones fall back to DEFAULT_PERSONA
     expect(screen.getByText('Gerente de Mídia')).toBeInTheDocument()
+    expect(screen.getByText('Especialista em AdWords')).toBeInTheDocument()
     const roleInputs = screen.getAllByLabelText('Papel')
-    expect(roleInputs).toHaveLength(3)
+    expect(roleInputs).toHaveLength(4)
     // The socialmedia role input should be empty (fallback)
     expect(roleInputs[2]).toHaveValue('')
+    // The adwords role input should be empty (fallback)
+    expect(roleInputs[3]).toHaveValue('')
   })
 
   it('calls onSavePersona with correct personaKey when socialmedia is updated', async () => {
@@ -141,6 +145,30 @@ describe('PersonasSettingsForm', () => {
       expect(mockOnSavePersona).toHaveBeenCalledWith(
         'socialmedia',
         expect.objectContaining({ role: 'Social media manager' })
+      )
+    })
+  })
+
+  it('calls onSavePersona with correct personaKey when adwords is updated', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PersonasSettingsForm personas={DEFAULT_PERSONAS} onSavePersona={mockOnSavePersona} />
+    )
+
+    // Get the fourth 'Papel' input (adwords)
+    const roleInputs = screen.getAllByLabelText('Papel')
+    await user.clear(roleInputs[3])
+    await user.type(roleInputs[3], 'AdWords specialist')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(mockOnSavePersona).toHaveBeenCalledWith(
+        'adwords',
+        expect.objectContaining({ role: 'AdWords specialist' })
       )
     })
   })

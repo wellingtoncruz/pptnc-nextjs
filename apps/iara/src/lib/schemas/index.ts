@@ -72,3 +72,7 @@ export {
 } from './guest'
 
 export { SocialNetworkSchema, SocialPostSchema, SocialPostUpdateSchema } from './social'
+
+export { AdwordsDataSchema, AdwordsDataCreateSchema, AdwordsLLMResponseSchema } from './adwords'
+
+export { LlmLogSchema, LlmLogCreateSchema } from './llm-log'

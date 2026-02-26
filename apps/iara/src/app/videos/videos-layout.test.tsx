@@ -86,6 +86,10 @@ vi.mock('@/components/social/social-layout', () => ({
   ),
 }))
 
+vi.mock('@/components/adwords/adwords-layout', () => ({
+  AdwordsLayout: () => <div data-testid="adwords-layout">AdwordsLayout</div>,
+}))
+
 // Mock useVideos hook
 vi.mock('@/hooks/use-videos', () => ({
   useVideos: vi.fn(() => ({
@@ -275,5 +279,36 @@ describe('VideosLayout', () => {
 
     expect(screen.getByTestId('sidebar')).toBeInTheDocument()
     expect(screen.getByText(/Test User/)).toBeInTheDocument()
+  })
+
+  it('renderiza AdwordsLayout quando view=adwords', () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'view') return 'adwords'
+      return null
+    })
+
+    render(<VideosLayout />)
+
+    expect(screen.getByTestId('adwords-layout')).toBeInTheDocument()
+    expect(screen.getByTestId('sidebar')).toBeInTheDocument()
+    expect(screen.queryByTestId('master-detail-layout')).not.toBeInTheDocument()
+  })
+
+  it('redireciona para /videos quando view=adwords e features.adwords desabilitado', async () => {
+    mockGet.mockImplementation((key: string) => {
+      if (key === 'view') return 'adwords'
+      return null
+    })
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { features: { editorial: true, news: true, adwords: false } } }),
+    })
+
+    render(<VideosLayout />)
+
+    await vi.waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith('/videos')
+    })
   })
 })

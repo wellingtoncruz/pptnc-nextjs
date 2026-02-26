@@ -36,8 +36,8 @@ interface VideoListPanelProps {
   onVideoReopened?: () => void
   // Exclude specific video types from type filter tabs
   excludeTypes?: VideoTypeFilter[]
-  // Variant: 'editorial' (default) = Videos tab behavior, 'social' = Social tab behavior
-  variant?: 'editorial' | 'social'
+  // Variant: 'editorial' (default) = Videos tab behavior, 'social' = Social tab behavior, 'adwords' = AdWords tab behavior
+  variant?: 'editorial' | 'social' | 'adwords'
 }
 
 const typeLabels: Record<VideoTypeFilter, string> = {
@@ -87,7 +87,8 @@ export function VideoListPanel({
   variant = 'editorial',
 }: VideoListPanelProps) {
   const isSocial = variant === 'social'
-  const sentAppearance = isSocial ? 'highlighted' : 'dimmed'
+  const isAdwords = variant === 'adwords'
+  const sentAppearance = (isSocial || isAdwords) ? 'highlighted' : 'dimmed'
 
   // Derive "only new" from statusFilter (not_sent means all except sent)
   const onlyNewVideos = statusFilter === 'not_sent'
@@ -130,7 +131,7 @@ export function VideoListPanel({
 
       // Navigate to video: select if normal, open reopen dialog if sent (editorial only)
       const navigateToVideo = (video: VideoSummary) => {
-        if (video.status === 'sent' && !isSocial) {
+        if (video.status === 'sent' && !isSocial && !isAdwords) {
           handleReopenRequest(video.id)
         } else {
           onVideoSelect(video.id)
@@ -169,7 +170,7 @@ export function VideoListPanel({
         }
       }
     },
-    [videos, selectedVideoId, onVideoSelect, handleReopenRequest, isSocial]
+    [videos, selectedVideoId, onVideoSelect, handleReopenRequest, isSocial, isAdwords]
   )
 
   // Auto-scroll to selected item
@@ -192,8 +193,8 @@ export function VideoListPanel({
       <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4 overflow-hidden">
         <h2 className="min-w-0 truncate text-lg font-semibold">Vídeos</h2>
         <div className="flex shrink-0 items-center gap-3">
-          {/* Only new videos switch — hidden in social variant */}
-          {!isSocial && (
+          {/* Only new videos switch — hidden in social and adwords variants */}
+          {!isSocial && !isAdwords && (
             <div className="flex items-center gap-2">
               <Switch
                 id="only-new-videos"
@@ -224,23 +225,25 @@ export function VideoListPanel({
         </div>
       </div>
 
-      {/* Tabs for filtering by type */}
-      <div className="shrink-0 overflow-hidden border-b border-border px-2 py-2">
-        <Tabs
-          value={typeFilter}
-          onValueChange={(value) => onTypeFilterChange?.(value as VideoTypeFilter)}
-        >
-          <TabsList className="w-full">
-            {(Object.keys(typeLabels) as VideoTypeFilter[])
-              .filter((type) => !excludeTypes?.includes(type))
-              .map((type) => (
-              <TabsTrigger key={type} value={type} className="flex-1 text-xs">
-                {typeLabels[type]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+      {/* Tabs for filtering by type — hidden in adwords variant */}
+      {!isAdwords && (
+        <div className="shrink-0 overflow-hidden border-b border-border px-2 py-2">
+          <Tabs
+            value={typeFilter}
+            onValueChange={(value) => onTypeFilterChange?.(value as VideoTypeFilter)}
+          >
+            <TabsList className="w-full">
+              {(Object.keys(typeLabels) as VideoTypeFilter[])
+                .filter((type) => !excludeTypes?.includes(type))
+                .map((type) => (
+                <TabsTrigger key={type} value={type} className="flex-1 text-xs">
+                  {typeLabels[type]}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
 
       {/* Content - scrollable list */}
       <div className="min-h-0 flex-1 overflow-y-auto p-2 custom-scrollbar">
@@ -269,7 +272,7 @@ export function VideoListPanel({
                 video={video}
                 isSelected={selectedVideoId === video.id}
                 onSelect={onVideoSelect ?? (() => {})}
-                onReopenRequest={isSocial ? undefined : handleReopenRequest}
+                onReopenRequest={(isSocial || isAdwords) ? undefined : handleReopenRequest}
                 sentAppearance={sentAppearance}
               />
             ))}
@@ -305,7 +308,7 @@ export function VideoListPanel({
       )}
     </div>
 
-    {!isSocial && (
+    {!isSocial && !isAdwords && (
       <ReopenVideoDialog
         videoId={reopenVideoId}
         open={isReopenDialogOpen}

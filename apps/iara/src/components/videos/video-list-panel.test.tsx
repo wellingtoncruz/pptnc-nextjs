@@ -479,6 +479,107 @@ describe('VideoListPanel', () => {
     })
   })
 
+  describe('variant adwords (Story 15.6)', () => {
+    it('oculta toggle "Só novos" quando variant=adwords', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} variant="adwords" />)
+
+      expect(screen.queryByLabelText('Só novos')).not.toBeInTheDocument()
+    })
+
+    it('oculta tabs de filtro de tipo quando variant=adwords', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} variant="adwords" />)
+
+      expect(screen.queryByRole('tab', { name: 'Todos' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Episódios' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Cortes' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Reels' })).not.toBeInTheDocument()
+    })
+
+    it('não renderiza ReopenVideoDialog quando variant=adwords', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId={null}
+          onVideoSelect={onVideoSelect}
+          variant="adwords"
+        />
+      )
+
+      // Click on sent video — should call onVideoSelect directly
+      await user.click(screen.getByRole('option'))
+      expect(onVideoSelect).toHaveBeenCalledWith('video-1')
+      // No reopen dialog should appear
+      expect(screen.queryByText('Deseja reabrir esse vídeo para edição dos metadados?')).not.toBeInTheDocument()
+    })
+
+    it('seleciona vídeo sent diretamente via ArrowDown quando variant=adwords', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'new' }),
+        createMockVideo({ id: 'video-2', status: 'sent' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId="video-1"
+          onVideoSelect={onVideoSelect}
+          variant="adwords"
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{ArrowDown}')
+
+      expect(onVideoSelect).toHaveBeenCalledWith('video-2')
+    })
+
+    it('seleciona vídeo sent diretamente via ArrowUp quando variant=adwords', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+        createMockVideo({ id: 'video-2', status: 'new' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId="video-2"
+          onVideoSelect={onVideoSelect}
+          variant="adwords"
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{ArrowUp}')
+
+      expect(onVideoSelect).toHaveBeenCalledWith('video-1')
+    })
+
+    it('usa sentAppearance highlighted quando variant=adwords (sent sem opacity)', () => {
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+        createMockVideo({ id: 'video-2', status: 'new' }),
+      ]
+      render(<VideoListPanel videos={videos} variant="adwords" />)
+
+      const options = screen.getAllByRole('option')
+      // Sent video should NOT have opacity-60 (highlighted = sent is prominent)
+      expect(options[0]).not.toHaveClass('opacity-60')
+      // Non-sent video should have opacity-60 (highlighted inverts dimming)
+      expect(options[1]).toHaveClass('opacity-60')
+    })
+  })
+
   describe('excludeTypes', () => {
     it('oculta tabs dos tipos excluídos', () => {
       const videos = [createMockVideo()]

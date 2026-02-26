@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useEffect } from 'react'
 
+import { Radio, ToggleLeft, Share2, Clock, Bot, FileText, RefreshCw } from 'lucide-react'
+
 import {
   Accordion,
   AccordionContent,
@@ -17,7 +19,7 @@ import { SocialNetworksSettingsForm } from './social-networks-settings-form'
 import { ResyncSection } from './resync-section'
 import { useAccordionState } from '@/hooks/use-accordion-state'
 import { log } from '@/lib/logger'
-import type { SerializedPodcast, PromptField, Persona, Prompts, Personas } from '@/types/podcast'
+import type { SerializedPodcast, PromptField, Persona, PersonaKey, Prompts, Personas } from '@/types/podcast'
 
 /**
  * Section IDs for accordion persistence.
@@ -127,7 +129,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
   )
 
   const handleSavePersona = useCallback(
-    async (personaKey: 'critic' | 'writer' | 'socialmedia', value: Persona) => {
+    async (personaKey: PersonaKey, value: Persona) => {
       // Update ref immediately to capture this change for subsequent saves
       const currentPersonas = personasRef.current
       const updatedPersonas = {
@@ -198,8 +200,14 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
     >
       {/* Podcast Settings */}
       <AccordionItem value={SECTION_IDS.PODCAST} className="border rounded-lg">
-        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
-          Informações do Podcast
+        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <div className="flex items-start gap-3">
+            <Radio className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="text-left">
+              <div className="text-lg font-semibold">Informações do Podcast</div>
+              <div className="text-sm font-normal text-muted-foreground">Nome, canal do YouTube e nome do host</div>
+            </div>
+          </div>
         </AccordionTrigger>
         <AccordionContent className="px-6 pb-6">
           <PodcastSettingsForm podcast={podcast} />
@@ -208,8 +216,14 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
 
       {/* Features Settings */}
       <AccordionItem value={SECTION_IDS.FEATURES} className="border rounded-lg">
-        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
-          Recursos
+        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <div className="flex items-start gap-3">
+            <ToggleLeft className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="text-left">
+              <div className="text-lg font-semibold">Recursos</div>
+              <div className="text-sm font-normal text-muted-foreground">Habilite ou desabilite seções opcionais da aplicação</div>
+            </div>
+          </div>
         </AccordionTrigger>
         <AccordionContent className="px-6 pb-6">
           <FeaturesSettingsForm features={{
@@ -217,6 +231,8 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             news: podcast.features?.news ?? true,
             includeLivestreams: podcast.features?.includeLivestreams ?? false,
             socialMedia: podcast.features?.socialMedia ?? false,
+            adwords: podcast.features?.adwords ?? false,
+            llmDebugMode: podcast.features?.llmDebugMode ?? false,
           }} />
         </AccordionContent>
       </AccordionItem>
@@ -224,8 +240,14 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
       {/* Social Networks Settings (conditional on socialMedia feature toggle) */}
       {podcast.features?.socialMedia && socialNetworks && (
         <AccordionItem value={SECTION_IDS.SOCIAL_NETWORKS} className="border rounded-lg">
-          <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
-            Redes Sociais
+          <AccordionTrigger className="px-6 py-4 hover:no-underline">
+            <div className="flex items-start gap-3">
+              <Share2 className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+              <div className="text-left">
+                <div className="text-lg font-semibold">Redes Sociais</div>
+                <div className="text-sm font-normal text-muted-foreground">Configure quais redes sociais estão habilitadas</div>
+              </div>
+            </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6">
             <SocialNetworksSettingsForm
@@ -239,8 +261,14 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
 
       {/* Duration Settings */}
       <AccordionItem value={SECTION_IDS.DURATION} className="border rounded-lg">
-        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
-          Duração por Tipo de Vídeo
+        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <div className="flex items-start gap-3">
+            <Clock className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="text-left">
+              <div className="text-lg font-semibold">Duração por Tipo de Vídeo</div>
+              <div className="text-sm font-normal text-muted-foreground">Limites de duração para classificação de vídeos</div>
+            </div>
+          </div>
         </AccordionTrigger>
         <AccordionContent className="px-6 pb-6">
           <DurationSettingsForm videoTypes={podcast.videoTypes} onSave={handleSaveVideoTypes} />
@@ -249,8 +277,14 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
 
       {/* Personas Settings */}
       <AccordionItem value={SECTION_IDS.PERSONAS} className="border rounded-lg">
-        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
-          Personas do LLM
+        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <div className="flex items-start gap-3">
+            <Bot className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="text-left">
+              <div className="text-lg font-semibold">Personas do LLM</div>
+              <div className="text-sm font-normal text-muted-foreground">Configure os personagens que o LLM assume em cada tarefa</div>
+            </div>
+          </div>
         </AccordionTrigger>
         <AccordionContent forceOverflow className="px-6 pb-6">
           <PersonasSettingsForm personas={podcast.personas} onSavePersona={handleSavePersona} />
@@ -259,8 +293,14 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
 
       {/* Prompts Settings */}
       <AccordionItem value={SECTION_IDS.PROMPTS} className="border rounded-lg">
-        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
-          Prompts por Tipo de Vídeo
+        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <div className="flex items-start gap-3">
+            <FileText className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="text-left">
+              <div className="text-lg font-semibold">Prompts por Tipo de Vídeo</div>
+              <div className="text-sm font-normal text-muted-foreground">Instruções enviadas ao LLM para cada fase por tipo de vídeo</div>
+            </div>
+          </div>
         </AccordionTrigger>
         <AccordionContent forceOverflow className="px-6 pb-6">
           <PromptsSettingsForm
@@ -274,8 +314,14 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
 
       {/* Sync Settings */}
       <AccordionItem value={SECTION_IDS.SYNC} className="border rounded-lg">
-        <AccordionTrigger className="px-6 py-4 text-lg font-semibold hover:no-underline">
-          Sincronização
+        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <div className="flex items-start gap-3">
+            <RefreshCw className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="text-left">
+              <div className="text-lg font-semibold">Sincronização</div>
+              <div className="text-sm font-normal text-muted-foreground">Re-importar vídeos do canal YouTube</div>
+            </div>
+          </div>
         </AccordionTrigger>
         <AccordionContent className="px-6 pb-6">
           <ResyncSection />

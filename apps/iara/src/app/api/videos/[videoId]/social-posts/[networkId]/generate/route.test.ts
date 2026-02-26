@@ -218,11 +218,12 @@ describe('POST /api/videos/[videoId]/social-posts/[networkId]/generate', () => {
     // Episode should NOT create transcription file
     expect(mockCreateTranscriptionFile).not.toHaveBeenCalled()
 
-    // callGenAI should be called with undefined attachmentPath
+    // callGenAI should be called with undefined attachmentPath and debugContext
     expect(mockCallGenAI).toHaveBeenCalledWith(
       expect.any(String),
       expect.any(String),
       60000,
+      undefined,
       undefined
     )
 
@@ -256,12 +257,13 @@ describe('POST /api/videos/[videoId]/social-posts/[networkId]/generate', () => {
     expect(mockCreateTranscriptionFile).toHaveBeenCalledWith('Short cut transcript', 0)
     expect(mockCleanupTranscriptionFile).toHaveBeenCalledWith('/tmp/mock-transcription.txt')
 
-    // callGenAI should be called with attachment path
+    // callGenAI should be called with attachment path and debugContext
     expect(mockCallGenAI).toHaveBeenCalledWith(
       expect.any(String),
       expect.any(String),
       60000,
-      '/tmp/mock-transcription.txt'
+      '/tmp/mock-transcription.txt',
+      undefined
     )
   })
 
@@ -373,12 +375,13 @@ describe('POST /api/videos/[videoId]/social-posts/[networkId]/generate', () => {
     expect(mockCreateTranscriptionFile).toHaveBeenCalledWith('Short reel transcript', 0)
     expect(mockCleanupTranscriptionFile).toHaveBeenCalledWith('/tmp/mock-transcription.txt')
 
-    // callGenAI should be called with attachment path
+    // callGenAI should be called with attachment path and debugContext
     expect(mockCallGenAI).toHaveBeenCalledWith(
       expect.any(String),
       expect.any(String),
       60000,
-      '/tmp/mock-transcription.txt'
+      '/tmp/mock-transcription.txt',
+      undefined
     )
   })
 

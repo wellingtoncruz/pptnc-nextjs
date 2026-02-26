@@ -13,7 +13,7 @@ import type { Prompts, PromptField, EpisodePrompts, CutPrompts, ReelPrompts } fr
 /**
  * Type-safe field keys for each video type.
  */
-type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social'>
+type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social' | 'adwords'>
 type CutFieldKey = Exclude<keyof CutPrompts, 'social'>
 type ReelFieldKey = Exclude<keyof ReelPrompts, 'social'>
 
@@ -89,6 +89,22 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
     )
   }
 
+  function renderAdwordsPrompt(videoType: 'episode' | 'cut' | 'reel') {
+    if (videoType !== 'episode') return null
+
+    return (
+      <div className="mt-6 pt-4 border-t">
+        <h4 className="text-sm font-medium text-muted-foreground mb-4">Tráfego Pago</h4>
+        <PromptFieldEditor
+          fieldKey="episode-adwords"
+          label="AdWords"
+          initialValue={prompts.episode.adwords ?? DEFAULT_PROMPT_FIELD}
+          onSave={(value) => onSavePromptField('episode', 'adwords', value)}
+        />
+      </div>
+    )
+  }
+
   return (
     <Accordion type="single" collapsible className="w-full">
       {/* Episode prompts */}
@@ -106,6 +122,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
               />
             ))}
             {renderSocialPrompts('episode')}
+            {renderAdwordsPrompt('episode')}
           </div>
         </AccordionContent>
       </AccordionItem>

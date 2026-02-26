@@ -61,6 +61,29 @@ describe('SettingsPageClient', () => {
     expect(screen.getByText('Prompts por Tipo de Vídeo')).toBeInTheDocument()
   })
 
+  it('exibe descrições em cada seção do accordion', () => {
+    render(<SettingsPageClient podcast={mockPodcast} />)
+
+    expect(screen.getByText('Nome, canal do YouTube e nome do host')).toBeInTheDocument()
+    expect(screen.getByText('Habilite ou desabilite seções opcionais da aplicação')).toBeInTheDocument()
+    expect(screen.getByText('Limites de duração para classificação de vídeos')).toBeInTheDocument()
+    expect(screen.getByText('Configure os personagens que o LLM assume em cada tarefa')).toBeInTheDocument()
+    expect(screen.getByText('Instruções enviadas ao LLM para cada fase por tipo de vídeo')).toBeInTheDocument()
+    expect(screen.getByText('Re-importar vídeos do canal YouTube')).toBeInTheDocument()
+  })
+
+  it('exibe ícones em cada seção do accordion', () => {
+    const { container } = render(<SettingsPageClient podcast={mockPodcast} />)
+
+    // Lucide icons render as <svg class="lucide lucide-{name} ...">
+    expect(container.querySelector('.lucide-radio')).toBeInTheDocument()
+    expect(container.querySelector('.lucide-toggle-left')).toBeInTheDocument()
+    expect(container.querySelector('.lucide-clock')).toBeInTheDocument()
+    expect(container.querySelector('.lucide-bot')).toBeInTheDocument()
+    expect(container.querySelector('.lucide-file-text')).toBeInTheDocument()
+    expect(container.querySelector('.lucide-refresh-cw')).toBeInTheDocument()
+  })
+
   it('calls API when prompt field is saved', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
@@ -163,7 +186,7 @@ describe('SettingsPageClient', () => {
   it('shows Social Networks accordion when socialMedia feature is enabled and networks provided', () => {
     const podcastWithSocialMedia = {
       ...mockPodcast,
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false },
     }
     const mockNetworks = [
       { id: 'instagram', name: 'Instagram', icon: '📷' },
@@ -172,12 +195,13 @@ describe('SettingsPageClient', () => {
     render(<SettingsPageClient podcast={podcastWithSocialMedia} socialNetworks={mockNetworks} />)
 
     expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
+    expect(screen.getByText('Configure quais redes sociais estão habilitadas')).toBeInTheDocument()
   })
 
   it('hides Social Networks accordion when socialMedia feature is disabled', () => {
     const podcastNoSocial = {
       ...mockPodcast,
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false },
     }
     const mockNetworks = [
       { id: 'instagram', name: 'Instagram', icon: '📷' },
@@ -191,7 +215,7 @@ describe('SettingsPageClient', () => {
   it('hides Social Networks accordion when socialNetworks is null', () => {
     const podcastWithSocialMedia = {
       ...mockPodcast,
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false },
     }
 
     render(<SettingsPageClient podcast={podcastWithSocialMedia} socialNetworks={null as never} />)
@@ -205,7 +229,7 @@ describe('SettingsPageClient', () => {
     const podcastWithSocial = {
       ...mockPodcast,
       enabledSocialNetworks: ['instagram'],
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false },
     }
     const mockNetworks = [{ id: 'instagram', name: 'Instagram', icon: '📷' }]
 
@@ -222,9 +246,9 @@ describe('SettingsPageClient', () => {
       expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
     })
 
-    // Find the social prompt textarea (last one after the 7 episode fields)
+    // Find the social prompt textarea (second to last: 7 episode fields + social + adwords)
     const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
-    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 2]
     await user.clear(socialTextarea)
     await user.type(socialTextarea, 'Instagram post prompt')
 
@@ -243,6 +267,45 @@ describe('SettingsPageClient', () => {
     const fetchCall = vi.mocked(global.fetch).mock.calls[0]
     const body = JSON.parse(fetchCall[1]?.body as string)
     expect(body.prompts.episode.social.instagram.description).toBe('Instagram post prompt')
+  })
+
+  it('sends adwords prompt via direct field path in PATCH body', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(<SettingsPageClient podcast={mockPodcast} />)
+
+    // Open the Prompts accordion section
+    await user.click(screen.getByText('Prompts por Tipo de Vídeo'))
+
+    // Open the Episode accordion inside prompts
+    const accordionTriggers = screen.getAllByText('Episódios')
+    await user.click(accordionTriggers[0])
+
+    await waitFor(() => {
+      expect(screen.getByText('AdWords')).toBeInTheDocument()
+    })
+
+    // AdWords prompt is the last one in the episode section
+    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
+    const adwordsTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    await user.clear(adwordsTextarea)
+    await user.type(adwordsTextarea, 'AdWords guide prompt')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/podcast',
+        expect.objectContaining({ method: 'PATCH' })
+      )
+    })
+
+    // Verify the body contains the adwords prompt at the correct path
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0]
+    const body = JSON.parse(fetchCall[1]?.body as string)
+    expect(body.prompts.episode.adwords.description).toBe('AdWords guide prompt')
   })
 
   it('shows error when API call fails for duration settings', async () => {

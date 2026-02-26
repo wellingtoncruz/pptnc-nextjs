@@ -69,6 +69,7 @@ const DEFAULT_PROMPTS = {
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },
     social: {},
+    adwords: { ...DEFAULT_PROMPT_FIELD },
   },
   cut: {
     titles: { ...DEFAULT_PROMPT_FIELD },
@@ -91,6 +92,7 @@ const DEFAULT_PERSONAS = {
   critic: { ...DEFAULT_PERSONA },
   writer: { ...DEFAULT_PERSONA },
   socialmedia: { ...DEFAULT_PERSONA },
+  adwords: { ...DEFAULT_PERSONA },
 }
 
 const DEFAULT_SOCIAL_NETWORKS = {
@@ -149,6 +151,8 @@ async function seedPodcast() {
       news: true,
       includeLivestreams: false,
       socialMedia: false,
+      adwords: false,
+      llmDebugMode: false,
     },
     enabledSocialNetworks: [],
     createdAt: FieldValue.serverTimestamp(),

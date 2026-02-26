@@ -62,9 +62,15 @@ export type ReelPrompts = z.infer<typeof ReelPromptsSchema>
 export type Persona = z.infer<typeof PersonaSchema>
 
 /**
- * All personas (critic, writer).
+ * All personas (critic, writer, socialmedia, adwords).
  */
 export type Personas = z.infer<typeof PersonasSchema>
+
+/**
+ * Valid persona key derived from PersonasSchema.
+ * Centralized to avoid duplicating the union type across files.
+ */
+export type PersonaKey = keyof Personas
 
 /**
  * Video type duration configuration.

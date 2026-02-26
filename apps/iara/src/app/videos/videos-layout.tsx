@@ -15,6 +15,8 @@ import { EditorialPanel } from '@/components/editorial/editorial-panel'
 import { UserListPanel } from '@/components/users/user-list-panel'
 import { NewsPanel } from '@/components/news/news-panel'
 import { SocialLayout } from '@/components/social/social-layout'
+import { AdwordsLayout } from '@/components/adwords/adwords-layout'
+import { DebugLogsLayout } from '@/components/debug/debug-logs-layout'
 import { useVideos } from '@/hooks/use-videos'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { log } from '@/lib/logger'
@@ -36,8 +38,8 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
 
   const currentView = searchParams.get('view')
 
-  // Podcast feature toggles (editorial, news, socialMedia)
-  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean }>()
+  // Podcast feature toggles (editorial, news, socialMedia, adwords, llmDebugMode)
+  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; llmDebugMode?: boolean }>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   useEffect(() => {
     fetch('/api/podcast')
@@ -214,6 +216,62 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
           </div>
         </div>
       </LLMProcessingProvider>
+    )
+  }
+
+  // When in adwords view, show sidebar and adwords layout
+  // Redirect if feature is disabled
+  if (currentView === 'adwords') {
+    if (podcastFeatures?.adwords === false) {
+      router.replace('/videos')
+      return null
+    }
+    return (
+      <LLMProcessingProvider>
+        <div className="flex h-screen">
+          <div className="shrink-0">
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <AdwordsLayout />
+          </div>
+        </div>
+      </LLMProcessingProvider>
+    )
+  }
+
+  // When in debug view, show sidebar and debug logs layout
+  // Redirect if feature is disabled or user is not admin
+  if (currentView === 'debug') {
+    if (podcastFeatures?.llmDebugMode === false || podcastFeatures?.llmDebugMode === undefined) {
+      router.replace('/videos')
+      return null
+    }
+    if (isLoadingUser) {
+      return (
+        <div className="flex h-screen">
+          <div className="shrink-0">
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        </div>
+      )
+    }
+    if (!isAdmin) {
+      router.replace('/videos')
+      return null
+    }
+    return (
+      <div className="flex h-screen">
+        <div className="shrink-0">
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <DebugLogsLayout />
+        </div>
+      </div>
     )
   }
 

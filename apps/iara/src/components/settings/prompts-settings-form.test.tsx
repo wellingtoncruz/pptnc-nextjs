@@ -228,6 +228,87 @@ describe('PromptsSettingsForm', () => {
     })
   })
 
+  it('shows AdWords prompt field in Episode section', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Tráfego Pago')).toBeInTheDocument()
+      expect(screen.getByText('AdWords')).toBeInTheDocument()
+    })
+  })
+
+  it('does NOT show AdWords prompt in Cut section', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Cortes'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Thumbnails')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Tráfego Pago')).not.toBeInTheDocument()
+    expect(screen.queryByText('AdWords')).not.toBeInTheDocument()
+  })
+
+  it('does NOT show AdWords prompt in Reel section', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Reels'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Títulos')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Tráfego Pago')).not.toBeInTheDocument()
+    expect(screen.queryByText('AdWords')).not.toBeInTheDocument()
+  })
+
+  it('calls onSavePromptField with adwords fieldName for AdWords prompt', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('AdWords')).toBeInTheDocument()
+    })
+
+    // AdWords prompt is the last one in the episode section (after 7 standard fields)
+    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
+    const adwordsTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    await user.clear(adwordsTextarea)
+    await user.type(adwordsTextarea, 'AdWords optimization guide')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(mockOnSavePromptField).toHaveBeenCalledWith(
+        'episode',
+        'adwords',
+        expect.objectContaining({ description: 'AdWords optimization guide' })
+      )
+    })
+  })
+
   it('calls onSavePromptField with social.networkId fieldName for social prompt', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
@@ -246,9 +327,9 @@ describe('PromptsSettingsForm', () => {
       expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
     })
 
-    // Find the social prompt description textarea (last one after the 7 episode fields)
+    // Find the social prompt description textarea (second to last: 7 episode fields + social + adwords)
     const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
-    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 2]
     await user.clear(socialTextarea)
     await user.type(socialTextarea, 'Social prompt description')
 

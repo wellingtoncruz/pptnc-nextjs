@@ -98,6 +98,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     const systemPrompt = buildSocialSystemPrompt(persona, promptConfig, additionalContext)
     const userPrompt = buildSocialUserPrompt(video, parentVideo)
 
+    // Build debug context only when llmDebugMode is enabled (zero overhead when disabled)
+    const debugContext = podcast?.features?.llmDebugMode
+      ? { component: `social/generate/${networkId}`, videoId, videoType: (video.videoType || 'episode') as 'episode' | 'cut' | 'reel', podcastId: PODCAST_ID }
+      : undefined
+
     // Handle transcription attachment for cut/reel
     let attachmentPath: string | undefined
     try {
@@ -111,7 +116,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           systemPrompt,
           userPrompt,
           60000,
-          attachmentPath
+          attachmentPath,
+          debugContext
         )
       )
 

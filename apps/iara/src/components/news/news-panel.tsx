@@ -99,7 +99,7 @@ export function NewsPanel() {
       <div className="flex min-h-0 flex-1">
         {/* Left panel: News list */}
         <div className="flex w-1/2 flex-col border-r border-border">
-          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-4">
             {isLoading && items.length === 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -165,7 +165,7 @@ export function NewsPanel() {
         </div>
 
         {/* Right panel: News detail */}
-        <div className="w-1/2 overflow-y-auto">
+        <div className="w-1/2 overflow-y-auto custom-scrollbar">
           <NewsDetail news={selectedNews} />
         </div>
       </div>

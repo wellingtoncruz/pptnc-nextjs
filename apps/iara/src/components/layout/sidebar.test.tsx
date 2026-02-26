@@ -301,6 +301,128 @@ describe('Sidebar', () => {
     expect(socialLink).toHaveAttribute('href', '/videos?view=social')
   })
 
+  it('exibe Tráfego Pago quando features.adwords=true', async () => {
+    render(<Sidebar features={{ adwords: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Tráfego Pago')).toBeInTheDocument()
+  })
+
+  it('oculta Tráfego Pago quando features.adwords=false', async () => {
+    render(<Sidebar features={{ adwords: false }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Tráfego Pago')).not.toBeInTheDocument()
+  })
+
+  it('oculta Tráfego Pago quando features é undefined (backward-compat)', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Tráfego Pago')).not.toBeInTheDocument()
+  })
+
+  it('destaca Tráfego Pago quando view=adwords está ativo', async () => {
+    const { useSearchParams } = await import('next/navigation')
+    vi.mocked(useSearchParams).mockReturnValue({
+      get: vi.fn((key: string) => (key === 'view' ? 'adwords' : null)),
+    } as any)
+
+    render(<Sidebar features={{ adwords: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Tráfego Pago')).toBeInTheDocument()
+    })
+
+    const adwordsLink = screen.getByText('Tráfego Pago').closest('a')
+    expect(adwordsLink).toHaveClass('bg-accent')
+
+    // Vídeos should NOT be active when adwords is active
+    const videosLink = screen.getByText('Vídeos').closest('a')
+    expect(videosLink).not.toHaveClass('bg-accent')
+  })
+
+  it('link Tráfego Pago aponta para /videos?view=adwords', async () => {
+    render(<Sidebar features={{ adwords: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Tráfego Pago')).toBeInTheDocument()
+    })
+
+    const adwordsLink = screen.getByText('Tráfego Pago').closest('a')
+    expect(adwordsLink).toHaveAttribute('href', '/videos?view=adwords')
+  })
+
+  it('exibe Depuração quando features.llmDebugMode=true', async () => {
+    render(<Sidebar features={{ llmDebugMode: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Depuração')).toBeInTheDocument()
+  })
+
+  it('oculta Depuração quando features.llmDebugMode=false', async () => {
+    render(<Sidebar features={{ llmDebugMode: false }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Depuração')).not.toBeInTheDocument()
+  })
+
+  it('oculta Depuração quando features é undefined (backward-compat)', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Depuração')).not.toBeInTheDocument()
+  })
+
+  it('link Depuração aponta para /videos?view=debug', async () => {
+    render(<Sidebar features={{ llmDebugMode: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Depuração')).toBeInTheDocument()
+    })
+
+    const debugLink = screen.getByText('Depuração').closest('a')
+    expect(debugLink).toHaveAttribute('href', '/videos?view=debug')
+  })
+
+  it('destaca Depuração quando view=debug está ativo', async () => {
+    const { useSearchParams } = await import('next/navigation')
+    vi.mocked(useSearchParams).mockReturnValue({
+      get: vi.fn((key: string) => (key === 'view' ? 'debug' : null)),
+    } as any)
+
+    render(<Sidebar features={{ llmDebugMode: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Depuração')).toBeInTheDocument()
+    })
+
+    const debugLink = screen.getByText('Depuração').closest('a')
+    expect(debugLink).toHaveClass('bg-accent')
+
+    // Vídeos should NOT be active when debug is active
+    const videosLink = screen.getByText('Vídeos').closest('a')
+    expect(videosLink).not.toHaveClass('bg-accent')
+  })
+
   it('exibe Editorial para usuários não-admin', async () => {
     // Mock non-admin user
     const { useSession } = await import('next-auth/react')
@@ -322,5 +444,24 @@ describe('Sidebar', () => {
     expect(screen.getByText('Editorial')).toBeInTheDocument()
     // Admin-only items should be hidden
     expect(screen.queryByText('Configurações')).not.toBeInTheDocument()
+  })
+
+  it('oculta Depuração para non-admin mesmo com llmDebugMode=true', async () => {
+    const { useSession } = await import('next-auth/react')
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { id: 'user1', name: 'Test User', email: 'test@example.com', role: 'viewer' },
+        expires: '2026-12-31',
+      },
+      status: 'authenticated',
+    } as any)
+
+    render(<Sidebar features={{ llmDebugMode: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Vídeos')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Depuração')).not.toBeInTheDocument()
   })
 })

@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Users, Settings, LogOut } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Megaphone, Users, Settings, Bug, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
@@ -19,6 +19,8 @@ interface PodcastFeatures {
   editorial?: boolean
   news?: boolean
   socialMedia?: boolean
+  adwords?: boolean
+  llmDebugMode?: boolean
 }
 
 interface SidebarProps {
@@ -63,13 +65,15 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
     const isEditorialView = searchParams.get('view') === 'editorial'
     const isNewsView = searchParams.get('view') === 'news'
     const isSocialView = searchParams.get('view') === 'social'
+    const isAdwordsView = searchParams.get('view') === 'adwords'
+    const isDebugView = searchParams.get('view') === 'debug'
 
     const items = [
       {
         href: '/videos',
         label: 'Vídeos',
         icon: Video,
-        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView && !isSocialView,
+        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView && !isSocialView && !isAdwordsView && !isDebugView,
         adminOnly: false,
       },
       ...(features?.editorial !== false ? [{
@@ -95,6 +99,13 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
         isActive: isSocialView,
         adminOnly: false,
       }] : []),
+      ...(features?.adwords === true ? [{
+        href: '/videos?view=adwords',
+        label: 'Tráfego Pago',
+        icon: Megaphone,
+        isActive: isAdwordsView,
+        adminOnly: false,
+      }] : []),
       {
         // Use ?view=users to show users management
         href: '/videos?view=users',
@@ -111,6 +122,13 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
         isActive: isSettingsView,
         adminOnly: true,
       },
+      ...(features?.llmDebugMode === true ? [{
+        href: '/videos?view=debug',
+        label: 'Depuração',
+        icon: Bug,
+        isActive: isDebugView,
+        adminOnly: true,
+      }] : []),
     ]
 
     // Filter out admin-only items for non-admin users
