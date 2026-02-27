@@ -212,6 +212,53 @@ describe('Phase8Publish', () => {
     })
   })
 
+  describe('Cmd/Ctrl+Enter shortcut', () => {
+    it('triggers send with Cmd+Enter when valid', () => {
+      const onSend = vi.fn()
+      render(<Phase8Publish video={mockVideoComplete} onSend={onSend} />)
+
+      fireEvent.keyDown(document, { key: 'Enter', metaKey: true })
+
+      expect(onSend).toHaveBeenCalledTimes(1)
+    })
+
+    it('triggers send with Ctrl+Enter when valid', () => {
+      const onSend = vi.fn()
+      render(<Phase8Publish video={mockVideoComplete} onSend={onSend} />)
+
+      fireEvent.keyDown(document, { key: 'Enter', ctrlKey: true })
+
+      expect(onSend).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not trigger send with Cmd+Enter when invalid', () => {
+      const onSend = vi.fn()
+      render(<Phase8Publish video={mockVideoIncomplete} onSend={onSend} />)
+
+      fireEvent.keyDown(document, { key: 'Enter', metaKey: true })
+
+      expect(onSend).not.toHaveBeenCalled()
+    })
+
+    it('does not trigger send with Cmd+Enter when sending', () => {
+      const onSend = vi.fn()
+      render(<Phase8Publish video={mockVideoComplete} onSend={onSend} isSending />)
+
+      fireEvent.keyDown(document, { key: 'Enter', metaKey: true })
+
+      expect(onSend).not.toHaveBeenCalled()
+    })
+
+    it('does not trigger send with Cmd+Enter when already sent', () => {
+      const onSend = vi.fn()
+      render(<Phase8Publish video={mockVideoComplete} onSend={onSend} isSent />)
+
+      fireEvent.keyDown(document, { key: 'Enter', metaKey: true })
+
+      expect(onSend).not.toHaveBeenCalled()
+    })
+  })
+
   describe('No LLM processing', () => {
     it('does not show additionalContext input', () => {
       render(<Phase8Publish video={mockVideoComplete} />)

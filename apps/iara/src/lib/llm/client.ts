@@ -438,7 +438,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
 
     // Build user prompt (without transcription - it goes as attachment)
     const userTemplate = getUserPromptTemplate(phase)
-    const variables = extractVariables(video, options?.previousPhaseData, undefined, podcast?.hostName)
+    const variables = extractVariables(video, options?.previousPhaseData, podcast?.hostName)
     // Clear transcript from variables since it will be sent as attachment
     variables.transcript = '[Transcrição anexada como arquivo]'
     const userPrompt = interpolatePrompt(userTemplate, variables, options?.additionalContext)

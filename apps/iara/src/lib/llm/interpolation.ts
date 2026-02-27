@@ -84,7 +84,6 @@ export function truncateTranscript(transcript: string, maxChars = 50000): string
 export function extractVariables(
   video: Video,
   previousPhaseData?: Record<string, unknown>,
-  additionalContext?: string,
   hostName?: string
 ): PromptVariables {
   return {

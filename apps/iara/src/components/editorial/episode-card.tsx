@@ -7,25 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardFooter } from '@/components/ui/card'
 import { VideoThumbnail } from '@/components/ui/video-thumbnail'
 import { cn } from '@/lib/utils'
+import { statusColors, statusLabels } from '@/lib/video-constants'
 import type { VideoStatus } from '@/types/video'
-
-const statusColors: Record<VideoStatus, string> = {
-  new: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-  processing: 'bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse',
-  draft: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  ready: 'bg-green-500/20 text-green-400 border-green-500/30',
-  sending: 'bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse',
-  sent: 'bg-green-500/20 text-green-400 border-green-500/30',
-}
-
-const statusLabels: Record<VideoStatus, string> = {
-  new: 'novo',
-  processing: 'processando',
-  draft: 'rascunho',
-  ready: 'pronto',
-  sending: 'enviando',
-  sent: 'enviado',
-}
 
 export interface EpisodeSummary {
   id: string

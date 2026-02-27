@@ -580,6 +580,53 @@ describe('VideoListPanel', () => {
     })
   })
 
+  describe('Enter key (onEnterDetail)', () => {
+    it('chama onEnterDetail com Enter quando vídeo está selecionado', async () => {
+      const user = userEvent.setup()
+      const onEnterDetail = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1' }),
+        createMockVideo({ id: 'video-2' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId="video-1"
+          onVideoSelect={vi.fn()}
+          onEnterDetail={onEnterDetail}
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{Enter}')
+
+      expect(onEnterDetail).toHaveBeenCalledTimes(1)
+    })
+
+    it('não chama onEnterDetail com Enter quando nenhum vídeo está selecionado', async () => {
+      const user = userEvent.setup()
+      const onEnterDetail = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId={null}
+          onVideoSelect={vi.fn()}
+          onEnterDetail={onEnterDetail}
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{Enter}')
+
+      expect(onEnterDetail).not.toHaveBeenCalled()
+    })
+  })
+
   describe('excludeTypes', () => {
     it('oculta tabs dos tipos excluídos', () => {
       const videos = [createMockVideo()]

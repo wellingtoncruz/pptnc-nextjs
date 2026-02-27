@@ -324,6 +324,32 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     ? videos.find(v => v.id === selectedVideoId) ?? null
     : null
 
+  // Refs for keyboard navigation between panels
+  const detailPanelRef = useRef<HTMLDivElement>(null)
+  const listPanelRef = useRef<HTMLDivElement>(null)
+
+  // Enter on listbox → focus first focusable element in detail panel
+  const handleEnterDetail = useCallback(() => {
+    if (!detailPanelRef.current) return
+    const firstFocusable = detailPanelRef.current.querySelector(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    ) as HTMLElement
+    firstFocusable?.focus()
+  }, [])
+
+  // Escape in detail panel → focus listbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (!detailPanelRef.current?.contains(document.activeElement)) return
+      e.preventDefault()
+      const listbox = listPanelRef.current?.querySelector('[role="listbox"]') as HTMLElement
+      listbox?.focus()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   // Default: show full master-detail layout with video list
   // LLMProcessingProvider bloqueia troca de vídeo durante chamadas LLM
   return (
@@ -338,26 +364,33 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       <MasterDetailLayout
         sidebar={<Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />}
         list={
-          <VideoListPanel
-            videos={videos}
-            selectedVideoId={selectedVideoId}
-            onVideoSelect={handleVideoSelect}
-            onSync={handleSync}
-            isSyncing={isSyncing}
-            isLoading={isLoading}
-            error={error}
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            typeFilter={typeFilter}
-            onTypeFilterChange={setTypeFilter}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            onVideoReopened={refresh}
-            variant="editorial"
-          />
+          <div ref={listPanelRef} className="h-full">
+            <VideoListPanel
+              videos={videos}
+              selectedVideoId={selectedVideoId}
+              onVideoSelect={handleVideoSelect}
+              onSync={handleSync}
+              isSyncing={isSyncing}
+              isLoading={isLoading}
+              error={error}
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              typeFilter={typeFilter}
+              onTypeFilterChange={setTypeFilter}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              onVideoReopened={refresh}
+              variant="editorial"
+              onEnterDetail={handleEnterDetail}
+            />
+          </div>
         }
-        detail={<VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} onVideoStatusChange={refresh} />}
+        detail={
+          <div ref={detailPanelRef} className="h-full">
+            <VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} onVideoStatusChange={refresh} />
+          </div>
+        }
       />
     </LLMProcessingProvider>
   )

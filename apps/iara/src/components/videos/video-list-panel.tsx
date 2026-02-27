@@ -38,6 +38,8 @@ interface VideoListPanelProps {
   excludeTypes?: VideoTypeFilter[]
   // Variant: 'editorial' (default) = Videos tab behavior, 'social' = Social tab behavior, 'adwords' = AdWords tab behavior
   variant?: 'editorial' | 'social' | 'adwords'
+  // Keyboard shortcut: Enter moves focus to detail panel
+  onEnterDetail?: () => void
 }
 
 const typeLabels: Record<VideoTypeFilter, string> = {
@@ -85,6 +87,7 @@ export function VideoListPanel({
   onVideoReopened,
   excludeTypes,
   variant = 'editorial',
+  onEnterDetail,
 }: VideoListPanelProps) {
   const isSocial = variant === 'social'
   const isAdwords = variant === 'adwords'
@@ -138,6 +141,14 @@ export function VideoListPanel({
         }
       }
 
+      if (e.key === 'Enter') {
+        if (selectedVideoId && onEnterDetail) {
+          e.preventDefault()
+          onEnterDetail()
+        }
+        return
+      }
+
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         const currentIndex = selectedVideoId
@@ -170,7 +181,7 @@ export function VideoListPanel({
         }
       }
     },
-    [videos, selectedVideoId, onVideoSelect, handleReopenRequest, isSocial, isAdwords]
+    [videos, selectedVideoId, onVideoSelect, handleReopenRequest, isSocial, isAdwords, onEnterDetail]
   )
 
   // Auto-scroll to selected item

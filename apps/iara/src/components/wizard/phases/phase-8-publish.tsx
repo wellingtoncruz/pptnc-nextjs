@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   UploadIcon,
   CheckCircleIcon,
@@ -113,13 +113,27 @@ export function Phase8Publish({
     )
   }
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (hasError && onRetry) {
       onRetry()
     } else if (onSend) {
       onSend()
     }
-  }
+  }, [hasError, onRetry, onSend])
+
+  // Cmd/Ctrl+Enter shortcut to send
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        if (isValid && !isSending && !isSent) {
+          e.preventDefault()
+          handleClick()
+        }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isValid, isSending, isSent, handleClick])
 
   return (
     <div className={className}>

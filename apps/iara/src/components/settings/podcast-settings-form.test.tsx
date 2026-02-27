@@ -365,4 +365,25 @@ describe('PodcastSettingsForm', () => {
       }))
     })
   })
+
+  it('shows validation error for hostName exceeding max length', async () => {
+    const tooLong = 'a'.repeat(201)
+
+    const podcast = createPodcastFixture()
+    render(<PodcastSettingsForm podcast={podcast} />)
+
+    const hostNameInput = screen.getByLabelText('Nome do Host/Apresentador')
+    fireEvent.change(hostNameInput, { target: { value: tooLong } })
+
+    await act(async () => {
+      fireEvent.blur(hostNameInput)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Nome do host deve ter no máximo 200 caracteres')).toBeInTheDocument()
+    })
+
+    // API should not be called for invalid data
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
 })

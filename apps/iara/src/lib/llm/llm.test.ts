@@ -190,7 +190,7 @@ describe('extractVariables', () => {
   })
 
   it('includes hostName when provided', () => {
-    const variables = extractVariables(mockVideo, undefined, undefined, 'Wellington')
+    const variables = extractVariables(mockVideo, undefined, 'Wellington')
 
     expect(variables.hostName).toBe('Wellington')
   })
