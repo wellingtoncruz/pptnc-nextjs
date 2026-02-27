@@ -103,6 +103,32 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     setSyncError(null)
   }, [])
 
+  // Refs for keyboard navigation between panels
+  const detailPanelRef = useRef<HTMLDivElement>(null)
+  const listPanelRef = useRef<HTMLDivElement>(null)
+
+  // Enter on listbox → focus first focusable element in detail panel
+  const handleEnterDetail = useCallback(() => {
+    if (!detailPanelRef.current) return
+    const firstFocusable = detailPanelRef.current.querySelector(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    ) as HTMLElement
+    firstFocusable?.focus()
+  }, [])
+
+  // Escape in detail panel → focus listbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (!detailPanelRef.current?.contains(document.activeElement)) return
+      e.preventDefault()
+      const listbox = listPanelRef.current?.querySelector('[role="listbox"]') as HTMLElement
+      listbox?.focus()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   // Handle sync - calls refresh from useVideos with overlay
   const handleSync = useCallback(async () => {
     setIsSyncing(true)
@@ -323,32 +349,6 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   const selectedVideo = selectedVideoId
     ? videos.find(v => v.id === selectedVideoId) ?? null
     : null
-
-  // Refs for keyboard navigation between panels
-  const detailPanelRef = useRef<HTMLDivElement>(null)
-  const listPanelRef = useRef<HTMLDivElement>(null)
-
-  // Enter on listbox → focus first focusable element in detail panel
-  const handleEnterDetail = useCallback(() => {
-    if (!detailPanelRef.current) return
-    const firstFocusable = detailPanelRef.current.querySelector(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    ) as HTMLElement
-    firstFocusable?.focus()
-  }, [])
-
-  // Escape in detail panel → focus listbox
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      if (!detailPanelRef.current?.contains(document.activeElement)) return
-      e.preventDefault()
-      const listbox = listPanelRef.current?.querySelector('[role="listbox"]') as HTMLElement
-      listbox?.focus()
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
 
   // Default: show full master-detail layout with video list
   // LLMProcessingProvider bloqueia troca de vídeo durante chamadas LLM
