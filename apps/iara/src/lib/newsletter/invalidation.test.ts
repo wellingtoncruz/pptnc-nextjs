@@ -12,7 +12,6 @@ const fullData: NewsletterData = {
   ],
   imagePrompt: 'prompt para imagem',
   imageUrl: 'https://example.com/image.png',
-  formatPrompt: 'prompt de formato',
   report: 'Relatório final completo',
 }
 
@@ -40,11 +39,6 @@ describe('invalidateFromDraft()', () => {
   it('clears imageUrl field', () => {
     const result = invalidateFromDraft(fullData)
     expect(result.imageUrl).toBeUndefined()
-  })
-
-  it('clears formatPrompt field', () => {
-    const result = invalidateFromDraft(fullData)
-    expect(result.formatPrompt).toBeUndefined()
   })
 
   it('clears report field', () => {
@@ -84,14 +78,4 @@ describe('invalidateFromImage()', () => {
     expect(result.report).toBeUndefined()
   })
 
-  it('preserves formatPrompt field', () => {
-    const result = invalidateFromImage(fullData)
-    expect(result.formatPrompt).toBe('prompt de formato')
-  })
-
-  it('does NOT include formatPrompt key when absent in input', () => {
-    const { formatPrompt, ...dataWithoutFormat } = fullData
-    const result = invalidateFromImage(dataWithoutFormat as NewsletterData)
-    expect('formatPrompt' in result).toBe(false)
-  })
 })

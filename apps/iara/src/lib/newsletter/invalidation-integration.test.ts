@@ -20,7 +20,6 @@ const fullData: NewsletterData = {
   ],
   imagePrompt: 'A futuristic podcast studio',
   imageUrl: 'newsletters/pptnc/video-1/cover.png',
-  formatPrompt: 'Formate em seções claras',
   report: 'Relatório final completo',
 }
 
@@ -40,7 +39,7 @@ const scenarios: InvalidationScenario[] = [
     fn: invalidateFromDraft,
     expectedStatus: 'draft',
     preservedFields: ['draft'],
-    clearedFields: ['news', 'imagePrompt', 'imageUrl', 'formatPrompt', 'report'],
+    clearedFields: ['news', 'imagePrompt', 'imageUrl', 'report'],
   },
   {
     name: 'invalidateFromDraft: image_ready → draft (limpa news e imagem)',
@@ -84,26 +83,11 @@ const scenarios: InvalidationScenario[] = [
     input: { ...fullData },
     fn: invalidateFromImage,
     expectedStatus: 'image_ready',
-    preservedFields: ['draft', 'news', 'imagePrompt', 'imageUrl', 'formatPrompt'],
+    preservedFields: ['draft', 'news', 'imagePrompt', 'imageUrl'],
     clearedFields: ['report'],
   },
   {
     name: 'invalidateFromImage: image_ready → image_ready (preserva tudo)',
-    input: {
-      status: 'image_ready',
-      draft: 'Draft',
-      news: [{ id: 'n1', title: 'News' }],
-      imagePrompt: 'prompt',
-      imageUrl: 'path/img.png',
-      formatPrompt: 'format',
-    },
-    fn: invalidateFromImage,
-    expectedStatus: 'image_ready',
-    preservedFields: ['draft', 'news', 'imagePrompt', 'imageUrl', 'formatPrompt'],
-    clearedFields: [],
-  },
-  {
-    name: 'invalidateFromImage: image_ready sem formatPrompt (não adiciona campo)',
     input: {
       status: 'image_ready',
       draft: 'Draft',
@@ -156,7 +140,6 @@ describe('Invalidation integration (table-driven)', () => {
     expect(result.news).toEqual(fullData.news)
     expect(result.imagePrompt).toBe(fullData.imagePrompt)
     expect(result.imageUrl).toBe(fullData.imageUrl)
-    expect(result.formatPrompt).toBe(fullData.formatPrompt)
     expect(result.report).toBeUndefined()
   })
 

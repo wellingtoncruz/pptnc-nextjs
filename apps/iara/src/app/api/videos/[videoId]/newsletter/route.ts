@@ -45,7 +45,7 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
 }
 
 /** Allowed fields for PATCH update. */
-const PATCHABLE_FIELDS = ['draft', 'report', 'formatPrompt'] as const
+const PATCHABLE_FIELDS = ['draft', 'report'] as const
 const MAX_FIELD_LENGTH = 50_000
 
 export async function PATCH(request: Request, context: RouteContext): Promise<NextResponse> {

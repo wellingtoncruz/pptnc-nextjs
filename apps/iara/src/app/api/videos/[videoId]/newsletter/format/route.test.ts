@@ -278,7 +278,7 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
     expect(json.data.report).toBe('# Relatório Final\n\nConteúdo formatado da newsletter...')
   })
 
-  it('saves report, formatPrompt and status completed to Firestore', async () => {
+  it('saves report and status completed to Firestore (without formatPrompt)', async () => {
     mockAuthFn.mockResolvedValue(validSession)
     mockGetVideoAdmin.mockResolvedValue(validEpisode)
     mockGetPodcastAdmin.mockResolvedValue(validPodcast)
@@ -291,13 +291,13 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
       createContext('video-1')
     )
 
-    expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', expect.objectContaining({
-      status: 'completed',
-      report: '# Relatório Final\n\nConteúdo formatado da newsletter...',
-      formatPrompt: 'Formate a newsletter final',
-      draft: validNewsletterData.draft,
-      imageUrl: validNewsletterData.imageUrl,
-    }))
+    const savedData = mockSaveNewsletterData.mock.calls[0][1]
+    expect(savedData.status).toBe('completed')
+    expect(savedData.report).toBe('# Relatório Final\n\nConteúdo formatado da newsletter...')
+    expect(savedData.draft).toBe(validNewsletterData.draft)
+    expect(savedData.imageUrl).toBe(validNewsletterData.imageUrl)
+    // formatPrompt should NOT be persisted — it always comes from settings
+    expect(savedData).not.toHaveProperty('formatPrompt')
   })
 
   it('uses llmQueue.enqueue for sequential processing', async () => {

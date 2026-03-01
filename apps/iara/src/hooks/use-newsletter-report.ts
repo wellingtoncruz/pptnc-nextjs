@@ -22,9 +22,7 @@ export function useNewsletterReport(
   defaultFormatPrompt: string
 ): UseNewsletterReportResult {
   const [report, setReport] = useState<string | null>(newsletterData?.report ?? null)
-  const [formatPrompt, setFormatPrompt] = useState(
-    newsletterData?.formatPrompt || defaultFormatPrompt
-  )
+  const [formatPrompt, setFormatPrompt] = useState(defaultFormatPrompt)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,7 +31,7 @@ export function useNewsletterReport(
   useEffect(() => {
     if (hasUserEditedRef.current) return
     setReport(newsletterData?.report ?? null)
-    setFormatPrompt(newsletterData?.formatPrompt || defaultFormatPrompt)
+    setFormatPrompt(defaultFormatPrompt)
   }, [newsletterData, defaultFormatPrompt])
 
   const lastFormatPromptRef = useRef(formatPrompt)

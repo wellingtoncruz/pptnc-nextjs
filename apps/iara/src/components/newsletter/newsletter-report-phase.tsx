@@ -206,7 +206,7 @@ export function NewsletterReportPhase({ videoId, newsletterData, defaultFormatPr
           <SaveStatusIndicator status={saveStatus} />
         </div>
         <Button size="sm" variant="outline" onClick={handleRegenerate}>
-          Alterar Prompt
+          Regenerar Relatório
         </Button>
       </div>
 

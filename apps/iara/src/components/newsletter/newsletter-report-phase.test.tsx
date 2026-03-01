@@ -134,7 +134,7 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase()
 
-    fireEvent.click(screen.getByRole('button', { name: /Alterar Prompt/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Regenerar Relatório/ }))
 
     expect(screen.getByTestId('newsletter-report-prompt')).toBeInTheDocument()
     expect(screen.getByTestId('newsletter-format-prompt')).toBeInTheDocument()
@@ -146,7 +146,7 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase()
 
-    fireEvent.click(screen.getByRole('button', { name: /Alterar Prompt/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Regenerar Relatório/ }))
 
     const textarea = screen.getByTestId('newsletter-format-prompt')
     expect(textarea).toHaveValue('Meu prompt editado')
@@ -158,7 +158,7 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase()
 
-    fireEvent.click(screen.getByRole('button', { name: /Alterar Prompt/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Regenerar Relatório/ }))
 
     const button = screen.getByTestId('newsletter-generate-report-btn')
     expect(button).toBeDisabled()
@@ -170,7 +170,7 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase()
 
-    fireEvent.click(screen.getByRole('button', { name: /Alterar Prompt/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Regenerar Relatório/ }))
 
     const button = screen.getByTestId('newsletter-generate-report-btn')
     expect(button).not.toBeDisabled()
@@ -183,7 +183,7 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase()
 
-    fireEvent.click(screen.getByRole('button', { name: /Alterar Prompt/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Regenerar Relatório/ }))
     fireEvent.click(screen.getByTestId('newsletter-generate-report-btn'))
 
     await waitFor(() => {
@@ -199,7 +199,7 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase({ onStatusChange })
 
-    fireEvent.click(screen.getByRole('button', { name: /Alterar Prompt/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Regenerar Relatório/ }))
     fireEvent.click(screen.getByTestId('newsletter-generate-report-btn'))
 
     await waitFor(() => {
@@ -215,7 +215,7 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase({ onStatusChange })
 
-    fireEvent.click(screen.getByRole('button', { name: /Alterar Prompt/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Regenerar Relatório/ }))
     fireEvent.click(screen.getByTestId('newsletter-generate-report-btn'))
 
     await waitFor(() => {
@@ -276,6 +276,6 @@ describe('NewsletterReportPhase', () => {
 
     renderPhase()
 
-    expect(screen.getByRole('button', { name: /Alterar Prompt/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Regenerar Relatório/ })).toBeInTheDocument()
   })
 })

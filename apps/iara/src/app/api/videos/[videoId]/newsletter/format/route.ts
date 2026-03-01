@@ -3,8 +3,8 @@
  *
  * POST: Generates the report by passing draft + news + imageUrl to the LLM.
  *   - No attachment (unlike Fase 1 which sends transcription).
- *   - Saves report + formatPrompt in Firestore, status → completed.
- *   - Regeneration: keeps status as completed, replaces report + formatPrompt.
+ *   - Saves report in Firestore, status → completed.
+ *   - Regeneration: keeps status as completed, replaces report.
  *
  * @see epic-16-newsletter.md#Story 16.9
  */
@@ -149,12 +149,11 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     // Validate LLM response
     const validated = NewsletterFormatLLMResponseSchema.parse(data)
 
-    // Save to Firestore — preserve all existing data, add report + formatPrompt, set completed
+    // Save to Firestore — preserve all existing data, add report, set completed
     await saveNewsletterData(videoId, {
       ...newsletterData,
       status: 'completed',
       report: validated.report,
-      formatPrompt,
     })
 
     log('INFO', 'Newsletter report generated via LLM', { videoId })

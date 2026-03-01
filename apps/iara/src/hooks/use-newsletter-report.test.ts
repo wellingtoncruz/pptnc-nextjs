@@ -18,7 +18,6 @@ const completedNewsletterData: NewsletterData = {
   ...existingNewsletterData,
   status: 'completed',
   report: '# Relatório Final\n\nConteúdo formatado...',
-  formatPrompt: 'Prompt de formato usado',
 }
 
 describe('useNewsletterReport', () => {
@@ -43,7 +42,8 @@ describe('useNewsletterReport', () => {
     )
 
     expect(result.current.report).toBe('# Relatório Final\n\nConteúdo formatado...')
-    expect(result.current.formatPrompt).toBe('Prompt de formato usado')
+    // formatPrompt sempre reflete o default atual das configurações, não o valor histórico
+    expect(result.current.formatPrompt).toBe('Default prompt')
   })
 
   it('usa defaultFormatPrompt quando newsletterData não tem formatPrompt', () => {

@@ -36,7 +36,6 @@ export const NewsletterDataSchema = z.object({
   news: z.array(NewsletterNewsItemSchema).optional(),
   imagePrompt: z.string().optional(),
   imageUrl: z.string().optional(),
-  formatPrompt: z.string().optional(),
   report: z.string().optional(),
   additionalContext: z.string().optional(),
   generatedAt: TimestampSchema.optional(),
