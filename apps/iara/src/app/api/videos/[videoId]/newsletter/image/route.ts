@@ -86,7 +86,7 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
     if (bytes[0] === 0xFF && bytes[1] === 0xD8) contentType = 'image/jpeg'
     else if (bytes[0] === 0x52 && bytes[1] === 0x49) contentType = 'image/webp'
 
-    return new Response(imageBuffer, {
+    return new Response(new Uint8Array(imageBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'private, max-age=3600',
