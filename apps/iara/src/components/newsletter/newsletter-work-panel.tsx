@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
 
 import { log } from '@/lib/logger'
 import type { VideoSummary } from '@/types/video'
@@ -55,6 +57,7 @@ export function NewsletterWorkPanel({ videoId, video }: NewsletterWorkPanelProps
   const [newsletterData, setNewsletterData] = useState<NewsletterData | null>(null)
   const [defaultFormatPrompt, setDefaultFormatPrompt] = useState('')
   const [isLoadingStatus, setIsLoadingStatus] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [activePhase, setActivePhase] = useState(1)
 
   const effectiveStatusRef = useRef(effectiveStatus)
@@ -65,6 +68,7 @@ export function NewsletterWorkPanel({ videoId, video }: NewsletterWorkPanelProps
   // Fetch real newsletter data + podcast format prompt on mount / videoId change
   useEffect(() => {
     setIsLoadingStatus(true)
+    setFetchError(null)
     setEffectiveStatus(undefined)
     setNewsletterData(null)
     setActivePhase(1)
@@ -89,6 +93,7 @@ export function NewsletterWorkPanel({ videoId, video }: NewsletterWorkPanelProps
       })
       .catch((err) => {
         log('ERROR', 'Failed to fetch newsletter status', { videoId, error: err })
+        setFetchError('Falha ao carregar dados da newsletter. Verifique sua conexão.')
       })
       .finally(() => setIsLoadingStatus(false))
   }, [videoId])
@@ -126,6 +131,48 @@ export function NewsletterWorkPanel({ videoId, video }: NewsletterWorkPanelProps
     )
   }
 
+  if (fetchError) {
+    return (
+      <div data-testid="newsletter-work-panel-error" className="flex flex-col items-center justify-center h-full gap-4 p-6 text-center">
+        <AlertCircle className="size-10 text-destructive" />
+        <p className="text-sm text-muted-foreground">{fetchError}</p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setFetchError(null)
+            setIsLoadingStatus(true)
+            Promise.all([
+              fetch(`/api/videos/${videoId}/newsletter`)
+                .then((res) => (res.ok ? res.json() : null)),
+              fetch('/api/podcast')
+                .then((res) => (res.ok ? res.json() : null)),
+            ])
+              .then(([newsletterResult, podcastResult]) => {
+                const data = newsletterResult?.data as NewsletterData | undefined
+                if (data?.status) {
+                  setEffectiveStatus(data.status)
+                  setNewsletterData(data)
+                  setActivePhase(statusToMaxReachable(data.status))
+                }
+                const formatDescription = podcastResult?.data?.prompts?.episode?.newsletter?.format?.description
+                if (formatDescription) {
+                  setDefaultFormatPrompt(formatDescription)
+                }
+              })
+              .catch((err) => {
+                log('ERROR', 'Failed to fetch newsletter status (retry)', { videoId, error: err })
+                setFetchError('Falha ao carregar dados da newsletter. Verifique sua conexão.')
+              })
+              .finally(() => setIsLoadingStatus(false))
+          }}
+        >
+          Tentar novamente
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div data-testid="newsletter-work-panel" className="flex h-full flex-col">
       {/* Header */}
@@ -153,11 +200,11 @@ export function NewsletterWorkPanel({ videoId, video }: NewsletterWorkPanelProps
         <div className="flex-1 overflow-hidden">
           <NewsletterImagePhase videoId={videoId} newsletterStatus={effectiveStatus ?? null} onStatusChange={handleStatusChange} />
         </div>
-      ) : activePhase === 4 ? (
+      ) : activePhase === 4 && newsletterData ? (
         <div className="flex-1 overflow-hidden">
           <NewsletterReportPhase
             videoId={videoId}
-            newsletterData={newsletterData ?? { status: 'image_ready' }}
+            newsletterData={newsletterData}
             defaultFormatPrompt={defaultFormatPrompt}
             onStatusChange={handleStatusChange}
           />

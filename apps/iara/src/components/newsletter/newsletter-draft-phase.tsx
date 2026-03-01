@@ -201,14 +201,14 @@ export function NewsletterDraftPhase({ videoId, video, onStatusChange }: Newslet
 
         {/* Bug 2: additionalContext textarea for regeneration */}
         <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0">
-          <input
+          <textarea
             data-testid="newsletter-additional-context"
-            type="text"
-            className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground"
+            className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground resize-none"
             placeholder="Dica adicional para regeneração (opcional)"
             value={additionalContext}
             onChange={(e) => setAdditionalContext(e.target.value)}
             maxLength={500}
+            rows={1}
           />
         </div>
 

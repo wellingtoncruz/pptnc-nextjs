@@ -44,7 +44,6 @@ import {
 } from '@/lib/llm/newsletter-prompts'
 import { llmQueue } from '@/lib/llm/queue'
 import { log } from '@/lib/logger'
-import { invalidateFromImage } from '@/lib/newsletter'
 import { NewsletterImageLLMResponseSchema } from '@/lib/schemas'
 import type { Podcast } from '@/types/podcast'
 
@@ -81,9 +80,15 @@ export async function GET(_request: Request, context: RouteContext): Promise<Nex
 
     const imageBuffer = await downloadNewsletterImage(newsletterData.imageUrl)
 
+    // Detect image format from magic bytes
+    const bytes = new Uint8Array(imageBuffer instanceof Buffer ? imageBuffer : imageBuffer.slice(0, 4))
+    let contentType = 'image/png'
+    if (bytes[0] === 0xFF && bytes[1] === 0xD8) contentType = 'image/jpeg'
+    else if (bytes[0] === 0x52 && bytes[1] === 0x49) contentType = 'image/webp'
+
     return new Response(imageBuffer, {
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': contentType,
         'Cache-Control': 'private, max-age=3600',
       },
     })
@@ -128,10 +133,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   let additionalContext: string | undefined
   let editedPrompt: string | undefined
   let newsletterData: Awaited<ReturnType<typeof getNewsletterData>>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let promptConfig: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let persona: any
+  let promptConfig: { description: string; expectedOutput: string } | undefined
+  let persona: { role?: string; objective?: string; resume?: string } | undefined
   let debugContextPrompt: { component: string; videoId: string; videoType: 'episode' | 'cut' | 'reel'; podcastId: string } | undefined
   let debugContextImage: typeof debugContextPrompt
 
@@ -254,13 +257,15 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
         // === Save to Firestore ===
         send('progress', { step: 'saving' })
 
-        // imageUrl field stores the GCS file path; served via GET proxy
+        // Atomic dot-notation: clear downstream fields (report) when regenerating
         const needsInvalidation = newsletterData.status === 'image_ready' || newsletterData.status === 'completed'
-        const baseData = needsInvalidation
-          ? invalidateFromImage({ ...newsletterData, imageUrl: imagePath, imagePrompt: imagePromptText! })
-          : { ...newsletterData, imageUrl: imagePath, imagePrompt: imagePromptText! }
+        const clearFields = needsInvalidation ? ['report'] as string[] : undefined
 
-        await saveNewsletterData(videoId, { ...baseData, status: 'image_ready' })
+        await saveNewsletterData(
+          videoId,
+          { ...newsletterData, imageUrl: imagePath, imagePrompt: imagePromptText!, status: 'image_ready' },
+          clearFields
+        )
 
         // Cleanup previous image AFTER save succeeds to avoid data inconsistency
         if (newsletterData.imageUrl) {

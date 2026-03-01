@@ -1,4 +1,6 @@
-export type NewsletterStatus = 'idle' | 'draft' | 'news_selected' | 'image_ready' | 'completed'
+// Single source of truth: Zod schema in @/lib/schemas/newsletter
+export type { NewsletterStatus } from '@/types/newsletter'
+import type { NewsletterStatus } from '@/types/newsletter'
 
 export type NewsletterAction = 'generateDraft' | 'selectNews' | 'generateImage' | 'generateReport'
 

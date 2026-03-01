@@ -78,11 +78,6 @@ export function NewsletterImagePhase({ videoId, newsletterStatus: externalStatus
     await regenerateFromPrompt(editablePrompt.trim())
   }, [regenerateFromPrompt, editablePrompt])
 
-  // Full regen: new prompt + new image (Call 1 + Call 2)
-  const handleFullRegenerate = useCallback(async () => {
-    await generate(additionalContext || undefined)
-  }, [generate, additionalContext])
-
   const handleContinue = useCallback(() => {
     onStatusChange?.('image_ready')
   }, [onStatusChange])
@@ -206,7 +201,7 @@ export function NewsletterImagePhase({ videoId, newsletterStatus: externalStatus
               size="sm"
               variant="outline"
               className="mt-2"
-              onClick={handleFullRegenerate}
+              onClick={handleGenerate}
             >
               Novo Prompt + Imagem
             </Button>

@@ -29,7 +29,6 @@ import { LLMError } from '@/lib/llm/errors'
 import { buildNewsletterDraftSystemPrompt, buildNewsletterDraftUserPrompt } from '@/lib/llm/newsletter-prompts'
 import { llmQueue } from '@/lib/llm/queue'
 import { log } from '@/lib/logger'
-import { invalidateFromDraft } from '@/lib/newsletter'
 import { NewsletterDraftLLMResponseSchema } from '@/lib/schemas'
 import type { Podcast } from '@/types/podcast'
 
@@ -141,19 +140,21 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
       const needsInvalidation = existingData && existingData.status !== 'idle' && existingData.status !== 'draft'
 
       // Build save payload — invalidate downstream if regenerating from advanced status
-      let savePayload: { status: 'draft'; draft: string; additionalContext?: string }
-      if (needsInvalidation) {
-        const invalidated = invalidateFromDraft({ ...existingData, draft: validated.draft })
-        savePayload = { ...invalidated }
-      } else {
-        savePayload = { status: 'draft', draft: validated.draft }
+      const savePayload: { status: 'draft'; draft: string; additionalContext?: string } = {
+        status: 'draft',
+        draft: validated.draft,
       }
 
       if (additionalContext) {
         savePayload.additionalContext = additionalContext
       }
 
-      await saveNewsletterData(videoId, savePayload)
+      // Atomic dot-notation: clear downstream fields when regenerating from advanced status
+      const clearFields = needsInvalidation
+        ? ['news', 'imagePrompt', 'imageUrl', 'report'] as string[]
+        : undefined
+
+      await saveNewsletterData(videoId, savePayload, clearFields)
 
       log('INFO', 'Newsletter draft generated via LLM', { videoId })
 

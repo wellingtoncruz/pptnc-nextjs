@@ -14,9 +14,12 @@ vi.mock('@/lib/logger', () => ({
 }))
 
 const mockServerTimestamp = vi.fn(() => 'MOCK_SERVER_TIMESTAMP')
+const MOCK_DELETE_SENTINEL = 'MOCK_FIELD_DELETE'
+const mockDelete = vi.fn(() => MOCK_DELETE_SENTINEL)
 vi.mock('firebase-admin/firestore', () => ({
   FieldValue: {
     serverTimestamp: () => mockServerTimestamp(),
+    delete: () => mockDelete(),
   },
 }))
 
@@ -110,24 +113,22 @@ describe('saveNewsletterData', () => {
     mockDocUpdate.mockResolvedValue(undefined)
   })
 
-  it('saves newsletter data with server timestamp', async () => {
+  it('saves newsletter data with dot-notation and server timestamp', async () => {
     await saveNewsletterData('video-1', {
       status: 'draft',
       draft: 'Conteúdo do draft',
     })
 
     expect(mockDocUpdate).toHaveBeenCalledWith({
-      newsletter: {
-        status: 'draft',
-        draft: 'Conteúdo do draft',
-        generatedAt: 'MOCK_SERVER_TIMESTAMP',
-      },
+      'newsletter.status': 'draft',
+      'newsletter.draft': 'Conteúdo do draft',
+      'newsletter.generatedAt': 'MOCK_SERVER_TIMESTAMP',
     })
     expect(getVideoDocRef).toHaveBeenCalledWith('video-1')
     expect(log).toHaveBeenCalledWith('INFO', 'Newsletter data saved', { videoId: 'video-1' })
   })
 
-  it('saves newsletter data with news array', async () => {
+  it('saves newsletter data with news array via dot-notation', async () => {
     await saveNewsletterData('video-1', {
       status: 'news_selected',
       draft: 'Draft content',
@@ -138,16 +139,44 @@ describe('saveNewsletterData', () => {
     })
 
     expect(mockDocUpdate).toHaveBeenCalledWith({
-      newsletter: {
-        status: 'news_selected',
-        draft: 'Draft content',
-        news: [
-          { id: 'n1', title: 'News 1', source: 'Source A' },
-          { id: 'n2', title: 'News 2' },
-        ],
-        generatedAt: 'MOCK_SERVER_TIMESTAMP',
-      },
+      'newsletter.status': 'news_selected',
+      'newsletter.draft': 'Draft content',
+      'newsletter.news': [
+        { id: 'n1', title: 'News 1', source: 'Source A' },
+        { id: 'n2', title: 'News 2' },
+      ],
+      'newsletter.generatedAt': 'MOCK_SERVER_TIMESTAMP',
     })
+  })
+
+  it('deletes downstream fields when clearFields provided', async () => {
+    await saveNewsletterData(
+      'video-1',
+      { status: 'draft', draft: 'New draft' },
+      ['news', 'imagePrompt', 'imageUrl', 'report']
+    )
+
+    expect(mockDocUpdate).toHaveBeenCalledWith({
+      'newsletter.status': 'draft',
+      'newsletter.draft': 'New draft',
+      'newsletter.news': MOCK_DELETE_SENTINEL,
+      'newsletter.imagePrompt': MOCK_DELETE_SENTINEL,
+      'newsletter.imageUrl': MOCK_DELETE_SENTINEL,
+      'newsletter.report': MOCK_DELETE_SENTINEL,
+      'newsletter.generatedAt': 'MOCK_SERVER_TIMESTAMP',
+    })
+  })
+
+  it('does not delete fields in clearFields that are also in data', async () => {
+    await saveNewsletterData(
+      'video-1',
+      { status: 'image_ready', draft: 'Draft', imageUrl: 'path.png', imagePrompt: 'prompt' },
+      ['report']
+    )
+
+    const updateArg = mockDocUpdate.mock.calls[0][0]
+    expect(updateArg['newsletter.imageUrl']).toBe('path.png')
+    expect(updateArg['newsletter.report']).toBe(MOCK_DELETE_SENTINEL)
   })
 
   it('propagates Firestore errors to caller', async () => {

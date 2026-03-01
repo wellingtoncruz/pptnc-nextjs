@@ -53,13 +53,17 @@ export async function getNewsletterData(videoId: string): Promise<NewsletterData
 }
 
 /**
- * Saves newsletter data to a video document.
+ * Saves newsletter data to a video document using atomic dot-notation updates.
  *
- * Updates the `newsletter` field using field-level merge with server timestamp.
+ * Uses Firestore dot-notation (`newsletter.field`) for each field,
+ * avoiding read-modify-write race conditions with concurrent operations (e.g. auto-save).
+ *
+ * @param clearFields - Optional list of fields to delete (for invalidation chains)
  */
 export async function saveNewsletterData(
   videoId: string,
-  data: NewsletterDataCreate
+  data: NewsletterDataCreate,
+  clearFields?: string[]
 ): Promise<void> {
   const validated = NewsletterDataCreateSchema.parse(data)
 
@@ -70,12 +74,24 @@ export async function saveNewsletterData(
 
   const docRef = getVideoDocRef(videoId)
 
-  await docRef.update({
-    newsletter: {
-      ...clean,
-      generatedAt: FieldValue.serverTimestamp(),
-    },
-  })
+  // Build atomic dot-notation update (no full-field replace)
+  const update: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(clean)) {
+    update[`newsletter.${key}`] = value
+  }
+
+  // Delete downstream fields during invalidation
+  if (clearFields) {
+    for (const field of clearFields) {
+      if (!(field in clean)) {
+        update[`newsletter.${field}`] = FieldValue.delete()
+      }
+    }
+  }
+
+  update['newsletter.generatedAt'] = FieldValue.serverTimestamp()
+
+  await docRef.update(update)
 
   log('INFO', 'Newsletter data saved', { videoId })
 }

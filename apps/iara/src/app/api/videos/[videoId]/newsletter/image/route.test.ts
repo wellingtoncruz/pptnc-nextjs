@@ -359,15 +359,16 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
     // Should delete previous image
     expect(mockDeleteNewsletterImage).toHaveBeenCalledWith('newsletters/pptnc/video-1/old.png')
 
-    // Should apply invalidation (report cleared)
-    expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', expect.objectContaining({
-      status: 'image_ready',
-      imageUrl: 'newsletters/pptnc/video-1/new.png',
-      imagePrompt: 'A futuristic podcast studio with blue lighting and microphones',
-    }))
-    // report should NOT be in the saved data (cleared by invalidation)
-    const savedData = mockSaveNewsletterData.mock.calls[0][1]
-    expect(savedData.report).toBeUndefined()
+    // Should apply invalidation via clearFields
+    expect(mockSaveNewsletterData).toHaveBeenCalledWith(
+      'video-1',
+      expect.objectContaining({
+        status: 'image_ready',
+        imageUrl: 'newsletters/pptnc/video-1/new.png',
+        imagePrompt: 'A futuristic podcast studio with blue lighting and microphones',
+      }),
+      ['report']
+    )
   })
 
   it('emits error event on LLM RATE_LIMIT error', async () => {

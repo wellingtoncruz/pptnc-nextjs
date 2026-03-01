@@ -72,13 +72,15 @@ export async function POST(_request: Request, context: RouteContext): Promise<Ne
       )
     }
 
-    // Calculate D-2 from current date (2 days before today)
-    const now = new Date()
-    const d2Date = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+    // Calculate D-2 from current date in BRT (America/Sao_Paulo)
+    // Using BRT ensures the date matches the producer's local timezone
+    const nowBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+    const [year, month, day] = nowBRT.split('-').map(Number)
+    const d2Date = new Date(year, month - 1, day - 2)
 
     log('INFO', 'Newsletter news D-2 calculation', {
       videoId,
-      now: now.toISOString(),
+      todayBRT: nowBRT,
       d2Date: d2Date.toISOString(),
     })
 

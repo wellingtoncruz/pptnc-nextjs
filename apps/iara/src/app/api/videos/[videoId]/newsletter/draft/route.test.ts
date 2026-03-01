@@ -301,7 +301,7 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
     expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', {
       status: 'draft',
       draft: '# Newsletter\n\nConteúdo gerado sobre IA...',
-    })
+    }, undefined)
   })
 
   it('persists additionalContext when provided', async () => {
@@ -320,7 +320,7 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
       status: 'draft',
       draft: '# Newsletter\n\nConteúdo gerado sobre IA...',
       additionalContext: 'Foque nos highlights técnicos',
-    })
+    }, undefined)
 
     expect(mockCallGenAI).toHaveBeenCalledWith(
       expect.stringContaining('<user-instruction>Foque nos highlights técnicos</user-instruction>'),
@@ -345,11 +345,12 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
 
     await POST(createRequest(), createContext('video-1'))
 
-    // Should save only status + draft, clearing downstream fields
-    expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', {
-      status: 'draft',
-      draft: '# Newsletter\n\nConteúdo gerado sobre IA...',
-    })
+    // Should save status + draft with clearFields for downstream invalidation
+    expect(mockSaveNewsletterData).toHaveBeenCalledWith(
+      'video-1',
+      { status: 'draft', draft: '# Newsletter\n\nConteúdo gerado sobre IA...' },
+      ['news', 'imagePrompt', 'imageUrl', 'report']
+    )
   })
 
   it('does not persist data on LLM error', async () => {

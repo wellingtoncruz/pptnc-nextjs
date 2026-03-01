@@ -219,17 +219,38 @@ describe('NewsletterWorkPanel', () => {
     expect(global.fetch).toHaveBeenCalledWith('/api/podcast')
   })
 
-  it('handles fetch error gracefully (defaults to phase 1)', async () => {
+  it('exibe UI de erro quando fetch falha', async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
 
     render(<NewsletterWorkPanel videoId="v1" video={createMockVideo()} />)
 
     await waitFor(() => {
-      expect(screen.getByTestId('newsletter-draft-phase')).toBeInTheDocument()
+      expect(screen.getByTestId('newsletter-work-panel-error')).toBeInTheDocument()
     })
 
-    // Falls back to phase 1
-    expect(screen.getByTestId('phase-1')).toHaveClass('bg-primary')
+    expect(screen.getByText(/Falha ao carregar dados da newsletter/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Tentar novamente/ })).toBeInTheDocument()
+  })
+
+  it('retry button re-fetches data after error', async () => {
+    const user = userEvent.setup()
+    global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+
+    render(<NewsletterWorkPanel videoId="v1" video={createMockVideo()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('newsletter-work-panel-error')).toBeInTheDocument()
+    })
+
+    // Now make fetch succeed on retry
+    mockFetchNewsletterStatus('draft')
+
+    await user.click(screen.getByRole('button', { name: /Tentar novamente/ }))
+
+    // Should show loading then resolve to phase 2
+    await waitFor(() => {
+      expect(screen.getByTestId('newsletter-news-phase')).toBeInTheDocument()
+    })
   })
 
   // --- Regression navigation tests (Story 16-11) ---

@@ -188,9 +188,6 @@ export function useNewsletterImage(videoId: string | null): UseNewsletterImageRe
       // Validation errors return JSON (non-200)
       if (!response.ok) {
         const json = await response.json().catch(() => ({}))
-        if (json.data?.imagePrompt) {
-          setErrorImagePrompt(json.data.imagePrompt)
-        }
         throw new Error(json.error?.message || 'Erro ao gerar imagem da newsletter')
       }
 
