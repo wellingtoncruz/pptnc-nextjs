@@ -4,15 +4,7 @@ import { render, screen } from '@/test-utils'
 import { NewsDetail } from './news-detail'
 import type { News } from '@/types/news'
 
-function createTimestamp(date: Date) {
-  return {
-    toDate: () => date,
-    toMillis: () => date.getTime(),
-    seconds: Math.floor(date.getTime() / 1000),
-    nanoseconds: 0,
-  }
-}
-
+// importedAt arrives as ISO string from the API (serialized from Firestore Timestamp)
 const mockNews: News = {
   id: 'news-1',
   titulo: 'Depurando com IA',
@@ -24,7 +16,7 @@ const mockNews: News = {
     nome: 'Developer Way',
     url: 'https://www.developerway.com/posts/debugging-with-ai',
   },
-  importedAt: createTimestamp(new Date('2026-02-09T18:55:00Z')),
+  importedAt: '2026-02-09T18:55:00.000Z' as unknown as News['importedAt'],
 }
 
 describe('NewsDetail', () => {
@@ -40,10 +32,11 @@ describe('NewsDetail', () => {
     expect(screen.getByText('Depurando com IA')).toBeInTheDocument()
   })
 
-  it('renders date and source with link', () => {
+  it('renders date from importedAt and source with link', () => {
     render(<NewsDetail news={mockNews} />)
 
-    expect(screen.getByText('2026-02-09')).toBeInTheDocument()
+    // importedAt "2026-02-09T18:55:00.000Z" → pt-BR locale: 09/02/2026
+    expect(screen.getByText(/09\/02\/2026/)).toBeInTheDocument()
     const link = screen.getByText('Developer Way')
     expect(link.closest('a')).toHaveAttribute('href', mockNews.fonte.url)
     expect(link.closest('a')).toHaveAttribute('target', '_blank')

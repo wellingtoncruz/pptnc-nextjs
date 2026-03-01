@@ -46,7 +46,7 @@ let ai: GoogleGenAI | undefined
 /**
  * Gets or initializes the Google GenAI client.
  */
-function getAI(): GoogleGenAI {
+export function getAI(): GoogleGenAI {
   if (ai) return ai
 
   ai = new GoogleGenAI({

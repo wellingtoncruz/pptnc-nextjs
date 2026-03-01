@@ -14,7 +14,12 @@ interface SocialColumnsLayoutProps {
 }
 
 export function SocialColumnsLayout({ video, enabledNetworks }: SocialColumnsLayoutProps) {
-  const hasPrerequisites = Boolean(video.title && video.theme && video.description)
+  const missingFields: string[] = []
+  if (!video.title) missingFields.push('título')
+  if (!video.theme) missingFields.push('tema')
+  if (!video.description) missingFields.push('descrição')
+  const hasPrerequisites = missingFields.length === 0
+
   const {
     posts, isLoading, generatingNetworkId, reprocessingNetworkId,
     errors, retryNetwork, reprocessNetwork, updatePost,
@@ -35,7 +40,7 @@ export function SocialColumnsLayout({ video, enabledNetworks }: SocialColumnsLay
         <div className="flex flex-col items-center gap-3 text-muted-foreground max-w-md text-center">
           <AlertCircle className="h-10 w-10 opacity-40" />
           <p className="text-sm">
-            Este vídeo precisa ter título, tema e descrição processados antes de gerar posts para redes sociais.
+            Este vídeo precisa ter os seguintes campos processados antes de gerar posts para redes sociais: <strong>{missingFields.join(', ')}</strong>.
           </p>
         </div>
       </div>

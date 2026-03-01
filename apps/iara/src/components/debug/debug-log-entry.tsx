@@ -97,7 +97,18 @@ export function DebugLogEntry({ log }: DebugLogEntryProps) {
           Resposta
         </button>
         {showResponse && (
-          <div className="rounded-md bg-muted/50 p-3">
+          <div className="rounded-md bg-muted/50 p-3 space-y-3">
+            {log.component === 'newsletter/image-generate' && /^\[Image: \d+ bytes/.test(log.response) && (
+              <div className="relative w-full max-w-md aspect-video rounded-md overflow-hidden border border-border">
+                <img
+                  data-testid="debug-log-image"
+                  src={`/api/videos/${log.videoId}/newsletter/image?t=${Date.now()}`}
+                  alt="Imagem gerada"
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                />
+              </div>
+            )}
             <pre className="whitespace-pre-wrap break-all text-xs font-mono text-foreground">
               {log.response}
             </pre>

@@ -75,4 +75,15 @@ export { SocialNetworkSchema, SocialPostSchema, SocialPostUpdateSchema } from '.
 
 export { AdwordsDataSchema, AdwordsDataCreateSchema, AdwordsLLMResponseSchema } from './adwords'
 
+export {
+  NewsletterDataSchema,
+  NewsletterDataCreateSchema,
+  NewsletterStatusSchema,
+  NewsletterNewsItemSchema,
+  NewsletterDraftLLMResponseSchema,
+  NewsletterNewsLLMResponseSchema,
+  NewsletterImageLLMResponseSchema,
+  NewsletterFormatLLMResponseSchema,
+} from './newsletter'
+
 export { LlmLogSchema, LlmLogCreateSchema } from './llm-log'

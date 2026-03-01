@@ -12,6 +12,7 @@ interface PodcastFeatures {
   includeLivestreams: boolean
   socialMedia: boolean
   adwords: boolean
+  newsletter: boolean
   llmDebugMode: boolean
 }
 
@@ -33,7 +34,7 @@ async function updateFeaturesViaApi(features: PodcastFeatures): Promise<void> {
 }
 
 /**
- * Settings form for feature toggles (editorial, news, includeLivestreams, socialMedia, adwords).
+ * Settings form for feature toggles (editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode).
  * Saves immediately on toggle change with optimistic update and rollback on error.
  */
 export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
@@ -42,22 +43,24 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [includeLivestreams, setIncludeLivestreams] = useState(features.includeLivestreams)
   const [socialMedia, setSocialMedia] = useState(features.socialMedia)
   const [adwords, setAdwords] = useState(features.adwords)
+  const [newsletter, setNewsletter] = useState(features.newsletter)
   const [llmDebugMode, setLlmDebugMode] = useState(features.llmDebugMode)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'llmDebugMode'
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode'
   const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
     includeLivestreams: setIncludeLivestreams,
     socialMedia: setSocialMedia,
     adwords: setAdwords,
+    newsletter: setNewsletter,
     llmDebugMode: setLlmDebugMode,
   }
 
   async function handleToggle(key: FeatureKey, value: boolean) {
-    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, llmDebugMode, [key]: value }
+    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, [key]: value }
 
     setters[key](value)
 
@@ -155,6 +158,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-adwords"
             checked={adwords}
             onCheckedChange={(value) => handleToggle('adwords', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-newsletter">Newsletter</Label>
+            <p className="text-xs text-muted-foreground">
+              Geração de newsletter a partir dos episódios
+            </p>
+          </div>
+          <Switch
+            id="feature-newsletter"
+            checked={newsletter}
+            onCheckedChange={(value) => handleToggle('newsletter', value)}
             disabled={saving}
           />
         </div>

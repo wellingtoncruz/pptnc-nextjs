@@ -111,3 +111,61 @@ export async function listNews(
 
   return { items, nextCursor, totalCount }
 }
+
+/**
+ * Lists all news for a specific day (UTC).
+ *
+ * Used by the newsletter workflow to fetch D-2 news items.
+ * No pagination — returns every document whose `importedAt`
+ * falls within the target day boundaries.
+ *
+ * @param podcastId - The podcast ID
+ * @param targetDate - Any Date within the desired day (time is ignored)
+ * @returns All validated news items for that day
+ */
+export async function listNewsByDate(
+  podcastId: string,
+  targetDate: Date
+): Promise<News[]> {
+  const db = getAdminDb()
+
+  const startOfDay = new Date(targetDate)
+  startOfDay.setUTCHours(0, 0, 0, 0)
+
+  const endOfDay = new Date(targetDate)
+  endOfDay.setUTCHours(23, 59, 59, 999)
+
+  const startTimestamp = Timestamp.fromDate(startOfDay)
+  const endTimestamp = Timestamp.fromDate(endOfDay)
+
+  const snapshot = await db
+    .collection('podcasts')
+    .doc(podcastId)
+    .collection('news')
+    .where('importedAt', '>=', startTimestamp)
+    .where('importedAt', '<=', endTimestamp)
+    .orderBy('importedAt', 'desc')
+    .get()
+
+  const items: News[] = []
+  for (const doc of snapshot.docs) {
+    const parsed = NewsSchema.safeParse({ id: doc.id, ...doc.data() })
+    if (parsed.success) {
+      items.push(parsed.data)
+    } else {
+      log('WARN', 'Invalid news document skipped', {
+        newsId: doc.id,
+        issues: parsed.error.issues,
+      })
+    }
+  }
+
+  log('INFO', 'News listed by date', {
+    podcastId,
+    rangeStart: startOfDay.toISOString(),
+    rangeEnd: endOfDay.toISOString(),
+    count: items.length,
+  })
+
+  return items
+}

@@ -186,7 +186,7 @@ describe('SettingsPageClient', () => {
   it('shows Social Networks accordion when socialMedia feature is enabled and networks provided', () => {
     const podcastWithSocialMedia = {
       ...mockPodcast,
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false },
     }
     const mockNetworks = [
       { id: 'instagram', name: 'Instagram', icon: '📷' },
@@ -201,7 +201,7 @@ describe('SettingsPageClient', () => {
   it('hides Social Networks accordion when socialMedia feature is disabled', () => {
     const podcastNoSocial = {
       ...mockPodcast,
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
     }
     const mockNetworks = [
       { id: 'instagram', name: 'Instagram', icon: '📷' },
@@ -215,7 +215,7 @@ describe('SettingsPageClient', () => {
   it('hides Social Networks accordion when socialNetworks is null', () => {
     const podcastWithSocialMedia = {
       ...mockPodcast,
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false },
     }
 
     render(<SettingsPageClient podcast={podcastWithSocialMedia} socialNetworks={null as never} />)
@@ -229,7 +229,7 @@ describe('SettingsPageClient', () => {
     const podcastWithSocial = {
       ...mockPodcast,
       enabledSocialNetworks: ['instagram'],
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false },
     }
     const mockNetworks = [{ id: 'instagram', name: 'Instagram', icon: '📷' }]
 
@@ -246,9 +246,8 @@ describe('SettingsPageClient', () => {
       expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
     })
 
-    // Find the social prompt textarea (second to last: 7 episode fields + social + adwords)
-    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
-    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 2]
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const socialTextarea = document.getElementById('episode-social-instagram-description') as HTMLTextAreaElement
     await user.clear(socialTextarea)
     await user.type(socialTextarea, 'Instagram post prompt')
 
@@ -285,9 +284,8 @@ describe('SettingsPageClient', () => {
       expect(screen.getByText('AdWords')).toBeInTheDocument()
     })
 
-    // AdWords prompt is the last one in the episode section
-    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
-    const adwordsTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const adwordsTextarea = document.getElementById('episode-adwords-description') as HTMLTextAreaElement
     await user.clear(adwordsTextarea)
     await user.type(adwordsTextarea, 'AdWords guide prompt')
 
@@ -306,6 +304,53 @@ describe('SettingsPageClient', () => {
     const fetchCall = vi.mocked(global.fetch).mock.calls[0]
     const body = JSON.parse(fetchCall[1]?.body as string)
     expect(body.prompts.episode.adwords.description).toBe('AdWords guide prompt')
+  })
+
+  it('sends nested newsletter prompt via newsletter. path in PATCH body', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcastWithNewsletter = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: true, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithNewsletter} />)
+
+    // Open the Prompts accordion section
+    await user.click(screen.getByText('Prompts por Tipo de Vídeo'))
+
+    // Open the Episode accordion inside prompts
+    const accordionTriggers = screen.getAllByText('Episódios')
+    await user.click(accordionTriggers[0])
+
+    await waitFor(() => {
+      expect(screen.getByText('Newsletter')).toBeInTheDocument()
+    })
+
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const draftTextarea = document.getElementById('episode-newsletter-draft-description') as HTMLTextAreaElement
+    await user.clear(draftTextarea)
+    await user.type(draftTextarea, 'Newsletter draft prompt')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/podcast',
+        expect.objectContaining({ method: 'PATCH' })
+      )
+    })
+
+    // Verify the body contains the nested newsletter prompt structure with all sibling keys
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0]
+    const body = JSON.parse(fetchCall[1]?.body as string)
+    expect(body.prompts.episode.newsletter.draft.description).toBe('Newsletter draft prompt')
+    // All 4 newsletter sections must be present (schema requires complete object)
+    expect(body.prompts.episode.newsletter).toHaveProperty('news')
+    expect(body.prompts.episode.newsletter).toHaveProperty('image')
+    expect(body.prompts.episode.newsletter).toHaveProperty('format')
   })
 
   it('shows error when API call fails for duration settings', async () => {

@@ -11,7 +11,7 @@ vi.mock('@/lib/logger', () => ({
 
 import { FeaturesSettingsForm } from './features-settings-form'
 
-const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false }
+const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false }
 
 describe('FeaturesSettingsForm', () => {
   beforeEach(() => {
@@ -30,6 +30,7 @@ describe('FeaturesSettingsForm', () => {
     expect(screen.getByLabelText('Incluir vídeos de lives')).toBeInTheDocument()
     expect(screen.getByLabelText('Redes Sociais')).toBeInTheDocument()
     expect(screen.getByLabelText('Tráfego Pago')).toBeInTheDocument()
+    expect(screen.getByLabelText('Newsletter')).toBeInTheDocument()
   })
 
   it('renders editorial toggle as unchecked when disabled', () => {
@@ -64,7 +65,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: false, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: false, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -80,7 +81,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -96,7 +97,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: true, socialMedia: false, adwords: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: true, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -112,7 +113,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -217,7 +218,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: true, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: true, newsletter: false, llmDebugMode: false } }),
       }))
     })
   })
@@ -226,6 +227,63 @@ describe('FeaturesSettingsForm', () => {
     render(<FeaturesSettingsForm features={defaultFeatures} />)
 
     expect(screen.getByText('Habilita a aba Tráfego Pago para geração de guias de otimização AdWords')).toBeInTheDocument()
+  })
+
+  it('renders newsletter toggle as unchecked by default', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const newsletterSwitch = screen.getByLabelText('Newsletter')
+    expect(newsletterSwitch).toHaveAttribute('data-state', 'unchecked')
+  })
+
+  it('renders newsletter toggle as checked when enabled', () => {
+    render(<FeaturesSettingsForm features={{ ...defaultFeatures, newsletter: true }} />)
+
+    const newsletterSwitch = screen.getByLabelText('Newsletter')
+    expect(newsletterSwitch).toHaveAttribute('data-state', 'checked')
+  })
+
+  it('calls API when newsletter toggle is changed', async () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const newsletterSwitch = screen.getByLabelText('Newsletter')
+    await act(async () => {
+      newsletterSwitch.click()
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: true, llmDebugMode: false } }),
+      }))
+    })
+  })
+
+  it('shows newsletter description text', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    expect(screen.getByText('Geração de newsletter a partir dos episódios')).toBeInTheDocument()
+  })
+
+  it('reverts newsletter toggle on API error', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({ error: { message: 'Server error' } }),
+    })
+
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const newsletterSwitch = screen.getByLabelText('Newsletter')
+    await act(async () => {
+      newsletterSwitch.click()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Server error')).toBeInTheDocument()
+    })
+
+    // Should revert to unchecked state
+    expect(newsletterSwitch).toHaveAttribute('data-state', 'unchecked')
   })
 
   it('renders llmDebugMode toggle as unchecked by default', () => {
@@ -253,7 +311,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, llmDebugMode: true } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: true } }),
       }))
     })
   })

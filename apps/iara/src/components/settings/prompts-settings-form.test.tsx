@@ -88,10 +88,10 @@ describe('PromptsSettingsForm', () => {
 
     await user.click(screen.getByText('Episódios'))
 
-    // Find the first description textarea (for 'Crítica' field)
-    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
-    await user.clear(descriptionTextareas[0])
-    await user.type(descriptionTextareas[0], 'New critique description')
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const critiqueTextarea = document.getElementById('episode-critique-description') as HTMLTextAreaElement
+    await user.clear(critiqueTextarea)
+    await user.type(critiqueTextarea, 'New critique description')
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1500)
@@ -290,9 +290,8 @@ describe('PromptsSettingsForm', () => {
       expect(screen.getByText('AdWords')).toBeInTheDocument()
     })
 
-    // AdWords prompt is the last one in the episode section (after 7 standard fields)
-    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
-    const adwordsTextarea = descriptionTextareas[descriptionTextareas.length - 1]
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const adwordsTextarea = document.getElementById('episode-adwords-description') as HTMLTextAreaElement
     await user.clear(adwordsTextarea)
     await user.type(adwordsTextarea, 'AdWords optimization guide')
 
@@ -327,9 +326,8 @@ describe('PromptsSettingsForm', () => {
       expect(screen.getByText('📷 Instagram')).toBeInTheDocument()
     })
 
-    // Find the social prompt description textarea (second to last: 7 episode fields + social + adwords)
-    const descriptionTextareas = await screen.findAllByLabelText('Descrição do Prompt')
-    const socialTextarea = descriptionTextareas[descriptionTextareas.length - 2]
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const socialTextarea = document.getElementById('episode-social-instagram-description') as HTMLTextAreaElement
     await user.clear(socialTextarea)
     await user.type(socialTextarea, 'Social prompt description')
 
@@ -342,6 +340,87 @@ describe('PromptsSettingsForm', () => {
         'episode',
         'social.instagram',
         expect.objectContaining({ description: 'Social prompt description' })
+      )
+    })
+  })
+
+  it('shows Newsletter prompts in Episode section', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Newsletter')).toBeInTheDocument()
+      expect(screen.getByText('Draft')).toBeInTheDocument()
+      expect(screen.getByText('Notícias')).toBeInTheDocument()
+      expect(screen.getByText('Imagem')).toBeInTheDocument()
+      expect(screen.getByText('Formato')).toBeInTheDocument()
+    })
+  })
+
+  it('does NOT show Newsletter prompts in Cut section', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Cortes'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Thumbnails')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Newsletter')).not.toBeInTheDocument()
+  })
+
+  it('does NOT show Newsletter prompts in Reel section', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Reels'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Títulos')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Newsletter')).not.toBeInTheDocument()
+  })
+
+  it('calls onSavePromptField with newsletter.draft fieldName', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Draft')).toBeInTheDocument()
+    })
+
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const draftTextarea = document.getElementById('episode-newsletter-draft-description') as HTMLTextAreaElement
+    await user.clear(draftTextarea)
+    await user.type(draftTextarea, 'Newsletter draft prompt')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(mockOnSavePromptField).toHaveBeenCalledWith(
+        'episode',
+        'newsletter.draft',
+        expect.objectContaining({ description: 'Newsletter draft prompt' })
       )
     })
   })

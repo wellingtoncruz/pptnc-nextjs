@@ -17,6 +17,7 @@ import { NewsPanel } from '@/components/news/news-panel'
 import { SocialLayout } from '@/components/social/social-layout'
 import { AdwordsLayout } from '@/components/adwords/adwords-layout'
 import { DebugLogsLayout } from '@/components/debug/debug-logs-layout'
+import { NewsletterLayout } from '@/components/newsletter/newsletter-layout'
 import { useVideos } from '@/hooks/use-videos'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { log } from '@/lib/logger'
@@ -38,8 +39,8 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
 
   const currentView = searchParams.get('view')
 
-  // Podcast feature toggles (editorial, news, socialMedia, adwords, llmDebugMode)
-  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; llmDebugMode?: boolean }>()
+  // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode)
+  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; llmDebugMode?: boolean }>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   useEffect(() => {
     fetch('/api/podcast')
@@ -172,6 +173,13 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     }
   }, [refresh])
 
+  // Redirect if newsletter feature is disabled (must be before conditional returns)
+  useEffect(() => {
+    if (currentView === 'newsletter' && podcastFeatures?.newsletter !== true) {
+      router.replace('/videos')
+    }
+  }, [currentView, podcastFeatures?.newsletter, router])
+
   // When in settings view, show only sidebar and settings panel (no video list)
   if (currentView === 'settings') {
     return (
@@ -260,6 +268,25 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
           </div>
           <div className="flex-1 overflow-hidden">
             <AdwordsLayout />
+          </div>
+        </div>
+      </LLMProcessingProvider>
+    )
+  }
+
+  // When in newsletter view, show sidebar and newsletter layout
+  if (currentView === 'newsletter') {
+    if (podcastFeatures?.newsletter !== true) {
+      return null
+    }
+    return (
+      <LLMProcessingProvider>
+        <div className="flex h-screen">
+          <div className="shrink-0">
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <NewsletterLayout />
           </div>
         </div>
       </LLMProcessingProvider>

@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Megaphone, Users, Settings, Bug, LogOut } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Megaphone, Mail, Users, Settings, Bug, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
@@ -20,6 +20,7 @@ interface PodcastFeatures {
   news?: boolean
   socialMedia?: boolean
   adwords?: boolean
+  newsletter?: boolean
   llmDebugMode?: boolean
 }
 
@@ -66,6 +67,7 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
     const isNewsView = searchParams.get('view') === 'news'
     const isSocialView = searchParams.get('view') === 'social'
     const isAdwordsView = searchParams.get('view') === 'adwords'
+    const isNewsletterView = searchParams.get('view') === 'newsletter'
     const isDebugView = searchParams.get('view') === 'debug'
 
     const items = [
@@ -73,7 +75,7 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
         href: '/videos',
         label: 'Vídeos',
         icon: Video,
-        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView && !isSocialView && !isAdwordsView && !isDebugView,
+        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView && !isSocialView && !isAdwordsView && !isNewsletterView && !isDebugView,
         adminOnly: false,
       },
       ...(features?.editorial !== false ? [{
@@ -104,6 +106,13 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
         label: 'Tráfego Pago',
         icon: Megaphone,
         isActive: isAdwordsView,
+        adminOnly: false,
+      }] : []),
+      ...(features?.newsletter === true ? [{
+        href: '/videos?view=newsletter',
+        label: 'Newsletter',
+        icon: Mail,
+        isActive: isNewsletterView,
         adminOnly: false,
       }] : []),
       {

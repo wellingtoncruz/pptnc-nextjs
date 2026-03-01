@@ -14,20 +14,7 @@ import { log } from '@/lib/logger'
 import { AdwordsDataSchema, AdwordsDataCreateSchema } from '@/lib/schemas'
 import type { AdwordsData, AdwordsDataCreate } from '@/types/adwords'
 
-import { getAdminDb } from './admin'
-import { PODCAST_ID } from './config'
-
-/**
- * Helper to get the video document reference.
- *
- * Path: `podcasts/{podcastId}/videos/{videoId}`
- */
-function getVideoDocRef(videoId: string) {
-  const db = getAdminDb()
-  return db
-    .collection('podcasts').doc(PODCAST_ID)
-    .collection('videos').doc(videoId)
-}
+import { getVideoDocRef } from './video-doc-ref'
 
 /**
  * Gets adwords data from a video document.

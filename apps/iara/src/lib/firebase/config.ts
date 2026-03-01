@@ -36,6 +36,9 @@ export const VERTEX_AI_MODEL: string | undefined = process.env.VERTEX_AI_MODEL |
  */
 export const PODCAST_ID = process.env.PODCAST_ID || 'pptnc'
 
+/** Cloud Storage bucket for newsletter images (empty = use project default bucket) */
+export const NEWSLETTER_IMAGES_BUCKET = process.env.NEWSLETTER_IMAGES_BUCKET || ''
+
 // =============================================================================
 // STARTUP VALIDATION — fail-fast if required config is empty
 // =============================================================================

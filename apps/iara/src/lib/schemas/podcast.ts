@@ -89,6 +89,13 @@ export const EpisodePromptsSchema = z.object({
   social: z.record(z.string(), PromptFieldSchema).optional(),
   /** AdWords/paid traffic optimization prompt. Episode-only (not available for cuts/reels). */
   adwords: PromptFieldSchema.optional(),
+  /** Newsletter prompts with 4 sections: draft, news, image, format. Episode-only. */
+  newsletter: z.object({
+    draft: PromptFieldSchema,
+    news: PromptFieldSchema,
+    image: PromptFieldSchema,
+    format: PromptFieldSchema,
+  }).optional(),
 })
 
 /**
@@ -192,6 +199,12 @@ export const DEFAULT_EPISODE_PROMPTS = {
   description: { ...DEFAULT_PROMPT_FIELD },
   tags: { ...DEFAULT_PROMPT_FIELD },
   adwords: { ...DEFAULT_PROMPT_FIELD },
+  newsletter: {
+    draft: { ...DEFAULT_PROMPT_FIELD },
+    news: { ...DEFAULT_PROMPT_FIELD },
+    image: { ...DEFAULT_PROMPT_FIELD },
+    format: { ...DEFAULT_PROMPT_FIELD },
+  },
 }
 
 /**
@@ -270,6 +283,8 @@ export const PodcastSchema = z.object({
     socialMedia: z.boolean().default(false),
     /** Enable AdWords/paid traffic guide section. Default: false (hidden until explicitly enabled). */
     adwords: z.boolean().default(false),
+    /** Enable newsletter generation section. Default: false (hidden until explicitly enabled). */
+    newsletter: z.boolean().default(false),
     /** Enable LLM debug mode: logs prompts and responses to Firestore. Default: false. */
     llmDebugMode: z.boolean().default(false),
   }).optional(),

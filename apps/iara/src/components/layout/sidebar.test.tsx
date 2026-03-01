@@ -362,6 +362,67 @@ describe('Sidebar', () => {
     expect(adwordsLink).toHaveAttribute('href', '/videos?view=adwords')
   })
 
+  it('exibe Newsletter quando features.newsletter=true', async () => {
+    render(<Sidebar features={{ newsletter: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Newsletter')).toBeInTheDocument()
+  })
+
+  it('oculta Newsletter quando features.newsletter=false', async () => {
+    render(<Sidebar features={{ newsletter: false }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Newsletter')).not.toBeInTheDocument()
+  })
+
+  it('oculta Newsletter quando features é undefined (backward-compat)', async () => {
+    render(<Sidebar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('IAra')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Newsletter')).not.toBeInTheDocument()
+  })
+
+  it('destaca Newsletter quando view=newsletter está ativo', async () => {
+    const { useSearchParams } = await import('next/navigation')
+    vi.mocked(useSearchParams).mockReturnValue({
+      get: vi.fn((key: string) => (key === 'view' ? 'newsletter' : null)),
+    } as any)
+
+    render(<Sidebar features={{ newsletter: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Newsletter')).toBeInTheDocument()
+    })
+
+    const newsletterLink = screen.getByText('Newsletter').closest('a')
+    expect(newsletterLink).toHaveClass('bg-accent')
+
+    // Vídeos should NOT be active when newsletter is active
+    const videosLink = screen.getByText('Vídeos').closest('a')
+    expect(videosLink).not.toHaveClass('bg-accent')
+  })
+
+  it('link Newsletter aponta para /videos?view=newsletter', async () => {
+    render(<Sidebar features={{ newsletter: true }} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Newsletter')).toBeInTheDocument()
+    })
+
+    const newsletterLink = screen.getByText('Newsletter').closest('a')
+    expect(newsletterLink).toHaveAttribute('href', '/videos?view=newsletter')
+  })
+
   it('exibe Depuração quando features.llmDebugMode=true', async () => {
     render(<Sidebar features={{ llmDebugMode: true }} />)
 

@@ -93,4 +93,31 @@ describe('DebugLogEntry', () => {
     expect(screen.queryByText(/KB/)).not.toBeInTheDocument()
     expect(screen.queryByText(/total\)/)).not.toBeInTheDocument()
   })
+
+  it('exibe imagem quando response indica imagem gerada e componente é newsletter/image-generate', async () => {
+    const user = userEvent.setup()
+    const imageLog = {
+      ...mockLog,
+      component: 'newsletter/image-generate',
+      response: '[Image: 245760 bytes, image/png]',
+    }
+
+    render(<DebugLogEntry log={imageLog} />)
+
+    await user.click(screen.getByText('Resposta'))
+
+    expect(screen.getByTestId('debug-log-image')).toBeInTheDocument()
+    expect(screen.getByTestId('debug-log-image')).toHaveAttribute('src', expect.stringContaining('/api/videos/video-123/newsletter/image'))
+    expect(screen.getByText('[Image: 245760 bytes, image/png]')).toBeInTheDocument()
+  })
+
+  it('NÃO exibe imagem para componente que não é newsletter/image-generate', async () => {
+    const user = userEvent.setup()
+
+    render(<DebugLogEntry log={mockLog} />)
+
+    await user.click(screen.getByText('Resposta'))
+
+    expect(screen.queryByTestId('debug-log-image')).not.toBeInTheDocument()
+  })
 })

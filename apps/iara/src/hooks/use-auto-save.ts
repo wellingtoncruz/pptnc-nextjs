@@ -9,7 +9,9 @@ type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error'
 interface UseAutoSaveReturn {
   saveStatus: SaveStatus
   error: Error | null
-  save: () => void
+  save: () => Promise<void>
+  /** Update the internal "last saved value" without triggering a save. Use when syncing from server. */
+  resetValue: (value: unknown) => void
 }
 
 /**
@@ -136,13 +138,21 @@ export function useAutoSave<T>(
     }
   }, [])
 
-  // Force immediate save
-  const save = useCallback(() => {
+  // Force immediate save (awaitable for flush-before-navigate pattern)
+  const save = useCallback(async () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
-    performSave(value)
+    await performSave(value)
   }, [value, performSave])
 
-  return { saveStatus, error, save }
+  const resetValue = useCallback((newValue: unknown) => {
+    lastSavedValueRef.current = newValue as T
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    setSaveStatus('idle')
+  }, [])
+
+  return { saveStatus, error, save, resetValue }
 }

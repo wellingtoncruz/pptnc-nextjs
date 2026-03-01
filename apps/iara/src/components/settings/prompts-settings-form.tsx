@@ -13,7 +13,7 @@ import type { Prompts, PromptField, EpisodePrompts, CutPrompts, ReelPrompts } fr
 /**
  * Type-safe field keys for each video type.
  */
-type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social' | 'adwords'>
+type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social' | 'adwords' | 'newsletter'>
 type CutFieldKey = Exclude<keyof CutPrompts, 'social'>
 type ReelFieldKey = Exclude<keyof ReelPrompts, 'social'>
 
@@ -105,6 +105,34 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
     )
   }
 
+  function renderNewsletterPrompts(videoType: 'episode' | 'cut' | 'reel') {
+    if (videoType !== 'episode') return null
+
+    const NEWSLETTER_SECTIONS = [
+      { key: 'draft', label: 'Draft' },
+      { key: 'news', label: 'Notícias' },
+      { key: 'image', label: 'Imagem' },
+      { key: 'format', label: 'Formato' },
+    ] as const
+
+    return (
+      <div className="mt-6 pt-4 border-t">
+        <h4 className="text-sm font-medium text-muted-foreground mb-4">Newsletter</h4>
+        <div className="space-y-4">
+          {NEWSLETTER_SECTIONS.map(({ key, label }) => (
+            <PromptFieldEditor
+              key={`episode-newsletter-${key}`}
+              fieldKey={`episode-newsletter-${key}`}
+              label={label}
+              initialValue={prompts.episode.newsletter?.[key] ?? DEFAULT_PROMPT_FIELD}
+              onSave={(value) => onSavePromptField('episode', `newsletter.${key}`, value)}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Accordion type="single" collapsible className="w-full">
       {/* Episode prompts */}
@@ -123,6 +151,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
             ))}
             {renderSocialPrompts('episode')}
             {renderAdwordsPrompt('episode')}
+            {renderNewsletterPrompts('episode')}
           </div>
         </AccordionContent>
       </AccordionItem>

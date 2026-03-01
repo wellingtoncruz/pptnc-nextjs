@@ -233,6 +233,33 @@ describe('useAutoSave', () => {
     expect(saveFn).toHaveBeenCalledTimes(1)
   })
 
+  it('resetValue prevents unnecessary save on server sync', async () => {
+    const saveFn = vi.fn().mockResolvedValue(undefined)
+
+    const { result, rerender } = renderHook(
+      ({ value }) => useAutoSave(value, saveFn, 1500),
+      { initialProps: { value: '' } }
+    )
+
+    // Simulate server value arriving and resetting
+    act(() => {
+      result.current.resetValue('server content')
+    })
+
+    // Update local state to match server value
+    rerender({ value: 'server content' })
+
+    // Wait for debounce
+    await act(async () => {
+      vi.advanceTimersByTime(1500)
+      await Promise.resolve()
+    })
+
+    // Should NOT have saved because resetValue set lastSavedValue to 'server content'
+    expect(saveFn).not.toHaveBeenCalled()
+    expect(result.current.saveStatus).toBe('idle')
+  })
+
   it('force saves immediately when save() is called', async () => {
     const saveFn = vi.fn().mockResolvedValue(undefined)
 

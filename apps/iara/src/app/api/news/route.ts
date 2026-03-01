@@ -47,9 +47,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const result = await listNews(PODCAST_ID, { cursor, limit })
 
+    const items = result.items.map(item => ({
+      ...item,
+      importedAt: item.importedAt.toDate().toISOString(),
+    }))
+
     return NextResponse.json({
       data: {
-        items: result.items,
+        items,
         nextCursor: result.nextCursor,
         totalCount: result.totalCount,
       },

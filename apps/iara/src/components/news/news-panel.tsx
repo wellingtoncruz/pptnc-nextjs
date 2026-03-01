@@ -5,15 +5,15 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { NewsCard } from './news-card'
+import { NewsListItem } from './news-list-item'
 import { NewsDetail } from './news-detail'
 import type { News } from '@/types/news'
 
-const PAGE_SIZE = 8
+const PAGE_SIZE = 15
 
 /**
  * News section panel with master-detail layout.
- * Left panel: paginated news cards in 2-column grid.
+ * Left panel: paginated news list (Gmail-style compact rows).
  * Right panel: selected news detail.
  */
 export function NewsPanel() {
@@ -99,18 +99,18 @@ export function NewsPanel() {
       <div className="flex min-h-0 flex-1">
         {/* Left panel: News list */}
         <div className="flex w-1/2 flex-col border-r border-border">
-          <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">
             {isLoading && items.length === 0 ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="divide-y divide-border">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="space-y-2 rounded-lg border border-border p-4">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <div className="flex justify-between pt-2">
-                      <Skeleton className="h-3 w-1/3" />
-                      <Skeleton className="h-3 w-1/4" />
+                  <div key={i} className="flex flex-col gap-1 px-4 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-4 flex-1" />
+                      <Skeleton className="h-3 w-16 shrink-0" />
+                      <Skeleton className="h-3 w-20 shrink-0" />
                     </div>
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
                   </div>
                 ))}
               </div>
@@ -123,9 +123,9 @@ export function NewsPanel() {
                 Nenhuma notícia encontrada
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="divide-y divide-border">
                 {items.map((news) => (
-                  <NewsCard
+                  <NewsListItem
                     key={news.id}
                     news={news}
                     isSelected={selectedNews?.id === news.id}

@@ -4,19 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockDocGet = vi.fn()
 const mockDocUpdate = vi.fn()
-const mockVideoDoc = vi.fn(() => ({ get: mockDocGet, update: mockDocUpdate }))
-const mockVideosCollection = vi.fn(() => ({ doc: mockVideoDoc }))
-const mockPodcastDoc = vi.fn(() => ({ collection: mockVideosCollection }))
-const mockCollection = vi.fn(() => ({ doc: mockPodcastDoc }))
 
-vi.mock('./admin', () => ({
-  getAdminDb: vi.fn(() => ({
-    collection: mockCollection,
-  })),
-}))
-
-vi.mock('./config', () => ({
-  PODCAST_ID: 'test-podcast',
+vi.mock('./video-doc-ref', () => ({
+  getVideoDocRef: vi.fn(() => ({ get: mockDocGet, update: mockDocUpdate })),
 }))
 
 vi.mock('@/lib/logger', () => ({
@@ -31,6 +21,7 @@ vi.mock('firebase-admin/firestore', () => ({
 }))
 
 import { log } from '@/lib/logger'
+import { getVideoDocRef } from './video-doc-ref'
 import { getAdwordsData, saveAdwordsData } from './adwords-admin'
 
 function createTimestamp() {
@@ -68,10 +59,7 @@ describe('getAdwordsData', () => {
       keywords: ['podcast', 'tech'],
       generatedAt: now,
     })
-    expect(mockCollection).toHaveBeenCalledWith('podcasts')
-    expect(mockPodcastDoc).toHaveBeenCalledWith('test-podcast')
-    expect(mockVideosCollection).toHaveBeenCalledWith('videos')
-    expect(mockVideoDoc).toHaveBeenCalledWith('video-1')
+    expect(getVideoDocRef).toHaveBeenCalledWith('video-1')
     expect(log).toHaveBeenCalledWith('INFO', 'AdWords data fetched', { videoId: 'video-1', found: true })
   })
 
@@ -155,10 +143,7 @@ describe('saveAdwordsData', () => {
         generatedAt: 'MOCK_SERVER_TIMESTAMP',
       },
     })
-    expect(mockCollection).toHaveBeenCalledWith('podcasts')
-    expect(mockPodcastDoc).toHaveBeenCalledWith('test-podcast')
-    expect(mockVideosCollection).toHaveBeenCalledWith('videos')
-    expect(mockVideoDoc).toHaveBeenCalledWith('video-1')
+    expect(getVideoDocRef).toHaveBeenCalledWith('video-1')
     expect(log).toHaveBeenCalledWith('INFO', 'AdWords data saved', { videoId: 'video-1' })
   })
 

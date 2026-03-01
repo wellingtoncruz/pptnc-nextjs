@@ -106,7 +106,11 @@ describe('GET /api/news', () => {
   describe('Success responses', () => {
     it('returns items and nextCursor', async () => {
       const mockItems = [
-        { id: 'news-1', titulo: 'Test News' },
+        {
+          id: 'news-1',
+          titulo: 'Test News',
+          importedAt: { toDate: () => new Date('2026-02-09T18:55:00Z') },
+        },
       ]
       mockListNews.mockResolvedValue({
         items: mockItems as never,
@@ -119,6 +123,7 @@ describe('GET /api/news', () => {
       expect(response.status).toBe(200)
       const json = await response.json()
       expect(json.data.items).toHaveLength(1)
+      expect(json.data.items[0].importedAt).toBe('2026-02-09T18:55:00.000Z')
       expect(json.data.nextCursor).toBe('2026-02-08T00:00:00.000Z')
       expect(json.data.totalCount).toBe(25)
     })

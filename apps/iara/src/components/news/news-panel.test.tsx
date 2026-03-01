@@ -3,15 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@/test-utils'
 
 import { NewsPanel } from './news-panel'
 
-function createTimestamp(date: Date) {
-  return {
-    toDate: () => date,
-    toMillis: () => date.getTime(),
-    seconds: Math.floor(date.getTime() / 1000),
-    nanoseconds: 0,
-  }
-}
-
+// Mock items simulate the API response (importedAt serialized as ISO string)
 const mockNewsItems = [
   {
     id: 'news-1',
@@ -21,7 +13,7 @@ const mockNewsItems = [
     comentarios: 'Comentários alpha',
     data: '2026-02-09',
     fonte: { nome: 'Fonte A', url: 'https://example.com/a' },
-    importedAt: createTimestamp(new Date('2026-02-09T18:55:00Z')),
+    importedAt: '2026-02-09T18:55:00.000Z',
   },
   {
     id: 'news-2',
@@ -31,7 +23,7 @@ const mockNewsItems = [
     comentarios: 'Comentários beta',
     data: '2026-02-08',
     fonte: { nome: 'Fonte B', url: 'https://example.com/b' },
-    importedAt: createTimestamp(new Date('2026-02-08T10:00:00Z')),
+    importedAt: '2026-02-08T10:00:00.000Z',
   },
 ]
 
@@ -70,7 +62,7 @@ describe('NewsPanel', () => {
     expect(skeletons.length).toBeGreaterThan(0)
   })
 
-  it('renders news cards after loading', async () => {
+  it('renders news list items after loading', async () => {
     mockFetchSuccess()
 
     render(<NewsPanel />)
@@ -81,7 +73,7 @@ describe('NewsPanel', () => {
     })
   })
 
-  it('fetches with limit=8 by default', async () => {
+  it('fetches with limit=15 by default', async () => {
     mockFetchSuccess()
 
     render(<NewsPanel />)
@@ -91,7 +83,7 @@ describe('NewsPanel', () => {
     })
 
     const firstCall = vi.mocked(fetch).mock.calls[0]
-    expect(firstCall?.[0]).toContain('limit=8')
+    expect(firstCall?.[0]).toContain('limit=15')
   })
 
   it('shows empty state message when no news', async () => {
@@ -129,7 +121,7 @@ describe('NewsPanel', () => {
     })
   })
 
-  it('shows news detail when card is clicked', async () => {
+  it('shows news detail when list item is clicked', async () => {
     mockFetchSuccess()
 
     render(<NewsPanel />)
@@ -140,7 +132,7 @@ describe('NewsPanel', () => {
 
     fireEvent.click(screen.getByText('Notícia Alpha'))
 
-    // descricao appears in both card (truncated) and detail (full), so use getAllByText
+    // descricao appears in both list item and detail panel, so use getAllByText
     const descricaoElements = screen.getAllByText('Descrição da notícia alpha')
     expect(descricaoElements.length).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('Resumo completo alpha')).toBeInTheDocument()
@@ -161,7 +153,7 @@ describe('NewsPanel', () => {
     })
 
     it('shows pagination buttons and page indicator when there are more pages', async () => {
-      mockFetchSuccess(mockNewsItems, '2026-02-07T00:00:00.000Z', 20)
+      mockFetchSuccess(mockNewsItems, '2026-02-07T00:00:00.000Z', 45)
 
       render(<NewsPanel />)
 
@@ -171,12 +163,12 @@ describe('NewsPanel', () => {
 
       expect(screen.getByText('Próxima')).toBeInTheDocument()
       expect(screen.getByText('Anterior')).toBeInTheDocument()
-      // 20 total / 8 per page = 3 pages, current page 1
+      // 45 total / 15 per page = 3 pages, current page 1
       expect(screen.getByText('1 / 3')).toBeInTheDocument()
     })
 
     it('disables Anterior on first page', async () => {
-      mockFetchSuccess(mockNewsItems, '2026-02-07T00:00:00.000Z', 20)
+      mockFetchSuccess(mockNewsItems, '2026-02-07T00:00:00.000Z', 45)
 
       render(<NewsPanel />)
 
@@ -189,7 +181,7 @@ describe('NewsPanel', () => {
     })
 
     it('fetches next page and updates page indicator when Próxima is clicked', async () => {
-      mockFetchSuccess(mockNewsItems, '2026-02-07T00:00:00.000Z', 20)
+      mockFetchSuccess(mockNewsItems, '2026-02-07T00:00:00.000Z', 45)
 
       render(<NewsPanel />)
 
@@ -204,7 +196,7 @@ describe('NewsPanel', () => {
         ...mockNewsItems[0],
         id: 'news-3',
         titulo: 'Notícia Gamma',
-      }], null, 20)
+      }], null, 45)
 
       fireEvent.click(screen.getByText('Próxima'))
 

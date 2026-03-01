@@ -73,7 +73,7 @@ describe('SocialColumnsLayout', () => {
     expect(columns[1]).toHaveAttribute('data-network', 'LinkedIn')
   })
 
-  it('shows prerequisite message when video lacks title/theme/description', () => {
+  it('shows prerequisite message listing missing fields when video lacks data', () => {
     render(
       <SocialColumnsLayout
         video={createVideo({ title: '', theme: undefined, description: undefined })}
@@ -82,8 +82,23 @@ describe('SocialColumnsLayout', () => {
     )
 
     expect(screen.getByTestId('social-columns-prerequisites')).toBeInTheDocument()
-    expect(screen.getByText(/título, tema e descrição processados/)).toBeInTheDocument()
+    expect(screen.getByText(/título, tema, descrição/)).toBeInTheDocument()
     expect(screen.queryByTestId('social-post-column')).not.toBeInTheDocument()
+  })
+
+  it('shows only the specific missing field in prerequisite message', () => {
+    render(
+      <SocialColumnsLayout
+        video={createVideo({ theme: undefined })}
+        enabledNetworks={enabledNetworks}
+      />
+    )
+
+    expect(screen.getByTestId('social-columns-prerequisites')).toBeInTheDocument()
+    const msg = screen.getByText(/campos processados/)
+    expect(msg.textContent).toContain('tema')
+    expect(msg.textContent).not.toContain('título')
+    expect(msg.textContent).not.toContain('descrição')
   })
 
   it('shows loading state while fetching posts', () => {

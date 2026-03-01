@@ -19,7 +19,15 @@ import { SocialNetworksSettingsForm } from './social-networks-settings-form'
 import { ResyncSection } from './resync-section'
 import { useAccordionState } from '@/hooks/use-accordion-state'
 import { log } from '@/lib/logger'
+import { DEFAULT_PROMPT_FIELD } from '@/lib/schemas'
 import type { SerializedPodcast, PromptField, Persona, PersonaKey, Prompts, Personas } from '@/types/podcast'
+
+const DEFAULT_NEWSLETTER_PROMPTS = {
+  draft: { ...DEFAULT_PROMPT_FIELD },
+  news: { ...DEFAULT_PROMPT_FIELD },
+  image: { ...DEFAULT_PROMPT_FIELD },
+  format: { ...DEFAULT_PROMPT_FIELD },
+}
 
 /**
  * Section IDs for accordion persistence.
@@ -95,6 +103,13 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
         updatedVideoType = {
           ...currentVideoType,
           social: { ...currentSocial, [networkId]: value },
+        }
+      } else if (fieldName.startsWith('newsletter.')) {
+        const sectionKey = fieldName.slice('newsletter.'.length)
+        const currentNewsletter = currentVideoType.newsletter ?? DEFAULT_NEWSLETTER_PROMPTS
+        updatedVideoType = {
+          ...currentVideoType,
+          newsletter: { ...currentNewsletter, [sectionKey]: value },
         }
       } else {
         updatedVideoType = {
@@ -232,6 +247,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             includeLivestreams: podcast.features?.includeLivestreams ?? false,
             socialMedia: podcast.features?.socialMedia ?? false,
             adwords: podcast.features?.adwords ?? false,
+            newsletter: podcast.features?.newsletter ?? false,
             llmDebugMode: podcast.features?.llmDebugMode ?? false,
           }} />
         </AccordionContent>

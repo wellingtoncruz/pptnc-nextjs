@@ -580,6 +580,103 @@ describe('VideoListPanel', () => {
     })
   })
 
+  describe('variant newsletter (Story 16.4)', () => {
+    it('oculta toggle "Só novos" quando variant=newsletter', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} variant="newsletter" />)
+
+      expect(screen.queryByLabelText('Só novos')).not.toBeInTheDocument()
+    })
+
+    it('oculta tabs de filtro de tipo quando variant=newsletter', () => {
+      const videos = [createMockVideo()]
+      render(<VideoListPanel videos={videos} variant="newsletter" />)
+
+      expect(screen.queryByRole('tab', { name: 'Todos' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Episódios' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Cortes' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Reels' })).not.toBeInTheDocument()
+    })
+
+    it('não renderiza ReopenVideoDialog quando variant=newsletter', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId={null}
+          onVideoSelect={onVideoSelect}
+          variant="newsletter"
+        />
+      )
+
+      await user.click(screen.getByRole('option'))
+      expect(onVideoSelect).toHaveBeenCalledWith('video-1')
+      expect(screen.queryByText('Deseja reabrir esse vídeo para edição dos metadados?')).not.toBeInTheDocument()
+    })
+
+    it('seleciona vídeo sent diretamente via ArrowDown quando variant=newsletter', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'new' }),
+        createMockVideo({ id: 'video-2', status: 'sent' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId="video-1"
+          onVideoSelect={onVideoSelect}
+          variant="newsletter"
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{ArrowDown}')
+
+      expect(onVideoSelect).toHaveBeenCalledWith('video-2')
+    })
+
+    it('seleciona vídeo sent diretamente via ArrowUp quando variant=newsletter', async () => {
+      const user = userEvent.setup()
+      const onVideoSelect = vi.fn()
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+        createMockVideo({ id: 'video-2', status: 'new' }),
+      ]
+      render(
+        <VideoListPanel
+          videos={videos}
+          selectedVideoId="video-2"
+          onVideoSelect={onVideoSelect}
+          variant="newsletter"
+        />
+      )
+
+      const listbox = screen.getByRole('listbox')
+      listbox.focus()
+      await user.keyboard('{ArrowUp}')
+
+      expect(onVideoSelect).toHaveBeenCalledWith('video-1')
+    })
+
+    it('usa sentAppearance highlighted quando variant=newsletter', () => {
+      const videos = [
+        createMockVideo({ id: 'video-1', status: 'sent' }),
+        createMockVideo({ id: 'video-2', status: 'new' }),
+      ]
+      render(<VideoListPanel videos={videos} variant="newsletter" />)
+
+      const options = screen.getAllByRole('option')
+      expect(options[0]).not.toHaveClass('opacity-60')
+      expect(options[1]).toHaveClass('opacity-60')
+    })
+  })
+
   describe('Enter key (onEnterDetail)', () => {
     it('chama onEnterDetail com Enter quando vídeo está selecionado', async () => {
       const user = userEvent.setup()
