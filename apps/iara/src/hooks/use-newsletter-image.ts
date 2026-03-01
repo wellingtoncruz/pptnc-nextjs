@@ -86,8 +86,8 @@ export function useNewsletterImage(videoId: string | null): UseNewsletterImageRe
   const [error, setError] = useState<string | null>(null)
   const [errorImagePrompt, setErrorImagePrompt] = useState<string | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
-  const lastAdditionalContextRef = useRef<string | undefined>()
-  const lastEditedPromptRef = useRef<string | undefined>()
+  const lastAdditionalContextRef = useRef<string | undefined>(undefined)
+  const lastEditedPromptRef = useRef<string | undefined>(undefined)
 
   // Fetch existing newsletter data
   useEffect(() => {

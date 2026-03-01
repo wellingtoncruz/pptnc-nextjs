@@ -106,7 +106,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
         }
       } else if (fieldName.startsWith('newsletter.')) {
         const sectionKey = fieldName.slice('newsletter.'.length)
-        const currentNewsletter = currentVideoType.newsletter ?? DEFAULT_NEWSLETTER_PROMPTS
+        const currentNewsletter = (currentVideoType as { newsletter?: Record<string, unknown> }).newsletter ?? DEFAULT_NEWSLETTER_PROMPTS
         updatedVideoType = {
           ...currentVideoType,
           newsletter: { ...currentNewsletter, [sectionKey]: value },

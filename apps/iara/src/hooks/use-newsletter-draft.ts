@@ -23,7 +23,7 @@ export function useNewsletterDraft(videoId: string | null): UseNewsletterDraftRe
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
-  const lastAdditionalContextRef = useRef<string | undefined>()
+  const lastAdditionalContextRef = useRef<string | undefined>(undefined)
 
   // Fetch existing newsletter data
   const fetchData = useCallback(async (signal: AbortSignal) => {
