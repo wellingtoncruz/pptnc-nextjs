@@ -45,7 +45,7 @@ import {
 import { llmQueue } from '@/lib/llm/queue'
 import { log } from '@/lib/logger'
 import { NewsletterImageLLMResponseSchema } from '@/lib/schemas'
-import type { Podcast } from '@/types/podcast'
+import type { Persona, Podcast, PromptField } from '@/types/podcast'
 
 export const runtime = 'nodejs'
 
@@ -133,8 +133,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   let additionalContext: string | undefined
   let editedPrompt: string | undefined
   let newsletterData: Awaited<ReturnType<typeof getNewsletterData>>
-  let promptConfig: { description: string; expectedOutput: string } | undefined
-  let persona: { role?: string; objective?: string; resume?: string } | undefined
+  let promptConfig: PromptField | undefined
+  let persona: Persona | undefined
   let debugContextPrompt: { component: string; videoId: string; videoType: 'episode' | 'cut' | 'reel'; podcastId: string } | undefined
   let debugContextImage: typeof debugContextPrompt
 
