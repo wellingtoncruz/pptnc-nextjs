@@ -229,7 +229,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
           send('progress', { step: 'generating_prompt' })
 
           const systemPrompt = buildNewsletterImageSystemPrompt(persona, promptConfig!, additionalContext)
-          const userPrompt = buildNewsletterImageUserPrompt(newsletterData.draft, newsletterData.news)
+          const userPrompt = buildNewsletterImageUserPrompt(newsletterData.draft!, newsletterData.news)
 
           const { data: promptData } = await llmQueue.enqueue(() =>
             callGenAI<{ imagePrompt: string }>(systemPrompt, userPrompt, 60000, undefined, debugContextPrompt)
