@@ -261,18 +261,27 @@ describe('POST /api/videos/[videoId]/newsletter/news', () => {
     expect(json.error.code).toBe('RATE_LIMIT')
   })
 
-  it('calculates D-2 date from current date (not publishedAt)', async () => {
+  it('queries news from the last 48 hours', async () => {
     mockAuthFn.mockResolvedValue(validSession)
     mockGetVideoAdmin.mockResolvedValue(validEpisode)
     mockListNewsByDate.mockResolvedValue([])
 
-    const now = new Date()
+    const before = Date.now()
     await POST(createPostRequest(), createContext('video-1'))
+    const after = Date.now()
 
-    // D-2 should be 2 days before the current date
-    const expectedD2 = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
-    const calledDate = mockListNewsByDate.mock.calls[0][1] as Date
-    expect(calledDate.toISOString().slice(0, 10)).toBe(expectedD2.toISOString().slice(0, 10))
+    // Should pass rangeStart (48h ago) and rangeEnd (now) as Date objects
+    const calledStart = mockListNewsByDate.mock.calls[0][1] as Date
+    const calledEnd = mockListNewsByDate.mock.calls[0][2] as Date
+
+    // rangeStart should be ~48h before now
+    const expectedStart = before - 48 * 60 * 60 * 1000
+    expect(calledStart.getTime()).toBeGreaterThanOrEqual(expectedStart - 1000)
+    expect(calledStart.getTime()).toBeLessThanOrEqual(after - 48 * 60 * 60 * 1000 + 1000)
+
+    // rangeEnd should be ~now
+    expect(calledEnd.getTime()).toBeGreaterThanOrEqual(before)
+    expect(calledEnd.getTime()).toBeLessThanOrEqual(after)
   })
 
   it('returns 422 when prompt config is missing and >= 10 news', async () => {

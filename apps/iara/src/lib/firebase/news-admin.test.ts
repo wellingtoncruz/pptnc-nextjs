@@ -7,7 +7,6 @@ const mockLimit = vi.fn()
 const mockCountGet = vi.fn()
 const mockWhere = vi.fn()
 const mockListByDateGet = vi.fn()
-const mockWhereOrderBy = vi.fn()
 
 vi.mock('firebase-admin/firestore', () => ({
   Timestamp: {
@@ -67,8 +66,8 @@ describe('listNews', () => {
     // Default count mock
     mockCountGet.mockResolvedValue({ data: () => ({ count: 0 }) })
 
-    // Setup chain: where -> where -> orderBy -> get (listNewsByDate)
-    mockWhereOrderBy.mockReturnValue({ get: mockListByDateGet })
+    // Setup chain: where -> where -> orderBy -> get (listNewsByDate — 48h range on importedAt)
+    const mockWhereOrderBy = vi.fn().mockReturnValue({ get: mockListByDateGet })
     mockWhere.mockReturnValue({ where: mockWhere, orderBy: mockWhereOrderBy })
   })
 
@@ -228,11 +227,11 @@ describe('listNews', () => {
 describe('listNewsByDate', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockWhereOrderBy.mockReturnValue({ get: mockListByDateGet })
+    const mockWhereOrderBy = vi.fn().mockReturnValue({ get: mockListByDateGet })
     mockWhere.mockReturnValue({ where: mockWhere, orderBy: mockWhereOrderBy })
   })
 
-  it('returns news items for the target date', async () => {
+  it('returns news items within the range', async () => {
     const ts = createTimestamp(new Date('2026-02-25T14:00:00Z'))
     mockListByDateGet.mockResolvedValue({
       docs: [
@@ -248,40 +247,37 @@ describe('listNewsByDate', () => {
       ],
     })
 
-    const result = await listNewsByDate('pptnc', new Date('2026-02-25'))
+    const rangeStart = new Date('2026-02-24T14:00:00Z')
+    const rangeEnd = new Date('2026-02-26T14:00:00Z')
+    const result = await listNewsByDate('pptnc', rangeStart, rangeEnd)
 
     expect(result).toHaveLength(1)
     expect(result[0].titulo).toBe('Notícia do dia')
     expect(result[0].id).toBe('news-1')
   })
 
-  it('returns empty array when no news for the date', async () => {
+  it('returns empty array when no news in range', async () => {
     mockListByDateGet.mockResolvedValue({ docs: [] })
 
-    const result = await listNewsByDate('pptnc', new Date('2026-02-25'))
+    const rangeStart = new Date('2026-02-24T00:00:00Z')
+    const rangeEnd = new Date('2026-02-26T00:00:00Z')
+    const result = await listNewsByDate('pptnc', rangeStart, rangeEnd)
 
     expect(result).toHaveLength(0)
   })
 
-  it('calls where with UTC day boundaries', async () => {
+  it('queries importedAt with range boundaries', async () => {
     const { Timestamp } = await import('firebase-admin/firestore')
     mockListByDateGet.mockResolvedValue({ docs: [] })
 
-    await listNewsByDate('pptnc', new Date('2026-02-25T10:30:00Z'))
+    const rangeStart = new Date('2026-02-24T14:00:00Z')
+    const rangeEnd = new Date('2026-02-26T14:00:00Z')
+    await listNewsByDate('pptnc', rangeStart, rangeEnd)
 
     expect(mockWhere).toHaveBeenCalledWith('importedAt', '>=', expect.anything())
     expect(mockWhere).toHaveBeenCalledWith('importedAt', '<=', expect.anything())
-    expect(mockWhere).toHaveBeenCalledTimes(2)
-
-    // Verify UTC boundaries: Feb 25 00:00 to Feb 25 23:59:59.999
-    const startCall = (Timestamp.fromDate as ReturnType<typeof vi.fn>).mock.calls.find(
-      (c: Date[]) => c[0].toISOString() === '2026-02-25T00:00:00.000Z'
-    )
-    const endCall = (Timestamp.fromDate as ReturnType<typeof vi.fn>).mock.calls.find(
-      (c: Date[]) => c[0].toISOString() === '2026-02-25T23:59:59.999Z'
-    )
-    expect(startCall).toBeDefined()
-    expect(endCall).toBeDefined()
+    expect(Timestamp.fromDate).toHaveBeenCalledWith(rangeStart)
+    expect(Timestamp.fromDate).toHaveBeenCalledWith(rangeEnd)
   })
 
   it('skips invalid documents', async () => {
@@ -294,21 +290,30 @@ describe('listNewsByDate', () => {
       ],
     })
 
-    const result = await listNewsByDate('pptnc', new Date('2026-02-25'))
+    const rangeStart = new Date('2026-02-24T00:00:00Z')
+    const rangeEnd = new Date('2026-02-26T00:00:00Z')
+    const result = await listNewsByDate('pptnc', rangeStart, rangeEnd)
 
     expect(result).toHaveLength(0)
   })
 
-  it('logs correct info', async () => {
+  it('logs range start and end', async () => {
     const { log } = await import('@/lib/logger')
     mockListByDateGet.mockResolvedValue({ docs: [] })
 
-    await listNewsByDate('pptnc', new Date('2026-02-25'))
+    const rangeStart = new Date('2026-02-24T14:00:00Z')
+    const rangeEnd = new Date('2026-02-26T14:00:00Z')
+    await listNewsByDate('pptnc', rangeStart, rangeEnd)
 
     expect(log).toHaveBeenCalledWith(
       'INFO',
       'News listed by date',
-      expect.objectContaining({ podcastId: 'pptnc', count: 0 })
+      expect.objectContaining({
+        podcastId: 'pptnc',
+        rangeStart: '2026-02-24T14:00:00.000Z',
+        rangeEnd: '2026-02-26T14:00:00.000Z',
+        count: 0,
+      })
     )
   })
 })

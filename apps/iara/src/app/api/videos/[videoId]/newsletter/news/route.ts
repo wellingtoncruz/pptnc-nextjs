@@ -72,20 +72,17 @@ export async function POST(_request: Request, context: RouteContext): Promise<Ne
       )
     }
 
-    // Calculate D-2 from current date in BRT (America/Sao_Paulo)
-    // Using BRT ensures the date matches the producer's local timezone
-    const nowBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
-    const [year, month, day] = nowBRT.split('-').map(Number)
-    const d2Date = new Date(year, month - 1, day - 2)
+    // Fetch news from the last 48 hours (D-2 range from current time)
+    const now = new Date()
+    const rangeStart = new Date(now.getTime() - 48 * 60 * 60 * 1000)
 
-    log('INFO', 'Newsletter news D-2 calculation', {
+    log('INFO', 'Newsletter news 48h range', {
       videoId,
-      todayBRT: nowBRT,
-      d2Date: d2Date.toISOString(),
+      rangeStart: rangeStart.toISOString(),
+      rangeEnd: now.toISOString(),
     })
 
-    // Fetch news for D-2
-    const allNews = await listNewsByDate(PODCAST_ID, d2Date)
+    const allNews = await listNewsByDate(PODCAST_ID, rangeStart, now)
 
     // Map to EN format
     let candidates = allNews.map(mapNewsToNewsletterItem)

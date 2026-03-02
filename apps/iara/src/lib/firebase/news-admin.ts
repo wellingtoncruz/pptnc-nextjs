@@ -113,30 +113,26 @@ export async function listNews(
 }
 
 /**
- * Lists all news for a specific day (UTC).
+ * Lists all news within a date range by `importedAt` timestamp.
  *
- * Used by the newsletter workflow to fetch D-2 news items.
+ * Used by the newsletter workflow to fetch recent news (last 48h).
  * No pagination — returns every document whose `importedAt`
- * falls within the target day boundaries.
+ * falls within [rangeStart, rangeEnd].
  *
  * @param podcastId - The podcast ID
- * @param targetDate - Any Date within the desired day (time is ignored)
- * @returns All validated news items for that day
+ * @param rangeStart - Start of the range (inclusive)
+ * @param rangeEnd - End of the range (inclusive)
+ * @returns All validated news items in the range
  */
 export async function listNewsByDate(
   podcastId: string,
-  targetDate: Date
+  rangeStart: Date,
+  rangeEnd: Date
 ): Promise<News[]> {
   const db = getAdminDb()
 
-  const startOfDay = new Date(targetDate)
-  startOfDay.setUTCHours(0, 0, 0, 0)
-
-  const endOfDay = new Date(targetDate)
-  endOfDay.setUTCHours(23, 59, 59, 999)
-
-  const startTimestamp = Timestamp.fromDate(startOfDay)
-  const endTimestamp = Timestamp.fromDate(endOfDay)
+  const startTimestamp = Timestamp.fromDate(rangeStart)
+  const endTimestamp = Timestamp.fromDate(rangeEnd)
 
   const snapshot = await db
     .collection('podcasts')
@@ -162,8 +158,8 @@ export async function listNewsByDate(
 
   log('INFO', 'News listed by date', {
     podcastId,
-    rangeStart: startOfDay.toISOString(),
-    rangeEnd: endOfDay.toISOString(),
+    rangeStart: rangeStart.toISOString(),
+    rangeEnd: rangeEnd.toISOString(),
     count: items.length,
   })
 
