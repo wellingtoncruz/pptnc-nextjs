@@ -11,7 +11,7 @@ import {
   isWizardComplete,
   wizardReducer,
 } from './machine'
-import type { WizardState } from './types'
+import type { VideoDataForSync, WizardState } from './types'
 
 describe('createInitialWizardState', () => {
   it('creates initial state with all phases pending', () => {
@@ -865,6 +865,338 @@ describe('wizardReducer', () => {
       expect(newState.phases[5].status).toBe('completed')
       // Current phase should be first incomplete (4)
       expect(newState.currentPhase).toBe(4)
+    })
+
+    describe('re-hydration preserves currentPhase (isRehydration: true)', () => {
+      it('preserves currentPhase when video status changes (draft → ready)', () => {
+        // User is on Phase 8, video transitions draft → ready
+        const state = createInitialWizardState('video-1')
+        for (let i = 1; i <= 7; i++) {
+          state.phases[i as 1].status = 'completed'
+        }
+        state.currentPhase = 8
+
+        const videoData: VideoDataForSync = {
+          critique: 'Good episode',
+          editingIssues: [],
+          riskAndCompliance: [],
+          chapters: [{ title: 'Intro', timestamp: '00:00' }],
+          suggestedTitles: ['Title 1'],
+          description: 'A great episode',
+          tags: ['tag1'],
+          status: 'ready', // changed from draft
+          reviewedPhases: [2, 3, 4],
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Should stay on Phase 8
+        expect(result.currentPhase).toBe(8)
+      })
+
+      it('preserves currentPhase even when phase statuses change', () => {
+        // User is on Phase 8, a re-hydration corrects phase 4 to needs_review
+        const state = createInitialWizardState('video-1')
+        for (let i = 1; i <= 7; i++) {
+          state.phases[i as 1].status = 'completed'
+        }
+        state.currentPhase = 8
+
+        const videoData: VideoDataForSync = {
+          critique: 'Good episode',
+          editingIssues: [],
+          riskAndCompliance: [],
+          chapters: [{ title: 'Intro', timestamp: '00:00' }],
+          suggestedTitles: ['Title 1'],
+          description: 'desc',
+          tags: ['tag1'],
+          status: 'ready',
+          reviewedPhases: [2, 3], // 4 NOT reviewed → will become needs_review
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Phase 4 should become needs_review
+        expect(result.phases[4].status).toBe('needs_review')
+        // But currentPhase should stay at 8
+        expect(result.currentPhase).toBe(8)
+      })
+
+      it('still updates phase statuses correctly during re-hydration', () => {
+        const state = createInitialWizardState('video-1')
+        for (let i = 1; i <= 7; i++) {
+          state.phases[i as 1].status = 'completed'
+        }
+        state.currentPhase = 8
+
+        // Phase 6 has no data in Firestore (description removed)
+        const videoData: VideoDataForSync = {
+          critique: 'Good episode',
+          editingIssues: [],
+          riskAndCompliance: [],
+          chapters: [{ title: 'Intro', timestamp: '00:00' }],
+          suggestedTitles: ['Title 1'],
+          // No description → phase 6 should become pending
+          tags: ['tag1'],
+          status: 'ready',
+          reviewedPhases: [2, 3, 4],
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Phase 6 should be reset to pending
+        expect(result.phases[6].status).toBe('pending')
+        // But currentPhase stays at 8
+        expect(result.currentPhase).toBe(8)
+      })
+
+      it('preserves currentPhase on re-hydration for cut videos', () => {
+        const state = createInitialWizardState('video-1', 'cut', 'parent-1')
+        for (const phase of [1, 2, 3, 4, 5] as const) {
+          state.phases[phase] = { status: 'completed', data: null, error: null }
+        }
+        state.currentPhase = 6
+
+        const videoData: VideoDataForSync = {
+          videoType: 'cut',
+          parentEpisodeId: 'parent-1',
+          suggestedTitles: ['Title'],
+          suggestedShortTitles: ['Short'],
+          description: 'desc',
+          tags: ['tag'],
+          status: 'ready', // status changed
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Should stay on Phase 6
+        expect(result.currentPhase).toBe(6)
+      })
+
+      it('preserves currentPhase on re-hydration for reel videos', () => {
+        const state = createInitialWizardState('video-1', 'reel', 'parent-1')
+        for (const phase of [1, 2, 3, 4, 5] as const) {
+          state.phases[phase] = { status: 'completed', data: null, error: null }
+        }
+        state.currentPhase = 7
+
+        const videoData: VideoDataForSync = {
+          videoType: 'reel',
+          parentEpisodeId: 'parent-1',
+          suggestedTitles: ['Title'],
+          description: 'desc',
+          tags: ['tag'],
+          status: 'ready', // status changed
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Should stay on Phase 7
+        expect(result.currentPhase).toBe(7)
+      })
+
+      it('preserves currentPhase when phase is in loading status during re-hydration', () => {
+        // Simulates: LLM call in progress on phase 5, Firestore updates trigger re-hydration
+        const state = createInitialWizardState('video-1')
+        for (let i = 1; i <= 4; i++) {
+          state.phases[i as 1].status = 'completed'
+        }
+        state.phases[5].status = 'loading'
+        state.currentPhase = 5
+
+        const videoData: VideoDataForSync = {
+          critique: 'Good episode',
+          editingIssues: [],
+          riskAndCompliance: [],
+          chapters: [{ title: 'Intro', timestamp: '00:00' }],
+          // No suggestedTitles (LLM hasn't finished yet)
+          status: 'draft',
+          reviewedPhases: [2, 3, 4],
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Phase 5 should stay in loading (not reset to pending)
+        expect(result.phases[5].status).toBe('loading')
+        // Should stay on Phase 5
+        expect(result.currentPhase).toBe(5)
+      })
+
+      it('returns same state when no phase changes needed on re-hydration', () => {
+        const state = createInitialWizardState('video-1')
+        state.phases[1].status = 'completed'
+        state.currentPhase = 2
+
+        const videoData: VideoDataForSync = {
+          critique: 'Good episode',
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // No changes needed, should return same state reference
+        expect(result).toBe(state)
+      })
+    })
+
+    describe('initial hydration still navigates correctly (regression)', () => {
+      it('navigates to firstIncompletePhase from stale localStorage', () => {
+        // localStorage has currentPhase = 1, but Firestore has phases 1-7 completed
+        const state = createInitialWizardState('video-1')
+        state.currentPhase = 1 // stale
+
+        const videoData: VideoDataForSync = {
+          critique: 'Good episode',
+          editingIssues: [],
+          riskAndCompliance: [],
+          chapters: [{ title: 'Intro', timestamp: '00:00' }],
+          suggestedTitles: ['Title 1'],
+          description: 'A great episode',
+          tags: ['tag1'],
+          status: 'ready',
+          reviewedPhases: [2, 3, 4],
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          // No isRehydration flag = initial hydration
+        })
+
+        // Should navigate to phase 8 (first incomplete)
+        expect(result.currentPhase).toBe(8)
+      })
+
+      it('navigates correctly for cut video initial hydration', () => {
+        const state = createInitialWizardState('video-1', 'cut', 'parent-1')
+
+        const videoData: VideoDataForSync = {
+          videoType: 'cut',
+          parentEpisodeId: 'parent-1',
+          suggestedTitles: ['Title 1'],
+          suggestedShortTitles: ['Short 1'],
+          status: 'draft',
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // Phase 5 has data, Phase 5B has data, Phase 6 has no data → firstIncomplete = 6
+        expect(result.currentPhase).toBe(6)
+      })
+    })
+
+    describe('Phase 5 → 5B transition for cut (Story 19.2)', () => {
+      it('preserves phase 5 completed during re-hydration when on 5B', () => {
+        // Simulates: user completed Phase 5 → advanced to 5B → re-hydration fires
+        const state = createInitialWizardState('video-1', 'cut', 'parent-1')
+        for (const phase of [1, 2, 3, 4, 5] as const) {
+          state.phases[phase] = { status: 'completed', data: null, error: null }
+        }
+        state.currentPhase = '5B' as unknown as 5
+
+        const videoData: VideoDataForSync = {
+          videoType: 'cut',
+          parentEpisodeId: 'parent-1',
+          suggestedTitles: ['Title 1', 'Title 2'], // Phase 5 data exists
+          // No suggestedShortTitles yet — user is working on 5B
+          status: 'draft',
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Phase 5 must remain completed
+        expect(result.phases[5].status).toBe('completed')
+        // currentPhase must stay at '5B'
+        expect(result.currentPhase as string).toBe('5B')
+      })
+
+      it('preserves phase 5 completed on initial hydration when 5B incomplete', () => {
+        // Page refresh: localStorage has currentPhase='5B', Firestore has suggestedTitles
+        const state = createInitialWizardState('video-1', 'cut', 'parent-1')
+        state.currentPhase = '5B' as unknown as 5
+
+        const videoData: VideoDataForSync = {
+          videoType: 'cut',
+          parentEpisodeId: 'parent-1',
+          suggestedTitles: ['Title 1', 'Title 2'],
+          // No suggestedShortTitles
+          status: 'draft',
+        }
+
+        const result = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          // Initial hydration (no isRehydration flag)
+        })
+
+        // Phase 5 should be completed (has suggestedTitles)
+        expect(result.phases[5].status).toBe('completed')
+        // firstIncompletePhase should be '5B' (no short titles yet)
+        expect(result.currentPhase as string).toBe('5B')
+      })
+
+      it('allows navigation back from 5B to completed phase 5', () => {
+        const state = createInitialWizardState('video-1', 'cut', 'parent-1')
+        for (const phase of [1, 2, 3, 4, 5] as const) {
+          state.phases[phase] = { status: 'completed', data: null, error: null }
+        }
+        state.currentPhase = '5B' as unknown as 5
+
+        // Phase 5 is completed → canNavigateToPhase should return true
+        expect(canNavigateToPhase(state, 5)).toBe(true)
+      })
+
+      it('does not affect episode flow (regression)', () => {
+        // Episode: Phase 5 → Phase 6 (no 5B)
+        const state = createInitialWizardState('video-1', 'episode')
+        for (let i = 1; i <= 4; i++) {
+          state.phases[i as 1].status = 'completed'
+        }
+        state.currentPhase = 5
+
+        const result = wizardReducer(state, {
+          type: 'COMPLETE_PHASE_AND_ADVANCE',
+          phase: 5,
+          data: { selectedTitle: 'Test' },
+        })
+
+        expect(result.phases[5].status).toBe('completed')
+        expect(result.currentPhase).toBe(6)
+      })
     })
 
     describe('reel/cut video type support', () => {

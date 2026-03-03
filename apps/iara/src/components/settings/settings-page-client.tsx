@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect } from 'react'
 
-import { Radio, ToggleLeft, Share2, Clock, Bot, FileText, RefreshCw } from 'lucide-react'
+import { Radio, ToggleLeft, Share2, Clock, Bot, FileText, Newspaper, RefreshCw } from 'lucide-react'
 
 import {
   Accordion,
@@ -17,17 +17,13 @@ import { PersonasSettingsForm } from './personas-settings-form'
 import { DurationSettingsForm } from './duration-settings-form'
 import { SocialNetworksSettingsForm } from './social-networks-settings-form'
 import { ResyncSection } from './resync-section'
+import { PromptFieldEditor } from './prompt-field-editor'
 import { useAccordionState } from '@/hooks/use-accordion-state'
 import { log } from '@/lib/logger'
-import { DEFAULT_PROMPT_FIELD } from '@/lib/schemas'
+import { DEFAULT_PROMPT_FIELD, DEFAULT_EPISODE_PROMPTS } from '@/lib/schemas'
 import type { SerializedPodcast, PromptField, Persona, PersonaKey, Prompts, Personas } from '@/types/podcast'
 
-const DEFAULT_NEWSLETTER_PROMPTS = {
-  draft: { ...DEFAULT_PROMPT_FIELD },
-  news: { ...DEFAULT_PROMPT_FIELD },
-  image: { ...DEFAULT_PROMPT_FIELD },
-  format: { ...DEFAULT_PROMPT_FIELD },
-}
+const DEFAULT_NEWSLETTER_PROMPTS = DEFAULT_EPISODE_PROMPTS.newsletter
 
 /**
  * Section IDs for accordion persistence.
@@ -39,6 +35,7 @@ const SECTION_IDS = {
   DURATION: 'duration',
   PERSONAS: 'personas',
   PROMPTS: 'prompts',
+  PROMPTS_RESOURCES: 'prompts_resources',
   SYNC: 'sync',
 } as const
 
@@ -137,6 +134,34 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
         const error = await response.json()
         const message = error?.error?.message || 'Erro ao salvar prompt'
         log('ERROR', 'Failed to save prompt field', { videoType, fieldName, error: message })
+        throw new Error(message)
+      }
+    },
+    [] // No dependencies - uses refs instead
+  )
+
+  const handleSaveNewsPrompt = useCallback(
+    async (fieldName: string, value: PromptField) => {
+      const currentPrompts = promptsRef.current
+      const currentNews = currentPrompts.news ?? {}
+      const updatedPrompts = {
+        ...currentPrompts,
+        news: { ...currentNews, [fieldName]: value },
+      }
+      promptsRef.current = updatedPrompts
+
+      const response = await fetch('/api/podcast', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompts: updatedPrompts,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        const message = error?.error?.message || 'Erro ao salvar prompt de notícias'
+        log('ERROR', 'Failed to save news prompt field', { fieldName, error: message })
         throw new Error(message)
       }
     },
@@ -327,6 +352,32 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
           />
         </AccordionContent>
       </AccordionItem>
+
+      {/* Resource Prompts (News) - separate panel at same level */}
+      {(podcast.features?.news ?? true) && (
+        <AccordionItem value={SECTION_IDS.PROMPTS_RESOURCES} className="border rounded-lg">
+          <AccordionTrigger className="px-6 py-4 hover:no-underline">
+            <div className="flex items-start gap-3">
+              <Newspaper className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+              <div className="text-left">
+                <div className="text-lg font-semibold">Prompts por Recurso</div>
+                <div className="text-sm font-normal text-muted-foreground">Prompts de recursos como Notícias</div>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent forceOverflow className="px-6 pb-6">
+            <div className="space-y-4">
+              <div className="text-sm font-medium text-muted-foreground">Notícias</div>
+              <PromptFieldEditor
+                fieldKey="news-news_social"
+                label="Redação Rede Social"
+                initialValue={podcast.prompts.news?.news_social ?? DEFAULT_PROMPT_FIELD}
+                onSave={(value) => handleSaveNewsPrompt('news_social', value)}
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      )}
 
       {/* Sync Settings */}
       <AccordionItem value={SECTION_IDS.SYNC} className="border rounded-lg">

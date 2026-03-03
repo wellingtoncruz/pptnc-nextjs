@@ -7,6 +7,8 @@ const mockLimit = vi.fn()
 const mockCountGet = vi.fn()
 const mockWhere = vi.fn()
 const mockListByDateGet = vi.fn()
+const mockNewsDocGet = vi.fn()
+const mockNewsDocUpdate = vi.fn()
 
 vi.mock('firebase-admin/firestore', () => ({
   Timestamp: {
@@ -16,6 +18,10 @@ vi.mock('firebase-admin/firestore', () => ({
       seconds: Math.floor(date.getTime() / 1000),
       nanoseconds: 0,
     })),
+  },
+  FieldValue: {
+    vector: vi.fn((v: number[]) => ({ _vector: v })),
+    serverTimestamp: vi.fn(() => 'SERVER_TIMESTAMP'),
   },
 }))
 
@@ -27,6 +33,7 @@ vi.mock('./admin', () => ({
           orderBy: mockOrderBy,
           where: mockWhere,
           count: vi.fn(() => ({ get: mockCountGet })),
+          doc: vi.fn(() => ({ get: mockNewsDocGet, update: mockNewsDocUpdate })),
         })),
       })),
     })),
@@ -37,7 +44,7 @@ vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
-import { listNews, listNewsByDate } from './news-admin'
+import { listNews, listNewsByDate, getNewsEmbedding, updateNewsEmbedding, updateNewsRelatedVideos, getNewsById, updateNewsFields } from './news-admin'
 
 function createTimestamp(date: Date) {
   return {
@@ -315,5 +322,196 @@ describe('listNewsByDate', () => {
         count: 0,
       })
     )
+  })
+})
+
+// ==========================================================================
+// Story 18.3 — News embedding and related_videos functions
+// ==========================================================================
+
+describe('getNewsEmbedding (Story 18.3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns embedding array when it exists', async () => {
+    const mockVector = [0.1, 0.2, 0.3]
+    mockNewsDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ embedding: { toArray: () => mockVector } }),
+    })
+
+    const result = await getNewsEmbedding('pptnc', 'news-1')
+
+    expect(result).toEqual(mockVector)
+  })
+
+  it('returns null when document does not exist', async () => {
+    mockNewsDocGet.mockResolvedValueOnce({ exists: false })
+
+    const result = await getNewsEmbedding('pptnc', 'nonexistent')
+
+    expect(result).toBeNull()
+  })
+
+  it('returns null when embedding field is missing', async () => {
+    mockNewsDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ titulo: 'Test' }),
+    })
+
+    const result = await getNewsEmbedding('pptnc', 'news-no-embed')
+
+    expect(result).toBeNull()
+  })
+})
+
+describe('updateNewsEmbedding (Story 18.3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockNewsDocUpdate.mockResolvedValue(undefined)
+  })
+
+  it('persists vector with FieldValue.vector()', async () => {
+    const vector = [0.1, 0.2, 0.3]
+
+    await updateNewsEmbedding('pptnc', 'news-1', vector)
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      embedding: { _vector: vector },
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+})
+
+describe('updateNewsRelatedVideos (Story 18.3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockNewsDocUpdate.mockResolvedValue(undefined)
+  })
+
+  it('persists related_videos array', async () => {
+    await updateNewsRelatedVideos('pptnc', 'news-1', ['vid-1', 'vid-2', 'vid-3'])
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      related_videos: ['vid-1', 'vid-2', 'vid-3'],
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+})
+
+describe('getNewsById (Story 18.3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns parsed news when document exists', async () => {
+    const mockTimestamp = { toDate: () => new Date(), toMillis: () => 0, seconds: 0, nanoseconds: 0 }
+    mockNewsDocGet.mockResolvedValueOnce({
+      exists: true,
+      id: 'news-1',
+      data: () => ({
+        titulo: 'Test News',
+        descricao: 'Desc',
+        resumo: 'Summary',
+        comentarios: 'Comments',
+        data: '2024-01-01',
+        fonte: { nome: 'Source', url: 'https://source.com' },
+        importedAt: mockTimestamp,
+      }),
+    })
+
+    const result = await getNewsById('pptnc', 'news-1')
+
+    expect(result).toBeDefined()
+    expect(result?.titulo).toBe('Test News')
+  })
+
+  it('returns null when document does not exist', async () => {
+    mockNewsDocGet.mockResolvedValueOnce({ exists: false })
+
+    const result = await getNewsById('pptnc', 'nonexistent')
+
+    expect(result).toBeNull()
+  })
+})
+
+// ==========================================================================
+// Story 18.4 — updateNewsFields with invalidation
+// ==========================================================================
+
+describe('updateNewsFields (Story 18.4)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockNewsDocUpdate.mockResolvedValue(undefined)
+  })
+
+  it('updates selected_video and invalidates social when value changed', async () => {
+    mockNewsDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ selected_video: 'old-video', social: 'Texto existente' }),
+    })
+
+    await updateNewsFields('pptnc', 'news-1', { selected_video: 'new-video' })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      selected_video: 'new-video',
+      social: null,
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+
+  it('does NOT invalidate social when selected_video is same value (AC 3)', async () => {
+    mockNewsDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ selected_video: 'same-video', social: 'Texto existente' }),
+    })
+
+    await updateNewsFields('pptnc', 'news-1', { selected_video: 'same-video' })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      selected_video: 'same-video',
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+
+  it('updates social without invalidation (auto-save)', async () => {
+    await updateNewsFields('pptnc', 'news-1', { social: 'Novo texto editado' })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      social: 'Novo texto editado',
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+    expect(mockNewsDocGet).not.toHaveBeenCalled()
+  })
+
+  it('handles selected_video change when no previous value exists', async () => {
+    mockNewsDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({}),
+    })
+
+    await updateNewsFields('pptnc', 'news-1', { selected_video: 'first-video' })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      selected_video: 'first-video',
+      social: null,
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+
+  it('allows social update when selected_video is unchanged', async () => {
+    mockNewsDocGet.mockResolvedValueOnce({
+      exists: true,
+      data: () => ({ selected_video: 'same-video' }),
+    })
+
+    await updateNewsFields('pptnc', 'news-1', { selected_video: 'same-video', social: 'Updated text' })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      selected_video: 'same-video',
+      social: 'Updated text',
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
   })
 })

@@ -174,6 +174,6 @@ export type WizardAction =
   | { type: 'INVALIDATE_FROM_PHASE'; phase: WizardPhase }
   | { type: 'COMPLETE_PHASE_AND_ADVANCE'; phase: ExtendedWizardPhase; data: unknown }
   | { type: 'SYNC_WITH_VIDEO_DATA'; videoData: VideoDataForSync }
-  | { type: 'HYDRATE_FROM_VIDEO_DATA'; videoData: VideoDataForSync }
+  | { type: 'HYDRATE_FROM_VIDEO_DATA'; videoData: VideoDataForSync; isRehydration?: boolean }
   | { type: 'RESET' }
   | { type: 'RESET_TO_STATE'; state: WizardState }

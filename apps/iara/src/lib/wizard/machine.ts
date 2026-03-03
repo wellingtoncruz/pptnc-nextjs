@@ -333,7 +333,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       const newPhases = { ...state.phases }
 
       // Phases that require review confirmation before being marked as completed
-      // Phases 2 (Edit Check), 3 (Compliance), and 4 (Chapters) need user confirmation
+      // Phases 2 (Edit Check), 3 (Compliance), and 4 (Chapters) need user confirmation before completing
       const phasesRequiringReview: WizardPhase[] = [2, 3, 4]
 
       // Determine video type and which phases are applicable
@@ -396,7 +396,21 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         }
       }
 
-      // Calculate the first incomplete phase
+      // Re-hydration: only update phase statuses, preserve currentPhase.
+      // This prevents the wizard from jumping to a different phase when the
+      // video data is re-fetched (e.g., after onVideoStatusChange triggers).
+      if (action.isRehydration) {
+        if (!phasesChanged) {
+          return state
+        }
+        return {
+          ...state,
+          phases: newPhases,
+          // currentPhase is intentionally NOT changed during re-hydration
+        }
+      }
+
+      // Calculate the first incomplete phase (only needed for initial hydration)
       // For cut/reel: if no parent, phase 0; otherwise start at phase 5
       // For cut: includes Phase 5B between 5 and 6
       let firstIncompletePhase: WizardPhase
@@ -444,10 +458,9 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         }
       }
 
-      // Determine if currentPhase needs adjustment:
-      // 1. If phases changed (completions added or removed), move to first incomplete
-      // 2. If currentPhase is AHEAD of first incomplete (invalid state), correct it
-      // 3. Otherwise, keep currentPhase as-is (user might be reviewing earlier phase)
+      // Initial hydration: navigate to firstIncompletePhase.
+      // This handles the case where localStorage has stale currentPhase
+      // (e.g., user was on phase 1 but Firestore shows phases 1-7 completed).
       const currentPhaseAhead = state.currentPhase > firstIncompletePhase
       const shouldUpdateCurrentPhase = phasesChanged || currentPhaseAhead
 

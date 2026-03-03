@@ -20,6 +20,8 @@ import { getAdminDb } from '@/lib/firebase/admin'
 import { log } from '@/lib/logger'
 import { classifyVideoType } from '@/lib/video-utils'
 import { YouTubeClient, type YouTubeVideoDataFromAPI } from '@/lib/youtube'
+import { youtubeToVideoCreate } from '@/lib/sync/sync-videos'
+import { embedVideos } from '@/lib/embedding/video-embedding'
 
 /**
  * Result of a full sync operation.
@@ -166,6 +168,31 @@ function hasMetadataChanged(
 }
 
 /**
+ * Best-effort embedding generation for a list of videos.
+ * Logs success/failure but never throws (best-effort pattern).
+ */
+async function embedVideosBestEffort(
+  podcastId: string,
+  videos: Array<{ videoId: string; title: string; description?: string }>,
+  context: string
+): Promise<void> {
+  if (videos.length === 0) return
+  try {
+    const result = await embedVideos(podcastId, videos)
+    log('INFO', `Embeddings generated ${context} (full sync)`, {
+      podcastId,
+      succeeded: result.succeeded,
+      failed: result.failed,
+    })
+  } catch (error) {
+    log('WARN', `Failed to generate embeddings ${context} (full sync)`, {
+      podcastId,
+      error: error instanceof Error ? error.message : String(error),
+    })
+  }
+}
+
+/**
  * Performs a full sync of all videos from YouTube.
  *
  * This operation:
@@ -254,6 +281,8 @@ export async function fullSyncVideos(
     let updated = 0
     let added = 0
     let unchanged = 0
+    const newVideosList: Array<{ videoId: string; title: string; description?: string }> = []
+    const updatedVideosList: Array<{ videoId: string; title: string; description?: string }> = []
 
     // Process in batches for Firestore
     const BATCH_SIZE = 20
@@ -277,32 +306,25 @@ export async function fullSyncVideos(
             youtubePrivacyStatus: ytVideo.privacyStatus,
             updatedAt: FieldValue.serverTimestamp(),
           })
+          // Track updated videos with title/description changes for re-embedding (Story 17.5)
+          if (existingVideo.title !== ytVideo.title || existingVideo.description !== ytVideo.description) {
+            updatedVideosList.push({ videoId: ytVideo.id, title: ytVideo.title, description: ytVideo.description })
+          }
           updated++
         } else {
           unchanged++
         }
       } else {
-        // New video - create with full data
-        // Determine initial status based on visibility
-        const status = ytVideo.privacyStatus === 'public' ? 'sent' : 'new'
-        // Classify video type based on duration (same as regular sync)
+        // New video - create using shared function (same as delta sync)
         const videoType = classifyVideoType(ytVideo.duration, podcast.videoTypes)
+        const videoCreate = youtubeToVideoCreate(ytVideo, podcastId, videoType)
 
         batch.set(docRef, {
-          id: ytVideo.id,
-          podcastId,
-          title: ytVideo.title,
-          description: ytVideo.description,
-          thumbnails: ytVideo.thumbnails,
-          duration: ytVideo.duration,
-          publishedAt: Timestamp.fromDate(new Date(ytVideo.publishedAt)),
-          status,
-          videoType,
-          youtubePrivacyStatus: ytVideo.privacyStatus,
-          visibilityUpdatedAt: Timestamp.now(),
+          ...videoCreate,
           createdAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         })
+        newVideosList.push({ videoId: ytVideo.id, title: ytVideo.title, description: ytVideo.description })
         added++
       }
 
@@ -320,6 +342,10 @@ export async function fullSyncVideos(
     if (batchCount > 0) {
       await batch.commit()
     }
+
+    // Generate/regenerate embeddings best-effort (Epic 17 + Story 17.5)
+    await embedVideosBestEffort(podcastId, newVideosList, 'for new videos')
+    await embedVideosBestEffort(podcastId, updatedVideosList, 'for updated videos')
 
     const result: FullSyncResult = {
       total: youtubeVideos.length,

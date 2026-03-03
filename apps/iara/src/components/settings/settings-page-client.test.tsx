@@ -353,6 +353,136 @@ describe('SettingsPageClient', () => {
     expect(body.prompts.episode.newsletter).toHaveProperty('format')
   })
 
+  it('shows "Prompts por Recurso" section when news feature is enabled', () => {
+    const podcastWithNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithNews} />)
+
+    expect(screen.getByText('Prompts por Recurso')).toBeInTheDocument()
+    expect(screen.getByText('Prompts de recursos como Notícias')).toBeInTheDocument()
+  })
+
+  it('hides "Prompts por Recurso" section when news feature is disabled', () => {
+    const podcastNoNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastNoNews} />)
+
+    expect(screen.queryByText('Prompts por Recurso')).not.toBeInTheDocument()
+  })
+
+  it('shows "Prompts por Recurso" section when features is undefined (news defaults to true)', () => {
+    render(<SettingsPageClient podcast={mockPodcast} />)
+
+    expect(screen.getByText('Prompts por Recurso')).toBeInTheDocument()
+  })
+
+  it('renders Newspaper icon in "Prompts por Recurso" section', () => {
+    const podcastWithNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    const { container } = render(<SettingsPageClient podcast={podcastWithNews} />)
+
+    expect(container.querySelector('.lucide-newspaper')).toBeInTheDocument()
+  })
+
+  it('shows "Notícias" sub-header inside "Prompts por Recurso" panel', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcastWithNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithNews} />)
+
+    await user.click(screen.getByText('Prompts por Recurso'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Notícias')).toBeInTheDocument()
+      expect(screen.getByText('Redação Rede Social')).toBeInTheDocument()
+    })
+  })
+
+  it('shows error when API call fails for news prompt', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({ error: { message: 'News prompt error' } }),
+    })
+
+    const podcastWithNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithNews} />)
+
+    await user.click(screen.getByText('Prompts por Recurso'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Redação Rede Social')).toBeInTheDocument()
+    })
+
+    const newsTextarea = document.getElementById('news-news_social-description') as HTMLTextAreaElement
+    await user.clear(newsTextarea)
+    await user.type(newsTextarea, 'New prompt')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('News prompt error')).toBeInTheDocument()
+    })
+  })
+
+  it('calls API when news prompt is saved in "Prompts por Recurso"', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcastWithNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithNews} />)
+
+    // Open the "Prompts por Recurso" accordion section
+    await user.click(screen.getByText('Prompts por Recurso'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Redação Rede Social')).toBeInTheDocument()
+    })
+
+    // PromptFieldEditor renders id={`${fieldKey}-description`} for each textarea
+    const newsTextarea = document.getElementById('news-news_social-description') as HTMLTextAreaElement
+    await user.clear(newsTextarea)
+    await user.type(newsTextarea, 'News social prompt')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/podcast',
+        expect.objectContaining({ method: 'PATCH' })
+      )
+    })
+
+    // Verify the body contains the news prompt at the correct path
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0]
+    const body = JSON.parse(fetchCall[1]?.body as string)
+    expect(body.prompts.news.news_social.description).toBe('News social prompt')
+  })
+
   it('shows error when API call fails for duration settings', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     global.fetch = vi.fn().mockResolvedValue({

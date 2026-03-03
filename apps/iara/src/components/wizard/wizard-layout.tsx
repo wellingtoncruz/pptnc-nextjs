@@ -116,7 +116,7 @@ export function WizardLayout({
             <VideoHeader video={video} onTitleChange={onTitleChange} className="mb-3" />
             <VideoPreview
               videoId={wizard.state.videoId}
-              thumbnailUrl={getBestThumbnailUrl(video.thumbnails)}
+              thumbnailUrl={video.storageThumbnailUrl || getBestThumbnailUrl(video.thumbnails)}
               className="max-w-2xl w-full flex-1"
             />
             {/* Short title display for cut videos - Story 4.3 AC2 */}

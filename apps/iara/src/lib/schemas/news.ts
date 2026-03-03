@@ -31,6 +31,10 @@ export const NewsSchema = z.object({
   fonte: NewsSourceSchema.catch({ nome: '', url: '' }),
   importedAt: TimestampSchema,
   source_email_id: z.string().optional(),
+  // Epic 18 — Busca de episódios e redação social
+  related_videos: z.array(z.string()).optional(),
+  selected_video: z.string().nullable().optional(),
+  social: z.string().nullable().optional(),
 })
 
 // ============================================================================

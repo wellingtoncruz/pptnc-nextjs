@@ -1,14 +1,15 @@
 /**
  * News Firestore operations using Admin SDK.
  *
- * Read-only — the news collection is populated by an external pipeline job.
+ * The news collection is populated by an external pipeline job.
+ * Write operations limited to embedding/related_videos (Epic 18).
  * Use these functions in Route Handlers and Server Components.
  *
  * CRITICAL: Never expose admin SDK to the client.
  * CRITICAL: All queries include podcastId (enforcement rule #8).
  */
 
-import { Timestamp } from 'firebase-admin/firestore'
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 
 import { NewsSchema } from '@/lib/schemas/news'
 import { log } from '@/lib/logger'
@@ -164,4 +165,142 @@ export async function listNewsByDate(
   })
 
   return items
+}
+
+// ==========================================================================
+// Story 18.3 — News embedding and related_videos
+// ==========================================================================
+
+/**
+ * Reads the embedding vector from a news document.
+ *
+ * Firestore Vector fields return an object with `toArray()`.
+ * Returns null if document or embedding field doesn't exist.
+ *
+ * @param podcastId - The podcast ID
+ * @param newsId - The news document ID
+ * @returns The embedding vector as number[], or null
+ */
+export async function getNewsEmbedding(
+  podcastId: string,
+  newsId: string
+): Promise<number[] | null> {
+  const db = getAdminDb()
+  const docRef = db.collection('podcasts').doc(podcastId).collection('news').doc(newsId)
+  const docSnap = await docRef.get()
+
+  if (!docSnap.exists) return null
+
+  const data = docSnap.data()
+  const embedding = data?.embedding?.toArray?.() ?? null
+  return embedding
+}
+
+/**
+ * Persists an embedding vector on a news document.
+ *
+ * @param podcastId - The podcast ID
+ * @param newsId - The news document ID
+ * @param vector - The embedding vector (768 dimensions)
+ */
+export async function updateNewsEmbedding(
+  podcastId: string,
+  newsId: string,
+  vector: number[]
+): Promise<void> {
+  const db = getAdminDb()
+  const docRef = db.collection('podcasts').doc(podcastId).collection('news').doc(newsId)
+  await docRef.update({
+    embedding: FieldValue.vector(vector),
+    updatedAt: FieldValue.serverTimestamp(),
+  })
+}
+
+/**
+ * Persists the related_videos array on a news document.
+ *
+ * @param podcastId - The podcast ID
+ * @param newsId - The news document ID
+ * @param videoIds - Array of video document IDs
+ */
+export async function updateNewsRelatedVideos(
+  podcastId: string,
+  newsId: string,
+  videoIds: string[]
+): Promise<void> {
+  const db = getAdminDb()
+  const docRef = db.collection('podcasts').doc(podcastId).collection('news').doc(newsId)
+  await docRef.update({
+    related_videos: videoIds,
+    updatedAt: FieldValue.serverTimestamp(),
+  })
+}
+
+/**
+ * Updates specific fields on a news document with invalidation logic.
+ *
+ * If `selected_video` is changed to a different value, `social` is set to null (invalidation).
+ * If only `social` is updated, no read is needed (direct update).
+ *
+ * @param podcastId - The podcast ID
+ * @param newsId - The news document ID
+ * @param data - Fields to update (selected_video and/or social)
+ */
+export async function updateNewsFields(
+  podcastId: string,
+  newsId: string,
+  data: { selected_video?: string; social?: string | null }
+): Promise<void> {
+  const db = getAdminDb()
+  const docRef = db.collection('podcasts').doc(podcastId).collection('news').doc(newsId)
+
+  const updatePayload: Record<string, unknown> = {}
+
+  if ('selected_video' in data) {
+    updatePayload.selected_video = data.selected_video
+
+    // Read current value to decide invalidation
+    const currentDoc = await docRef.get()
+    const currentSelected = currentDoc.data()?.selected_video
+    if (data.selected_video !== currentSelected) {
+      // Invalidation takes precedence over any social value in the same request
+      updatePayload.social = null
+    } else if ('social' in data) {
+      // Same video, allow social update
+      updatePayload.social = data.social
+    }
+  } else if ('social' in data) {
+    updatePayload.social = data.social
+  }
+
+  updatePayload.updatedAt = FieldValue.serverTimestamp()
+  await docRef.update(updatePayload)
+}
+
+/**
+ * Reads a single news document by ID.
+ *
+ * @param podcastId - The podcast ID
+ * @param newsId - The news document ID
+ * @returns The validated news document, or null if not found
+ */
+export async function getNewsById(
+  podcastId: string,
+  newsId: string
+): Promise<News | null> {
+  const db = getAdminDb()
+  const docRef = db.collection('podcasts').doc(podcastId).collection('news').doc(newsId)
+  const docSnap = await docRef.get()
+
+  if (!docSnap.exists) return null
+
+  const parsed = NewsSchema.safeParse({ id: docSnap.id, ...docSnap.data() })
+  if (!parsed.success) {
+    log('WARN', 'Invalid news document', {
+      newsId: docSnap.id,
+      issues: parsed.error.issues,
+    })
+    return null
+  }
+  return parsed.data
 }

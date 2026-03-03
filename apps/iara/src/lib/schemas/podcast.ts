@@ -126,13 +126,24 @@ export const ReelPromptsSchema = z.object({
 })
 
 /**
- * Prompts schema - AI prompts organized by video type.
+ * News prompts - prompts for news-related features.
+ *
+ * Includes: news_social (social media copy generation from news + episode)
+ */
+export const NewsPromptsSchema = z.object({
+  news_social: PromptFieldSchema.optional(),
+})
+
+/**
+ * Prompts schema - AI prompts organized by video type + resource type.
  * Each video type has multiple specific prompts.
+ * News prompts are optional (backward-compatible).
  */
 export const PromptsSchema = z.object({
   episode: EpisodePromptsSchema,
   cut: CutPromptsSchema,
   reel: ReelPromptsSchema,
+  news: NewsPromptsSchema.optional(),
 })
 
 /**
@@ -227,12 +238,20 @@ export const DEFAULT_REEL_PROMPTS = {
 }
 
 /**
- * Default prompts for all video types.
+ * Default News prompts.
+ */
+export const DEFAULT_NEWS_PROMPTS = {
+  news_social: { ...DEFAULT_PROMPT_FIELD },
+}
+
+/**
+ * Default prompts for all video types + resources.
  */
 export const DEFAULT_PROMPTS = {
   episode: DEFAULT_EPISODE_PROMPTS,
   cut: DEFAULT_CUT_PROMPTS,
   reel: DEFAULT_REEL_PROMPTS,
+  news: DEFAULT_NEWS_PROMPTS,
 }
 
 /**

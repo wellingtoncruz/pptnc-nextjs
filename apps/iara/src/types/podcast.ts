@@ -9,6 +9,7 @@ import type {
   EpisodePromptsSchema,
   CutPromptsSchema,
   ReelPromptsSchema,
+  NewsPromptsSchema,
   PersonaSchema,
   PersonasSchema,
   VideoTypesConfigSchema,
@@ -55,6 +56,11 @@ export type CutPrompts = z.infer<typeof CutPromptsSchema>
  * Reel-specific prompts.
  */
 export type ReelPrompts = z.infer<typeof ReelPromptsSchema>
+
+/**
+ * News-specific prompts (social copy generation).
+ */
+export type NewsPrompts = z.infer<typeof NewsPromptsSchema>
 
 /**
  * LLM persona configuration.

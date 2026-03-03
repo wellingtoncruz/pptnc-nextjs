@@ -187,6 +187,21 @@ export const GuestSchema = z.object({
 })
 
 /**
+ * Lenient guest schema for read/display contexts (VideoSummarySchema).
+ *
+ * Production data may have null/missing fields (e.g. linkedin, role) from
+ * legacy imports or incomplete guest data. This schema coerces nulls to
+ * safe defaults instead of rejecting the entire document.
+ */
+export const GuestDisplaySchema = z.object({
+  name: z.preprocess(v => (typeof v === 'string' ? v : ''), z.string()),
+  role: z.preprocess(v => (typeof v === 'string' ? v : ''), z.string()),
+  company: z.preprocess(v => (typeof v === 'string' ? v : undefined), z.string().optional()),
+  linkedin: z.preprocess(v => (typeof v === 'string' ? v : undefined), z.string().optional()),
+  photo: z.preprocess(v => (typeof v === 'string' ? v : undefined), z.string().optional()),
+})
+
+/**
  * Episode context form schema - for validating episode context form inputs.
  *
  * This schema is used by the UI form only, not for persistence.
@@ -235,7 +250,8 @@ export const VideoSchema = z.object({
   // === YouTube API fields (flat, from snippet) ===
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  publishedAt: TimestampSchema,
+  // .catch(undefined) gracefully handles non-Timestamp values (e.g. ISO string from legacy data)
+  publishedAt: TimestampSchema.optional().catch(undefined),
   thumbnails: ThumbnailsSchema.optional(),
   duration: z.number().nonnegative('Duration must be non-negative'),
 
@@ -245,7 +261,7 @@ export const VideoSchema = z.object({
   // === Portal-web fields ===
   transcriptionSRT: z.string().optional(),
   transcriptionTXT: z.string().optional(),
-  guests: z.array(GuestSchema).optional(), // Legacy structure: {name, role, company, linkedin, photo}. Co-host when present is guests[0]
+  guests: z.array(GuestDisplaySchema).optional(), // Lenient for legacy data with null role/linkedin
   topics: z.array(z.string()).optional(),
 
   // === Campos IAra (adicionados ao schema existente) ===
@@ -254,7 +270,7 @@ export const VideoSchema = z.object({
   status: VideoStatusSchema.optional(),
   videoType: VideoTypeSchema.optional(),
   youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
-  visibilityUpdatedAt: TimestampSchema.optional(), // Last time visibility was checked during sync
+  visibilityUpdatedAt: TimestampSchema.optional().catch(undefined),
 
   // Campos gerados por IA
   // Phase 1 returns { critique, highlights, suggestions } but only 'critique' is persisted.
@@ -273,15 +289,18 @@ export const VideoSchema = z.object({
   theme: z.string().optional(), // Tema do episódio
   parentEpisodeId: z.string().optional(), // Para cuts/reels - referência ao episode de origem
 
-  // Timestamps
-  createdAt: TimestampSchema.optional(), // Optional for legacy docs
-  updatedAt: TimestampSchema.optional(), // Optional for legacy docs
+  // Timestamps — .catch(undefined) for legacy data with non-Timestamp values
+  createdAt: TimestampSchema.optional().catch(undefined),
+  updatedAt: TimestampSchema.optional().catch(undefined),
 
   // Smart loading - phases confirmed by producer (2 and 3 require review)
   reviewedPhases: z.array(z.number()).optional(),
 
   // Thumbnail stored in Firebase Storage (works for draft/private videos)
   storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
+
+  // Embedding control flag (Epic 17 — Video Embeddings)
+  hasEmbedding: z.boolean().optional(),
 }).passthrough() // Allow additional legacy fields
 
 /**
@@ -309,6 +328,9 @@ export const VideoCreateSchema = z.object({
 
   // Thumbnail stored in Firebase Storage (works for draft/private videos)
   storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
+
+  // Embedding control flag (Epic 17 — Video Embeddings)
+  hasEmbedding: z.boolean().default(false),
 })
 
 /**
@@ -347,7 +369,7 @@ export const VideoUpdateSchema = z.object({
   // Context fields for AI processing (flat, not nested)
   theme: z.string().optional(),
   parentEpisodeId: z.string().optional(),
-  guests: z.array(GuestSchema).optional(),
+  guests: z.array(GuestDisplaySchema).optional(), // Lenient for round-trip compatibility with VideoSchema
 
   // Smart loading - phases confirmed by producer (2 and 3 require review)
   reviewedPhases: z.array(z.number()).optional(),
@@ -373,7 +395,7 @@ export const VideoSummarySchema = z.object({
   transcriptionTXT: z.string().optional(),
   // Context fields - needed to check if episode has context defined
   theme: z.string().optional(),
-  guests: z.array(GuestSchema).optional(),
+  guests: z.array(GuestDisplaySchema).optional(),
   parentEpisodeId: z.string().optional(),
   // AI-generated fields - needed for wizard phase detection
   critique: z.string().optional(),
@@ -385,11 +407,15 @@ export const VideoSummarySchema = z.object({
   shortTitle: z.string().optional(), // Título curto selecionado (cut only)
   tags: z.array(z.string()).optional(),
   reviewedPhases: z.array(z.number()).optional(),
-  // Timestamp fields - needed for VideoMetadata display (fix.md item 1.b)
-  publishedAt: TimestampSchema.optional(),
-  createdAt: TimestampSchema.optional(),
-  updatedAt: TimestampSchema.optional(),
+  // Timestamp fields - .catch(undefined) gracefully handles non-Timestamp values
+  // (e.g. publishedAt stored as ISO string from YouTube API)
+  publishedAt: TimestampSchema.optional().catch(undefined),
+  createdAt: TimestampSchema.optional().catch(undefined),
+  updatedAt: TimestampSchema.optional().catch(undefined),
 
   // Thumbnail stored in Firebase Storage (works for draft/private videos)
   storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
+
+  // Embedding control flag (Epic 17 — Video Embeddings)
+  hasEmbedding: z.boolean().optional(),
 })

@@ -193,6 +193,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
           </div>
         </AccordionContent>
       </AccordionItem>
+
     </Accordion>
   )
 }

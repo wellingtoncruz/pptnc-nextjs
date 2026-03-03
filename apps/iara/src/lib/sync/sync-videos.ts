@@ -26,6 +26,7 @@ import { log } from '@/lib/logger'
 import { classifyVideoType, getBestThumbnailUrl } from '@/lib/video-utils'
 import { transition } from '@/lib/video-state-machine'
 import { YouTubeClient, type YouTubeVideoDataFromAPI } from '@/lib/youtube'
+import { embedVideos } from '@/lib/embedding/video-embedding'
 import type { VideoCreate, VideoUpdate, VideoStatus, YouTubePrivacyStatus } from '@/types/video'
 
 /** Maximum concurrent thumbnail uploads to avoid overwhelming Firebase Storage */
@@ -229,7 +230,7 @@ function filterLiveBroadcasts(
  * - Public videos → 'sent' (already published, no editing needed)
  * - Non-public videos (private, unlisted) → 'new' (needs processing)
  */
-function getInitialStatusFromVisibility(privacyStatus: 'public' | 'unlisted' | 'private'): 'new' | 'sent' {
+export function getInitialStatusFromVisibility(privacyStatus: 'public' | 'unlisted' | 'private'): 'new' | 'sent' {
   return privacyStatus === 'public' ? 'sent' : 'new'
 }
 
@@ -244,7 +245,7 @@ function getInitialStatusFromVisibility(privacyStatus: 'public' | 'unlisted' | '
  * @param videoType - Classified video type
  * @param storageThumbnailUrl - Optional URL of thumbnail stored in Firebase Storage
  */
-function youtubeToVideoCreate(
+export function youtubeToVideoCreate(
   youtubeVideo: YouTubeVideoDataFromAPI,
   podcastId: string,
   videoType: 'episode' | 'cut' | 'reel',
@@ -268,6 +269,8 @@ function youtubeToVideoCreate(
     visibilityUpdatedAt: Timestamp.now(),
     // Thumbnail stored in Firebase Storage (works for draft/private videos)
     ...(storageThumbnailUrl && { storageThumbnailUrl }),
+    // Embedding flag (Epic 17) — starts as false, set to true after embedding generation
+    hasEmbedding: false,
   }
 }
 
@@ -495,6 +498,28 @@ export async function syncVideos(
       updates: toUpdate,
       deletes: [],
     })
+  }
+
+  // 10. Generate embeddings for new videos (best-effort, Epic 17)
+  if (toCreate.length > 0) {
+    try {
+      const embeddingInputs = toCreate.map(v => ({
+        videoId: v.id,
+        title: v.title,
+        description: v.description,
+      }))
+      const embeddingResult = await embedVideos(podcastId, embeddingInputs)
+      log('INFO', 'Embeddings generated for new videos', {
+        podcastId,
+        succeeded: embeddingResult.succeeded,
+        failed: embeddingResult.failed,
+      })
+    } catch (error) {
+      log('WARN', 'Failed to generate embeddings for new videos', {
+        podcastId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
   }
 
   // Note: Transcriptions are no longer fetched during sync (Story 5.6)

@@ -17,11 +17,12 @@ import { FieldValue } from 'firebase-admin/firestore'
 import type { DocumentData, Query } from 'firebase-admin/firestore'
 import { ZodError } from 'zod'
 
-import { VideoSchema, VideoCreateSchema, VideoUpdateSchema } from '@/lib/schemas/video'
+import { VideoSchema, VideoCreateSchema, VideoUpdateSchema, VideoSummarySchema } from '@/lib/schemas/video'
 import { log } from '@/lib/logger'
 import { needsIaraFields } from '@/lib/video-utils'
 import type { Video, VideoCreate, VideoUpdate, VideoSummary } from '@/types/video'
 
+import { embedVideo } from '@/lib/embedding/video-embedding'
 import { getAdminDb } from './admin'
 
 /**
@@ -446,17 +447,20 @@ export async function updateVideoAdmin(
   const docRef = db.collection('podcasts').doc(podcastId).collection('videos').doc(videoId)
 
   try {
-    // AUTO-DRAFT: If not explicitly setting status, check if we need to transition from 'new' to 'draft'
     let updateData: Record<string, unknown> = { ...validated }
+    const needsEmbeddingRegen = 'title' in validated || 'description' in validated
 
-    if (!('status' in validated)) {
+    // Read current doc if needed (for auto-draft check or embedding regeneration)
+    let currentData: Record<string, unknown> | undefined
+    if (!('status' in validated) || needsEmbeddingRegen) {
       const docSnap = await docRef.get()
-      const currentStatus = docSnap.data()?.status
+      currentData = docSnap.data() as Record<string, unknown> | undefined
+    }
 
-      if (currentStatus === 'new') {
-        updateData.status = 'draft'
-        log('INFO', 'Auto-transitioning video status from new to draft', { podcastId, videoId })
-      }
+    // AUTO-DRAFT: If not explicitly setting status, transition from 'new' to 'draft'
+    if (!('status' in validated) && currentData?.status === 'new') {
+      updateData.status = 'draft'
+      log('INFO', 'Auto-transitioning video status from new to draft', { podcastId, videoId })
     }
 
     await docRef.update({
@@ -465,6 +469,21 @@ export async function updateVideoAdmin(
     })
 
     log('INFO', 'Video updated (admin)', { podcastId, videoId, fields: Object.keys(validated) })
+
+    // Re-embed if title/description changed (best-effort, Epic 17.5)
+    if (needsEmbeddingRegen && currentData) {
+      const title = (validated.title ?? currentData.title ?? '') as string
+      const description = (validated.description ?? currentData.description ?? '') as string
+      try {
+        await embedVideo(podcastId, videoId, title, description)
+      } catch (embedError) {
+        log('WARN', 'Failed to regenerate embedding after update', {
+          podcastId,
+          videoId,
+          error: embedError instanceof Error ? embedError.message : String(embedError),
+        })
+      }
+    }
   } catch (error) {
     log('ERROR', 'Failed to update video (admin)', { podcastId, videoId, error })
     throw error
@@ -599,6 +618,108 @@ export async function batchWriteVideos(
   }
 
   log('INFO', 'Batch write completed', { podcastId, totalOps })
+}
+
+/**
+ * Updates the embedding vector for a video document.
+ *
+ * Uses update() with explicit fields (enforcement rule #4).
+ * Sets summaryVector as Firestore Vector nativo and hasEmbedding flag.
+ *
+ * @param podcastId - The podcast document ID (enforcement rule #8)
+ * @param videoId - The video document ID
+ * @param vector - The embedding vector (768 dimensions)
+ */
+export async function updateVideoEmbedding(
+  podcastId: string,
+  videoId: string,
+  vector: number[]
+): Promise<void> {
+  const db = getAdminDb()
+  const docRef = db.collection('podcasts').doc(podcastId).collection('videos').doc(videoId)
+
+  try {
+    await docRef.update({
+      summaryVector: FieldValue.vector(vector),
+      hasEmbedding: true,
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+
+    log('INFO', 'Video embedding updated', { podcastId, videoId, dimensions: vector.length })
+  } catch (error) {
+    log('ERROR', 'Failed to update video embedding', { podcastId, videoId, error })
+    throw error
+  }
+}
+
+/**
+ * Finds episodes similar to a query vector using Firestore vector search.
+ *
+ * Uses findNearest with COSINE distance on the summaryVector field.
+ * Filters by videoType == 'episode' and hasEmbedding == true.
+ * Requires a composite vector index on the videos collection.
+ *
+ * @param podcastId - The podcast document ID (enforcement rule #8)
+ * @param queryVector - The embedding vector to search against (768 dimensions)
+ * @param limit - Maximum number of results (default: 5)
+ * @returns Array of similar episodes as VideoSummary, ordered by relevance
+ */
+export async function findSimilarEpisodes(
+  podcastId: string,
+  queryVector: number[],
+  limit: number = 5
+): Promise<VideoSummary[]> {
+  const db = getAdminDb()
+  const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
+
+  try {
+    const query = videosRef
+      .where('videoType', '==', 'episode')
+      .where('hasEmbedding', '==', true)
+
+    const vectorQuery = query.findNearest(
+      'summaryVector',
+      FieldValue.vector(queryVector),
+      { limit, distanceMeasure: 'COSINE' }
+    )
+
+    const snapshot = await vectorQuery.get()
+
+    if (snapshot.empty) {
+      log('INFO', 'No similar episodes found', { podcastId, queryVectorLength: queryVector.length })
+      return []
+    }
+
+    const episodes: VideoSummary[] = []
+
+    for (const docSnap of snapshot.docs) {
+      const rawData = docSnap.data()
+      const parsed = VideoSummarySchema.safeParse({
+        ...rawData,
+        id: docSnap.id,
+        title: rawData.title ?? 'Sem título',
+      })
+      if (parsed.success) {
+        episodes.push(parsed.data)
+      } else {
+        log('WARN', 'Skipping invalid video in similarity results', {
+          videoId: docSnap.id,
+          errors: parsed.error.issues,
+        })
+      }
+    }
+
+    log('INFO', 'Similar episodes found', {
+      podcastId,
+      queryVectorLength: queryVector.length,
+      resultsCount: episodes.length,
+    })
+
+    return episodes
+  } catch (error) {
+    log('ERROR', 'Failed to find similar episodes', { podcastId, error })
+    throw error
+  }
 }
 
 /**

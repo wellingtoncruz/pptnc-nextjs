@@ -183,9 +183,13 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
   //
   // The HYDRATE_FROM_VIDEO_DATA action is idempotent - if no changes are needed,
   // it returns the same state, so calling it multiple times is safe.
+  //
+  // isRehydration: true ensures currentPhase is preserved during re-hydration.
+  // Only the initial hydration (in initializeWizardState) navigates to firstIncompletePhase.
+  // This prevents the wizard from jumping phases when video status changes trigger re-fetch.
   useEffect(() => {
     if (!videoData) return
-    dispatch({ type: 'HYDRATE_FROM_VIDEO_DATA', videoData })
+    dispatch({ type: 'HYDRATE_FROM_VIDEO_DATA', videoData, isRehydration: true })
   }, [videoData])
 
   // Navigation

@@ -121,7 +121,7 @@ describe('NewsPanel', () => {
     })
   })
 
-  it('shows news detail when list item is clicked', async () => {
+  it('shows news workspace when list item is clicked', async () => {
     mockFetchSuccess()
 
     render(<NewsPanel />)
@@ -130,13 +130,18 @@ describe('NewsPanel', () => {
       expect(screen.getByText('Notícia Alpha')).toBeInTheDocument()
     })
 
+    // After click, NewsWorkspace mounts and fetches /api/news/news-1
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ data: mockNewsItems[0] }),
+    } as never)
+
     fireEvent.click(screen.getByText('Notícia Alpha'))
 
-    // descricao appears in both list item and detail panel, so use getAllByText
-    const descricaoElements = screen.getAllByText('Descrição da notícia alpha')
-    expect(descricaoElements.length).toBeGreaterThanOrEqual(2)
-    expect(screen.getByText('Resumo completo alpha')).toBeInTheDocument()
-    expect(screen.getByText('Comentários alpha')).toBeInTheDocument()
+    // NewsWorkspace shows loading, then the workspace with news title
+    await waitFor(() => {
+      expect(screen.getByTestId('news-workspace')).toBeInTheDocument()
+    })
   })
 
   describe('Pagination', () => {

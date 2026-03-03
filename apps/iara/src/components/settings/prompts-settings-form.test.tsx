@@ -394,6 +394,15 @@ describe('PromptsSettingsForm', () => {
     expect(screen.queryByText('Newsletter')).not.toBeInTheDocument()
   })
 
+  it('does NOT render news prompts section (moved to SettingsPageClient)', () => {
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    expect(screen.queryByText('Prompts por Recursos')).not.toBeInTheDocument()
+    expect(screen.queryByText('Prompts por Recurso')).not.toBeInTheDocument()
+  })
+
   it('calls onSavePromptField with newsletter.draft fieldName', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 

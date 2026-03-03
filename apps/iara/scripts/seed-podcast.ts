@@ -84,6 +84,9 @@ const DEFAULT_PROMPTS = {
     tags: { ...DEFAULT_PROMPT_FIELD },
     social: {},
   },
+  news: {
+    news_social: { ...DEFAULT_PROMPT_FIELD },
+  },
 }
 
 const DEFAULT_PERSONA = { role: '', objective: '', resume: '' }

@@ -71,11 +71,17 @@ vi.mock('@/lib/video-utils', () => ({
   classifyVideoType: vi.fn(),
 }))
 
+// Mock embedding service (Epic 17)
+vi.mock('@/lib/embedding/video-embedding', () => ({
+  embedVideos: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
+}))
+
 import { getAllVideosRaw, batchWriteVideos, getExistingVideoIds } from '@/lib/firebase/videos-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { classifyVideoType } from '@/lib/video-utils'
+import { embedVideos } from '@/lib/embedding/video-embedding'
 
-import { syncVideos } from './sync-videos'
+import { syncVideos, youtubeToVideoCreate, getInitialStatusFromVisibility } from './sync-videos'
 
 /**
  * Helper to create thumbnails object from video ID.
@@ -91,6 +97,27 @@ const mockBatchWriteVideos = vi.mocked(batchWriteVideos)
 const mockGetExistingVideoIds = vi.mocked(getExistingVideoIds)
 const mockGetPodcastAdmin = vi.mocked(getPodcastAdmin)
 const mockClassifyVideoType = vi.mocked(classifyVideoType)
+const mockEmbedVideos = vi.mocked(embedVideos)
+
+describe('getInitialStatusFromVisibility', () => {
+  it('returns sent for public videos', () => {
+    expect(getInitialStatusFromVisibility('public')).toBe('sent')
+  })
+
+  it('returns new for private videos', () => {
+    expect(getInitialStatusFromVisibility('private')).toBe('new')
+  })
+
+  it('returns new for unlisted videos', () => {
+    expect(getInitialStatusFromVisibility('unlisted')).toBe('new')
+  })
+})
+
+describe('youtubeToVideoCreate', () => {
+  it('is importable from sync-videos', () => {
+    expect(typeof youtubeToVideoCreate).toBe('function')
+  })
+})
 
 describe('sync-videos.ts - Video import (create only)', () => {
   const mockTimestamp = { toDate: () => new Date('2024-01-15') }
@@ -182,7 +209,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
         'pptnc',
         expect.objectContaining({
           creates: expect.arrayContaining([
-            expect.objectContaining({ id: 'new-video-1', status: 'sent' }),
+            expect.objectContaining({ id: 'new-video-1', status: 'sent', hasEmbedding: false }),
           ]),
           updates: [],
           deletes: [],
@@ -329,7 +356,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
         'pptnc',
         expect.objectContaining({
           creates: expect.arrayContaining([
-            expect.objectContaining({ videoType: 'cut' }),
+            expect.objectContaining({ videoType: 'cut', hasEmbedding: false }),
           ]),
         })
       )
@@ -363,7 +390,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
         'pptnc',
         expect.objectContaining({
           creates: expect.arrayContaining([
-            expect.objectContaining({ status: 'new' }),
+            expect.objectContaining({ status: 'new', hasEmbedding: false }),
           ]),
         })
       )
@@ -397,7 +424,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
         'pptnc',
         expect.objectContaining({
           creates: expect.arrayContaining([
-            expect.objectContaining({ status: 'sent' }),
+            expect.objectContaining({ status: 'sent', hasEmbedding: false }),
           ]),
         })
       )
@@ -978,6 +1005,79 @@ describe('sync-videos.ts - Video import (create only)', () => {
         const createCall = mockBatchWriteVideos.mock.calls[0][1]
         expect(createCall.creates[0].id).toBe('slow-video')
         expect(createCall.creates[1].id).toBe('fast-video')
+      })
+    })
+
+    describe('Embedding Integration (Epic 17)', () => {
+      it('calls embedVideos after creating new videos', async () => {
+        const youtubeVideos = [
+          {
+            id: 'new-video-1',
+            title: 'New Video 1',
+            description: 'Description 1',
+            thumbnails: makeThumbnails('new-video-1'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        mockListPlaylistItems.mockResolvedValue({ videoIds: ['new-video-1'], nextPageToken: undefined })
+        mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+        mockEmbedVideos.mockResolvedValue({ succeeded: 1, failed: 0 })
+
+        await syncVideos('pptnc', 'access-token')
+
+        expect(mockEmbedVideos).toHaveBeenCalledWith(
+          'pptnc',
+          expect.arrayContaining([
+            expect.objectContaining({
+              videoId: 'new-video-1',
+              title: 'New Video 1',
+              description: 'Description 1',
+            }),
+          ])
+        )
+      })
+
+      it('does not fail sync if embedVideos throws', async () => {
+        const youtubeVideos = [
+          {
+            id: 'new-video-1',
+            title: 'New Video 1',
+            description: 'Description 1',
+            thumbnails: makeThumbnails('new-video-1'),
+            duration: 3600,
+            publishedAt: '2024-01-15T00:00:00Z',
+            privacyStatus: 'private' as const,
+            liveBroadcastContent: 'none' as const,
+          },
+        ]
+
+        mockListPlaylistItems.mockResolvedValue({ videoIds: ['new-video-1'], nextPageToken: undefined })
+        mockGetVideoDetailsBatch.mockResolvedValue(youtubeVideos)
+        mockGetAllVideosRaw.mockResolvedValue([])
+        mockBatchWriteVideos.mockResolvedValue(undefined)
+        mockEmbedVideos.mockRejectedValue(new Error('Vertex AI error'))
+
+        // Should NOT throw
+        const result = await syncVideos('pptnc', 'access-token')
+
+        // Sync should complete successfully
+        expect(result.added).toBe(1)
+        expect(mockEmbedVideos).toHaveBeenCalled()
+      })
+
+      it('does not call embedVideos when no new videos', async () => {
+        mockListPlaylistItems.mockResolvedValue({ videoIds: [], nextPageToken: undefined })
+        mockGetAllVideosRaw.mockResolvedValue([])
+
+        await syncVideos('pptnc', 'access-token')
+
+        expect(mockEmbedVideos).not.toHaveBeenCalled()
       })
     })
   })

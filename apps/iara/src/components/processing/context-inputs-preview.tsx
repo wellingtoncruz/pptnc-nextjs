@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { Guest } from '@/types/video'
+/** Minimal guest fields for display (compatible with both Guest and GuestDisplay) */
+interface DisplayGuest {
+  name: string
+  role: string
+  company?: string
+  linkedin?: string
+  photo?: string
+}
 
 /**
  * Flat context data structure.
@@ -11,7 +18,7 @@ import type { Guest } from '@/types/video'
  */
 interface ContextData {
   theme?: string
-  guests?: Guest[]
+  guests?: DisplayGuest[]
 }
 
 interface ContextInputsPreviewProps {
@@ -22,7 +29,7 @@ interface ContextInputsPreviewProps {
   /** Pre-loaded theme (optional) */
   preloadedTheme?: string
   /** Pre-loaded guests (optional) */
-  preloadedGuests?: Guest[]
+  preloadedGuests?: DisplayGuest[]
 }
 
 /**

@@ -371,6 +371,21 @@ describe('VideoCreateSchema', () => {
       expect(result.youtubePrivacyStatus).toBe(privacyStatus)
     }
   })
+
+  it('defaults hasEmbedding to false when not provided', () => {
+    const result = VideoCreateSchema.parse(validVideoCreate)
+    expect(result.hasEmbedding).toBe(false)
+  })
+
+  it('accepts hasEmbedding true', () => {
+    const result = VideoCreateSchema.parse({ ...validVideoCreate, hasEmbedding: true })
+    expect(result.hasEmbedding).toBe(true)
+  })
+
+  it('accepts hasEmbedding false explicitly', () => {
+    const result = VideoCreateSchema.parse({ ...validVideoCreate, hasEmbedding: false })
+    expect(result.hasEmbedding).toBe(false)
+  })
 })
 
 describe('VideoUpdateSchema', () => {
@@ -482,6 +497,52 @@ describe('VideoSummarySchema', () => {
   it('rejects summary with missing required fields', () => {
     const { title: _title, ...withoutTitle } = validSummary
     expect(() => VideoSummarySchema.parse(withoutTitle)).toThrow()
+  })
+
+  it('accepts hasEmbedding as optional', () => {
+    const result = VideoSummarySchema.parse(validSummary)
+    expect(result.hasEmbedding).toBeUndefined()
+  })
+
+  it('accepts hasEmbedding true in summary', () => {
+    const result = VideoSummarySchema.parse({ ...validSummary, hasEmbedding: true })
+    expect(result.hasEmbedding).toBe(true)
+  })
+
+  it('does not include summaryVector in schema', () => {
+    const withVector = { ...validSummary, summaryVector: [0.1, 0.2, 0.3] }
+    const result = VideoSummarySchema.parse(withVector)
+    expect(result).not.toHaveProperty('summaryVector')
+  })
+
+  it('gracefully handles non-Timestamp publishedAt (ISO string from YouTube)', () => {
+    const withStringDate = { ...validSummary, publishedAt: '2024-01-15T10:00:00Z' }
+    const result = VideoSummarySchema.parse(withStringDate)
+    // Invalid Timestamp gracefully falls back to undefined via .catch(undefined)
+    expect(result.publishedAt).toBeUndefined()
+  })
+
+  it('accepts valid Firestore Timestamp for publishedAt', () => {
+    const withTimestamp = { ...validSummary, publishedAt: { toDate: () => new Date(), toMillis: () => 0, seconds: 0, nanoseconds: 0 } }
+    const result = VideoSummarySchema.parse(withTimestamp)
+    expect(result.publishedAt).toBeDefined()
+  })
+
+  it('accepts guests with null/missing role and linkedin (production data)', () => {
+    const withLenientGuests = {
+      ...validSummary,
+      guests: [
+        { name: 'Guest 1', role: null, linkedin: undefined },
+        { name: 'Guest 2', role: 'CTO', company: null, linkedin: 'https://linkedin.com/in/guest2' },
+      ],
+    }
+    const result = VideoSummarySchema.parse(withLenientGuests)
+    expect(result.guests).toHaveLength(2)
+    expect(result.guests![0].name).toBe('Guest 1')
+    expect(result.guests![0].role).toBe('')
+    expect(result.guests![0].linkedin).toBeUndefined()
+    expect(result.guests![1].company).toBeUndefined()
+    expect(result.guests![1].linkedin).toBe('https://linkedin.com/in/guest2')
   })
 })
 

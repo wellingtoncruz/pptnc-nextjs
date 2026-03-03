@@ -45,8 +45,9 @@ const emptyGuest: Guest = {
 
 /**
  * Checks if a guest object has any meaningful data filled in.
+ * Accepts both strict Guest and lenient GuestDisplay types.
  */
-function hasGuestData(guest: Guest | undefined): boolean {
+function hasGuestData(guest: Partial<Guest> | undefined): boolean {
   if (!guest) return false
   return Boolean(guest.name || guest.role || guest.company || guest.linkedin)
 }

@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NewsListItem } from './news-list-item'
-import { NewsDetail } from './news-detail'
+import { NewsWorkspace } from './news-workspace'
 import type { News } from '@/types/news'
 
 const PAGE_SIZE = 15
@@ -164,9 +164,15 @@ export function NewsPanel() {
           )}
         </div>
 
-        {/* Right panel: News detail */}
-        <div className="w-1/2 overflow-y-auto custom-scrollbar">
-          <NewsDetail news={selectedNews} />
+        {/* Right panel: News workspace */}
+        <div className="w-1/2 overflow-hidden">
+          {selectedNews ? (
+            <NewsWorkspace newsId={selectedNews.id} />
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              <p>Selecione uma notícia para ver os detalhes</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
