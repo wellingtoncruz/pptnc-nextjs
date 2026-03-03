@@ -1307,6 +1307,75 @@ describe('wizardReducer', () => {
         expect(newState.currentPhase).toBe(5)
       })
     })
+
+    describe('phase 5 completion checks suggestedTitles only', () => {
+      it('does not mark phase 5 as complete from YouTube provisional title alone', () => {
+        // Videos are imported with a YouTube title, but phase 5 should only
+        // be considered complete when LLM has generated suggestedTitles
+        const state = createInitialWizardState('video-123')
+
+        const videoData: VideoDataForSync = {
+          critique: 'Good video',
+          editingIssues: [],
+          riskAndCompliance: [],
+          chapters: ['Ch 1'],
+          reviewedPhases: [2, 3],
+          // No suggestedTitles — video has YouTube title but phase 5 not processed
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // Phase 5 must remain pending (no suggestedTitles from LLM)
+        expect(newState.phases[5].status).toBe('pending')
+      })
+
+      it('preserves phase 5 completed during re-hydration when suggestedTitles exist', () => {
+        // Simulates: phase 5 completed (suggestedTitles generated), user advances to 5B,
+        // re-hydration triggers — phase 5 should stay completed
+        const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+        state.phases[5].status = 'completed'
+        state.currentPhase = '5B' as unknown as typeof state.currentPhase
+
+        const videoData: VideoDataForSync = {
+          videoType: 'cut',
+          parentEpisodeId: 'parent-id',
+          suggestedTitles: ['Title 1', 'Title 2'],
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+          isRehydration: true,
+        })
+
+        // Phase 5 must remain completed
+        expect(newState.phases[5].status).toBe('completed')
+        // currentPhase must stay at 5B (re-hydration preserves it)
+        expect(newState.currentPhase as unknown as string).toBe('5B')
+      })
+
+      it('resets phase 5 when suggestedTitles are absent', () => {
+        const state = createInitialWizardState('video-123')
+        state.phases[5].status = 'completed'
+        state.currentPhase = 6
+
+        const videoData: VideoDataForSync = {
+          critique: 'Good video',
+          // No suggestedTitles
+        }
+
+        const newState = wizardReducer(state, {
+          type: 'HYDRATE_FROM_VIDEO_DATA',
+          videoData,
+        })
+
+        // Phase 5 should be reset (no suggestedTitles)
+        expect(newState.phases[5].status).toBe('pending')
+      })
+    })
   })
 })
 

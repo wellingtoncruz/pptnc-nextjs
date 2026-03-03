@@ -151,7 +151,7 @@ export interface VideoDataForSync {
   editingIssues?: unknown[]
   riskAndCompliance?: unknown[]
   chapters?: unknown[]
-  suggestedTitles?: string[] // Phase 5 uses LLM suggestions, not user-selected title
+  suggestedTitles?: string[] // Phase 5 LLM-generated suggestions (not YouTube provisional title)
   suggestedShortTitles?: string[] // Phase 5B uses LLM suggestions for short titles (cut only)
   shortTitle?: string // Selected short title (cut only)
   description?: string

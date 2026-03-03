@@ -1431,7 +1431,6 @@ export function WizardOrchestrator({
     setShortTitlesError(null)
 
     const spinnerId = wizard.addSpinner(5, 'Gerando sugestoes de titulo curto para thumbnail...')
-    wizard.setPhaseLoading(5)
 
     try {
       const response = await fetch(`/api/wizard/phase/5b`, {
@@ -1453,7 +1452,7 @@ export function WizardOrchestrator({
       const phase5BData = result.data as Phase5BResponse
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(5, 'pending')
+      wizard.setPhaseStatus(5, 'completed')
       wizard.addAlert(
         5,
         'Titulos Curtos',
@@ -1469,7 +1468,7 @@ export function WizardOrchestrator({
     } catch (error) {
       wizard.removeSpinner(spinnerId)
       const message = error instanceof Error ? error.message : 'Erro ao gerar titulos curtos'
-      wizard.setPhaseError(5, message)
+      wizard.setPhaseStatus(5, 'completed')
       wizard.addAlert(5, 'Erro', message, 'error')
       setShortTitlesError(message)
       log('ERROR', 'Phase 5B short titles failed', { videoId: video.id, error: message })

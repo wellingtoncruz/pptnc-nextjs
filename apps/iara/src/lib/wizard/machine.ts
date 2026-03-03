@@ -49,7 +49,7 @@ function phaseHasDataInVideo(video: VideoDataForSync, phase: WizardPhase): boole
       // chapters: must have actual content
       return Array.isArray(video.chapters) && video.chapters.length > 0
     case 5:
-      // suggestedTitles: LLM-generated suggestions (not user-selected title)
+      // Phase 5 checks suggestedTitles (LLM output), NOT title (YouTube provisional title)
       return Array.isArray(video.suggestedTitles) && video.suggestedTitles.length > 0
     case 6:
       return typeof video.description === 'string' && video.description.trim().length > 0
