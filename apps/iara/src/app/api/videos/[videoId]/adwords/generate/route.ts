@@ -126,7 +126,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
           userPrompt,
           60000,
           attachmentPath,
-          debugContext
+          debugContext,
+          podcast?.llmConfig?.textModel
         )
       )
 

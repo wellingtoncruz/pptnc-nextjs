@@ -202,6 +202,7 @@ describe('POST /api/wizard/phase/5b', () => {
         expect.stringContaining('Contexto do Corte'),
         120000,
         '/tmp/test-transcription.txt',
+        undefined,
         undefined
       )
     })
@@ -220,6 +221,7 @@ describe('POST /api/wizard/phase/5b', () => {
         expect.any(String),
         expect.any(Number),
         expect.any(String),
+        undefined,
         undefined
       )
     })
@@ -253,6 +255,7 @@ describe('POST /api/wizard/phase/5b', () => {
         expect.any(String),
         expect.any(Number),
         expect.any(String),
+        undefined,
         undefined
       )
     })

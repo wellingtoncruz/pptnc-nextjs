@@ -223,6 +223,48 @@ describe('callGenAIImage', () => {
     expect(saveLlmLog).not.toHaveBeenCalled()
   })
 
+  it('uses modelOverride when provided', async () => {
+    const imageData = Buffer.from('test-image')
+    mockGenerateContent.mockResolvedValue({
+      candidates: [{
+        content: {
+          parts: [{
+            inlineData: { data: imageData.toString('base64'), mimeType: 'image/png' },
+          }],
+        },
+      }],
+    })
+
+    await callGenAIImage('Generate image', undefined, 'gemini-2.0-flash-image')
+
+    expect(mockGenerateContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'gemini-2.0-flash-image',
+      })
+    )
+  })
+
+  it('uses default IMAGE_MODEL when modelOverride is undefined', async () => {
+    const imageData = Buffer.from('test-image')
+    mockGenerateContent.mockResolvedValue({
+      candidates: [{
+        content: {
+          parts: [{
+            inlineData: { data: imageData.toString('base64'), mimeType: 'image/png' },
+          }],
+        },
+      }],
+    })
+
+    await callGenAIImage('Generate image')
+
+    expect(mockGenerateContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: IMAGE_MODEL,
+      })
+    )
+  })
+
   it('does not fail when saveLlmLog throws', async () => {
     const { saveLlmLog } = await import('@/lib/firebase/llm-log-admin')
     const { log } = await import('@/lib/logger')

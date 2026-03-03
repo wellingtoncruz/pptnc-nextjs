@@ -224,6 +224,7 @@ describe('POST /api/videos/[videoId]/social-posts/[networkId]/generate', () => {
       expect.any(String),
       60000,
       undefined,
+      undefined,
       undefined
     )
 
@@ -263,6 +264,7 @@ describe('POST /api/videos/[videoId]/social-posts/[networkId]/generate', () => {
       expect.any(String),
       60000,
       '/tmp/mock-transcription.txt',
+      undefined,
       undefined
     )
   })
@@ -381,6 +383,7 @@ describe('POST /api/videos/[videoId]/social-posts/[networkId]/generate', () => {
       expect.any(String),
       60000,
       '/tmp/mock-transcription.txt',
+      undefined,
       undefined
     )
   })

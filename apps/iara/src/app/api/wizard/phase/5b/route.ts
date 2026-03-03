@@ -193,7 +193,8 @@ ${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') ||
         userPrompt,
         120000,
         transcriptionFilePath,
-        debugContext
+        debugContext,
+        podcast?.llmConfig?.textModel
       )
 
       // Validate response structure

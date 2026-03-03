@@ -299,6 +299,7 @@ describe('POST /api/videos/[videoId]/adwords/generate', () => {
       expect.stringContaining('Episódio sobre IA'),
       60000,
       '/tmp/iara-transcription-adwords-123.txt',
+      undefined,
       undefined
     )
   })
@@ -370,6 +371,7 @@ describe('POST /api/videos/[videoId]/adwords/generate', () => {
       expect.any(String),
       60000,
       expect.any(String),
+      undefined,
       undefined
     )
   })

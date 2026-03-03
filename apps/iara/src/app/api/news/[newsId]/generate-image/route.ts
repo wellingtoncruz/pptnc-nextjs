@@ -57,6 +57,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   let additionalContext: string | undefined
   let promptText: string
   let previousImageUrl: string | undefined
+  let imageModelOverride: string | undefined
 
   try {
     // Parse optional body
@@ -102,6 +103,9 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
       additionalContext
     )
 
+    // Extract LLM model config
+    imageModelOverride = podcast.llmConfig?.imageModel
+
     // Remember previous image for cleanup
     previousImageUrl = news.imageUrl
   } catch (error) {
@@ -128,7 +132,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
         send('progress', { step: 'generating_image' })
 
         const { imageBuffer } = await llmQueue.enqueue(() =>
-          callGenAIImage(promptText)
+          callGenAIImage(promptText, undefined, imageModelOverride)
         )
 
         // === Upload to Cloud Storage ===

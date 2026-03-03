@@ -117,7 +117,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           userPrompt,
           60000,
           attachmentPath,
-          debugContext
+          debugContext,
+          podcast?.llmConfig?.textModel
         )
       )
 

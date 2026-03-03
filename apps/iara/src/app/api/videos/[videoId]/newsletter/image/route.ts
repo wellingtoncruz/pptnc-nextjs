@@ -137,6 +137,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   let persona: Persona | undefined
   let debugContextPrompt: { component: string; videoId: string; videoType: 'episode' | 'cut' | 'reel'; podcastId: string } | undefined
   let debugContextImage: typeof debugContextPrompt
+  let textModelOverride: string | undefined
+  let imageModelOverride: string | undefined
 
   try {
     // Parse optional body
@@ -201,6 +203,10 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     debugContextImage = podcast?.features?.llmDebugMode
       ? { component: 'newsletter/image-generate', videoId, videoType: (video.videoType || 'episode') as 'episode' | 'cut' | 'reel', podcastId: PODCAST_ID }
       : undefined
+
+    // Extract LLM model config for override
+    textModelOverride = podcast?.llmConfig?.textModel
+    imageModelOverride = podcast?.llmConfig?.imageModel
   } catch (error) {
     log('ERROR', 'Newsletter image validation failed', {
       videoId,
@@ -232,7 +238,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
           const userPrompt = buildNewsletterImageUserPrompt(newsletterData.draft!, newsletterData.news)
 
           const { data: promptData } = await llmQueue.enqueue(() =>
-            callGenAI<{ imagePrompt: string }>(systemPrompt, userPrompt, 60000, undefined, debugContextPrompt)
+            callGenAI<{ imagePrompt: string }>(systemPrompt, userPrompt, 60000, undefined, debugContextPrompt, textModelOverride)
           )
 
           const validatedPrompt = NewsletterImageLLMResponseSchema.parse(promptData)
@@ -245,7 +251,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
         send('progress', { step: 'generating_image' })
 
         const { imageBuffer } = await llmQueue.enqueue(() =>
-          callGenAIImage(imagePromptText!, debugContextImage)
+          callGenAIImage(imagePromptText!, debugContextImage, imageModelOverride)
         )
 
         // === Upload to Cloud Storage ===

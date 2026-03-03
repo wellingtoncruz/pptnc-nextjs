@@ -323,11 +323,12 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
 
     await POST(createRequest({ formatPrompt: 'test' }), createContext('video-1'))
 
-    // callGenAI: (systemPrompt, userPrompt, timeout, attachmentPath, debugContext)
+    // callGenAI: (systemPrompt, userPrompt, timeout, attachmentPath, debugContext, modelOverride)
     expect(mockCallGenAI).toHaveBeenCalledWith(
       expect.any(String),
       expect.any(String),
       60000,
+      undefined,
       undefined,
       undefined
     )
@@ -418,7 +419,8 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
       expect.any(String),
       60000,
       undefined,
-      expect.objectContaining({ component: 'newsletter/format' })
+      expect.objectContaining({ component: 'newsletter/format' }),
+      undefined
     )
   })
 
@@ -436,6 +438,7 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
       expect.any(String),
       expect.any(String),
       60000,
+      undefined,
       undefined,
       undefined
     )

@@ -223,7 +223,9 @@ describe('POST /api/news/[newsId]/generate-image', () => {
 
     // Verify callGenAIImage was called with prompt containing news fields
     expect(mockCallGenAIImage).toHaveBeenCalledWith(
-      expect.stringContaining('IA revoluciona mercado')
+      expect.stringContaining('IA revoluciona mercado'),
+      undefined,
+      undefined
     )
     expect(mockUploadNewsImage).toHaveBeenCalledWith('news-1', validImageResponse.imageBuffer)
     expect(mockUpdateNewsImageFields).toHaveBeenCalledWith(
@@ -278,7 +280,9 @@ describe('POST /api/news/[newsId]/generate-image', () => {
     await readSSEEvents(response)
 
     expect(mockCallGenAIImage).toHaveBeenCalledWith(
-      expect.stringContaining('Use tons de azul')
+      expect.stringContaining('Use tons de azul'),
+      undefined,
+      undefined
     )
   })
 

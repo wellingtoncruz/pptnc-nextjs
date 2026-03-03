@@ -34,13 +34,15 @@ export const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-i
  */
 export async function callGenAIImage(
   prompt: string,
-  debugContext?: DebugContext
+  debugContext?: DebugContext,
+  modelOverride?: string
 ): Promise<{ imageBuffer: Buffer; mimeType: string }> {
   const ai = getAI()
+  const modelName = modelOverride || IMAGE_MODEL
 
   try {
     const response = await ai.models.generateContent({
-      model: IMAGE_MODEL,
+      model: modelName,
       contents: prompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
@@ -59,7 +61,7 @@ export async function callGenAIImage(
         }
 
         log('INFO', 'Image generated via Gemini', {
-          model: IMAGE_MODEL,
+          model: modelName,
           bufferSize: buffer.length,
         })
 
@@ -69,7 +71,7 @@ export async function callGenAIImage(
             const { saveLlmLog } = await import('@/lib/firebase/llm-log-admin')
             await saveLlmLog(debugContext.podcastId, {
               component: debugContext.component,
-              model: IMAGE_MODEL,
+              model: modelName,
               videoId: debugContext.videoId,
               videoType: debugContext.videoType,
               prompt: { system: '', user: prompt },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { PromptsSchema } from './podcast'
+import { LlmConfigSchema, PromptsSchema } from './podcast'
 
 describe('PromptsSchema — news group (Epic 18)', () => {
   const basePromptField = { description: 'desc', expectedOutput: 'output' }
@@ -95,5 +95,41 @@ describe('PromptsSchema — news group (Epic 18)', () => {
       expect(result.data.news?.news_social?.description).toBe('Social desc')
       expect(result.data.news?.news_image?.description).toBe('Image desc')
     }
+  })
+})
+
+// Story 18.11 — LlmConfigSchema
+describe('LlmConfigSchema (Story 18.11)', () => {
+  it('accepts valid textModel from allowlist', () => {
+    const result = LlmConfigSchema.safeParse({ textModel: 'gemini-2.5-flash' })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts valid imageModel from allowlist', () => {
+    const result = LlmConfigSchema.safeParse({ imageModel: 'gemini-2.5-flash-image' })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts both textModel and imageModel together', () => {
+    const result = LlmConfigSchema.safeParse({
+      textModel: 'gemini-2.0-flash',
+      imageModel: 'gemini-2.5-flash-image',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts empty object (all defaults)', () => {
+    const result = LlmConfigSchema.safeParse({})
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects invalid textModel not in allowlist', () => {
+    const result = LlmConfigSchema.safeParse({ textModel: 'gpt-4' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects invalid imageModel not in allowlist', () => {
+    const result = LlmConfigSchema.safeParse({ imageModel: 'dall-e-3' })
+    expect(result.success).toBe(false)
   })
 })

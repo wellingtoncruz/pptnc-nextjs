@@ -270,6 +270,7 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
     expect(mockCallGenAI).toHaveBeenCalledTimes(1)
     expect(mockCallGenAIImage).toHaveBeenCalledWith(
       'A futuristic podcast studio with blue lighting and microphones',
+      undefined,
       undefined
     )
     expect(mockUploadNewsletterImage).toHaveBeenCalledWith('video-1', validImageResponse.imageBuffer)
@@ -410,6 +411,7 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
       expect.any(String),
       60000,
       undefined,
+      undefined,
       undefined
     )
   })
@@ -435,7 +437,7 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
     // Call 1 should NOT be called
     expect(mockCallGenAI).not.toHaveBeenCalled()
     // Call 2 should use the edited prompt
-    expect(mockCallGenAIImage).toHaveBeenCalledWith('My custom image prompt', undefined)
+    expect(mockCallGenAIImage).toHaveBeenCalledWith('My custom image prompt', undefined, undefined)
 
     const complete = events.find(e => e.event === 'complete')
     expect(complete).toBeDefined()
@@ -485,12 +487,14 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
       expect.any(String),
       60000,
       undefined,
-      expect.objectContaining({ component: 'newsletter/image-prompt' })
+      expect.objectContaining({ component: 'newsletter/image-prompt' }),
+      undefined
     )
     // Call 2 (image): newsletter/image-generate
     expect(mockCallGenAIImage).toHaveBeenCalledWith(
       expect.any(String),
-      expect.objectContaining({ component: 'newsletter/image-generate' })
+      expect.objectContaining({ component: 'newsletter/image-generate' }),
+      undefined
     )
   })
 
@@ -510,10 +514,12 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
       expect.any(String),
       60000,
       undefined,
+      undefined,
       undefined
     )
     expect(mockCallGenAIImage).toHaveBeenCalledWith(
       expect.any(String),
+      undefined,
       undefined
     )
   })

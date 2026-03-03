@@ -332,6 +332,7 @@ describe('POST /api/videos/[videoId]/newsletter/news', () => {
       expect.any(Number),
       undefined,
       undefined,
+      undefined,
     )
   })
 
@@ -356,7 +357,8 @@ describe('POST /api/videos/[videoId]/newsletter/news', () => {
       expect.any(String),
       expect.any(Number),
       undefined,
-      expect.objectContaining({ component: 'newsletter/news' })
+      expect.objectContaining({ component: 'newsletter/news' }),
+      undefined
     )
   })
 
@@ -377,6 +379,7 @@ describe('POST /api/videos/[videoId]/newsletter/news', () => {
       expect.any(String),
       expect.any(String),
       expect.any(Number),
+      undefined,
       undefined,
       undefined
     )

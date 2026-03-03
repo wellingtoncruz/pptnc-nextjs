@@ -4,6 +4,7 @@ import type {
   PodcastSchema,
   PodcastCreateSchema,
   PodcastUpdateSchema,
+  LlmConfigSchema,
   PromptsSchema,
   PromptFieldSchema,
   EpisodePromptsSchema,
@@ -31,6 +32,11 @@ export type PodcastCreate = z.infer<typeof PodcastCreateSchema>
  * Input for updating podcast fields.
  */
 export type PodcastUpdate = z.infer<typeof PodcastUpdateSchema>
+
+/**
+ * LLM model configuration (text and image model overrides).
+ */
+export type LlmConfig = z.infer<typeof LlmConfigSchema>
 
 /**
  * All prompts organized by video type.

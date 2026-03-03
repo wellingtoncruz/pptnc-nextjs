@@ -196,8 +196,8 @@
 <tr><th>project_name</th><td>IAra</td></tr>
 <tr><th>date</th><td>2026-01-28</td></tr>
 <tr><th>author</th><td>Wellington</td></tr>
-<tr><th>last_updated</th><td>2026-01-28</td></tr>
-<tr><th>update_notes</th><td>Correct Course: Atualização completa do Epic 4 com critérios de avanço, persistência e mapeamento LLM conforme processamento_video.md</td></tr></table></div>
+<tr><th>last_updated</th><td>2026-02-27</td></tr>
+<tr><th>update_notes</th><td>Epic 16 Newsletter - Workflow completo (Steps 1-4). 12 stories em 6 blocos. FRs: FR10-FR18, NFRs: NFR9-NFR11. Validado e aprovado.</td></tr></table></div>
 <h1>IAra - Epic Breakdown</h1>
 <h2>Overview</h2>
 <p>Este documento fornece o breakdown completo de epics e stories para o <strong>IAra</strong>, decompondo os requisitos do PRD, UX Design e Architecture em stories implementáveis.</p>
@@ -266,6 +266,60 @@
 <td>Collection <code>podcasts</code> no Firestore com configurações por podcast (nome, channelId, prompts, videoTypes)</td>
 <td>Média</td>
 </tr>
+<tr>
+<td>FR10</td>
+<td>Melhoria News UI</td>
+<td>Reformular visualização da aba Notícias para formato lista estilo Gmail (título negrito, descrição, fonte, data)</td>
+<td>Baixa</td>
+</tr>
+<tr>
+<td>FR11</td>
+<td>Feature Toggle Newsletter</td>
+<td>Toggle &quot;Newsletter&quot; em Configurações → Recursos. Aba no sidebar entre Tráfego Pago e Redes Sociais</td>
+<td>Baixa</td>
+</tr>
+<tr>
+<td>FR12</td>
+<td>Prompts Newsletter</td>
+<td>Novo grupo <code>prompts.newsletter</code> com 4 seções: <code>draft</code>, <code>news</code>, <code>image</code>, <code>format</code> (cada com <code>description</code> + <code>expectedOutput</code>)</td>
+<td>Média</td>
+</tr>
+<tr>
+<td>FR13</td>
+<td>Newsletter Draft (Fase 1)</td>
+<td>Geração do corpo via LLM com persona writer + transcrição como attachment. Editor markdown split-view 50/50 com preview HTML. Regenerável com additionalContext</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>FR14</td>
+<td>Seleção de Notícias (Fase 2)</td>
+<td>Query notícias D-2, LLM seleciona 10 mais aderentes (skip LLM se &lt; 10), produtor escolhe 3-5 via checkbox, persistência em <code>newsletter.news[]</code></td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>FR15</td>
+<td>Geração de Imagem (Fase 3)</td>
+<td>LLM gera prompt de imagem → Gemini 3.1 Flash gera imagem 1280x720 → upload Cloud Storage → URL no Firestore. Fase obrigatória. Regenerável</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>FR16</td>
+<td>Formatação Final (Fase 4)</td>
+<td>Prompt <code>format</code> editável → chamada LLM → output final (<code>newsletter.report</code>) editável com autosave</td>
+<td>Média</td>
+</tr>
+<tr>
+<td>FR17</td>
+<td>State Machine Newsletter</td>
+<td><code>idle → draft → news_selected → image_ready → completed</code>. Invalidação: Fase 1 invalida image+report; Fase 3 invalida report</td>
+<td>Média</td>
+</tr>
+<tr>
+<td>FR18</td>
+<td>Cloud Storage Imagens</td>
+<td>Upload de imagens para bucket GCP com lifecycle de 6 meses. Referência via URL no Firestore</td>
+<td>Média</td>
+</tr>
 </tbody></table>
 <h3>Non-Functional Requirements</h3>
 <table>
@@ -316,6 +370,21 @@
 <td>Testabilidade</td>
 <td>Fixture strategy com snapshot responses, mock de EventSource para SSE</td>
 </tr>
+<tr>
+<td>NFR9</td>
+<td>Observabilidade Newsletter</td>
+<td>Todas as chamadas LLM do newsletter devem ter mesma observabilidade (debug logs) das features existentes</td>
+</tr>
+<tr>
+<td>NFR10</td>
+<td>Persistência Imagem</td>
+<td>Imagens em Cloud Storage (não base64 no Firestore) — limite de 1MB/doc do Firestore</td>
+</tr>
+<tr>
+<td>NFR11</td>
+<td>Desktop-first Newsletter</td>
+<td>Interface do newsletter otimizada para desktop; responsividade mobile não é prioridade</td>
+</tr>
 </tbody></table>
 <h3>Additional Requirements (Architecture)</h3>
 <p><strong>Starter Template:</strong></p>
@@ -351,6 +420,16 @@
 <li>Multi-stage Dockerfile</li>
 <li>Cloud Logging (structured JSON)</li>
 <li>Dev + Prod environments</li>
+</ul>
+<p><strong>Newsletter (Epic 16):</strong></p>
+<ul>
+<li>Reuso do <code>@google/genai</code> SDK com <code>responseModalities: [&#39;TEXT&#39;, &#39;IMAGE&#39;]</code> para geração de imagem</li>
+<li>Padrão de workspace do <code>adwords-work-panel.tsx</code> como base, adaptando para multi-fase com state machine</li>
+<li>VideoListPanel nova variant <code>newsletter</code> seguindo padrão da variant <code>adwords</code> — apenas episódios, qualquer status</li>
+<li>Prompts seguem mesmo padrão de <code>prompts.episode/cut/reel</code> com <code>description</code> + <code>expectedOutput</code></li>
+<li>Markdown editor com syntax highlighting leve + debounce no preview HTML</li>
+<li>Modelo de dados: embedded field <code>newsletter</code> no documento do vídeo (cardinalidade 1:1)</li>
+<li>Padrão scrollbar: todo elemento com overflow deve incluir classe <code>custom-scrollbar</code></li>
 </ul>
 <h3>Additional Requirements (UX Design)</h3>
 <p><strong>Layout:</strong></p>
@@ -435,6 +514,51 @@
 <td>FR7</td>
 <td>Epic 6</td>
 <td>Registro no Portal Web via Firestore</td>
+</tr>
+<tr>
+<td>FR10</td>
+<td>Epic 16</td>
+<td>Melhoria News UI — formato lista estilo Gmail</td>
+</tr>
+<tr>
+<td>FR11</td>
+<td>Epic 16</td>
+<td>Feature toggle Newsletter + aba no sidebar</td>
+</tr>
+<tr>
+<td>FR12</td>
+<td>Epic 16</td>
+<td>Grupo prompts.newsletter com 4 seções</td>
+</tr>
+<tr>
+<td>FR13</td>
+<td>Epic 16</td>
+<td>Draft da newsletter via LLM com persona writer</td>
+</tr>
+<tr>
+<td>FR14</td>
+<td>Epic 16</td>
+<td>Seleção de notícias D-2 com LLM + checkbox</td>
+</tr>
+<tr>
+<td>FR15</td>
+<td>Epic 16</td>
+<td>Geração de imagem via Gemini 3.1 Flash + Cloud Storage</td>
+</tr>
+<tr>
+<td>FR16</td>
+<td>Epic 16</td>
+<td>Formatação final com prompt editável + autosave</td>
+</tr>
+<tr>
+<td>FR17</td>
+<td>Epic 16</td>
+<td>State machine: idle → draft → news_selected → image_ready → completed</td>
+</tr>
+<tr>
+<td>FR18</td>
+<td>Epic 16</td>
+<td>Upload Cloud Storage com lifecycle 6 meses</td>
 </tr>
 </tbody></table>
 <h2>Epic List</h2>
@@ -601,6 +725,41 @@ As stories deste epic NÃO devem ser desenvolvidas separadamente.</p>
 <li>Circuit breaker para falhas</li>
 <li>Transição: ready → sending → sent</li>
 <li>InboxEmptyState quando todos enviados</li>
+</ul>
+<hr>
+<h3>Epic 16: Newsletter</h3>
+<p><strong>Valor ao usuário:</strong> O produtor pode gerar uma newsletter completa a partir de qualquer episódio do podcast, incluindo corpo editável gerado por IA, notícias curadas automaticamente, imagem gerada por IA (Gemini 3.1 Flash) e relatório final formatado — tudo dentro de um workflow guiado de 4 fases com state machine.</p>
+<p><strong>FRs cobertos:</strong> FR10, FR11, FR12, FR13, FR14, FR15, FR16, FR17, FR18
+<strong>NFRs relacionados:</strong> NFR9 (Observabilidade), NFR10 (Persistência Imagem), NFR11 (Desktop-first)</p>
+<p><strong>Capacidades entregues:</strong></p>
+<ul>
+<li>Aba Newsletter no sidebar com feature toggle em Configurações</li>
+<li>Melhoria da visualização de notícias (formato lista estilo Gmail)</li>
+<li>Configuração de 4 prompts newsletter (draft, news, image, format) em Configurações</li>
+<li>Fase 1: Geração do corpo via LLM com persona writer + transcrição, editor markdown split-view 50/50</li>
+<li>Fase 2: Query notícias D-2, LLM seleciona 10 mais relevantes, produtor escolhe 3-5 via checkbox</li>
+<li>Fase 3: LLM gera prompt de imagem → Gemini 3.1 Flash gera imagem 1280x720 → upload Cloud Storage</li>
+<li>Fase 4: Prompt format editável → LLM gera relatório final editável com autosave</li>
+<li>State machine newsletter: idle → draft → news_selected → image_ready → completed</li>
+<li>Invalidação: Fase 1 invalida image+report; Fase 3 invalida report</li>
+</ul>
+<p><strong>Dependências de épicos anteriores:</strong></p>
+<ul>
+<li>Epic 1 (Auth), Epic 2 (Config), Epic 4 (Wizard/LLM patterns)</li>
+<li>Epic 8 (Personas — writer já existe)</li>
+<li>Epic 12 (News feature — queries de notícias)</li>
+<li>Epic 13 (Social — padrão VideoListPanel variant)</li>
+<li>Epic 15 (Adwords — padrão work-panel multi-fase)</li>
+</ul>
+<p><strong>Notas de implementação:</strong></p>
+<ul>
+<li>Reuso do <code>@google/genai</code> SDK com <code>responseModalities: [&#39;TEXT&#39;, &#39;IMAGE&#39;]</code></li>
+<li>Padrão de workspace do <code>adwords-work-panel.tsx</code> adaptado para 4 fases</li>
+<li>VideoListPanel nova variant <code>newsletter</code> (apenas episódios, qualquer status)</li>
+<li>Modelo de dados: embedded field <code>newsletter</code> no documento do vídeo</li>
+<li>Imagens em Cloud Storage com lifecycle de 6 meses (não base64 no Firestore)</li>
+<li>Markdown editor com syntax highlighting leve + debounce no preview HTML</li>
+<li>Todo elemento com overflow deve incluir classe <code>custom-scrollbar</code></li>
 </ul>
 <hr>
 <h2>Epic 1: Autenticação e Fundação — Stories</h2>
@@ -2253,6 +2412,484 @@ Para que eu saiba que completei meu trabalho.</p>
 <li>Celebração apenas quando TODOS são <code>sent</code></li>
 <li>Se há mix de status, não mostra celebração</li>
 <li>Empty state diferente por contexto (filtro vs sem dados)</li>
+</ul>
+<hr>
+<h2>Epic 16: Newsletter — Stories</h2>
+<h3>Story 16.1: Melhoria da UI de Notícias</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero visualizar as notícias em formato de lista compacta estilo Gmail,
+Para que eu consiga escanear rapidamente os títulos e identificar notícias relevantes.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a aba Notícias está aberta
+<strong>When</strong> eu visualizo a lista de notícias
+<strong>Then</strong> cada item exibe: título em negrito, descrição truncada (1 linha), fonte e data
+<strong>And</strong> o layout é uma lista vertical (não cards)
+<strong>And</strong> a data é formatada como relativa (ex: &quot;há 2 dias&quot;) ou DD/MM/YYYY</p>
+<p><strong>Given</strong> uma notícia na lista
+<strong>When</strong> eu clico nela
+<strong>Then</strong> o comportamento existente de abrir detalhes é mantido</p>
+<p><strong>Given</strong> a lista de notícias carregada
+<strong>When</strong> há muitas notícias (scroll necessário)
+<strong>Then</strong> o container tem <code>overflow-y-auto</code> com classe <code>custom-scrollbar</code></p>
+<p><strong>And</strong> o componente está em <code>src/components/news/</code>
+<strong>And</strong> testes existentes continuam passando
+<strong>And</strong> novo layout funciona com dados existentes (sem mudança de API)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Refactoring apenas do componente de listagem, não do painel de detalhes</li>
+<li>Manter integração existente com API de notícias</li>
+<li>Componente compartilhado com Fase 2 da newsletter (mesma fonte de dados)</li>
+</ul>
+<hr>
+<h3>Story 16.2: Feature Toggle &amp; Navegação Newsletter</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero habilitar a funcionalidade de Newsletter nas configurações e acessá-la pelo sidebar,
+Para que eu possa optar por usar o gerador de newsletters quando desejar.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a tela de Configurações → Recursos
+<strong>When</strong> eu visualizo os toggles disponíveis
+<strong>Then</strong> há um toggle &quot;Newsletter&quot; junto aos toggles existentes (Editorial, Notícias, Redes Sociais, Tráfego Pago)
+<strong>And</strong> o toggle persiste no Firestore em <code>features.newsletter</code></p>
+<p><strong>Given</strong> o toggle Newsletter está ativado
+<strong>When</strong> eu olho o sidebar
+<strong>Then</strong> há uma aba &quot;Newsletter&quot; posicionada entre &quot;Tráfego Pago&quot; e &quot;Redes Sociais&quot;
+<strong>And</strong> clicar na aba navega para <code>?view=newsletter</code></p>
+<p><strong>Given</strong> o toggle Newsletter está desativado
+<strong>When</strong> eu olho o sidebar
+<strong>Then</strong> a aba &quot;Newsletter&quot; não aparece
+<strong>And</strong> acesso direto a <code>?view=newsletter</code> redireciona para <code>/videos</code></p>
+<p><strong>Given</strong> o toggle Newsletter está ativado
+<strong>When</strong> eu acesso <code>?view=newsletter</code>
+<strong>Then</strong> o <code>videos-layout.tsx</code> renderiza o layout da newsletter (sidebar + conteúdo)
+<strong>And</strong> segue o padrão das views existentes (editorial, social, adwords)</p>
+<p><strong>And</strong> o toggle usa o padrão existente de <code>podcastFeatures</code>
+<strong>And</strong> <code>Sidebar</code> recebe e renderiza a aba condicionalmente
+<strong>And</strong> <code>videos-layout.tsx</code> inclui bloco condicional para <code>currentView === &#39;newsletter&#39;</code></p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Seguir exatamente o padrão de <code>features.adwords</code> no toggle e sidebar</li>
+<li>Ícone: <code>Newspaper</code> do lucide-react (ou similar)</li>
+<li>Posição no sidebar: entre Adwords e Social</li>
+</ul>
+<hr>
+<h3>Story 16.3: Prompts Newsletter &amp; Modelo de Dados</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero configurar os 4 prompts da newsletter e ter o modelo de dados preparado,
+Para que o sistema saiba como gerar cada fase e persista os resultados corretamente.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a tela de Configurações → Prompts
+<strong>When</strong> eu visualizo os grupos de prompts
+<strong>Then</strong> há um grupo &quot;Newsletter&quot; com 4 seções: Draft, Notícias, Imagem, Formato
+<strong>And</strong> cada seção tem campos <code>description</code> (textarea) e <code>expectedOutput</code> (textarea)
+<strong>And</strong> os prompts seguem o padrão existente de <code>prompts.episode/cut/reel</code></p>
+<p><strong>Given</strong> eu edito um prompt de newsletter
+<strong>When</strong> eu saio do campo (blur) ou aguardo debounce
+<strong>Then</strong> o valor é salvo automaticamente no Firestore em <code>prompts.newsletter.{draft|news|image|format}</code>
+<strong>And</strong> indicador &quot;Salvo&quot; aparece</p>
+<p><strong>Given</strong> o schema Zod do vídeo
+<strong>When</strong> eu verifico a definição
+<strong>Then</strong> existe um campo opcional <code>newsletter</code> com a estrutura:</p>
+<pre><code class="language-typescript">newsletter: z.object({
+  status: z.enum([&#39;idle&#39;, &#39;draft&#39;, &#39;news_selected&#39;, &#39;image_ready&#39;, &#39;completed&#39;]),
+  draft: z.string().optional(),
+  news: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string().optional(),
+    source: z.string().optional(),
+    url: z.string().optional(),
+    publishedAt: z.string().optional(),
+  })).optional(),
+  imagePrompt: z.string().optional(),
+  imageUrl: z.string().optional(),
+  formatPrompt: z.string().optional(),
+  report: z.string().optional(),
+}).optional()
+</code></pre>
+<p><strong>Given</strong> a state machine de newsletter
+<strong>When</strong> eu verifico as transições
+<strong>Then</strong> as transições válidas são:</p>
+<ul>
+<li><code>idle → draft</code> (após gerar draft)</li>
+<li><code>draft → news_selected</code> (após selecionar notícias)</li>
+<li><code>news_selected → image_ready</code> (após gerar imagem)</li>
+<li><code>image_ready → completed</code> (após gerar relatório final)
+<strong>And</strong> invalidação de Fase 1 (regenerar draft) reseta status para <code>draft</code> e limpa <code>imageUrl</code> + <code>report</code>
+<strong>And</strong> invalidação de Fase 3 (regenerar imagem) reseta status para <code>image_ready</code> e limpa <code>report</code></li>
+</ul>
+<p><strong>And</strong> o schema do podcast inclui <code>prompts.newsletter</code> com 4 seções
+<strong>And</strong> state machine está em <code>src/lib/newsletter/</code> ou junto ao modelo existente
+<strong>And</strong> testes table-driven cobrem todas as transições válidas e inválidas
+<strong>And</strong> testes cobrem regras de invalidação</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Prompts no Firestore: <code>podcasts/{podcastId}.prompts.newsletter.{draft|news|image|format}</code></li>
+<li>Modelo newsletter embedded no documento do vídeo (não subcollection)</li>
+<li>State machine pode ser pure function como <code>videoStatusTransition</code></li>
+</ul>
+<hr>
+<h3>Story 16.4: Workspace Layout Newsletter</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero ver a lista de episódios e um painel de trabalho com 4 fases,
+Para que eu possa selecionar um episódio e navegar pelas fases de geração da newsletter.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> a view newsletter está ativa (<code>?view=newsletter</code>)
+<strong>When</strong> eu visualizo o layout
+<strong>Then</strong> há uma lista de vídeos à esquerda (VideoListPanel variant <code>newsletter</code>)
+<strong>And</strong> há um painel de trabalho à direita com navegação entre 4 fases</p>
+<p><strong>Given</strong> a lista de vídeos na view newsletter
+<strong>When</strong> eu visualizo os filtros
+<strong>Then</strong> apenas episódios são listados (videoType <code>episode</code>)
+<strong>And</strong> todos os status são mostrados (não filtrado por status)
+<strong>And</strong> a lista segue o padrão da variant <code>adwords</code> existente</p>
+<p><strong>Given</strong> nenhum episódio selecionado
+<strong>When</strong> eu olho o painel de trabalho
+<strong>Then</strong> vejo um empty state: &quot;Selecione um episódio para gerar a newsletter&quot;</p>
+<p><strong>Given</strong> um episódio selecionado
+<strong>When</strong> eu olho o painel de trabalho
+<strong>Then</strong> vejo header com título do episódio
+<strong>And</strong> vejo indicador de fase atual (steps/breadcrumb com 4 fases)
+<strong>And</strong> vejo o conteúdo da fase ativa
+<strong>And</strong> vejo botões de navegação (Anterior/Próximo) conforme a state machine permite</p>
+<p><strong>Given</strong> um episódio sem newsletter iniciada (<code>newsletter</code> undefined ou <code>status: idle</code>)
+<strong>When</strong> eu o seleciono
+<strong>Then</strong> o painel mostra a Fase 1 com botão &quot;Gerar Draft&quot;</p>
+<p><strong>Given</strong> um episódio com newsletter em progresso
+<strong>When</strong> eu o seleciono
+<strong>Then</strong> o painel navega automaticamente para a fase correspondente ao status atual</p>
+<p><strong>And</strong> existe <code>src/components/newsletter/newsletter-layout.tsx</code> (wrapper)
+<strong>And</strong> existe <code>src/components/newsletter/newsletter-work-panel.tsx</code> (painel de trabalho)
+<strong>And</strong> existe <code>src/components/newsletter/newsletter-phase-nav.tsx</code> (navegação entre fases)
+<strong>And</strong> VideoListPanel aceita variant <code>newsletter</code> com filtro de episódios
+<strong>And</strong> todo container com overflow inclui classe <code>custom-scrollbar</code>
+<strong>And</strong> layout segue padrão <code>adwords-layout.tsx</code> / <code>adwords-work-panel.tsx</code>
+<strong>And</strong> <code>LLMProcessingProvider</code> envolve o layout (bloqueia troca de vídeo durante LLM)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Reusar <code>MasterDetailLayout</code> ou padrão flexbox do adwords</li>
+<li>Phase navigation: tabs ou steps indicator (não wizard full como o de vídeo)</li>
+<li>Fases desabilitadas se state machine não permite acesso</li>
+<li>Estrutura de arquivos em <code>src/components/newsletter/</code></li>
+</ul>
+<hr>
+<h3>Story 16.5: Fase 1 — Geração do Draft da Newsletter</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero gerar o corpo da newsletter a partir da transcrição do episódio usando IA,
+Para que eu tenha uma base editável de conteúdo para a newsletter.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um episódio selecionado na Fase 1
+<strong>When</strong> eu clico em &quot;Gerar Draft&quot;
+<strong>Then</strong> uma chamada é feita a <code>POST /api/videos/{videoId}/newsletter/draft</code>
+<strong>And</strong> a API usa o prompt <code>prompts.newsletter.draft</code> com persona writer
+<strong>And</strong> a transcrição do episódio é enviada como attachment ao LLM
+<strong>And</strong> o resultado é salvo em <code>newsletter.draft</code> no Firestore
+<strong>And</strong> <code>newsletter.status</code> transiciona para <code>draft</code></p>
+<p><strong>Given</strong> o campo de dica adicional (additionalContext)
+<strong>When</strong> eu preencho texto e clico em &quot;Gerar Draft&quot;
+<strong>Then</strong> o additionalContext é incluído na chamada LLM
+<strong>And</strong> o LLM considera o contexto adicional na geração</p>
+<p><strong>Given</strong> o draft foi gerado com sucesso
+<strong>When</strong> eu visualizo o resultado
+<strong>Then</strong> vejo um editor markdown à esquerda (50% largura) com o draft
+<strong>And</strong> vejo um preview HTML à direita (50% largura) com o markdown renderizado
+<strong>And</strong> o editor tem syntax highlighting básico
+<strong>And</strong> o preview atualiza com debounce (500ms) após edições</p>
+<p><strong>Given</strong> eu edito o draft no editor
+<strong>When</strong> faço alterações no texto
+<strong>Then</strong> as alterações são salvas automaticamente no Firestore com debounce (1.5s)
+<strong>And</strong> indicador &quot;Salvo&quot; aparece após persistência</p>
+<p><strong>Given</strong> um draft já existe
+<strong>When</strong> eu clico em &quot;Regenerar&quot;
+<strong>Then</strong> o draft anterior é substituído pelo novo
+<strong>And</strong> <code>newsletter.imageUrl</code> e <code>newsletter.report</code> são limpos (invalidação)
+<strong>And</strong> <code>newsletter.status</code> volta para <code>draft</code></p>
+<p><strong>Given</strong> erro na geração
+<strong>When</strong> o LLM retorna erro
+<strong>Then</strong> mensagem de erro é exibida no painel
+<strong>And</strong> botão &quot;Gerar Draft&quot; permanece habilitado para retry</p>
+<p><strong>And</strong> existe <code>src/app/api/videos/[videoId]/newsletter/draft/route.ts</code> com <code>runtime: &#39;nodejs&#39;</code>
+<strong>And</strong> API valida que o vídeo é um episódio e tem transcrição
+<strong>And</strong> resposta da API validada com Zod
+<strong>And</strong> structured logging para chamada LLM</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Markdown editor: usar <code>&lt;textarea&gt;</code> com syntax highlighting via CSS ou lib leve (não Monaco)</li>
+<li>Preview HTML: usar lib de markdown-to-html (marked ou similar, já existe no projeto)</li>
+<li>Attachment = transcrição TXT do episódio</li>
+<li>Padrão de chamada LLM igual ao <code>processPhase</code> existente</li>
+</ul>
+<hr>
+<h3>Story 16.6: Fase 2 — Seleção de Notícias</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero que a IA selecione as notícias mais relevantes para o episódio e eu possa escolher quais incluir,
+Para que a newsletter contenha notícias curadas e pertinentes ao conteúdo.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um episódio na Fase 2 com draft gerado (status <code>draft</code>)
+<strong>When</strong> eu clico em &quot;Buscar Notícias&quot;
+<strong>Then</strong> uma chamada é feita a <code>POST /api/videos/{videoId}/newsletter/news</code>
+<strong>And</strong> a API consulta notícias de D-2 (2 dias antes da data de publicação do episódio)
+<strong>And</strong> se há 10+ notícias, o LLM seleciona as 10 mais aderentes ao conteúdo do episódio
+<strong>And</strong> se há &lt; 10 notícias, o LLM é pulado e todas são retornadas</p>
+<p><strong>Given</strong> 0 notícias encontradas para D-2
+<strong>When</strong> a API retorna lista vazia
+<strong>Then</strong> o painel exibe mensagem amigável: &quot;Nenhuma notícia encontrada para este período&quot;
+<strong>And</strong> o processo para — não é possível avançar para Fase 3
+<strong>And</strong> botão &quot;Buscar Notícias&quot; permanece para retry</p>
+<p><strong>Given</strong> notícias foram retornadas (1-10)
+<strong>When</strong> eu visualizo a lista
+<strong>Then</strong> cada notícia exibe: checkbox, título, descrição, fonte, data
+<strong>And</strong> layout de lista estilo Gmail (reutiliza padrão da Story 16.1)
+<strong>And</strong> nenhuma está pré-selecionada</p>
+<p><strong>Given</strong> eu estou selecionando notícias via checkbox
+<strong>When</strong> seleciono menos de 3 ou mais de 5
+<strong>Then</strong> o botão &quot;Confirmar Seleção&quot; permanece desabilitado
+<strong>And</strong> contador exibe &quot;X de 3-5 selecionadas&quot;</p>
+<p><strong>Given</strong> eu selecionei entre 3 e 5 notícias
+<strong>When</strong> eu clico em &quot;Confirmar Seleção&quot;
+<strong>Then</strong> as notícias selecionadas são salvas em <code>newsletter.news[]</code>
+<strong>And</strong> <code>newsletter.status</code> transiciona para <code>news_selected</code>
+<strong>And</strong> posso avançar para Fase 3</p>
+<p><strong>Given</strong> eu quero refazer a seleção
+<strong>When</strong> eu clico em &quot;Buscar Novamente&quot;
+<strong>Then</strong> nova consulta é feita e a seleção anterior é descartada</p>
+<p><strong>And</strong> existe <code>src/app/api/videos/[videoId]/newsletter/news/route.ts</code> com <code>runtime: &#39;nodejs&#39;</code>
+<strong>And</strong> API usa prompt <code>prompts.newsletter.news</code> para seleção LLM
+<strong>And</strong> API reutiliza a mesma fonte de dados da aba Notícias
+<strong>And</strong> resposta validada com Zod
+<strong>And</strong> structured logging</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Query D-2: usar <code>publishedAt</code> do episódio como referência, buscar notícias de 2 dias antes</li>
+<li>LLM recebe: draft da newsletter + lista de notícias → retorna IDs das 10 mais relevantes</li>
+<li>Se &lt; 10 notícias, retornar todas sem chamar LLM (economia de tokens)</li>
+<li>Checkbox UI: padrão shadcn/ui Checkbox</li>
+</ul>
+<hr>
+<h3>Story 16.7: Infraestrutura Cloud Storage para Imagens</h3>
+<p>Como um <strong>sistema</strong>,
+Eu quero ter infraestrutura para upload de imagens ao Cloud Storage,
+Para que imagens geradas pela IA possam ser armazenadas e referenciadas por URL.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o projeto IAra
+<strong>When</strong> eu verifico a infraestrutura
+<strong>Then</strong> existe um bucket no GCP configurado para imagens de newsletter
+<strong>And</strong> o bucket tem lifecycle policy de 6 meses (auto-delete após expiração)</p>
+<p><strong>Given</strong> uma imagem em formato base64/buffer
+<strong>When</strong> eu chamo a função de upload
+<strong>Then</strong> a imagem é salva no bucket com path: <code>newsletters/{podcastId}/{videoId}/{timestamp}.png</code>
+<strong>And</strong> a URL pública (ou signed URL) é retornada
+<strong>And</strong> o content-type é definido como <code>image/png</code></p>
+<p><strong>Given</strong> uma URL de imagem armazenada
+<strong>When</strong> eu a acesso via navegador
+<strong>Then</strong> a imagem é exibida corretamente</p>
+<p><strong>Given</strong> erro no upload
+<strong>When</strong> o Cloud Storage retorna erro
+<strong>Then</strong> a função lança erro com mensagem descritiva
+<strong>And</strong> structured logging registra o erro</p>
+<p><strong>And</strong> existe <code>src/lib/firebase/cloud-storage.ts</code> com funções de upload
+<strong>And</strong> usa <code>@google-cloud/storage</code> SDK (admin, server-side only)
+<strong>And</strong> configuração do bucket via variável de ambiente <code>NEWSLETTER_IMAGES_BUCKET</code>
+<strong>And</strong> testes unitários com mock do Storage SDK
+<strong>And</strong> lifecycle policy documentada (configuração via gsutil ou console)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Cloud Storage SDK já disponível via Firebase Admin</li>
+<li>Bucket pode ser o default do projeto com prefixo <code>/newsletters/</code></li>
+<li>Lifecycle: <code>gsutil lifecycle set lifecycle.json gs://bucket-name</code></li>
+<li>Signed URLs com expiração longa (30 dias) ou tornar objetos públicos com uniform bucket-level access</li>
+</ul>
+<hr>
+<h3>Story 16.8: Fase 3 — Geração de Imagem</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero gerar uma imagem de capa para a newsletter usando IA,
+Para que a newsletter tenha um visual profissional e atrativo.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um episódio na Fase 3 com notícias selecionadas (status <code>news_selected</code>)
+<strong>When</strong> eu clico em &quot;Gerar Imagem&quot;
+<strong>Then</strong> uma chamada é feita a <code>POST /api/videos/{videoId}/newsletter/image</code>
+<strong>And</strong> a API primeiro chama o LLM com prompt <code>prompts.newsletter.image</code> para gerar o prompt de imagem
+<strong>And</strong> em seguida chama Gemini 3.1 Flash com <code>responseModalities: [&#39;TEXT&#39;, &#39;IMAGE&#39;]</code> e dimensões 1280x720
+<strong>And</strong> a imagem gerada é enviada ao Cloud Storage via util da Story 16.7
+<strong>And</strong> a URL é salva em <code>newsletter.imageUrl</code>
+<strong>And</strong> o prompt de imagem é salvo em <code>newsletter.imagePrompt</code>
+<strong>And</strong> <code>newsletter.status</code> transiciona para <code>image_ready</code></p>
+<p><strong>Given</strong> a imagem foi gerada com sucesso
+<strong>When</strong> eu visualizo o resultado
+<strong>Then</strong> vejo um preview da imagem em tamanho adequado (responsivo ao painel)
+<strong>And</strong> vejo o prompt de imagem utilizado (read-only)
+<strong>And</strong> vejo botão &quot;Regenerar&quot; para gerar nova imagem</p>
+<p><strong>Given</strong> eu clico em &quot;Regenerar&quot; na Fase 3
+<strong>When</strong> uma nova imagem é gerada
+<strong>Then</strong> a imagem anterior no Cloud Storage é substituída (ou nova URL)
+<strong>And</strong> <code>newsletter.report</code> é limpo (invalidação)
+<strong>And</strong> <code>newsletter.status</code> permanece em <code>image_ready</code></p>
+<p><strong>Given</strong> erro na geração de imagem
+<strong>When</strong> o Gemini retorna erro
+<strong>Then</strong> mensagem de erro é exibida
+<strong>And</strong> botão &quot;Gerar Imagem&quot; permanece habilitado para retry
+<strong>And</strong> o prompt de imagem gerado na etapa 1 é preservado para debug</p>
+<p><strong>Given</strong> o campo de dica adicional (additionalContext)
+<strong>When</strong> eu preencho e clico em &quot;Gerar Imagem&quot;
+<strong>Then</strong> o additionalContext é incluído na chamada LLM de geração do prompt</p>
+<p><strong>And</strong> existe <code>src/app/api/videos/[videoId]/newsletter/image/route.ts</code> com <code>runtime: &#39;nodejs&#39;</code>
+<strong>And</strong> usa <code>@google/genai</code> SDK com <code>responseModalities: [&#39;TEXT&#39;, &#39;IMAGE&#39;]</code>
+<strong>And</strong> imagem gerada como foto realista 1280x720
+<strong>And</strong> resposta validada com Zod
+<strong>And</strong> structured logging para ambas as chamadas (prompt LLM + imagem Gemini)</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Gemini 3.1 Flash image generation: 2 chamadas sequenciais (1: gerar prompt, 2: gerar imagem)</li>
+<li>Formato da imagem: PNG</li>
+<li>Timeout adequado para geração de imagem (pode ser mais lento que texto)</li>
+<li><code>@google/genai</code> SDK já configurado no projeto</li>
+</ul>
+<hr>
+<h3>Story 16.9: Fase 4 — Relatório Final</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero gerar o relatório final formatado da newsletter e poder editá-lo antes de finalizar,
+Para que eu tenha o output completo da newsletter pronto para uso.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um episódio na Fase 4 com imagem gerada (status <code>image_ready</code>)
+<strong>When</strong> eu visualizo a fase
+<strong>Then</strong> vejo o prompt de formato pré-preenchido (do <code>prompts.newsletter.format</code>)
+<strong>And</strong> o prompt é editável (textarea)
+<strong>And</strong> vejo botão &quot;Gerar Relatório&quot;</p>
+<p><strong>Given</strong> eu clico em &quot;Gerar Relatório&quot;
+<strong>When</strong> a chamada é processada
+<strong>Then</strong> uma chamada é feita a <code>POST /api/videos/{videoId}/newsletter/format</code>
+<strong>And</strong> a API usa o prompt editado + draft + notícias selecionadas + URL da imagem
+<strong>And</strong> o resultado é salvo em <code>newsletter.report</code>
+<strong>And</strong> <code>newsletter.formatPrompt</code> salva o prompt usado (para auditoria)
+<strong>And</strong> <code>newsletter.status</code> transiciona para <code>completed</code></p>
+<p><strong>Given</strong> o relatório foi gerado
+<strong>When</strong> eu visualizo o resultado
+<strong>Then</strong> vejo o relatório em editor markdown com preview HTML (mesma UI da Fase 1)
+<strong>And</strong> posso editar o relatório livremente
+<strong>And</strong> edições são salvas com autosave (debounce 1.5s)</p>
+<p><strong>Given</strong> eu quero regenerar o relatório
+<strong>When</strong> eu clico em &quot;Regenerar&quot;
+<strong>Then</strong> posso editar o prompt antes de regenerar
+<strong>And</strong> novo relatório substitui o anterior
+<strong>And</strong> <code>newsletter.status</code> permanece em <code>completed</code></p>
+<p><strong>Given</strong> erro na geração
+<strong>When</strong> o LLM retorna erro
+<strong>Then</strong> mensagem de erro é exibida
+<strong>And</strong> botão &quot;Gerar Relatório&quot; permanece habilitado para retry</p>
+<p><strong>And</strong> existe <code>src/app/api/videos/[videoId]/newsletter/format/route.ts</code> com <code>runtime: &#39;nodejs&#39;</code>
+<strong>And</strong> API inclui no contexto: draft, notícias selecionadas, URL da imagem
+<strong>And</strong> resposta validada com Zod
+<strong>And</strong> structured logging</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Reusar componente de editor markdown/preview da Fase 1 (extrair componente compartilhado)</li>
+<li>Prompt editável permite ao produtor ajustar a formatação desejada antes de gerar</li>
+<li>Autosave do relatório usa mesmo padrão de debounce do projeto</li>
+</ul>
+<hr>
+<h3>Story 16.10: Observabilidade Newsletter</h3>
+<p>Como um <strong>administrador</strong>,
+Eu quero que todas as chamadas LLM da newsletter tenham logs de debug visíveis,
+Para que eu possa diagnosticar problemas e monitorar a qualidade das gerações.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> qualquer chamada LLM da newsletter (draft, news, image, format)
+<strong>When</strong> a chamada é executada
+<strong>Then</strong> um registro é salvo na collection de debug logs com:</p>
+<ul>
+<li><code>phase</code>: identificador da fase (newsletter-draft, newsletter-news, newsletter-image, newsletter-format)</li>
+<li><code>videoId</code>: ID do episódio</li>
+<li><code>prompt</code>: prompt enviado ao LLM</li>
+<li><code>response</code>: resposta recebida</li>
+<li><code>model</code>: modelo utilizado</li>
+<li><code>duration</code>: tempo de execução</li>
+<li><code>tokensUsed</code>: contagem de tokens (se disponível)</li>
+<li><code>attachments</code>: lista de attachments enviados (transcrição, etc.)</li>
+</ul>
+<p><strong>Given</strong> a aba Debug Logs está aberta (admin)
+<strong>When</strong> eu filtro por newsletter
+<strong>Then</strong> vejo logs das chamadas LLM da newsletter agrupados por dia
+<strong>And</strong> cada log mostra fase, vídeo, modelo e duração</p>
+<p><strong>Given</strong> erro em chamada LLM da newsletter
+<strong>When</strong> o erro ocorre
+<strong>Then</strong> o log de debug registra o erro com detalhes (mensagem, stack se disponível)
+<strong>And</strong> o nível do log é <code>ERROR</code></p>
+<p><strong>And</strong> usa a mesma infraestrutura de <code>saveLlmLog</code> existente
+<strong>And</strong> segue o padrão de observabilidade do <code>processPhase</code> e <code>generateSocialPost</code>
+<strong>And</strong> todas as 4 rotas de API da newsletter incluem logging
+<strong>And</strong> testes verificam que <code>saveLlmLog</code> é chamado com dados corretos</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Reusar <code>saveLlmLog</code> de <code>src/lib/firebase/llm-log-admin.ts</code></li>
+<li>Mesma estrutura de log existente — apenas novos valores de <code>phase</code></li>
+<li>Não criar infraestrutura nova, apenas integrar com a existente</li>
+</ul>
+<hr>
+<h3>Story 16.11: Invalidação e Edge Cases</h3>
+<p>Como um <strong>produtor</strong>,
+Eu quero que o sistema gerencie corretamente a invalidação entre fases e cenários especiais,
+Para que eu tenha confiança de que os dados estão sempre consistentes.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> um episódio com newsletter completa (status <code>completed</code>)
+<strong>When</strong> eu regenero o draft na Fase 1
+<strong>Then</strong> <code>newsletter.imageUrl</code> é limpo (imagem invalidada)
+<strong>And</strong> <code>newsletter.report</code> é limpo (relatório invalidado)
+<strong>And</strong> <code>newsletter.status</code> volta para <code>draft</code>
+<strong>And</strong> o painel navega automaticamente para Fase 1
+<strong>And</strong> Fases 3 e 4 ficam desabilitadas até serem reprocessadas</p>
+<p><strong>Given</strong> um episódio com imagem gerada (status <code>image_ready</code>)
+<strong>When</strong> eu regenero a imagem na Fase 3
+<strong>Then</strong> <code>newsletter.report</code> é limpo (relatório invalidado)
+<strong>And</strong> <code>newsletter.status</code> permanece em <code>image_ready</code>
+<strong>And</strong> Fase 4 fica desabilitada até o relatório ser regenerado</p>
+<p><strong>Given</strong> um episódio sem transcrição TXT
+<strong>When</strong> eu tento gerar o draft na Fase 1
+<strong>Then</strong> mensagem explica que a transcrição é necessária
+<strong>And</strong> botão &quot;Gerar Draft&quot; está desabilitado</p>
+<p><strong>Given</strong> fase 2 com 0 notícias encontradas
+<strong>When</strong> a busca retorna vazia
+<strong>Then</strong> mensagem amigável é exibida
+<strong>And</strong> não é possível avançar para Fase 3
+<strong>And</strong> o produtor pode tentar buscar novamente</p>
+<p><strong>Given</strong> o produtor está em uma fase que requer fases anteriores
+<strong>When</strong> a fase anterior ainda não foi completada
+<strong>Then</strong> a fase atual mostra mensagem indicando qual fase precisa ser completada
+<strong>And</strong> botões de ação estão desabilitados</p>
+<p><strong>Given</strong> qualquer erro de rede durante operações de newsletter
+<strong>When</strong> a chamada falha
+<strong>Then</strong> mensagem de erro é exibida no painel da fase ativa
+<strong>And</strong> o estado anterior é preservado (não há perda de dados)
+<strong>And</strong> botão de ação permanece para retry</p>
+<p><strong>And</strong> testes cobrem todos os cenários de invalidação
+<strong>And</strong> testes cobrem edge cases (sem transcrição, 0 notícias, erros de rede)
+<strong>And</strong> state machine rejeita transições inválidas com erro descritivo
+<strong>And</strong> UI desabilita fases inacessíveis baseado no status atual</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Invalidação deve ser atômica (limpar campos + atualizar status em um único updateDoc)</li>
+<li>Testar com table-driven tests para cada cenário de invalidação</li>
+<li>UI deve refletir visualmente fases invalidadas (disabled/grayed out)</li>
+</ul>
+<hr>
+<h3>Story 16.12: Correções Newsletter</h3>
+<p>Como um <strong>desenvolvedor</strong>,
+Eu quero ter um buffer para correções identificadas durante o code review do Epic 16,
+Para que problemas encontrados na revisão adversarial sejam resolvidos de forma organizada.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>Given</strong> o code review adversarial do Epic 16 foi executado
+<strong>When</strong> issues são identificados (3-10 por review)
+<strong>Then</strong> esta story agrupa todas as correções necessárias</p>
+<p><strong>Given</strong> correções a serem aplicadas
+<strong>When</strong> eu implemento os fixes
+<strong>Then</strong> todos os testes existentes continuam passando
+<strong>And</strong> novos testes são adicionados conforme necessário
+<strong>And</strong> não há regressões nas features implementadas</p>
+<p><strong>And</strong> esta story segue o padrão do Epic 15 (Story 15.10)
+<strong>And</strong> issues do code review são listados como subtasks
+<strong>And</strong> cada fix é verificável individualmente</p>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Story-buffer criada antecipadamente — será detalhada após code review</li>
+<li>Padrão: implementar fixes, rodar suite completa, verificar 0 regressões</li>
+<li>Pode incluir: type safety, test gaps, error handling, UX polish</li>
 </ul>
 <hr>
 <h2>Business Rules</h2>

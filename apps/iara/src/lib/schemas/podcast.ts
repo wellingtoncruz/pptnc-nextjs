@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { TEXT_MODEL_IDS, IMAGE_MODEL_IDS } from '@/lib/llm/models'
+
 import { VideoTypeConfigSchema } from './video-type-config'
 
 /**
@@ -276,6 +278,19 @@ export const DEFAULT_PERSONAS = {
 }
 
 /**
+ * LLM configuration schema — model selection for Vertex AI.
+ *
+ * Both fields are optional. When undefined, the system uses the
+ * fallback chain: env var → hardcoded default.
+ *
+ * @see Story 18.11 — Parametrização do Modelo LLM
+ */
+export const LlmConfigSchema = z.object({
+  textModel: z.enum(TEXT_MODEL_IDS as [string, ...string[]]).optional(),
+  imageModel: z.enum(IMAGE_MODEL_IDS as [string, ...string[]]).optional(),
+})
+
+/**
  * PodcastSchema - Full podcast document schema for reading from Firestore.
  *
  * @see architecture-iara.md#Data Architecture
@@ -294,6 +309,8 @@ export const PodcastSchema = z.object({
   youtubeFooter: z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional(),
   /** IDs of social networks enabled for this podcast. Undefined/absent = none enabled. */
   enabledSocialNetworks: z.array(z.string()).optional(),
+  /** LLM model configuration. When absent, uses env var → hardcoded defaults. */
+  llmConfig: LlmConfigSchema.optional(),
   /** Feature toggles for optional sections and sync behavior. */
   features: z.object({
     editorial: z.boolean().default(true),

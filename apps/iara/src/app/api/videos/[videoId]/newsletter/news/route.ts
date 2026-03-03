@@ -131,7 +131,8 @@ export async function POST(_request: Request, context: RouteContext): Promise<Ne
           userPrompt,
           60000,
           undefined,
-          debugContext
+          debugContext,
+          podcast?.llmConfig?.textModel
         )
       )
 

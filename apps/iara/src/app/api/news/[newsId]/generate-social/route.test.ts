@@ -176,6 +176,27 @@ describe('POST /api/news/[newsId]/generate-social', () => {
     expect(userPrompt).not.toContain('# Instruções Adicionais do Produtor')
   })
 
+  it('passes textModel override from podcast llmConfig', async () => {
+    mockGetPodcastAdmin.mockResolvedValue({
+      ...mockPodcast,
+      llmConfig: { textModel: 'gemini-2.5-pro' },
+    })
+
+    await POST(createRequest(), { params: Promise.resolve({ newsId: 'news-1' }) })
+
+    // 6th arg to callGenAI is modelOverride
+    const callArgs = mockCallGenAI.mock.calls[0]
+    expect(callArgs[5]).toBe('gemini-2.5-pro')
+  })
+
+  it('passes undefined modelOverride when llmConfig is absent', async () => {
+    await POST(createRequest(), { params: Promise.resolve({ newsId: 'news-1' }) })
+
+    // 6th arg to callGenAI is modelOverride — undefined when no llmConfig
+    const callArgs = mockCallGenAI.mock.calls[0]
+    expect(callArgs[5]).toBeUndefined()
+  })
+
   it('returns 400 when additionalContext exceeds max length', async () => {
     const longContext = 'a'.repeat(501)
     const request = new NextRequest('http://localhost/api/news/news-1/generate-social', {

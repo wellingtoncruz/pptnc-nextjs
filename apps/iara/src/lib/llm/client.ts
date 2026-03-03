@@ -140,10 +140,11 @@ export async function callGenAI<T>(
   userPrompt: string,
   _timeout: number,
   attachmentPath: string | undefined,
-  debugContext?: DebugContext
+  debugContext?: DebugContext,
+  modelOverride?: string
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   const client = getAI()
-  const modelName = VERTEX_AI_MODEL || DEFAULT_MODEL
+  const modelName = modelOverride || VERTEX_AI_MODEL || DEFAULT_MODEL
 
   // Build parts array once - reused across retry attempts
   const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
@@ -463,7 +464,8 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       userPrompt,
       timeout,
       transcriptionFilePath,
-      options?.debugContext
+      options?.debugContext,
+      podcast?.llmConfig?.textModel
     )
 
     return {

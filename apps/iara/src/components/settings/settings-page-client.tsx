@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect } from 'react'
 
-import { Radio, ToggleLeft, Share2, Clock, Bot, FileText, Newspaper, RefreshCw } from 'lucide-react'
+import { Radio, ToggleLeft, Cpu, Share2, Clock, Bot, FileText, Newspaper, RefreshCw } from 'lucide-react'
 
 import {
   Accordion,
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/accordion'
 import { PodcastSettingsForm } from './podcast-settings-form'
 import { FeaturesSettingsForm } from './features-settings-form'
+import { LlmConfigSettingsForm } from './llm-config-settings-form'
 import { PromptsSettingsForm } from './prompts-settings-form'
 import { PersonasSettingsForm } from './personas-settings-form'
 import { DurationSettingsForm } from './duration-settings-form'
@@ -31,6 +32,7 @@ const DEFAULT_NEWSLETTER_PROMPTS = DEFAULT_EPISODE_PROMPTS.newsletter
 const SECTION_IDS = {
   PODCAST: 'podcast',
   FEATURES: 'features',
+  LLM_CONFIG: 'llm_config',
   SOCIAL_NETWORKS: 'social_networks',
   DURATION: 'duration',
   PERSONAS: 'personas',
@@ -275,6 +277,22 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             newsletter: podcast.features?.newsletter ?? false,
             llmDebugMode: podcast.features?.llmDebugMode ?? false,
           }} />
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* LLM Config Settings */}
+      <AccordionItem value={SECTION_IDS.LLM_CONFIG} className="border rounded-lg">
+        <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <div className="flex items-start gap-3">
+            <Cpu className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="text-left">
+              <div className="text-lg font-semibold">Modelo LLM</div>
+              <div className="text-sm font-normal text-muted-foreground">Modelos Gemini para geração de texto e imagens</div>
+            </div>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="px-6 pb-6">
+          <LlmConfigSettingsForm llmConfig={podcast.llmConfig} />
         </AccordionContent>
       </AccordionItem>
 

@@ -143,7 +143,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
 
     // Call LLM via queue (no attachment)
     const { data } = await llmQueue.enqueue(() =>
-      callGenAI<{ report: string }>(systemPrompt, userPrompt, 60000, undefined, debugContext)
+      callGenAI<{ report: string }>(systemPrompt, userPrompt, 60000, undefined, debugContext, podcast?.llmConfig?.textModel)
     )
 
     // Validate LLM response
