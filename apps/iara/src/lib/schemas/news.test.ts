@@ -102,4 +102,39 @@ describe('NewsSchema — Epic 18 fields', () => {
       expect(result.data.social).toBe('Social text')
     }
   })
+
+  // Story 18.8 — Image fields
+  it('parses with imageUrl string', () => {
+    const result = NewsSchema.safeParse({
+      ...baseNews,
+      imageUrl: 'news-images/pptnc/news-1/123.png',
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.imageUrl).toBe('news-images/pptnc/news-1/123.png')
+    }
+  })
+
+  it('parses with imagePrompt string', () => {
+    const result = NewsSchema.safeParse({
+      ...baseNews,
+      imagePrompt: 'A detailed image prompt',
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.imagePrompt).toBe('A detailed image prompt')
+    }
+  })
+
+  it('parses without image fields (backward-compatible)', () => {
+    const result = NewsSchema.safeParse(baseNews)
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.imageUrl).toBeUndefined()
+      expect(result.data.imagePrompt).toBeUndefined()
+    }
+  })
 })

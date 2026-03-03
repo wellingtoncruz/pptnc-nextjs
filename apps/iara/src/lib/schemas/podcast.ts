@@ -132,6 +132,7 @@ export const ReelPromptsSchema = z.object({
  */
 export const NewsPromptsSchema = z.object({
   news_social: PromptFieldSchema.optional(),
+  news_image: PromptFieldSchema.optional(),
 })
 
 /**
@@ -242,6 +243,7 @@ export const DEFAULT_REEL_PROMPTS = {
  */
 export const DEFAULT_NEWS_PROMPTS = {
   news_social: { ...DEFAULT_PROMPT_FIELD },
+  news_image: { ...DEFAULT_PROMPT_FIELD },
 }
 
 /**

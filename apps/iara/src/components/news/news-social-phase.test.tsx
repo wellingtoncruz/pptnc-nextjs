@@ -2,11 +2,22 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { NewsSocialPhase } from './news-social-phase'
-
 vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
+
+const mockGenerateImage = vi.fn()
+vi.mock('@/hooks/use-news-image', () => ({
+  useNewsImage: (newsId: string, initialImageUrl?: string) => ({
+    imageUrl: initialImageUrl ? `/api/news/${newsId}/image?t=123` : null,
+    isGenerating: false,
+    generatingStep: null,
+    error: null,
+    generateImage: mockGenerateImage,
+  }),
+}))
+
+import { NewsSocialPhase } from './news-social-phase'
 
 const mockTimestamp = { toDate: () => new Date(), toMillis: () => 0, seconds: 0, nanoseconds: 0 }
 
@@ -26,6 +37,7 @@ const baseNews = {
 describe('NewsSocialPhase', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
+    mockGenerateImage.mockResolvedValue(true)
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: vi.fn().mockResolvedValue(undefined) },
       writable: true,
@@ -323,5 +335,96 @@ describe('NewsSocialPhase', () => {
 
     // After regeneration, the context input should be hidden
     expect(screen.queryByTestId('additional-context-input')).not.toBeInTheDocument()
+  })
+
+  // ==========================================================================
+  // Story 18.10 — Image section tests
+  // ==========================================================================
+
+  it('shows "Imagem Ilustrativa" section in phase 3', () => {
+    const news = { ...baseNews, social: 'Texto existente' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    expect(screen.getByTestId('news-image-section')).toBeInTheDocument()
+    expect(screen.getByText('Imagem Ilustrativa')).toBeInTheDocument()
+  })
+
+  it('shows "Gerar Imagem" button when no image exists', () => {
+    const news = { ...baseNews, social: 'Texto' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    expect(screen.getByTestId('generate-image-button')).toHaveTextContent('Gerar Imagem')
+  })
+
+  it('shows "Regenerar Imagem" button when image exists', () => {
+    const news = { ...baseNews, social: 'Texto', imageUrl: 'news-images/pptnc/news-1/123.png' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    expect(screen.getByTestId('generate-image-button')).toHaveTextContent('Regenerar Imagem')
+  })
+
+  it('shows image preview when imageUrl exists', () => {
+    const news = { ...baseNews, social: 'Texto', imageUrl: 'news-images/pptnc/news-1/123.png' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    expect(screen.getByTestId('news-image-preview')).toBeInTheDocument()
+  })
+
+  it('shows image additional context textarea', () => {
+    const news = { ...baseNews, social: 'Texto' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    expect(screen.getByTestId('image-additional-context')).toBeInTheDocument()
+  })
+
+  it('calls generateImage when button is clicked', async () => {
+    const news = { ...baseNews, social: 'Texto' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    await user.click(screen.getByTestId('generate-image-button'))
+
+    expect(mockGenerateImage).toHaveBeenCalledWith(undefined)
+  })
+
+  it('sends additionalContext when generating image with instructions', async () => {
+    const news = { ...baseNews, social: 'Texto' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    const contextInput = screen.getByTestId('image-additional-context')
+    await user.type(contextInput, 'Use tons de azul')
+
+    await user.click(screen.getByTestId('generate-image-button'))
+
+    expect(mockGenerateImage).toHaveBeenCalledWith('Use tons de azul')
+  })
+
+  it('calls onDataUpdate after successful image generation', async () => {
+    const news = { ...baseNews, social: 'Texto' }
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
+
+    await user.click(screen.getByTestId('generate-image-button'))
+
+    await waitFor(() => {
+      expect(onDataUpdate).toHaveBeenCalled()
+    })
   })
 })

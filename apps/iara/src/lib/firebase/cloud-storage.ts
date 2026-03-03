@@ -132,6 +132,117 @@ export async function downloadNewsletterImage(filePath: string): Promise<Buffer>
   }
 }
 
+// ==========================================================================
+// Story 18.8 — News image Cloud Storage helpers
+// ==========================================================================
+
+/**
+ * Uploads a news image to Cloud Storage.
+ *
+ * @param newsId - The news document ID
+ * @param imageBuffer - The image data as a Buffer
+ * @returns The GCS file path (e.g., "news-images/pptnc/news-1/123.png")
+ * @throws {CloudStorageError} If the upload fails
+ */
+export async function uploadNewsImage(newsId: string, imageBuffer: Buffer): Promise<string> {
+  if (!SAFE_ID_PATTERN.test(newsId)) {
+    throw new CloudStorageError('Invalid news ID for storage path', 'UPLOAD_FAILED')
+  }
+  const filePath = `news-images/${PODCAST_ID}/${newsId}/${Date.now()}.png`
+
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+
+    await file.save(imageBuffer, {
+      contentType: 'image/png',
+      resumable: false,
+    })
+
+    log('INFO', 'News image uploaded', {
+      podcastId: PODCAST_ID,
+      newsId,
+      filePath,
+      size: imageBuffer.length,
+    })
+
+    return filePath
+  } catch (error) {
+    if (error instanceof CloudStorageError) throw error
+
+    log('ERROR', 'News image upload failed', {
+      podcastId: PODCAST_ID,
+      newsId,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    throw new CloudStorageError(
+      `Failed to upload news image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'UPLOAD_FAILED'
+    )
+  }
+}
+
+/**
+ * Downloads a news image from Cloud Storage.
+ *
+ * @param filePath - The GCS file path
+ * @returns The image data as a Buffer
+ * @throws {CloudStorageError} If the download fails
+ */
+export async function downloadNewsImage(filePath: string): Promise<Buffer> {
+  if (!filePath.startsWith('news-images/') || filePath.includes('..')) {
+    throw new CloudStorageError('Invalid file path for news image download', 'DOWNLOAD_FAILED')
+  }
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    const [contents] = await file.download()
+
+    log('INFO', 'News image downloaded', { podcastId: PODCAST_ID, filePath })
+
+    return contents
+  } catch (error) {
+    log('ERROR', 'News image download failed', {
+      podcastId: PODCAST_ID,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    throw new CloudStorageError(
+      `Failed to download news image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DOWNLOAD_FAILED'
+    )
+  }
+}
+
+/**
+ * Deletes a news image from Cloud Storage.
+ *
+ * Fire-and-forget: errors are logged but NOT thrown.
+ *
+ * @param filePath - The GCS file path
+ */
+export async function deleteNewsImage(filePath: string): Promise<void> {
+  if (!filePath.startsWith('news-images/') || filePath.includes('..')) {
+    log('WARN', 'deleteNewsImage called with invalid path (ignored)', { filePath })
+    return
+  }
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    await file.delete({ ignoreNotFound: true })
+
+    log('INFO', 'News image deleted', { podcastId: PODCAST_ID, filePath })
+  } catch (error) {
+    log('WARN', 'News image delete failed (fire-and-forget)', {
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+  }
+}
+
 /**
  * Deletes a newsletter image from Cloud Storage.
  *

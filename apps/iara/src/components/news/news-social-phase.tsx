@@ -1,10 +1,11 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertCircle, Check, Copy, Loader2, RefreshCw } from 'lucide-react'
+import { AlertCircle, Check, Copy, ImageIcon, Loader2, RefreshCw } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { useAutoSave } from '@/hooks/use-auto-save'
+import { useNewsImage } from '@/hooks/use-news-image'
 import type { News } from '@/types/news'
 
 interface NewsSocialPhaseProps {
@@ -21,6 +22,15 @@ export function NewsSocialPhase({ news, onDataUpdate }: NewsSocialPhaseProps) {
   const [additionalContext, setAdditionalContext] = useState('')
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const generateTriggered = useRef(false)
+
+  // Image generation hook
+  const [imageAdditionalContext, setImageAdditionalContext] = useState('')
+  const {
+    imageUrl: newsImageUrl,
+    isGenerating: isGeneratingImage,
+    error: imageError,
+    generateImage,
+  } = useNewsImage(news.id, news.imageUrl)
 
   const saveFn = useCallback(async (text: string) => {
     const response = await fetch(`/api/news/${news.id}`, {
@@ -214,10 +224,81 @@ export function NewsSocialPhase({ news, onDataUpdate }: NewsSocialPhaseProps) {
         <textarea
           value={localText}
           onChange={(e) => setLocalText(e.target.value)}
-          className="w-full h-full min-h-[200px] resize-none bg-transparent text-sm leading-relaxed focus:outline-none placeholder:text-muted-foreground"
+          className="w-full min-h-[200px] resize-none bg-transparent text-sm leading-relaxed focus:outline-none placeholder:text-muted-foreground"
           placeholder="A redação social aparecerá aqui..."
           data-testid="social-editor"
         />
+
+        {/* Image section */}
+        <div className="mt-6 border-t border-border pt-6" data-testid="news-image-section">
+          <div className="flex items-center gap-2 mb-4">
+            <ImageIcon className="size-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Imagem Ilustrativa</span>
+          </div>
+
+          {/* Image preview */}
+          {newsImageUrl && !isGeneratingImage && (
+            <div className="mb-4">
+              <img
+                src={newsImageUrl}
+                alt="Imagem ilustrativa da notícia"
+                className="w-full aspect-video rounded-md object-cover border border-border"
+                data-testid="news-image-preview"
+              />
+            </div>
+          )}
+
+          {/* Generating state */}
+          {isGeneratingImage && (
+            <div className="flex items-center gap-2 mb-4 text-muted-foreground" data-testid="news-image-generating">
+              <Loader2 className="size-4 animate-spin" />
+              <span className="text-sm">Gerando imagem...</span>
+            </div>
+          )}
+
+          {/* Image error */}
+          {imageError && (
+            <div className="flex items-center gap-2 mb-4 text-destructive" data-testid="news-image-error">
+              <AlertCircle className="size-4 shrink-0" />
+              <span className="text-xs">{imageError}</span>
+            </div>
+          )}
+
+          {/* Additional context textarea */}
+          <textarea
+            value={imageAdditionalContext}
+            onChange={(e) => setImageAdditionalContext(e.target.value)}
+            placeholder="Instruções adicionais para a imagem (opcional)..."
+            className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground mb-3"
+            rows={2}
+            maxLength={500}
+            disabled={isGeneratingImage}
+            data-testid="image-additional-context"
+          />
+
+          {/* Generate / Regenerate button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const context = imageAdditionalContext.trim() || undefined
+              const success = await generateImage(context)
+              if (success) {
+                setImageAdditionalContext('')
+                await onDataUpdate()
+              }
+            }}
+            disabled={isGeneratingImage}
+            data-testid="generate-image-button"
+          >
+            {isGeneratingImage ? (
+              <Loader2 className="mr-1 size-3.5 animate-spin" />
+            ) : (
+              <ImageIcon className="mr-1 size-3.5" />
+            )}
+            {newsImageUrl ? 'Regenerar Imagem' : 'Gerar Imagem'}
+          </Button>
+        </div>
       </div>
     </div>
   )

@@ -35,6 +35,9 @@ export const NewsSchema = z.object({
   related_videos: z.array(z.string()).optional(),
   selected_video: z.string().nullable().optional(),
   social: z.string().nullable().optional(),
+  // Story 18.8 — Image generation fields
+  imageUrl: z.string().optional(),
+  imagePrompt: z.string().optional(),
 })
 
 // ============================================================================

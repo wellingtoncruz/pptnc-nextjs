@@ -374,6 +374,12 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
                 initialValue={podcast.prompts.news?.news_social ?? DEFAULT_PROMPT_FIELD}
                 onSave={(value) => handleSaveNewsPrompt('news_social', value)}
               />
+              <PromptFieldEditor
+                fieldKey="news-news_image"
+                label="Imagem"
+                initialValue={podcast.prompts.news?.news_image ?? DEFAULT_PROMPT_FIELD}
+                onSave={(value) => handleSaveNewsPrompt('news_image', value)}
+              />
             </div>
           </AccordionContent>
         </AccordionItem>

@@ -44,7 +44,7 @@ vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
-import { listNews, listNewsByDate, getNewsEmbedding, updateNewsEmbedding, updateNewsRelatedVideos, getNewsById, updateNewsFields } from './news-admin'
+import { listNews, listNewsByDate, getNewsEmbedding, updateNewsEmbedding, updateNewsRelatedVideos, getNewsById, updateNewsFields, updateNewsImageFields } from './news-admin'
 
 function createTimestamp(date: Date) {
   return {
@@ -511,6 +511,54 @@ describe('updateNewsFields (Story 18.4)', () => {
     expect(mockNewsDocUpdate).toHaveBeenCalledWith({
       selected_video: 'same-video',
       social: 'Updated text',
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+})
+
+// ==========================================================================
+// Story 18.8 — updateNewsImageFields
+// ==========================================================================
+
+describe('updateNewsImageFields (Story 18.8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockNewsDocUpdate.mockResolvedValue(undefined)
+  })
+
+  it('persists imageUrl and imagePrompt with dot-notation update', async () => {
+    await updateNewsImageFields('pptnc', 'news-1', {
+      imageUrl: 'news-images/pptnc/news-1/123.png',
+      imagePrompt: 'A prompt for image generation',
+    })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      imageUrl: 'news-images/pptnc/news-1/123.png',
+      imagePrompt: 'A prompt for image generation',
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+
+  it('persists only imageUrl when imagePrompt is not provided', async () => {
+    await updateNewsImageFields('pptnc', 'news-1', {
+      imageUrl: 'news-images/pptnc/news-1/456.png',
+    })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      imageUrl: 'news-images/pptnc/news-1/456.png',
+      updatedAt: 'SERVER_TIMESTAMP',
+    })
+  })
+
+  it('persists null imageUrl (image cleared)', async () => {
+    await updateNewsImageFields('pptnc', 'news-1', {
+      imageUrl: null,
+      imagePrompt: null,
+    })
+
+    expect(mockNewsDocUpdate).toHaveBeenCalledWith({
+      imageUrl: null,
+      imagePrompt: null,
       updatedAt: 'SERVER_TIMESTAMP',
     })
   })

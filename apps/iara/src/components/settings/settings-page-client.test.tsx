@@ -483,6 +483,60 @@ describe('SettingsPageClient', () => {
     expect(body.prompts.news.news_social.description).toBe('News social prompt')
   })
 
+  // Story 18.8 — news_image PromptFieldEditor
+  it('shows "Imagem" PromptFieldEditor inside "Prompts por Recurso" panel when news is enabled', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcastWithNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithNews} />)
+
+    await user.click(screen.getByText('Prompts por Recurso'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Imagem')).toBeInTheDocument()
+    })
+  })
+
+  it('calls API when news_image prompt is saved in "Prompts por Recurso"', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    const podcastWithNews = {
+      ...mockPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false },
+    }
+
+    render(<SettingsPageClient podcast={podcastWithNews} />)
+
+    await user.click(screen.getByText('Prompts por Recurso'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Imagem')).toBeInTheDocument()
+    })
+
+    const newsImageTextarea = document.getElementById('news-news_image-description') as HTMLTextAreaElement
+    await user.clear(newsImageTextarea)
+    await user.type(newsImageTextarea, 'Image generation prompt')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/podcast',
+        expect.objectContaining({ method: 'PATCH' })
+      )
+    })
+
+    const fetchCall = vi.mocked(global.fetch).mock.calls[0]
+    const body = JSON.parse(fetchCall[1]?.body as string)
+    expect(body.prompts.news.news_image.description).toBe('Image generation prompt')
+  })
+
   it('shows error when API call fails for duration settings', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     global.fetch = vi.fn().mockResolvedValue({

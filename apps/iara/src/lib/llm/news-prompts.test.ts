@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildNewsSocialSystemPrompt, buildNewsSocialUserPrompt } from './news-prompts'
+import { buildNewsSocialSystemPrompt, buildNewsSocialUserPrompt, buildNewsImagePrompt } from './news-prompts'
 
 describe('buildNewsSocialSystemPrompt', () => {
   const persona = {
@@ -82,5 +82,58 @@ describe('buildNewsSocialUserPrompt', () => {
     const result = buildNewsSocialUserPrompt(news, video, '')
 
     expect(result).not.toContain('# Instruções Adicionais do Produtor')
+  })
+})
+
+// ==========================================================================
+// Story 18.9 — buildNewsImagePrompt
+// ==========================================================================
+
+describe('buildNewsImagePrompt (Story 18.9)', () => {
+  const news = {
+    titulo: 'IA revoluciona mercado',
+    descricao: 'Novas ferramentas de IA surgem',
+    comentarios: 'Especialistas comentam o impacto',
+  }
+
+  const promptConfig = {
+    description: 'Gere uma imagem ilustrativa para a notícia',
+    expectedOutput: 'Uma imagem PNG com estilo editorial',
+  }
+
+  it('includes all news fields', () => {
+    const result = buildNewsImagePrompt(news, promptConfig)
+
+    expect(result).toContain('Título: IA revoluciona mercado')
+    expect(result).toContain('Descrição: Novas ferramentas de IA surgem')
+    expect(result).toContain('Comentários: Especialistas comentam o impacto')
+  })
+
+  it('includes prompt config description and expectedOutput', () => {
+    const result = buildNewsImagePrompt(news, promptConfig)
+
+    expect(result).toContain('# Tarefa')
+    expect(result).toContain('Gere uma imagem ilustrativa para a notícia')
+    expect(result).toContain('# Retorno esperado')
+    expect(result).toContain('Uma imagem PNG com estilo editorial')
+  })
+
+  it('includes additionalContext when provided', () => {
+    const result = buildNewsImagePrompt(news, promptConfig, 'Use tons de azul')
+
+    expect(result).toContain('# Instruções Adicionais')
+    expect(result).toContain('Use tons de azul')
+  })
+
+  it('omits additionalContext section when undefined', () => {
+    const result = buildNewsImagePrompt(news, promptConfig)
+
+    expect(result).not.toContain('# Instruções Adicionais')
+  })
+
+  it('omits additionalContext section when empty string', () => {
+    const result = buildNewsImagePrompt(news, promptConfig, '')
+
+    expect(result).not.toContain('# Instruções Adicionais')
   })
 })

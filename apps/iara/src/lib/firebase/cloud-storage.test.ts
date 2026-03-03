@@ -32,6 +32,9 @@ import {
   uploadNewsletterImage,
   downloadNewsletterImage,
   deleteNewsletterImage,
+  uploadNewsImage,
+  downloadNewsImage,
+  deleteNewsImage,
   CloudStorageError,
 } from './cloud-storage'
 
@@ -238,5 +241,171 @@ describe('deleteNewsletterImage', () => {
         error: 'Permission denied',
       })
     )
+  })
+})
+
+// ==========================================================================
+// Story 18.8 — News image Cloud Storage helpers
+// ==========================================================================
+
+describe('uploadNewsImage (Story 18.8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockSave.mockResolvedValue(undefined)
+    mockFile.mockReturnValue({
+      save: mockSave,
+      download: mockDownload,
+      delete: mockDelete,
+    })
+    mockBucket.mockReturnValue({
+      name: 'test-bucket',
+      file: mockFile,
+    })
+  })
+
+  it('saves image with correct news-images path pattern', async () => {
+    await uploadNewsImage('news-1', Buffer.from('test-image'))
+
+    expect(mockFile).toHaveBeenCalledWith(
+      expect.stringMatching(/^news-images\/pptnc\/news-1\/\d+\.png$/)
+    )
+  })
+
+  it('returns GCS file path (not a URL)', async () => {
+    const result = await uploadNewsImage('news-1', Buffer.from('test-image'))
+
+    expect(result).toMatch(/^news-images\/pptnc\/news-1\/\d+\.png$/)
+    expect(result).not.toContain('https://')
+  })
+
+  it('sets content-type to image/png', async () => {
+    await uploadNewsImage('news-1', Buffer.from('test-image'))
+
+    expect(mockSave).toHaveBeenCalledWith(
+      expect.any(Buffer),
+      expect.objectContaining({ contentType: 'image/png', resumable: false })
+    )
+  })
+
+  it('throws CloudStorageError with UPLOAD_FAILED when save fails', async () => {
+    mockSave.mockRejectedValue(new Error('Network error'))
+
+    const error = await uploadNewsImage('news-1', Buffer.from('test')).catch((e) => e)
+
+    expect(error).toBeInstanceOf(CloudStorageError)
+    expect(error.code).toBe('UPLOAD_FAILED')
+  })
+
+  it('rejects invalid newsId characters', async () => {
+    const error = await uploadNewsImage('../etc/passwd', Buffer.from('test')).catch((e) => e)
+
+    expect(error).toBeInstanceOf(CloudStorageError)
+    expect(error.code).toBe('UPLOAD_FAILED')
+  })
+})
+
+describe('downloadNewsImage (Story 18.8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockDownload.mockResolvedValue([Buffer.from('news-image-data')])
+    mockFile.mockReturnValue({
+      save: mockSave,
+      download: mockDownload,
+      delete: mockDelete,
+    })
+    mockBucket.mockReturnValue({
+      name: 'test-bucket',
+      file: mockFile,
+    })
+  })
+
+  it('downloads file by path and returns buffer', async () => {
+    const result = await downloadNewsImage('news-images/pptnc/news-1/123.png')
+
+    expect(mockFile).toHaveBeenCalledWith('news-images/pptnc/news-1/123.png')
+    expect(result).toEqual(Buffer.from('news-image-data'))
+  })
+
+  it('throws CloudStorageError with DOWNLOAD_FAILED on error', async () => {
+    mockDownload.mockRejectedValue(new Error('Not found'))
+
+    const error = await downloadNewsImage('news-images/pptnc/news-1/123.png').catch((e) => e)
+
+    expect(error).toBeInstanceOf(CloudStorageError)
+    expect(error.code).toBe('DOWNLOAD_FAILED')
+  })
+
+  it('rejects invalid file path prefix', async () => {
+    const error = await downloadNewsImage('newsletters/pptnc/video-1/123.png').catch((e) => e)
+
+    expect(error).toBeInstanceOf(CloudStorageError)
+    expect(error.code).toBe('DOWNLOAD_FAILED')
+  })
+
+  it('rejects path traversal with ../', async () => {
+    const error = await downloadNewsImage('news-images/../etc/passwd').catch((e) => e)
+
+    expect(error).toBeInstanceOf(CloudStorageError)
+    expect(error.code).toBe('DOWNLOAD_FAILED')
+  })
+})
+
+describe('deleteNewsImage (Story 18.8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockDelete.mockResolvedValue(undefined)
+    mockFile.mockReturnValue({
+      save: mockSave,
+      download: mockDownload,
+      delete: mockDelete,
+    })
+    mockBucket.mockReturnValue({
+      name: 'test-bucket',
+      file: mockFile,
+    })
+  })
+
+  it('deletes file by path', async () => {
+    await deleteNewsImage('news-images/pptnc/news-1/123.png')
+
+    expect(mockFile).toHaveBeenCalledWith('news-images/pptnc/news-1/123.png')
+    expect(mockDelete).toHaveBeenCalledWith({ ignoreNotFound: true })
+  })
+
+  it('does NOT throw when delete fails (fire-and-forget)', async () => {
+    mockDelete.mockRejectedValue(new Error('Permission denied'))
+
+    await expect(
+      deleteNewsImage('news-images/pptnc/news-1/123.png')
+    ).resolves.toBeUndefined()
+  })
+
+  it('logs warning when delete fails', async () => {
+    const { log } = await import('@/lib/logger')
+    mockDelete.mockRejectedValue(new Error('Permission denied'))
+
+    await deleteNewsImage('news-images/pptnc/news-1/123.png')
+
+    expect(log).toHaveBeenCalledWith(
+      'WARN',
+      'News image delete failed (fire-and-forget)',
+      expect.objectContaining({
+        error: 'Permission denied',
+      })
+    )
+  })
+
+  it('rejects invalid file path prefix silently', async () => {
+    await deleteNewsImage('newsletters/pptnc/video-1/123.png')
+
+    expect(mockFile).not.toHaveBeenCalled()
+    expect(mockDelete).not.toHaveBeenCalled()
+  })
+
+  it('rejects path traversal with ../ silently', async () => {
+    await deleteNewsImage('news-images/../etc/passwd')
+
+    expect(mockFile).not.toHaveBeenCalled()
+    expect(mockDelete).not.toHaveBeenCalled()
   })
 })

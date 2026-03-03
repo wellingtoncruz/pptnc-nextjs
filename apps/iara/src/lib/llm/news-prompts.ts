@@ -8,6 +8,7 @@
  */
 
 import type { Persona, PromptField } from '@/types/podcast'
+import type { News } from '@/types/news'
 
 /**
  * JSON schema instruction for news social LLM response.
@@ -67,6 +68,40 @@ Descrição: ${video.description}`
 
   if (additionalContext) {
     prompt += `\n\n# Instruções Adicionais do Produtor\n${additionalContext}`
+  }
+
+  return prompt
+}
+
+/**
+ * Builds a single prompt for news image generation via Gemini Image.
+ *
+ * This is sent directly to callGenAIImage() — no intermediate LLM call.
+ * The prompt combines news data + prompt config + optional additional context.
+ *
+ * @param news - News document (titulo, descricao, comentarios)
+ * @param promptConfig - The news_image prompt config (description + expectedOutput)
+ * @param additionalContext - Optional extra instructions from the producer
+ * @see Story 18.9
+ */
+export function buildNewsImagePrompt(
+  news: Pick<News, 'titulo' | 'descricao' | 'comentarios'>,
+  promptConfig: PromptField,
+  additionalContext?: string
+): string {
+  let prompt = `# Notícia
+Título: ${news.titulo}
+Descrição: ${news.descricao}
+Comentários: ${news.comentarios}
+
+# Tarefa
+${promptConfig.description}
+
+# Retorno esperado
+${promptConfig.expectedOutput}`
+
+  if (additionalContext) {
+    prompt += `\n\n# Instruções Adicionais\n${additionalContext}`
   }
 
   return prompt

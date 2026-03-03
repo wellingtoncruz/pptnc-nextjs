@@ -278,6 +278,31 @@ export async function updateNewsFields(
 }
 
 /**
+ * Updates image fields on a news document.
+ *
+ * Uses dot-notation update for atomicity (no read required).
+ *
+ * @param podcastId - The podcast ID
+ * @param newsId - The news document ID
+ * @param data - Image fields to update
+ */
+export async function updateNewsImageFields(
+  podcastId: string,
+  newsId: string,
+  data: { imageUrl?: string | null; imagePrompt?: string | null }
+): Promise<void> {
+  const db = getAdminDb()
+  const docRef = db.collection('podcasts').doc(podcastId).collection('news').doc(newsId)
+
+  const updatePayload: Record<string, unknown> = {}
+  if ('imageUrl' in data) updatePayload.imageUrl = data.imageUrl
+  if ('imagePrompt' in data) updatePayload.imagePrompt = data.imagePrompt
+  updatePayload.updatedAt = FieldValue.serverTimestamp()
+
+  await docRef.update(updatePayload)
+}
+
+/**
  * Reads a single news document by ID.
  *
  * @param podcastId - The podcast ID

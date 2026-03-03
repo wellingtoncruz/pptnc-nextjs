@@ -64,4 +64,36 @@ describe('PromptsSchema — news group (Epic 18)', () => {
       expect(result.data.news?.news_social).toBeUndefined()
     }
   })
+
+  // Story 18.8 — news_image prompt field
+  it('parses with news group containing news_image', () => {
+    const result = PromptsSchema.safeParse({
+      ...basePrompts,
+      news: {
+        news_image: { description: 'Image prompt', expectedOutput: 'Image output' },
+      },
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.news?.news_image?.description).toBe('Image prompt')
+      expect(result.data.news?.news_image?.expectedOutput).toBe('Image output')
+    }
+  })
+
+  it('parses with both news_social and news_image', () => {
+    const result = PromptsSchema.safeParse({
+      ...basePrompts,
+      news: {
+        news_social: { description: 'Social desc', expectedOutput: 'Social out' },
+        news_image: { description: 'Image desc', expectedOutput: 'Image out' },
+      },
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.news?.news_social?.description).toBe('Social desc')
+      expect(result.data.news?.news_image?.description).toBe('Image desc')
+    }
+  })
 })
