@@ -47,6 +47,7 @@ export function getAdminApp(): App {
   adminApp = initializeApp({
     credential: applicationDefault(),
     projectId: PROJECT_ID,
+    storageBucket: `${PROJECT_ID}.appspot.com`,
   })
 
   log('INFO', 'Firebase Admin SDK initialized', { projectId: PROJECT_ID })

@@ -26,7 +26,7 @@ substitutions:
   _SERVICE_ACCOUNT: pptnc-build@pptnc-stage.iam.gserviceaccount.com
   _PODCAST_ID: pptnc
   _FIRESTORE_DATABASE_ID: pptnc-stage
-  _NEWSLETTER_IMAGES_BUCKET: ''
+  _NEWSLETTER_IMAGES_BUCKET: 'iara-images'
 
 steps:
   # Step 1: Build Docker image (multi-stage build includes deps + Next.js build)
