@@ -7,6 +7,7 @@ import { ArrowRightIcon, PlusIcon, Loader2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -109,7 +110,8 @@ export function Phase1Critique({
     hasCoHost: hasGuestData(existingCoHost),
     coHost: existingCoHost,
     guests: existingGuests,
-  }), [video.theme, existingCoHost, existingGuests])
+    spotifyUrl: video.spotifyUrl ?? '',
+  }), [video.theme, existingCoHost, existingGuests, video.spotifyUrl])
 
   const form = useForm<EpisodeContextFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -166,6 +168,7 @@ export function Phase1Critique({
       body: JSON.stringify({
         theme: formData.theme,
         guests,
+        spotifyUrl: formData.spotifyUrl || '',
       }),
     })
 
@@ -343,6 +346,21 @@ export function Phase1Critique({
                   />
                 ))}
               </div>
+            </div>
+            {/* Spotify URL (optional, episodes only) */}
+            <div className="space-y-2">
+              <Label htmlFor="spotifyUrl">
+                URL do Spotify <span className="text-muted-foreground text-xs ml-1">(opcional)</span>
+              </Label>
+              <Input
+                id="spotifyUrl"
+                type="url"
+                placeholder="https://open.spotify.com/episode/..."
+                {...register('spotifyUrl')}
+              />
+              {errors.spotifyUrl && (
+                <p className="text-xs text-destructive">{errors.spotifyUrl.message}</p>
+              )}
             </div>
           </CardContent>
         </Card>

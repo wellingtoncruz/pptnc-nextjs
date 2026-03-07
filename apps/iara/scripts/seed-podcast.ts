@@ -68,6 +68,7 @@ const DEFAULT_PROMPTS = {
     titles: { ...DEFAULT_PROMPT_FIELD },
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },
+    topics: { ...DEFAULT_PROMPT_FIELD },
     social: {},
     adwords: { ...DEFAULT_PROMPT_FIELD },
   },
@@ -76,12 +77,14 @@ const DEFAULT_PROMPTS = {
     thumbs: { ...DEFAULT_PROMPT_FIELD },
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },
+    topics: { ...DEFAULT_PROMPT_FIELD },
     social: {},
   },
   reel: {
     titles: { ...DEFAULT_PROMPT_FIELD },
     description: { ...DEFAULT_PROMPT_FIELD },
     tags: { ...DEFAULT_PROMPT_FIELD },
+    topics: { ...DEFAULT_PROMPT_FIELD },
     social: {},
   },
   news: {

@@ -2235,12 +2235,30 @@ export function WizardOrchestrator({
         ? `${videoData.title} | ${podcastName}`
         : videoData.title
 
+      // For cuts/reels, fetch parent episode data for footer placeholder resolution
+      // (e.g., {{video.spotifyUrl}} should resolve from the parent episode)
+      let placeholderVideo = videoData
+      if (videoData.parentEpisodeId && (videoData.videoType === 'cut' || videoData.videoType === 'reel')) {
+        try {
+          const parentResponse = await fetch(`/api/videos/${videoData.parentEpisodeId}`)
+          if (parentResponse.ok) {
+            const parentResult = await parentResponse.json()
+            if (parentResult.data) {
+              placeholderVideo = parentResult.data
+            }
+          }
+        } catch {
+          // Fallback to current video data if parent fetch fails
+        }
+      }
+
       // Build complete description with all sections
       const finalDescription = buildCompleteYouTubeDescription({
         description: videoData.description || '',
         guests: videoData.guests,
         chapters: videoData.chapters,
         youtubeFooter,
+        video: placeholderVideo,
       })
 
       const response = await fetch(`/api/youtube/videos/${video.id}`, {

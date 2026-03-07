@@ -31,8 +31,7 @@ async function updateEpisodes() {
         console.log('\n--- Episodes to Update ---');
         snapshot.docs.forEach((doc) => {
             const data = doc.data();
-            const id = data.resourceId?.videoId || doc.id || 'unknown';
-            console.log(`ID: ${id} | Title: ${data.title}`);
+            console.log(`ID: ${doc.id} | Title: ${data.title}`);
         });
         console.log('--------------------------\n');
 
@@ -43,24 +42,20 @@ async function updateEpisodes() {
 
         for (const doc of snapshot.docs) {
             try {
-                const data = doc.data();
-                const id = data.resourceId?.videoId || doc.id || 'unknown';
-
                 // Update with merge to preserve existing data
                 await doc.ref.update({
                     isFullEpisode: true,
                 });
 
                 updatedCount++;
-                console.log(`[${updatedCount}/${snapshot.size}] Updated ID: ${id}`);
+                console.log(`[${updatedCount}/${snapshot.size}] Updated ID: ${doc.id}`);
 
                 // Small delay to be safe
                 await new Promise(resolve => setTimeout(resolve, 100));
 
             } catch (err) {
                 errorCount++;
-                const data = doc.data();
-                console.error(`FAILED to update episode ID: ${data.resourceId?.videoId || 'unknown'}`, err);
+                console.error(`FAILED to update episode ID: ${doc.id}`, err);
             }
         }
 

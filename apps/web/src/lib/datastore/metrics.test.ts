@@ -11,7 +11,7 @@ vi.mock("./client", () => ({
       collection: mockCollection,
     })
   ),
-  COLLECTION_METRICS: "metrics",
+  COLLECTION_METRICS: "podcasts/pptnc/metrics",
 }));
 
 // Mock unstable_cache to just call the function directly
@@ -54,7 +54,7 @@ describe("getMetrics", () => {
     expect(metrics.monthlyListeners).toBe(15000);
     expect(metrics.totalPlays).toBe(600000);
     expect(metrics.socialReach).toBe(20000);
-    expect(mockCollection).toHaveBeenCalledWith("metrics");
+    expect(mockCollection).toHaveBeenCalledWith("podcasts/pptnc/metrics");
     expect(mockDoc).toHaveBeenCalledWith("podcast");
   });
 

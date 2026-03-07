@@ -17,7 +17,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
-import { listNews } from '@/lib/firebase/news-admin'
+import { listNews, searchNews } from '@/lib/firebase/news-admin'
 import { log } from '@/lib/logger'
 
 export const runtime = 'nodejs'
@@ -34,6 +34,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { searchParams } = new URL(request.url)
   const cursor = searchParams.get('cursor') ?? undefined
+  const search = searchParams.get('search') ?? undefined
   const limitParam = searchParams.get('limit')
 
   let limit = 16
@@ -45,7 +46,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const result = await listNews(PODCAST_ID, { cursor, limit })
+    const result = search?.trim()
+      ? await searchNews(PODCAST_ID, search.trim(), { cursor, limit })
+      : await listNews(PODCAST_ID, { cursor, limit })
 
     const items = result.items.map(item => ({
       ...item,

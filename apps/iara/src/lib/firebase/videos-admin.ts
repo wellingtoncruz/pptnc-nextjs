@@ -247,6 +247,7 @@ export async function getVideosForDisplayAdmin(
         // Context fields (flat, not nested)
         theme: rawData.theme,
         guests: rawData.guests,
+        spotifyUrl: rawData.spotifyUrl,
         // AI-generated fields - needed for wizard phase detection
         critique: rawData.critique,
         editingIssues: rawData.editingIssues,

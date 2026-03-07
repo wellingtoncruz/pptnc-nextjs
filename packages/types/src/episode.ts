@@ -25,16 +25,6 @@ export interface EpisodeThumbnails {
 }
 
 /**
- * YouTube resource identifier
- */
-export interface EpisodeResourceId {
-  /** Resource type (e.g., "youtube#video") */
-  kind: string;
-  /** YouTube video ID */
-  videoId: string;
-}
-
-/**
  * YouTube video statistics
  */
 export interface EpisodeStatistics {
@@ -73,7 +63,7 @@ export interface EpisodeContentDetails {
  * Combines actual Datastore fields with derived/future fields
  */
 export interface Episode {
-  /** Unique identifier for the episode (from Datastore key or resourceId.videoId) */
+  /** Unique identifier for the episode (Firestore document ID = YouTube video ID) */
   id: string;
   /** URL-friendly slug for the episode (future field, derived from title if not present) */
   slug: string;
@@ -138,8 +128,6 @@ export interface EpisodeEntity {
   transcriptionSRT?: string;
   /** Thumbnail images object */
   thumbnails: EpisodeThumbnails;
-  /** YouTube resource identifier */
-  resourceId: EpisodeResourceId;
   /** Video statistics */
   statistics: EpisodeStatistics;
   /** Video content details */
@@ -165,4 +153,8 @@ export interface EpisodeEntity {
   guests?: GuestEntity[];
   /** Topic tags */
   topics?: string[];
+  /** Video type classification (set by IAra backoffice) */
+  videoType?: 'episode' | 'cut' | 'reel';
+  /** Thumbnail stored in Firebase Storage (works for private/scheduled videos) */
+  storageThumbnailUrl?: string;
 }

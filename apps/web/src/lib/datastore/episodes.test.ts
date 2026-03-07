@@ -55,13 +55,16 @@ import {
 } from "./episodes";
 
 // Sample mock document factory - matches Firestore document structure
-const createMockDocument = (overrides = {}) => {
+// docId parameter sets the Firestore document ID (= YouTube video ID)
+const createMockDocument = (overrides: Record<string, unknown> = {}, docId = "0dexQ7BDHME") => {
+  const { ...dataOverrides } = overrides;
+
   const data = {
     title: "Agile Trends 2022 | PPT Não Compila ao vivo no evento",
     description: "O PPT Não Compila vai participar do maior evento...",
     publishedAt: "2022-04-06T13:12:55Z",
     duration: 4000,
-    isFullEpisode: true,
+    videoType: "episode",
     playlistId: "UUOvTsuQyJq-fpydse7BY2PQ",
     transcriptionTXT: "é [Música] [Aplausos] muito bem...",
     transcriptionSRT: "1\n00:00:00,300 --> 00:00:07,929\né\n...",
@@ -81,10 +84,6 @@ const createMockDocument = (overrides = {}) => {
         width: 480,
         height: 360,
       },
-    },
-    resourceId: {
-      kind: "youtube#video",
-      videoId: "0dexQ7BDHME",
     },
     statistics: {
       commentCount: "1",
@@ -106,11 +105,11 @@ const createMockDocument = (overrides = {}) => {
     position: 0,
     topics: ["javascript", "agile"],
     guests: [{ name: "John Doe", role: "Developer", company: "Acme" }],
-    ...overrides,
+    ...dataOverrides,
   };
 
   return {
-    id: data.resourceId?.videoId || "doc-id",
+    id: docId,
     data: () => data,
   };
 };
@@ -131,12 +130,10 @@ describe("getEpisodes", () => {
   it("returns episodes sorted by publishedAt descending", async () => {
     const doc1 = createMockDocument({
       publishedAt: "2022-01-01T00:00:00Z",
-      resourceId: { videoId: "video1" },
-    });
+    }, "video1");
     const doc2 = createMockDocument({
       publishedAt: "2022-02-01T00:00:00Z",
-      resourceId: { videoId: "video2" },
-    });
+    }, "video2");
 
     mockGet.mockResolvedValue({
       docs: [doc2, doc1], // Firestore returns them ordered
@@ -148,7 +145,7 @@ describe("getEpisodes", () => {
     expect(episodes).toHaveLength(2);
     expect(episodes[0].id).toBe("video2");
     expect(episodes[1].id).toBe("video1");
-    expect(mockWhere).toHaveBeenCalledWith("isFullEpisode", "==", true);
+    expect(mockWhere).toHaveBeenCalledWith("videoType", "==", "episode");
     expect(mockOrderBy).toHaveBeenCalledWith("publishedAt", "desc");
   });
 
@@ -192,7 +189,7 @@ describe("getEpisodes", () => {
 
   it("applies limit option (in-memory slicing)", async () => {
     const docs = Array.from({ length: 10 }, (_, i) =>
-      createMockDocument({ resourceId: { videoId: `video${i}` } })
+      createMockDocument({}, `video${i}`)
     );
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -203,10 +200,7 @@ describe("getEpisodes", () => {
 
   it("applies offset option (in-memory slicing)", async () => {
     const docs = Array.from({ length: 10 }, (_, i) =>
-      createMockDocument({
-        resourceId: { videoId: `video${i}` },
-        title: `Episode ${i}`,
-      })
+      createMockDocument({ title: `Episode ${i}` }, `video${i}`)
     );
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -234,7 +228,7 @@ describe("getEpisodesCount", () => {
 
   it("returns count from cached episodes", async () => {
     const docs = Array.from({ length: 5 }, (_, i) =>
-      createMockDocument({ resourceId: { videoId: `video${i}` } })
+      createMockDocument({}, `video${i}`)
     );
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -259,9 +253,9 @@ describe("getEpisodeByVideoId", () => {
     clearTopicsCache();
   });
 
-  it("finds episode by resourceId.videoId", async () => {
+  it("finds episode by doc ID (videoId)", async () => {
     mockGet.mockResolvedValue({
-      docs: [createMockDocument({ resourceId: { videoId: "target-video" } })],
+      docs: [createMockDocument({}, "target-video")],
       empty: false,
     });
 
@@ -323,18 +317,9 @@ describe("getEpisodesByTopic", () => {
 
   it("filters by topic in memory", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "js1" },
-        topics: ["javascript"],
-      }),
-      createMockDocument({
-        resourceId: { videoId: "py1" },
-        topics: ["python"],
-      }),
-      createMockDocument({
-        resourceId: { videoId: "js2" },
-        topics: ["javascript", "react"],
-      }),
+      createMockDocument({ topics: ["javascript"] }, "js1"),
+      createMockDocument({ topics: ["python"] }, "py1"),
+      createMockDocument({ topics: ["javascript", "react"] }, "js2"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -346,10 +331,7 @@ describe("getEpisodesByTopic", () => {
 
   it("applies pagination options after filtering", async () => {
     const docs = Array.from({ length: 10 }, (_, i) =>
-      createMockDocument({
-        resourceId: { videoId: `video${i}` },
-        topics: ["tech"],
-      })
+      createMockDocument({ topics: ["tech"] }, `video${i}`)
     );
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -436,12 +418,10 @@ describe("getLatestEpisode", () => {
   it("returns the first episode from cached data (already sorted)", async () => {
     const doc1 = createMockDocument({
       publishedAt: "2022-02-01T00:00:00Z",
-      resourceId: { videoId: "latest" },
-    });
+    }, "latest");
     const doc2 = createMockDocument({
       publishedAt: "2022-01-01T00:00:00Z",
-      resourceId: { videoId: "older" },
-    });
+    }, "older");
 
     mockGet.mockResolvedValue({
       docs: [doc1, doc2], // Sorted by Firestore
@@ -553,7 +533,7 @@ describe("Field mapping edge cases", () => {
 
     const episodes = await getEpisodes();
 
-    expect(episodes[0].thumbnailUrl).toBe("");
+    expect(episodes[0].thumbnailUrl).toBe("https://i.ytimg.com/vi/0dexQ7BDHME/hqdefault.jpg");
     expect(episodes[0].statistics).toEqual({
       commentCount: "0",
       favoriteCount: "0",
@@ -581,23 +561,15 @@ describe("Field mapping edge cases", () => {
     expect(episodes[0].audioUrl).toBe("https://audio.example.com/ep.mp3");
   });
 
-  it("uses document ID when resourceId.videoId is missing", async () => {
+  it("uses document ID as episode ID", async () => {
     mockGet.mockResolvedValue({
-      docs: [
-        {
-          id: "doc-fallback-id",
-          data: () => ({
-            title: "Test",
-            isFullEpisode: true,
-          }),
-        },
-      ],
+      docs: [createMockDocument({ title: "Test" }, "my-doc-id")],
       empty: false,
     });
 
     const episodes = await getEpisodes();
 
-    expect(episodes[0].id).toBe("doc-fallback-id");
+    expect(episodes[0].id).toBe("my-doc-id");
   });
 });
 
@@ -610,26 +582,10 @@ describe("getRelatedEpisodes", () => {
 
   it("returns episodes with shared topics sorted by number of shared topics", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: ["tech", "ai"],
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "ep1" },
-        topics: ["tech", "cloud"], // 1 shared
-        publishedAt: "2022-01-02T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "ep2" },
-        topics: ["tech", "ai"], // 2 shared
-        publishedAt: "2022-01-03T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "ep3" },
-        topics: ["business"], // 0 shared
-        publishedAt: "2022-01-04T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["tech", "ai"], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
+      createMockDocument({ topics: ["tech", "cloud"], publishedAt: "2022-01-02T00:00:00Z" }, "ep1"),
+      createMockDocument({ topics: ["tech", "ai"], publishedAt: "2022-01-03T00:00:00Z" }, "ep2"),
+      createMockDocument({ topics: ["business"], publishedAt: "2022-01-04T00:00:00Z" }, "ep3"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -646,16 +602,8 @@ describe("getRelatedEpisodes", () => {
 
   it("excludes current episode from results", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: ["tech"],
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "other" },
-        topics: ["tech"],
-        publishedAt: "2022-01-02T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-02T00:00:00Z" }, "other"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -669,26 +617,10 @@ describe("getRelatedEpisodes", () => {
 
   it("falls back to recent episodes when not enough related found", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: ["tech"],
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "related" },
-        topics: ["tech"], // 1 shared
-        publishedAt: "2022-01-02T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "recent1" },
-        topics: ["business"], // 0 shared
-        publishedAt: "2022-01-04T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "recent2" },
-        topics: ["marketing"], // 0 shared
-        publishedAt: "2022-01-03T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-02T00:00:00Z" }, "related"),
+      createMockDocument({ topics: ["business"], publishedAt: "2022-01-04T00:00:00Z" }, "recent1"),
+      createMockDocument({ topics: ["marketing"], publishedAt: "2022-01-03T00:00:00Z" }, "recent2"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -706,21 +638,9 @@ describe("getRelatedEpisodes", () => {
 
   it("returns recent episodes when current episode has no topics", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: [], // No topics
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "ep1" },
-        topics: ["tech"],
-        publishedAt: "2022-01-04T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "ep2" },
-        topics: ["business"],
-        publishedAt: "2022-01-03T00:00:00Z",
-      }),
+      createMockDocument({ topics: [], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-04T00:00:00Z" }, "ep1"),
+      createMockDocument({ topics: ["business"], publishedAt: "2022-01-03T00:00:00Z" }, "ep2"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -736,21 +656,9 @@ describe("getRelatedEpisodes", () => {
 
   it("sorts by date when episodes have same number of shared topics", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: ["tech"],
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "older" },
-        topics: ["tech"], // 1 shared
-        publishedAt: "2022-01-02T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "newer" },
-        topics: ["tech"], // 1 shared
-        publishedAt: "2022-01-03T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-02T00:00:00Z" }, "older"),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-03T00:00:00Z" }, "newer"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -766,17 +674,12 @@ describe("getRelatedEpisodes", () => {
 
   it("respects limit parameter", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: ["tech"],
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
       ...Array.from({ length: 10 }, (_, i) =>
-        createMockDocument({
-          resourceId: { videoId: `ep${i}` },
-          topics: ["tech"],
-          publishedAt: `2022-01-${String(i + 2).padStart(2, "0")}T00:00:00Z`,
-        })
+        createMockDocument(
+          { topics: ["tech"], publishedAt: `2022-01-${String(i + 2).padStart(2, "0")}T00:00:00Z` },
+          `ep${i}`
+        )
       ),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
@@ -790,11 +693,7 @@ describe("getRelatedEpisodes", () => {
 
   it("returns empty array when only one episode exists", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "only" },
-        topics: ["tech"],
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["tech"], publishedAt: "2022-01-01T00:00:00Z" }, "only"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -807,21 +706,9 @@ describe("getRelatedEpisodes", () => {
 
   it("returns recent episodes when current has topics but no matches found", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: ["unique-topic"], // No other episode has this
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "other1" },
-        topics: ["different"], // 0 shared
-        publishedAt: "2022-01-03T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "other2" },
-        topics: ["another"], // 0 shared
-        publishedAt: "2022-01-02T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["unique-topic"], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
+      createMockDocument({ topics: ["different"], publishedAt: "2022-01-03T00:00:00Z" }, "other1"),
+      createMockDocument({ topics: ["another"], publishedAt: "2022-01-02T00:00:00Z" }, "other2"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 
@@ -837,16 +724,8 @@ describe("getRelatedEpisodes", () => {
 
   it("matches topics case-insensitively", async () => {
     const docs = [
-      createMockDocument({
-        resourceId: { videoId: "current" },
-        topics: ["Tech", "AI"], // Capitalized
-        publishedAt: "2022-01-01T00:00:00Z",
-      }),
-      createMockDocument({
-        resourceId: { videoId: "match" },
-        topics: ["tech", "ai"], // Lowercase - should still match
-        publishedAt: "2022-01-02T00:00:00Z",
-      }),
+      createMockDocument({ topics: ["Tech", "AI"], publishedAt: "2022-01-01T00:00:00Z" }, "current"),
+      createMockDocument({ topics: ["tech", "ai"], publishedAt: "2022-01-02T00:00:00Z" }, "match"),
     ];
     mockGet.mockResolvedValue({ docs, empty: false });
 

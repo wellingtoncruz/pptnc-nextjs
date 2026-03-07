@@ -208,7 +208,7 @@ describe("EpisodeEntity type (Datastore schema)", () => {
         medium: { url: "", width: 0, height: 0 },
         high: { url: "", width: 0, height: 0 },
       },
-      resourceId: { kind: "youtube#video", videoId: "abc" },
+
       statistics: {
         commentCount: "0",
         favoriteCount: "0",
@@ -246,7 +246,7 @@ describe("EpisodeEntity type (Datastore schema)", () => {
         medium: { url: "", width: 0, height: 0 },
         high: { url: "", width: 0, height: 0 },
       },
-      resourceId: { kind: "youtube#video", videoId: "abc" },
+
       statistics: {
         commentCount: "0",
         favoriteCount: "0",
@@ -284,7 +284,7 @@ describe("EpisodeEntity type (Datastore schema)", () => {
         medium: { url: "", width: 0, height: 0 },
         high: { url: "", width: 0, height: 0 },
       },
-      resourceId: { kind: "youtube#video", videoId: "abc" },
+
       statistics: {
         commentCount: "0",
         favoriteCount: "0",
@@ -336,10 +336,6 @@ describe("EpisodeEntity type (Datastore schema)", () => {
           height: 360,
         },
       },
-      resourceId: {
-        kind: "youtube#video",
-        videoId: "0dexQ7BDHME",
-      },
       statistics: {
         commentCount: "1",
         favoriteCount: "0",
@@ -365,7 +361,6 @@ describe("EpisodeEntity type (Datastore schema)", () => {
     // Verify real Datastore field names
     expect(entity.transcriptionTXT).toBeDefined();
     expect(entity.transcriptionSRT).toBeDefined();
-    expect(entity.resourceId.videoId).toBe("0dexQ7BDHME");
     expect(entity.thumbnails.high.url).toContain("hqdefault");
     expect(entity.statistics.viewCount).toBe("153");
     expect(entity.contentDetails.duration).toBe("PT9M56S");

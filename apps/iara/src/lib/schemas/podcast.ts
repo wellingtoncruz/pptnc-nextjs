@@ -87,6 +87,8 @@ export const EpisodePromptsSchema = z.object({
   titles: PromptFieldSchema,
   description: PromptFieldSchema,
   tags: PromptFieldSchema,
+  /** Topic categorization prompt — classifies video into podcast topics via LLM. */
+  topics: PromptFieldSchema.optional(),
   /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
   social: z.record(z.string(), PromptFieldSchema).optional(),
   /** AdWords/paid traffic optimization prompt. Episode-only (not available for cuts/reels). */
@@ -110,6 +112,8 @@ export const CutPromptsSchema = z.object({
   thumbs: PromptFieldSchema,
   description: PromptFieldSchema,
   tags: PromptFieldSchema,
+  /** Topic categorization prompt — classifies video into podcast topics via LLM. */
+  topics: PromptFieldSchema.optional(),
   /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
   social: z.record(z.string(), PromptFieldSchema).optional(),
 })
@@ -123,6 +127,8 @@ export const ReelPromptsSchema = z.object({
   titles: PromptFieldSchema,
   description: PromptFieldSchema,
   tags: PromptFieldSchema,
+  /** Topic categorization prompt — classifies video into podcast topics via LLM. */
+  topics: PromptFieldSchema.optional(),
   /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
   social: z.record(z.string(), PromptFieldSchema).optional(),
 })

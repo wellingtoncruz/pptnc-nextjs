@@ -44,7 +44,7 @@ vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
-import { listNews, listNewsByDate, getNewsEmbedding, updateNewsEmbedding, updateNewsRelatedVideos, getNewsById, updateNewsFields, updateNewsImageFields } from './news-admin'
+import { listNews, listNewsByDate, searchNews, getNewsEmbedding, updateNewsEmbedding, updateNewsRelatedVideos, getNewsById, updateNewsFields, updateNewsImageFields } from './news-admin'
 
 function createTimestamp(date: Date) {
   return {
@@ -228,6 +228,102 @@ describe('listNews', () => {
     const result = await listNews('test-podcast', { limit: 16 })
 
     expect(result.nextCursor).toBeNull()
+  })
+})
+
+// ==========================================================================
+// Story 20.3 — searchNews
+// ==========================================================================
+
+describe('searchNews', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockLimit.mockReturnValue({ get: mockGet })
+    mockOrderBy.mockReturnValue({ limit: mockLimit })
+    mockStartAfter.mockReturnValue({ limit: mockLimit })
+  })
+
+  it('returns items matching titulo (case-insensitive)', async () => {
+    const ts = createTimestamp(new Date('2026-03-01T10:00:00Z'))
+    mockGet.mockResolvedValue({
+      docs: [
+        createMockDoc('n1', {
+          titulo: 'Inteligência Artificial avança',
+          descricao: 'Descrição qualquer',
+          importedAt: ts,
+        }),
+        createMockDoc('n2', {
+          titulo: 'Mercado financeiro em alta',
+          descricao: 'Outra descrição',
+          importedAt: ts,
+        }),
+      ],
+    })
+
+    const result = await searchNews('pptnc', 'inteligência')
+
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0].id).toBe('n1')
+  })
+
+  it('returns items matching descricao', async () => {
+    const ts = createTimestamp(new Date('2026-03-01T10:00:00Z'))
+    mockGet.mockResolvedValue({
+      docs: [
+        createMockDoc('n1', {
+          titulo: 'Título genérico',
+          descricao: 'Discussão sobre blockchain e criptomoedas',
+          importedAt: ts,
+        }),
+      ],
+    })
+
+    const result = await searchNews('pptnc', 'blockchain')
+
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0].id).toBe('n1')
+  })
+
+  it('returns empty when no match', async () => {
+    const ts = createTimestamp(new Date('2026-03-01T10:00:00Z'))
+    mockGet.mockResolvedValue({
+      docs: [
+        createMockDoc('n1', {
+          titulo: 'Título qualquer',
+          descricao: 'Descrição qualquer',
+          importedAt: ts,
+        }),
+      ],
+    })
+
+    const result = await searchNews('pptnc', 'xyznonexistent')
+
+    expect(result.items).toHaveLength(0)
+    expect(result.totalCount).toBe(0)
+  })
+
+  it('respects limit on matched results', async () => {
+    const ts = createTimestamp(new Date('2026-03-01T10:00:00Z'))
+    const docs = Array.from({ length: 5 }, (_, i) =>
+      createMockDoc(`n${i}`, {
+        titulo: `IA notícia ${i}`,
+        descricao: 'Sobre inteligência artificial',
+        importedAt: ts,
+      })
+    )
+    mockGet.mockResolvedValue({ docs })
+
+    const result = await searchNews('pptnc', 'IA', { limit: 2 })
+
+    expect(result.items).toHaveLength(2)
+  })
+
+  it('uses batch size of 200', async () => {
+    mockGet.mockResolvedValue({ docs: [] })
+
+    await searchNews('pptnc', 'test')
+
+    expect(mockLimit).toHaveBeenCalledWith(200)
   })
 })
 

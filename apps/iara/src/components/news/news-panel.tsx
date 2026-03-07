@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NewsListItem } from './news-list-item'
 import { NewsWorkspace } from './news-workspace'
@@ -22,13 +23,18 @@ export function NewsPanel() {
   const [error, setError] = useState<string | null>(null)
   const [selectedNews, setSelectedNews] = useState<News | null>(null)
 
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activeSearch, setActiveSearch] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
   // Cursor-based pagination state
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [prevCursors, setPrevCursors] = useState<Array<string | undefined>>([])
   const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined)
   const [totalCount, setTotalCount] = useState(0)
 
-  const fetchNews = useCallback(async (cursor?: string) => {
+  const fetchNews = useCallback(async (cursor?: string, search?: string) => {
     setIsLoading(true)
     setError(null)
 
@@ -37,6 +43,9 @@ export function NewsPanel() {
       params.set('limit', String(PAGE_SIZE))
       if (cursor) {
         params.set('cursor', cursor)
+      }
+      if (search) {
+        params.set('search', search)
       }
 
       const response = await fetch(`/api/news?${params.toString()}`)
@@ -64,13 +73,36 @@ export function NewsPanel() {
     fetchNews()
   }, [fetchNews])
 
+  const handleSearch = () => {
+    const term = searchTerm.trim()
+    setActiveSearch(term)
+    setPrevCursors([])
+    setCurrentCursor(undefined)
+    setSelectedNews(null)
+    fetchNews(undefined, term || undefined)
+  }
+
+  const handleClearSearch = () => {
+    setSearchTerm('')
+    setActiveSearch('')
+    setPrevCursors([])
+    setCurrentCursor(undefined)
+    setSelectedNews(null)
+    fetchNews()
+  }
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  }
+
   const handleNextPage = () => {
     if (!nextCursor) return
-    // Push current cursor to stack for "back" navigation
     setPrevCursors(prev => [...prev, currentCursor])
     setCurrentCursor(nextCursor)
     setSelectedNews(null)
-    fetchNews(nextCursor)
+    fetchNews(nextCursor, activeSearch || undefined)
   }
 
   const handlePrevPage = () => {
@@ -80,7 +112,7 @@ export function NewsPanel() {
     setPrevCursors(prev)
     setCurrentCursor(cursor)
     setSelectedNews(null)
-    fetchNews(cursor)
+    fetchNews(cursor, activeSearch || undefined)
   }
 
   const hasPrevPage = prevCursors.length > 0
@@ -91,8 +123,44 @@ export function NewsPanel() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center border-b border-border px-6 py-4">
+      <div className="flex flex-col gap-3 border-b border-border px-6 py-4">
         <h1 className="text-lg font-semibold">Notícias</h1>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Input
+              ref={searchInputRef}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Buscar notícias..."
+              className="pr-8"
+            />
+            {activeSearch && (
+              <button
+                onClick={handleClearSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Limpar busca"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSearch}
+            aria-label="Buscar"
+          >
+            <Search className="size-4" />
+          </Button>
+        </div>
+        {activeSearch && !isLoading && (
+          <p className="text-xs text-muted-foreground">
+            {items.length === 0
+              ? `Nenhuma notícia encontrada para "${activeSearch}"`
+              : `${items.length} resultado${items.length !== 1 ? 's' : ''}${hasNextPage ? ' (mais resultados disponíveis)' : ''}`}
+          </p>
+        )}
       </div>
 
       {/* Master-detail content */}

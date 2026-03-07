@@ -32,7 +32,6 @@ const CACHE_REVALIDATE = 3600;
  */
 // Fields needed for episode listing (excludes large transcript fields)
 const EPISODE_LIST_FIELDS = [
-  "resourceId",
   "publishedAt",
   "slug",
   "title",
@@ -49,7 +48,7 @@ const EPISODE_LIST_FIELDS = [
   "audioUrl",
   "guests",
   "topics",
-  "isFullEpisode",
+  "videoType",
 ];
 
 async function fetchAllEpisodesFromFirestore(): Promise<Episode[]> {
@@ -59,7 +58,7 @@ async function fetchAllEpisodesFromFirestore(): Promise<Episode[]> {
     // Use select() to fetch only needed fields, excluding transcripts (~46MB -> ~2MB)
     const snapshot = await db
       .collection(COLLECTION_EPISODES)
-      .where("isFullEpisode", "==", true)
+      .where("videoType", "==", "episode")
       .orderBy("publishedAt", "desc")
       .select(...EPISODE_LIST_FIELDS)
       .get();
@@ -164,18 +163,14 @@ export async function getEpisodeBySlugWithTranscript(slug: string): Promise<Epis
   // Then fetch full data with transcript directly from Firestore
   try {
     const db = await getFirestoreClient();
-    const snapshot = await db
-      .collection(COLLECTION_EPISODES)
-      .where("resourceId.videoId", "==", cachedEpisode.youtubeId)
-      .limit(1)
-      .get();
+    const docRef = db.collection(COLLECTION_EPISODES).doc(cachedEpisode.youtubeId);
+    const doc = await docRef.get();
 
-    if (snapshot.empty) {
+    if (!doc.exists) {
       return cachedEpisode; // Fallback to cached version
     }
 
-    const doc = snapshot.docs[0];
-    return mapDocumentToEpisode(doc.id, doc.data(), db, true);
+    return mapDocumentToEpisode(doc.id, doc.data()!, db, true);
   } catch (error) {
     logger.warn("Failed to fetch episode with transcript, using cached", {
       service: "episodes",
@@ -288,16 +283,9 @@ export function clearTopicsCache(): void {
 }
 
 /**
- * Finds episodes related to the current one based on shared topics.
- * Falls back to recent episodes if not enough related found.
- *
- * Algorithm:
- * 1. Exclude current episode from candidates
- * 2. Score candidates by number of shared topics (case-insensitive matching)
- * 3. Sort by shared topics (desc), then by date (desc)
- * 4. Return top matches, filling with recent episodes if needed
- *
- * Note: publishedAt may be Date object or ISO string (after JSON cache serialization)
+ * Finds related episodes using vector search (findNearest) on summaryVector.
+ * Falls back to topic-based matching if the episode has no embedding.
+ * Cached per episode with 1-hour TTL for granular revalidation.
  *
  * @param currentEpisode - The episode to find related content for
  * @param limit - Maximum number of related episodes to return (default: 4)
@@ -307,17 +295,97 @@ export async function getRelatedEpisodes(
   currentEpisode: Episode,
   limit: number = 4
 ): Promise<Episode[]> {
-  const allEpisodes = await getCachedAllEpisodes();
+  const cachedFn = unstable_cache(
+    async () => {
+      try {
+        const vectorResults = await getRelatedByVector(currentEpisode, limit);
+        if (vectorResults.length > 0) {
+          return vectorResults;
+        }
+      } catch (error) {
+        logger.warn("Vector search failed, falling back to topic matching", {
+          service: "episodes",
+          episodeId: currentEpisode.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
 
-  // Exclude current episode from candidates
+      // Fallback: topic-based matching
+      return getRelatedByTopics(currentEpisode, limit);
+    },
+    [`related-episodes-${currentEpisode.youtubeId}`],
+    { revalidate: CACHE_REVALIDATE, tags: [`episode-related-${currentEpisode.youtubeId}`, "episodes"] }
+  );
+
+  return cachedFn();
+}
+
+/**
+ * Finds related episodes via Firestore vector search (findNearest).
+ * Requires the episode to have a summaryVector embedding.
+ *
+ * @returns Related episodes, or empty array if no embedding available
+ */
+async function getRelatedByVector(
+  currentEpisode: Episode,
+  limit: number
+): Promise<Episode[]> {
+  const db = await getFirestoreClient();
+
+  // Read the current episode's summaryVector directly from Firestore
+  const docRef = db.collection(COLLECTION_EPISODES).doc(currentEpisode.youtubeId);
+  const docSnap = await docRef.get();
+
+  if (!docSnap.exists) return [];
+
+  const data = docSnap.data();
+  const vectorField = data?.summaryVector;
+
+  // Firestore Vector fields have a toArray() method
+  const queryVector: number[] | null = vectorField?.toArray?.() ?? null;
+  if (!queryVector || queryVector.length === 0) return [];
+
+  // findNearest: search for similar episodes
+  // Request limit+1 to account for the current episode appearing in results
+  // select() limits returned fields (server still accesses summaryVector for distance)
+  const vectorQuery = db
+    .collection(COLLECTION_EPISODES)
+    .where("videoType", "==", "episode")
+    .where("hasEmbedding", "==", true)
+    .select(...EPISODE_LIST_FIELDS)
+    .findNearest("summaryVector", queryVector, {
+      limit: limit + 1,
+      distanceMeasure: "COSINE",
+    });
+
+  const snapshot = await vectorQuery.get();
+
+  // Map results, excluding the current episode
+  const results: Episode[] = [];
+  for (const doc of snapshot.docs) {
+    if (doc.id === currentEpisode.youtubeId) continue;
+    if (results.length >= limit) break;
+    results.push(mapDocumentToEpisode(doc.id, doc.data(), db, false));
+  }
+
+  return results;
+}
+
+/**
+ * Finds related episodes based on shared topics (legacy fallback).
+ * Used when the episode has no embedding vector.
+ */
+async function getRelatedByTopics(
+  currentEpisode: Episode,
+  limit: number
+): Promise<Episode[]> {
+  const allEpisodes = await getCachedAllEpisodes();
   const candidates = allEpisodes.filter((ep) => ep.id !== currentEpisode.id);
 
-  // If current episode has no topics, return most recent
   if (currentEpisode.topics.length === 0) {
     return candidates.slice(0, limit);
   }
 
-  // Score each candidate by number of shared topics (case-insensitive)
   const currentTopicsLower = currentEpisode.topics.map((t) => t.toLowerCase());
   const scored = candidates.map((ep) => ({
     episode: ep,
@@ -326,12 +394,10 @@ export async function getRelatedEpisodes(
     ).length,
   }));
 
-  // Sort by shared topics (desc), then by date (desc)
   scored.sort((a, b) => {
     if (b.sharedTopics !== a.sharedTopics) {
       return b.sharedTopics - a.sharedTopics;
     }
-    // Handle both Date objects and ISO strings (after JSON serialization)
     const dateA =
       a.episode.publishedAt instanceof Date
         ? a.episode.publishedAt.getTime()
@@ -343,13 +409,11 @@ export async function getRelatedEpisodes(
     return dateB - dateA;
   });
 
-  // Get episodes with at least one shared topic
   const related = scored
     .filter((s) => s.sharedTopics > 0)
     .slice(0, limit)
     .map((s) => s.episode);
 
-  // Fallback: fill with recent episodes if not enough related
   if (related.length < limit) {
     const remaining = limit - related.length;
     const relatedIds = new Set(related.map((e) => e.id));
@@ -397,8 +461,7 @@ function mapDocumentToEpisode(
 ): Episode {
   const entity = data as EpisodeEntity;
 
-  // Use resourceId.videoId as primary ID, fallback to document ID
-  const id = entity.resourceId?.videoId || docId;
+  const id = docId;
 
   // Handle date conversion - Firestore may return Timestamp, Date, string, or number
   let publishedAt: Date;
@@ -416,25 +479,35 @@ function mapDocumentToEpisode(
     publishedAt = new Date();
   }
 
-  // Get YouTube video ID from resourceId
-  const youtubeId = entity.resourceId?.videoId || "";
+  const youtubeId = docId;
 
   // Generate slug from title if not present (future field)
   const slug = entity.slug || generateSlugFromTitle(entity.title || "");
 
-  // Get thumbnail URL from thumbnails object (prefer high quality)
-  const thumbnailUrl =
-    entity.thumbnails?.high?.url ||
-    entity.thumbnails?.medium?.url ||
-    entity.thumbnails?.default?.url ||
-    "";
+  // Thumbnail URL: always use the standard YouTube URL based on videoId.
+  // This is a permanent, public URL guaranteed to work for all YouTube videos.
+  // Avoids signed URLs (i9.ytimg.com?sqp=) that expire and return 404.
+  const thumbnailUrl = youtubeId
+    ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`
+    : "";
 
-  // Ensure thumbnails object exists with defaults
-  const defaultThumbnail = { url: "", width: 0, height: 0 };
+  // Thumbnails object with standard YouTube URLs at each resolution
   const thumbnails: EpisodeThumbnails = {
-    default: entity.thumbnails?.default || defaultThumbnail,
-    medium: entity.thumbnails?.medium || defaultThumbnail,
-    high: entity.thumbnails?.high || defaultThumbnail,
+    default: {
+      url: youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/default.jpg` : "",
+      width: 120,
+      height: 90,
+    },
+    medium: {
+      url: youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg` : "",
+      width: 320,
+      height: 180,
+    },
+    high: {
+      url: youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : "",
+      width: 480,
+      height: 360,
+    },
   };
 
   // Ensure statistics object exists with defaults

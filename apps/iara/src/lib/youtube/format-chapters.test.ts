@@ -3,6 +3,8 @@ import { describe, it, expect } from 'vitest'
 import {
   formatChaptersForYouTube,
   buildDescriptionWithChapters,
+  buildCompleteYouTubeDescription,
+  resolveFooterPlaceholders,
   type Chapter,
 } from './format-chapters'
 
@@ -77,5 +79,89 @@ describe('buildDescriptionWithChapters', () => {
     const chapters: Chapter[] = [{ timestamp: '00:00', title: 'Chapter' }]
     const result = buildDescriptionWithChapters('', chapters)
     expect(result).toBe('00:00 Chapter\n\n')
+  })
+})
+
+describe('resolveFooterPlaceholders', () => {
+  it('replaces {{video.spotifyUrl}} with actual value', () => {
+    const result = resolveFooterPlaceholders(
+      'Ouça no Spotify: {{video.spotifyUrl}}',
+      { spotifyUrl: 'https://open.spotify.com/episode/123' }
+    )
+    expect(result).toBe('Ouça no Spotify: https://open.spotify.com/episode/123')
+  })
+
+  it('replaces multiple placeholders', () => {
+    const result = resolveFooterPlaceholders(
+      '{{video.title}} - Spotify: {{video.spotifyUrl}}',
+      { title: 'Meu Episódio', spotifyUrl: 'https://open.spotify.com/ep/1' }
+    )
+    expect(result).toBe('Meu Episódio - Spotify: https://open.spotify.com/ep/1')
+  })
+
+  it('removes placeholder when field is missing', () => {
+    const result = resolveFooterPlaceholders(
+      'Ouça no Spotify: {{video.spotifyUrl}}',
+      { title: 'Test' }
+    )
+    expect(result).toBe('Ouça no Spotify: ')
+  })
+
+  it('removes placeholder when field is empty string', () => {
+    const result = resolveFooterPlaceholders(
+      'Ouça no Spotify: {{video.spotifyUrl}}',
+      { spotifyUrl: '' }
+    )
+    expect(result).toBe('Ouça no Spotify: ')
+  })
+
+  it('removes placeholder when field is null', () => {
+    const result = resolveFooterPlaceholders(
+      'Ouça: {{video.spotifyUrl}}',
+      { spotifyUrl: null }
+    )
+    expect(result).toBe('Ouça: ')
+  })
+
+  it('returns template unchanged when no placeholders', () => {
+    const footer = 'Siga nosso podcast nas redes sociais!'
+    const result = resolveFooterPlaceholders(footer, { title: 'Test' })
+    expect(result).toBe(footer)
+  })
+
+  it('handles numeric fields', () => {
+    const result = resolveFooterPlaceholders(
+      'Duração: {{video.duration}}s',
+      { duration: 3600 }
+    )
+    expect(result).toBe('Duração: 3600s')
+  })
+})
+
+describe('buildCompleteYouTubeDescription with footer placeholders', () => {
+  it('resolves footer placeholders when video is provided', () => {
+    const result = buildCompleteYouTubeDescription({
+      description: 'Descrição do vídeo',
+      youtubeFooter: 'Spotify: {{video.spotifyUrl}}',
+      video: { spotifyUrl: 'https://open.spotify.com/ep/1' },
+    })
+    expect(result).toContain('Spotify: https://open.spotify.com/ep/1')
+  })
+
+  it('keeps raw footer when video is not provided', () => {
+    const result = buildCompleteYouTubeDescription({
+      description: 'Descrição',
+      youtubeFooter: 'Spotify: {{video.spotifyUrl}}',
+    })
+    expect(result).toContain('Spotify: {{video.spotifyUrl}}')
+  })
+
+  it('omits footer section when all placeholders resolve to empty', () => {
+    const result = buildCompleteYouTubeDescription({
+      description: 'Descrição',
+      youtubeFooter: '{{video.spotifyUrl}}',
+      video: { spotifyUrl: '' },
+    })
+    expect(result).toBe('Descrição')
   })
 })

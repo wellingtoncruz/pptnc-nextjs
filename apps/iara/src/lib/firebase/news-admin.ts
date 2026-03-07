@@ -168,6 +168,103 @@ export async function listNewsByDate(
 }
 
 // ==========================================================================
+// Story 20.3 — Server-side news text search
+// ==========================================================================
+
+/**
+ * Options for searching news.
+ */
+interface SearchNewsOptions {
+  /** Max items to return (default 15, max 50) */
+  limit?: number
+  /** Cursor for pagination — ISO string of the last item's importedAt */
+  cursor?: string
+}
+
+/**
+ * Searches news by substring match on titulo and descricao (case-insensitive).
+ *
+ * Firestore does not support LIKE queries natively, so this loads documents
+ * and filters in-memory on the server. Acceptable for small-to-medium collections.
+ *
+ * @param podcastId - The podcast ID
+ * @param query - The search term
+ * @param options - Pagination options
+ * @returns Paginated search results
+ */
+export async function searchNews(
+  podcastId: string,
+  query: string,
+  options: SearchNewsOptions = {}
+): Promise<ListNewsResult> {
+  const limit = Math.min(options.limit ?? 15, 50)
+  const db = getAdminDb()
+
+  // Load a larger batch to filter from (3x limit to ensure enough results)
+  const batchSize = 200
+  let firestoreQuery = db
+    .collection('podcasts')
+    .doc(podcastId)
+    .collection('news')
+    .orderBy('importedAt', 'desc')
+
+  if (options.cursor) {
+    const cursorDate = new Date(options.cursor)
+    const cursorTimestamp = Timestamp.fromDate(cursorDate)
+    firestoreQuery = firestoreQuery.startAfter(cursorTimestamp)
+  }
+
+  firestoreQuery = firestoreQuery.limit(batchSize)
+
+  const snapshot = await firestoreQuery.get()
+
+  const queryLower = query.toLowerCase()
+  const matchedItems: News[] = []
+
+  for (const doc of snapshot.docs) {
+    const parsed = NewsSchema.safeParse({ id: doc.id, ...doc.data() })
+    if (!parsed.success) continue
+
+    const news = parsed.data
+    const titulo = (news.titulo || '').toLowerCase()
+    const descricao = (news.descricao || '').toLowerCase()
+
+    if (titulo.includes(queryLower) || descricao.includes(queryLower)) {
+      matchedItems.push(news)
+    }
+  }
+
+  // Apply pagination over filtered results
+  const paginatedItems = matchedItems.slice(0, limit)
+
+  let nextCursor: string | null = null
+  if (matchedItems.length > limit) {
+    // More results exist — use the last returned item's importedAt as cursor
+    const lastItem = paginatedItems[paginatedItems.length - 1]
+    if (lastItem.importedAt && typeof lastItem.importedAt.toDate === 'function') {
+      nextCursor = lastItem.importedAt.toDate().toISOString()
+    }
+  } else if (snapshot.docs.length === batchSize && matchedItems.length <= limit) {
+    // We consumed the whole batch but there may be more docs — use last doc's importedAt
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1]
+    const lastImportedAt = lastDoc.data().importedAt
+    if (lastImportedAt && typeof lastImportedAt.toDate === 'function') {
+      nextCursor = lastImportedAt.toDate().toISOString()
+    }
+  }
+
+  log('INFO', 'News searched', {
+    podcastId,
+    query,
+    matchCount: matchedItems.length,
+    returnedCount: paginatedItems.length,
+    hasNextPage: !!nextCursor,
+  })
+
+  return { items: paginatedItems, nextCursor, totalCount: matchedItems.length }
+}
+
+// ==========================================================================
 // Story 18.3 — News embedding and related_videos
 // ==========================================================================
 

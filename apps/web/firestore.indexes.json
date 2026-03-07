@@ -4,7 +4,7 @@
       "collectionGroup": "videos",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "isFullEpisode", "order": "ASCENDING" },
+        { "fieldPath": "videoType", "order": "ASCENDING" },
         { "fieldPath": "publishedAt", "order": "DESCENDING" }
       ]
     },
@@ -13,7 +13,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "topics", "arrayConfig": "CONTAINS" },
-        { "fieldPath": "isFullEpisode", "order": "ASCENDING" },
+        { "fieldPath": "videoType", "order": "ASCENDING" },
         { "fieldPath": "publishedAt", "order": "DESCENDING" }
       ]
     }

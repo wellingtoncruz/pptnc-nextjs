@@ -65,6 +65,41 @@ export interface Guest {
 }
 
 /**
+ * Video data used for placeholder substitution in the YouTube footer.
+ */
+export interface VideoPlaceholderData {
+  [key: string]: unknown
+}
+
+/**
+ * Replaces `{{video.fieldName}}` placeholders in a template string
+ * with the corresponding values from the video data.
+ *
+ * Unresolved placeholders (field not found or empty) are removed.
+ *
+ * @param template - Template string with `{{video.xxx}}` placeholders
+ * @param video - Video data object to resolve placeholders from
+ * @returns Template with placeholders replaced
+ *
+ * @example
+ * resolveFooterPlaceholders(
+ *   'Ouça no Spotify: {{video.spotifyUrl}}',
+ *   { spotifyUrl: 'https://open.spotify.com/episode/123' }
+ * )
+ * // Returns: 'Ouça no Spotify: https://open.spotify.com/episode/123'
+ */
+export function resolveFooterPlaceholders(
+  template: string,
+  video: VideoPlaceholderData
+): string {
+  return template.replace(/\{\{video\.(\w+)\}\}/g, (_match, field: string) => {
+    const value = video[field]
+    if (value == null || value === '') return ''
+    return String(value)
+  })
+}
+
+/**
  * Options for building the complete YouTube description.
  */
 export interface BuildYouTubeDescriptionOptions {
@@ -76,6 +111,8 @@ export interface BuildYouTubeDescriptionOptions {
   chapters?: Chapter[]
   /** Footer text from podcast settings */
   youtubeFooter?: string
+  /** Video data for resolving footer placeholders */
+  video?: VideoPlaceholderData
 }
 
 /**
@@ -130,9 +167,14 @@ export function buildCompleteYouTubeDescription(
     sections.push(formatChaptersForYouTube(chapters))
   }
 
-  // 4. YouTube footer
+  // 4. YouTube footer (with placeholder substitution)
   if (youtubeFooter?.trim()) {
-    sections.push(youtubeFooter.trim())
+    const resolvedFooter = options.video
+      ? resolveFooterPlaceholders(youtubeFooter.trim(), options.video)
+      : youtubeFooter.trim()
+    if (resolvedFooter.trim()) {
+      sections.push(resolvedFooter)
+    }
   }
 
   return sections.join('\n\n')

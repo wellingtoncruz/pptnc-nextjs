@@ -29,6 +29,14 @@ const ContextUpdateSchema = z.object({
   theme: z.string().min(1).optional(),
   guests: z.array(GuestSchema).optional(),
   parentEpisodeId: z.string().min(1).optional(),
+  spotifyUrl: z.string()
+    .url()
+    .refine(
+      (url) => url.startsWith('https://open.spotify.com/') || url.startsWith('https://spti.fi/'),
+      'URL deve ser do Spotify (open.spotify.com ou spti.fi)'
+    )
+    .optional()
+    .or(z.literal('')),
 })
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin
@@ -72,6 +80,7 @@ export async function GET(
         theme: video.theme ?? null,
         guests: video.guests ?? null,
         parentEpisodeId: video.parentEpisodeId ?? null,
+        spotifyUrl: video.spotifyUrl ?? null,
       },
     })
   } catch (error) {

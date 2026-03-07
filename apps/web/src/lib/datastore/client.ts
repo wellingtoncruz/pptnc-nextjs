@@ -27,7 +27,7 @@ export async function getFirestoreClient(): Promise<Firestore> {
     const { Firestore } = await import("@google-cloud/firestore");
     firestoreClient = new Firestore({
       projectId: process.env.GOOGLE_PROJECT_ID || "pptnc-stage",
-      databaseId: "pptnc", // Firestore Native database
+      databaseId: "pptnc-stage", // Shared database with IAra backoffice
       // ADC handles credentials automatically via:
       // - GOOGLE_APPLICATION_CREDENTIALS env var
       // - gcloud auth application-default login
@@ -49,26 +49,26 @@ export function resetFirestoreClient(): void {
 export const getDatastoreClient = getFirestoreClient;
 export const resetDatastoreClient = resetFirestoreClient;
 
-// Firestore collection constants (collection names)
-// Following architecture convention: plural snake_case
+// Firestore collection constants
+// All collections scoped under the podcast tenant root
 
-/** Collection for episode documents (stored as 'videos' in Firestore) */
-export const COLLECTION_EPISODES = "videos";
+/** Podcast tenant ID */
+export const PODCAST_ID = "pptnc";
+
+/** Root path for all podcast-scoped collections */
+export const PODCAST_ROOT = `podcasts/${PODCAST_ID}`;
+
+/** Collection for episode/video documents */
+export const COLLECTION_EPISODES = `${PODCAST_ROOT}/videos`;
 
 /** Collection for topic documents */
-export const COLLECTION_TOPICS = "topics";
-
-/** Collection for empty search logs */
-export const COLLECTION_EMPTY_SEARCHES = "empty_searches";
-
-/** Collection for search logs */
-export const COLLECTION_SEARCH_LOGS = "search_logs";
+export const COLLECTION_TOPICS = `${PODCAST_ROOT}/topics`;
 
 /** Collection for site metrics (midiakit) */
-export const COLLECTION_METRICS = "metrics";
+export const COLLECTION_METRICS = `${PODCAST_ROOT}/metrics`;
 
-// Legacy aliases for backwards compatibility
-export const KIND_EPISODES = COLLECTION_EPISODES;
-export const KIND_TOPICS = COLLECTION_TOPICS;
-export const KIND_EMPTY_SEARCHES = COLLECTION_EMPTY_SEARCHES;
-export const KIND_SEARCH_LOGS = COLLECTION_SEARCH_LOGS;
+/** Collection for empty search logs */
+export const COLLECTION_EMPTY_SEARCHES = `${PODCAST_ROOT}/empty_searches`;
+
+/** Collection for search logs */
+export const COLLECTION_SEARCH_LOGS = `${PODCAST_ROOT}/search_logs`;

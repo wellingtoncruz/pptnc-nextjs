@@ -40,6 +40,7 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
   titles: 'Títulos',
   description: 'Descrição',
   tags: 'Tags',
+  topics: 'Tópicos',
   // Cut-specific
   thumbs: 'Thumbnails',
 }
@@ -47,9 +48,9 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
 /**
  * Ordered field keys for each video type to ensure consistent rendering.
  */
-const EPISODE_FIELDS: EpisodeFieldKey[] = ['critique', 'editing', 'compliance', 'chapters', 'titles', 'description', 'tags']
-const CUT_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags']
-const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags']
+const EPISODE_FIELDS: EpisodeFieldKey[] = ['critique', 'editing', 'compliance', 'chapters', 'titles', 'description', 'tags', 'topics']
+const CUT_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags', 'topics']
+const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags', 'topics']
 
 /**
  * Form for editing AI prompts for each video type.
@@ -145,7 +146,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
                 key={`episode-${fieldName}`}
                 fieldKey={`episode-${fieldName}`}
                 label={FIELD_LABELS[fieldName]}
-                initialValue={prompts.episode[fieldName]}
+                initialValue={prompts.episode[fieldName] ?? DEFAULT_PROMPT_FIELD}
                 onSave={(value) => onSavePromptField('episode', fieldName, value)}
               />
             ))}
@@ -166,7 +167,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
                 key={`cut-${fieldName}`}
                 fieldKey={`cut-${fieldName}`}
                 label={FIELD_LABELS[fieldName]}
-                initialValue={prompts.cut[fieldName]}
+                initialValue={prompts.cut[fieldName] ?? DEFAULT_PROMPT_FIELD}
                 onSave={(value) => onSavePromptField('cut', fieldName, value)}
               />
             ))}
@@ -185,7 +186,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
                 key={`reel-${fieldName}`}
                 fieldKey={`reel-${fieldName}`}
                 label={FIELD_LABELS[fieldName]}
-                initialValue={prompts.reel[fieldName]}
+                initialValue={prompts.reel[fieldName] ?? DEFAULT_PROMPT_FIELD}
                 onSave={(value) => onSavePromptField('reel', fieldName, value)}
               />
             ))}

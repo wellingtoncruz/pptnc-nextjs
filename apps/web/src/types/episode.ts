@@ -3,7 +3,7 @@ export type {
   EpisodeEntity,
   EpisodeThumbnail,
   EpisodeThumbnails,
-  EpisodeResourceId,
+
   EpisodeStatistics,
   EpisodeContentDetails,
 } from "@pptnc/types";

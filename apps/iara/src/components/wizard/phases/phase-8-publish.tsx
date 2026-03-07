@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { resolveFooterPlaceholders } from '@/lib/youtube/format-chapters'
 import type { Video } from '@/types/video'
 
 interface Phase8PublishProps {
@@ -67,8 +68,10 @@ export function Phase8Publish({
 
   // Fetch youtubeFooter from podcast settings
   const [youtubeFooter, setYoutubeFooter] = useState<string>('')
+  // For cuts/reels, fetch parent episode data for placeholder resolution
+  const [placeholderVideo, setPlaceholderVideo] = useState<Record<string, unknown>>(video)
   useEffect(() => {
-    async function fetchPodcast() {
+    async function fetchSettings() {
       try {
         const response = await fetch('/api/podcast')
         if (response.ok) {
@@ -78,9 +81,24 @@ export function Phase8Publish({
       } catch {
         // Silently ignore - youtubeFooter is optional
       }
+
+      // For cuts/reels, resolve placeholders from parent episode
+      if (video.parentEpisodeId && (video.videoType === 'cut' || video.videoType === 'reel')) {
+        try {
+          const parentResponse = await fetch(`/api/videos/${video.parentEpisodeId}`)
+          if (parentResponse.ok) {
+            const parentResult = await parentResponse.json()
+            if (parentResult.data) {
+              setPlaceholderVideo(parentResult.data)
+            }
+          }
+        } catch {
+          // Fallback to current video
+        }
+      }
     }
-    fetchPodcast()
-  }, [])
+    fetchSettings()
+  }, [video.parentEpisodeId, video.videoType])
 
   // Validation: all required fields must exist
   const isValid = title.trim().length > 0 &&
@@ -286,7 +304,7 @@ export function Phase8Publish({
               </>
             )}
 
-            {/* YouTube Footer */}
+            {/* YouTube Footer (with resolved placeholders) */}
             {youtubeFooter && (
               <>
                 <Separator />
@@ -296,7 +314,7 @@ export function Phase8Publish({
                     Rodapé do YouTube
                   </div>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {youtubeFooter}
+                    {resolveFooterPlaceholders(youtubeFooter, placeholderVideo)}
                   </p>
                 </div>
               </>

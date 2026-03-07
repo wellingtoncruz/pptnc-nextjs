@@ -76,6 +76,12 @@ function createMockWizard(): UseWizardReturn {
 describe('Phase7Tags', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+
+    // Mock fetch for TopicsSection (/api/topics)
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { topics: [] } }),
+    }) as unknown as typeof fetch
   })
 
   describe('Loading state', () => {

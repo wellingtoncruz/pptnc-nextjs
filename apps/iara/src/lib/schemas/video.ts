@@ -221,6 +221,14 @@ export const EpisodeContextFormSchema = z.object({
     .array(GuestSchema)
     .min(1, 'Pelo menos 1 convidado é obrigatório')
     .max(3, 'Máximo de 3 convidados'),
+  spotifyUrl: z.string()
+    .url('URL inválida')
+    .refine(
+      (url) => url.startsWith('https://open.spotify.com/') || url.startsWith('https://spti.fi/'),
+      'URL deve ser do Spotify (open.spotify.com ou spti.fi)'
+    )
+    .optional()
+    .or(z.literal('')),
 })
 
 // ============================================================================
@@ -263,6 +271,7 @@ export const VideoSchema = z.object({
   transcriptionTXT: z.string().optional(),
   guests: z.array(GuestDisplaySchema).optional(), // Lenient for legacy data with null role/linkedin
   topics: z.array(z.string()).optional(),
+  spotifyUrl: z.string().optional(),
 
   // === Campos IAra (adicionados ao schema existente) ===
   // Opcional para vídeos legados - serão enriquecidos no sync
@@ -360,6 +369,7 @@ export const VideoUpdateSchema = z.object({
   editingIssues: z.array(EditingIssueSchema).optional(),
   riskAndCompliance: z.array(RiskAndComplianceItemSchema).optional(),
   tags: z.array(z.string()).optional(),
+  topics: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
   suggestedTitles: z.array(z.string()).optional(),
   suggestedShortTitles: z.array(z.string()).optional(), // Títulos curtos sugeridos (cut only)
@@ -370,6 +380,7 @@ export const VideoUpdateSchema = z.object({
   theme: z.string().optional(),
   parentEpisodeId: z.string().optional(),
   guests: z.array(GuestDisplaySchema).optional(), // Lenient for round-trip compatibility with VideoSchema
+  spotifyUrl: z.string().optional(),
 
   // Smart loading - phases confirmed by producer (2 and 3 require review)
   reviewedPhases: z.array(z.number()).optional(),
@@ -397,6 +408,7 @@ export const VideoSummarySchema = z.object({
   theme: z.string().optional(),
   guests: z.array(GuestDisplaySchema).optional(),
   parentEpisodeId: z.string().optional(),
+  spotifyUrl: z.string().optional(),
   // AI-generated fields - needed for wizard phase detection
   critique: z.string().optional(),
   editingIssues: z.array(EditingIssueSchema).optional(),

@@ -7,7 +7,7 @@ export type {
   EpisodeEntity,
   EpisodeThumbnail,
   EpisodeThumbnails,
-  EpisodeResourceId,
+
   EpisodeStatistics,
   EpisodeContentDetails,
   Guest,
