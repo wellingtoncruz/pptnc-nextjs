@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { resolveFooterPlaceholders } from '@/lib/youtube/format-chapters'
+import { resolveVideoPlaceholders } from '@/lib/youtube/format-chapters'
 import type { Video } from '@/types/video'
 
 interface Phase8PublishProps {
@@ -314,7 +314,7 @@ export function Phase8Publish({
                     Rodapé do YouTube
                   </div>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {resolveFooterPlaceholders(youtubeFooter, placeholderVideo)}
+                    {resolveVideoPlaceholders(youtubeFooter, placeholderVideo)}
                   </p>
                 </div>
               </>

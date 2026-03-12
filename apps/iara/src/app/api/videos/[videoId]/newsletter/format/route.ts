@@ -29,6 +29,7 @@ import {
   buildNewsletterFormatSystemPrompt,
   buildNewsletterFormatUserPrompt,
 } from '@/lib/llm/newsletter-prompts'
+import { resolveVideoPlaceholders } from '@/lib/youtube/format-chapters'
 import { log } from '@/lib/logger'
 import { NewsletterFormatLLMResponseSchema } from '@/lib/schemas'
 import type { Podcast } from '@/types/podcast'
@@ -134,7 +135,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
 
     // Build prompts — pass proxy URL (not GCS path) so the report markdown has a valid image link
     const imageProxyUrl = `/api/videos/${videoId}/newsletter/image`
-    const systemPrompt = buildNewsletterFormatSystemPrompt(persona, formatPrompt)
+    const resolvedFormatPrompt = resolveVideoPlaceholders(formatPrompt, video)
+    const systemPrompt = buildNewsletterFormatSystemPrompt(persona, resolvedFormatPrompt)
     const userPrompt = buildNewsletterFormatUserPrompt(
       newsletterData.draft,
       newsletterData.news,

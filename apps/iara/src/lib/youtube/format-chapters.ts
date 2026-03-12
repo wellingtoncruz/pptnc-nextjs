@@ -82,13 +82,13 @@ export interface VideoPlaceholderData {
  * @returns Template with placeholders replaced
  *
  * @example
- * resolveFooterPlaceholders(
+ * resolveVideoPlaceholders(
  *   'Ouça no Spotify: {{video.spotifyUrl}}',
  *   { spotifyUrl: 'https://open.spotify.com/episode/123' }
  * )
  * // Returns: 'Ouça no Spotify: https://open.spotify.com/episode/123'
  */
-export function resolveFooterPlaceholders(
+export function resolveVideoPlaceholders(
   template: string,
   video: VideoPlaceholderData
 ): string {
@@ -170,7 +170,7 @@ export function buildCompleteYouTubeDescription(
   // 4. YouTube footer (with placeholder substitution)
   if (youtubeFooter?.trim()) {
     const resolvedFooter = options.video
-      ? resolveFooterPlaceholders(youtubeFooter.trim(), options.video)
+      ? resolveVideoPlaceholders(youtubeFooter.trim(), options.video)
       : youtubeFooter.trim()
     if (resolvedFooter.trim()) {
       sections.push(resolvedFooter)

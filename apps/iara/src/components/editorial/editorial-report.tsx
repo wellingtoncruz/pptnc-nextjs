@@ -19,7 +19,7 @@ import { ExternalLinkIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { resolveFooterPlaceholders } from '@/lib/youtube/format-chapters'
+import { resolveVideoPlaceholders } from '@/lib/youtube/format-chapters'
 import type { Video } from '@/types/video'
 
 interface EditorialReportProps {
@@ -130,7 +130,7 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
         <section className="mb-8">
           {youtubeFooter && (
             <div className="mb-4">
-              <p className="whitespace-pre-line text-sm text-muted-foreground">{resolveFooterPlaceholders(youtubeFooter, video)}</p>
+              <p className="whitespace-pre-line text-sm text-muted-foreground">{resolveVideoPlaceholders(youtubeFooter, video)}</p>
             </div>
           )}
           {tags.length > 0 && (
@@ -167,7 +167,7 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
               )}
               {youtubeFooter && (
                 <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
-                  {resolveFooterPlaceholders(youtubeFooter, video)}
+                  {resolveVideoPlaceholders(youtubeFooter, video)}
                 </p>
               )}
               {cut.tags && cut.tags.length > 0 && (
@@ -199,7 +199,7 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
               )}
               {youtubeFooter && (
                 <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
-                  {resolveFooterPlaceholders(youtubeFooter, video)}
+                  {resolveVideoPlaceholders(youtubeFooter, video)}
                 </p>
               )}
               {reel.tags && reel.tags.length > 0 && (
