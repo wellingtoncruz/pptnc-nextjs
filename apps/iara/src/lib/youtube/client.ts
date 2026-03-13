@@ -639,21 +639,8 @@ export class YouTubeClient {
       tagCount: tags.length,
     })
 
-    // Get current video to preserve categoryId if not provided
-    let finalCategoryId = categoryId
-    if (!finalCategoryId) {
-      try {
-        const [currentVideo] = await this.getVideoDetails([videoId])
-        // YouTube API returns categoryId in snippet, but our interface doesn't include it
-        // Use '22' (People & Blogs) as fallback if we can't get it
-        finalCategoryId = '22'
-        log('INFO', 'Using default categoryId', { videoId, categoryId: finalCategoryId })
-      } catch {
-        // If we can't get current video, use default
-        finalCategoryId = '22'
-        log('WARN', 'Could not fetch current video, using default categoryId', { videoId })
-      }
-    }
+    // Category: '28' = Science & Technology (default for PPT Não Compila)
+    const finalCategoryId = categoryId || '28'
 
     const url = `${YOUTUBE_API_BASE}/videos?part=snippet`
 
@@ -664,6 +651,7 @@ export class YouTubeClient {
         description,
         tags,
         categoryId: finalCategoryId,
+        defaultLanguage: 'pt-BR',
       },
     })
 
