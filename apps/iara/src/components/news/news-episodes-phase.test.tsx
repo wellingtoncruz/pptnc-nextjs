@@ -41,6 +41,17 @@ const mockEpisodes = [
   },
 ]
 
+const mockSearchResults = [
+  {
+    id: 'ep-3',
+    title: 'Episódio sobre Kubernetes',
+    description: 'Orquestração de containers',
+    duration: 1800,
+    status: 'ready',
+    videoType: 'episode',
+  },
+]
+
 describe('NewsEpisodesPhase', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
@@ -51,6 +62,13 @@ describe('NewsEpisodesPhase', () => {
   })
 
   function mockFindEpisodesSuccess(episodes = mockEpisodes) {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ data: { episodes } }),
+    } as never)
+  }
+
+  function mockSearchEpisodesSuccess(episodes = mockSearchResults) {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: vi.fn().mockResolvedValue({ data: { episodes } }),
@@ -299,6 +317,261 @@ describe('NewsEpisodesPhase', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+  })
+
+  // ===== Text search tests =====
+
+  it('renders search input', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    expect(screen.getByTestId('episode-search-input')).toBeInTheDocument()
+    expect(screen.getByTestId('episode-search-button')).toBeInTheDocument()
+  })
+
+  it('disables search button when input is empty', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    expect(screen.getByTestId('episode-search-button')).toBeDisabled()
+  })
+
+  it('performs text search on button click and shows results', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    // Type search query
+    await user.type(screen.getByTestId('episode-search-input'), 'Kubernetes')
+
+    // Mock search response
+    mockSearchEpisodesSuccess()
+
+    // Click search button
+    await user.click(screen.getByTestId('episode-search-button'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('episode-card-ep-3')).toBeInTheDocument()
+    })
+
+    // Should show text mode label
+    expect(screen.getByTestId('search-mode-label')).toBeInTheDocument()
+    expect(screen.getByText('Resultados da busca por nome')).toBeInTheDocument()
+
+    // Semantic episodes should NOT be visible
+    expect(screen.queryByTestId('episode-card-ep-1')).not.toBeInTheDocument()
+  })
+
+  it('performs text search on Enter key', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    mockSearchEpisodesSuccess()
+
+    await user.type(screen.getByTestId('episode-search-input'), 'Kubernetes{Enter}')
+
+    await waitFor(() => {
+      expect(screen.getByTestId('episode-card-ep-3')).toBeInTheDocument()
+    })
+  })
+
+  it('calls search-episodes API with correct body', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByTestId('episode-search-input'), 'Kubernetes')
+    mockSearchEpisodesSuccess()
+    await user.click(screen.getByTestId('episode-search-button'))
+
+    await waitFor(() => {
+      const searchCall = vi.mocked(fetch).mock.calls.find(
+        call => typeof call[0] === 'string' && call[0].includes('search-episodes')
+      )
+      expect(searchCall).toBeDefined()
+      expect(searchCall?.[0]).toBe('/api/news/news-1/search-episodes')
+      expect(JSON.parse((searchCall?.[1] as RequestInit).body as string)).toEqual({ query: 'Kubernetes' })
+    })
+  })
+
+  it('resets to semantic mode when clear button is clicked', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    // Search for something
+    await user.type(screen.getByTestId('episode-search-input'), 'Kubernetes')
+    mockSearchEpisodesSuccess()
+    await user.click(screen.getByTestId('episode-search-button'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('episode-card-ep-3')).toBeInTheDocument()
+    })
+
+    // Click clear button
+    await user.click(screen.getByTestId('episode-search-clear'))
+
+    // Should show semantic episodes again
+    await waitFor(() => {
+      expect(screen.getByTestId('episode-card-ep-1')).toBeInTheDocument()
+      expect(screen.getByTestId('episode-card-ep-2')).toBeInTheDocument()
+    })
+
+    // Text results should be gone
+    expect(screen.queryByTestId('episode-card-ep-3')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('search-mode-label')).not.toBeInTheDocument()
+  })
+
+  it('resets to semantic mode via "back" link', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByTestId('episode-search-input'), 'Kubernetes')
+    mockSearchEpisodesSuccess()
+    await user.click(screen.getByTestId('episode-search-button'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('back-to-semantic')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByTestId('back-to-semantic'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('episode-card-ep-1')).toBeInTheDocument()
+    })
+  })
+
+  it('preserves selection when switching between search modes', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    // Select ep-1 from semantic results
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ data: {} }) } as never)
+    await user.click(screen.getByTestId('episode-card-ep-1'))
+
+    // Switch to text search
+    await user.type(screen.getByTestId('episode-search-input'), 'Kubernetes')
+    mockSearchEpisodesSuccess()
+    await user.click(screen.getByTestId('episode-search-button'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('episode-card-ep-3')).toBeInTheDocument()
+    })
+
+    // Selection should be preserved — advance button still enabled
+    expect(screen.getByTestId('advance-to-social-button')).not.toBeDisabled()
+
+    // Selected episode banner should show
+    expect(screen.getByTestId('selected-episode-banner')).toBeInTheDocument()
+    expect(screen.getByText('Episódio sobre IA')).toBeInTheDocument()
+  })
+
+  it('shows empty state when text search returns no results', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByTestId('episode-search-input'), 'xyz')
+    mockSearchEpisodesSuccess([])
+    await user.click(screen.getByTestId('episode-search-button'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Nenhum episódio encontrado para esta busca')).toBeInTheDocument()
+    })
+  })
+
+  it('can select episode from text search results', async () => {
+    mockFindEpisodesSuccess()
+    const onDataUpdate = vi.fn().mockResolvedValue(undefined)
+    const user = userEvent.setup()
+
+    render(<NewsEpisodesPhase news={mockNews} onDataUpdate={onDataUpdate} onAdvance={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('news-episodes-phase')).toBeInTheDocument()
+    })
+
+    // Switch to text search
+    await user.type(screen.getByTestId('episode-search-input'), 'Kubernetes')
+    mockSearchEpisodesSuccess()
+    await user.click(screen.getByTestId('episode-search-button'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('episode-card-ep-3')).toBeInTheDocument()
+    })
+
+    // Mock PATCH
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: vi.fn().mockResolvedValue({ data: {} }) } as never)
+
+    await user.click(screen.getByTestId('episode-card-ep-3'))
+
+    expect(screen.getByTestId('advance-to-social-button')).not.toBeDisabled()
+
+    // Verify PATCH was called with the correct episode
+    await waitFor(() => {
+      const patchCall = vi.mocked(fetch).mock.calls.find(
+        call => call[1] && (call[1] as RequestInit).method === 'PATCH'
+      )
+      expect(patchCall).toBeDefined()
+      expect(JSON.parse((patchCall?.[1] as RequestInit).body as string)).toEqual({ selected_video: 'ep-3' })
     })
   })
 })

@@ -724,6 +724,81 @@ export async function findSimilarEpisodes(
 }
 
 /**
+ * Searches episodes by title substring (case-insensitive).
+ *
+ * Fetches all episodes and filters in memory since the collection
+ * is small enough (~hundreds of episodes). Returns VideoSummary
+ * objects sorted by publishedAt descending.
+ *
+ * @param podcastId - The podcast document ID
+ * @param query - Search term to match against episode titles
+ * @param limit - Maximum results to return (default 10)
+ * @returns Array of matching episode summaries
+ */
+export async function searchEpisodesByTitle(
+  podcastId: string,
+  query: string,
+  limit: number = 10
+): Promise<VideoSummary[]> {
+  const db = getAdminDb()
+  const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
+
+  try {
+    // Select only fields needed for EpisodeCard display — avoids fetching
+    // heavy fields like summaryVector (768 floats) and transcriptions
+    const snapshot = await videosRef
+      .where('videoType', '==', 'episode')
+      .select(
+        'title', 'description', 'duration', 'status', 'videoType',
+        'guests', 'thumbnails', 'storageThumbnailUrl', 'publishedAt'
+      )
+      .get()
+
+    if (snapshot.empty) {
+      return []
+    }
+
+    const queryLower = query.toLowerCase()
+    const matches: Array<VideoSummary & { _publishedAt: Date }> = []
+
+    for (const docSnap of snapshot.docs) {
+      const rawData = docSnap.data()
+      const title = (rawData.title as string) ?? ''
+
+      if (!title.toLowerCase().includes(queryLower)) continue
+
+      matches.push({
+        id: docSnap.id,
+        title: title || 'Sem título',
+        description: rawData.description as string | undefined,
+        duration: (rawData.duration as number) ?? 0,
+        status: rawData.status as VideoSummary['status'],
+        videoType: rawData.videoType as VideoSummary['videoType'],
+        guests: rawData.guests as VideoSummary['guests'],
+        thumbnails: rawData.thumbnails as VideoSummary['thumbnails'],
+        storageThumbnailUrl: rawData.storageThumbnailUrl as string | undefined,
+        _publishedAt: parsePublishedAt(rawData.publishedAt),
+      })
+    }
+
+    matches.sort((a, b) => b._publishedAt.getTime() - a._publishedAt.getTime())
+
+    const result: VideoSummary[] = matches.slice(0, limit).map(({ _publishedAt, ...ep }) => ep)
+
+    log('INFO', 'Episodes searched by title', {
+      podcastId,
+      query,
+      matchCount: result.length,
+    })
+
+    return result
+  } catch (error) {
+    log('ERROR', 'Failed to search episodes by title', { podcastId, query, error })
+    throw error
+  }
+}
+
+/**
  * Gets all existing video IDs for a podcast (optimized query).
  *
  * Uses .select() to return only document IDs without fetching data.
