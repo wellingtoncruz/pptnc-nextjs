@@ -652,6 +652,7 @@ export class YouTubeClient {
         tags,
         categoryId: finalCategoryId,
         defaultLanguage: 'pt-BR',
+        defaultAudioLanguage: 'pt-BR',
       },
     })
 
