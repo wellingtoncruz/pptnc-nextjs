@@ -38,6 +38,7 @@
     "date-fns": "^4.1.0",
     "firebase": "^12.8.0",
     "firebase-admin": "^13.6.0",
+    "google-auth-library": "^10.6.2",
     "lucide-react": "^0.563.0",
     "next": "16.1.4",
     "next-auth": "5.0.0-beta.30",
