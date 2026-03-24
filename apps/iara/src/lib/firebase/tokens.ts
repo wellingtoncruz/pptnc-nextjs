@@ -125,6 +125,149 @@ export async function getUserTokens(userId: string): Promise<UserTokens | null> 
   return doc.data() as UserTokens
 }
 
+// =============================================================================
+// Multi-Provider Token Support
+// =============================================================================
+
+/**
+ * Provider-specific token data stored in Firestore.
+ * Path: podcasts/{podcastId}/users/{userId}/tokens/{provider}
+ */
+export interface ProviderTokens {
+  accessToken: string
+  refreshToken?: string
+  expiresAt?: number
+  /** Provider-specific metadata (e.g., LinkedIn org ID/name) */
+  metadata?: Record<string, string>
+  updatedAt?: FirebaseFirestore.Timestamp
+}
+
+/**
+ * Gets the Firestore reference for provider-specific tokens.
+ * Path: podcasts/{podcastId}/users/{userId}/tokens/{provider}
+ */
+function getProviderTokenRef(userId: string, provider: string) {
+  const db = getAdminDb()
+  return db
+    .collection('podcasts')
+    .doc(PODCAST_ID)
+    .collection('users')
+    .doc(userId)
+    .collection('tokens')
+    .doc(provider)
+}
+
+/**
+ * Saves provider-specific tokens to Firestore.
+ * Preserves existing refresh_token (same pattern as YouTube OAuth).
+ *
+ * @param userId - The user's unique identifier
+ * @param provider - The provider name (e.g., 'linkedin', 'twitter')
+ * @param tokens - Token data to save
+ */
+export async function saveProviderTokens(
+  userId: string,
+  provider: string,
+  tokens: {
+    accessToken: string
+    refreshToken?: string
+    expiresAt?: number
+    metadata?: Record<string, string>
+  }
+): Promise<void> {
+  const tokenRef = getProviderTokenRef(userId, provider)
+
+  const existingDoc = await tokenRef.get()
+  const existingData = existingDoc.data() as ProviderTokens | undefined
+
+  const updateData: Record<string, unknown> = {
+    accessToken: tokens.accessToken,
+    expiresAt: tokens.expiresAt,
+    updatedAt: FieldValue.serverTimestamp(),
+  }
+
+  if (tokens.metadata) {
+    updateData.metadata = tokens.metadata
+  }
+
+  // Preserve existing refresh token (same pattern as YouTube)
+  if (tokens.refreshToken && !existingData?.refreshToken) {
+    updateData.refreshToken = tokens.refreshToken
+    log('INFO', `${provider} refresh token saved (first authorization)`, { userId, podcastId: PODCAST_ID })
+  } else if (tokens.refreshToken && existingData?.refreshToken) {
+    log('INFO', `${provider} refresh token preserved (not overwritten)`, { userId, podcastId: PODCAST_ID })
+  }
+
+  await tokenRef.set(updateData, { merge: true })
+
+  log('INFO', `${provider} tokens saved to Firestore`, {
+    userId,
+    podcastId: PODCAST_ID,
+    provider,
+    hasRefreshToken: !!updateData.refreshToken || !!existingData?.refreshToken,
+  })
+}
+
+/**
+ * Retrieves provider-specific tokens from Firestore.
+ *
+ * @param userId - The user's unique identifier
+ * @param provider - The provider name
+ * @returns Provider tokens or null if not found
+ */
+export async function getProviderTokens(
+  userId: string,
+  provider: string
+): Promise<ProviderTokens | null> {
+  const tokenRef = getProviderTokenRef(userId, provider)
+  const doc = await tokenRef.get()
+
+  if (!doc.exists) {
+    return null
+  }
+
+  return doc.data() as ProviderTokens
+}
+
+/**
+ * Retrieves provider tokens with expiry check.
+ *
+ * @param userId - The user's unique identifier
+ * @param provider - The provider name
+ * @returns Tokens with needsRefresh flag, or null if not found
+ */
+export async function getProviderTokensWithExpiry(
+  userId: string,
+  provider: string
+): Promise<(ProviderTokens & { needsRefresh: boolean }) | null> {
+  const tokens = await getProviderTokens(userId, provider)
+  if (!tokens) return null
+
+  const EXPIRY_BUFFER_SECONDS = 5 * 60
+  const nowSeconds = Math.floor(Date.now() / 1000)
+  const needsRefresh = tokens.expiresAt
+    ? nowSeconds > tokens.expiresAt - EXPIRY_BUFFER_SECONDS
+    : false
+
+  return { ...tokens, needsRefresh }
+}
+
+/**
+ * Deletes provider-specific tokens from Firestore.
+ *
+ * @param userId - The user's unique identifier
+ * @param provider - The provider name
+ */
+export async function deleteProviderTokens(
+  userId: string,
+  provider: string
+): Promise<void> {
+  const tokenRef = getProviderTokenRef(userId, provider)
+  await tokenRef.delete()
+
+  log('INFO', `${provider} tokens deleted`, { userId, podcastId: PODCAST_ID, provider })
+}
+
 /**
  * User tokens with expiry check result.
  */

@@ -8,6 +8,7 @@ import type { News } from '@/types/news'
 
 import { NewsEpisodesPhase } from './news-episodes-phase'
 import { NewsPhaseNav } from './news-phase-nav'
+import { NewsPublishPhase } from './news-publish-phase'
 import { NewsSocialPhase } from './news-social-phase'
 import { NewsViewPhase } from './news-view-phase'
 
@@ -21,10 +22,11 @@ interface NewsWorkspaceProps {
  * - With related_videos, no selected_video → max 2
  * - With selected_video → max 3
  */
-function getMaxReachablePhase(news: News): number {
-  if (news.selected_video) return 3
-  if (news.related_videos && news.related_videos.length > 0) return 2
-  return 1
+function getMaxReachablePhase(news: News, showPublishPhase?: boolean): number {
+  if (!news.related_videos || news.related_videos.length === 0) return 1
+  if (!news.selected_video) return 2
+  if (showPublishPhase && news.social) return 4
+  return 3
 }
 
 /**
@@ -38,8 +40,19 @@ export function NewsWorkspace({ newsId }: NewsWorkspaceProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPhase, setCurrentPhase] = useState(1)
+  const [showPublishPhase, setShowPublishPhase] = useState(false)
 
-  const maxReachablePhase = news ? getMaxReachablePhase(news) : 1
+  // Fetch socialPublish feature flag
+  useEffect(() => {
+    fetch('/api/podcast')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.data?.features?.socialPublish) setShowPublishPhase(true)
+      })
+      .catch(() => { /* default to false */ })
+  }, [])
+
+  const maxReachablePhase = news ? getMaxReachablePhase(news, showPublishPhase) : 1
 
   const fetchNews = useCallback(async () => {
     setIsLoading(true)
@@ -67,13 +80,15 @@ export function NewsWorkspace({ newsId }: NewsWorkspaceProps) {
   // Clamp currentPhase to stay within maxReachablePhase after data changes
   useEffect(() => {
     if (news) {
-      const maxPhase = getMaxReachablePhase(news)
+      const maxPhase = getMaxReachablePhase(news, showPublishPhase)
       setCurrentPhase(prev => Math.min(prev, maxPhase))
     }
   }, [news])
 
-  const handlePhaseChange = (phase: number) => {
+  const handlePhaseChange = async (phase: number) => {
     if (phase <= maxReachablePhase) {
+      // Re-fetch news data before switching phase to ensure fresh content
+      await handleDataUpdate()
       setCurrentPhase(phase)
     }
   }
@@ -134,6 +149,7 @@ export function NewsWorkspace({ newsId }: NewsWorkspaceProps) {
         currentPhase={currentPhase}
         maxReachablePhase={Math.max(maxReachablePhase, currentPhase)}
         onPhaseChange={handlePhaseChange}
+        showPublishPhase={showPublishPhase}
       />
 
       {/* Phase content */}
@@ -156,6 +172,9 @@ export function NewsWorkspace({ newsId }: NewsWorkspaceProps) {
             news={news}
             onDataUpdate={handleDataUpdate}
           />
+        )}
+        {currentPhase === 4 && showPublishPhase && (
+          <NewsPublishPhase news={news} />
         )}
       </div>
     </div>

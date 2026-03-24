@@ -186,8 +186,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         city: profile.city,
         countryCode: profile.country_code,
         linkedinId: profile.linkedin_id,
+        linkedinNumId: profile.linkedin_num_id,
         ...(photoPath && { photoPath }),
-        raw: profile as unknown as Record<string, unknown>,
+        raw: profile._raw ?? (profile as unknown as Record<string, unknown>),
       })
 
       scrapedCount++

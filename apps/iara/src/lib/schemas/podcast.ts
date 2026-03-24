@@ -331,6 +331,8 @@ export const PodcastSchema = z.object({
     newsletter: z.boolean().default(false),
     /** Enable LLM debug mode: logs prompts and responses to Firestore. Default: false. */
     llmDebugMode: z.boolean().default(false),
+    /** Enable scheduled publishing to social networks. Default: false. */
+    socialPublish: z.boolean().default(false),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

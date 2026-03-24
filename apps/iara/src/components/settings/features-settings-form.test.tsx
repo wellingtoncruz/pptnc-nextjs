@@ -11,7 +11,7 @@ vi.mock('@/lib/logger', () => ({
 
 import { FeaturesSettingsForm } from './features-settings-form'
 
-const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false }
+const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false }
 
 describe('FeaturesSettingsForm', () => {
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: false, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: false, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false } }),
       }))
     })
   })
@@ -81,7 +81,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false } }),
       }))
     })
   })
@@ -97,7 +97,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: true, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: true, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false } }),
       }))
     })
   })
@@ -113,7 +113,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false } }),
       }))
     })
   })
@@ -218,7 +218,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: true, newsletter: false, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: true, newsletter: false, llmDebugMode: false, socialPublish: false } }),
       }))
     })
   })
@@ -254,7 +254,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: true, llmDebugMode: false } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: true, llmDebugMode: false, socialPublish: false } }),
       }))
     })
   })
@@ -311,7 +311,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: true } }),
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: true, socialPublish: false } }),
       }))
     })
   })
@@ -320,5 +320,41 @@ describe('FeaturesSettingsForm', () => {
     render(<FeaturesSettingsForm features={defaultFeatures} />)
 
     expect(screen.getByText('Registra prompts e respostas do LLM para análise e otimização')).toBeInTheDocument()
+  })
+
+  it('renders socialPublish toggle as unchecked by default', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const publishSwitch = screen.getByLabelText('Publicação em Redes Sociais')
+    expect(publishSwitch).toHaveAttribute('data-state', 'unchecked')
+  })
+
+  it('renders socialPublish toggle as checked when enabled', () => {
+    render(<FeaturesSettingsForm features={{ ...defaultFeatures, socialPublish: true }} />)
+
+    const publishSwitch = screen.getByLabelText('Publicação em Redes Sociais')
+    expect(publishSwitch).toHaveAttribute('data-state', 'checked')
+  })
+
+  it('calls API when socialPublish toggle is changed', async () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    const publishSwitch = screen.getByLabelText('Publicação em Redes Sociais')
+    await act(async () => {
+      publishSwitch.click()
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: true } }),
+      }))
+    })
+  })
+
+  it('shows socialPublish description text', () => {
+    render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+    expect(screen.getByText('Habilita agendamento de publicações em redes sociais')).toBeInTheDocument()
   })
 })

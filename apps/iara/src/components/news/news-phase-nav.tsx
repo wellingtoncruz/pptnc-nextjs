@@ -2,18 +2,23 @@
 
 import { cn } from '@/lib/utils'
 
-const PHASE_LABELS = ['Notícia', 'Episódios', 'Redação'] as const
+const BASE_PHASE_LABELS = ['Notícia', 'Episódios', 'Redação'] as const
+const EXTENDED_PHASE_LABELS = ['Notícia', 'Episódios', 'Redação', 'Publicação'] as const
 
 interface NewsPhaseNavProps {
   currentPhase: number
   maxReachablePhase: number
   onPhaseChange: (phase: number) => void
+  /** Show Phase 4 (Publicação) when socialPublish feature is enabled */
+  showPublishPhase?: boolean
 }
 
-export function NewsPhaseNav({ currentPhase, maxReachablePhase, onPhaseChange }: NewsPhaseNavProps) {
+export function NewsPhaseNav({ currentPhase, maxReachablePhase, onPhaseChange, showPublishPhase }: NewsPhaseNavProps) {
+  const phaseLabels = showPublishPhase ? EXTENDED_PHASE_LABELS : BASE_PHASE_LABELS
+
   return (
     <nav aria-label="Fases do workspace" data-testid="news-phase-nav" className="flex items-center gap-2 px-5 py-3 border-b border-border">
-      {PHASE_LABELS.map((label, index) => {
+      {phaseLabels.map((label, index) => {
         const phase = index + 1
         const isActive = phase === currentPhase
         const isReachable = phase <= maxReachablePhase

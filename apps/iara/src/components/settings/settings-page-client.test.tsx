@@ -195,7 +195,7 @@ describe('SettingsPageClient', () => {
     render(<SettingsPageClient podcast={podcastWithSocialMedia} socialNetworks={mockNetworks} />)
 
     expect(screen.getByText('Redes Sociais')).toBeInTheDocument()
-    expect(screen.getByText('Configure quais redes sociais estão habilitadas')).toBeInTheDocument()
+    expect(screen.getByText('Habilitação de redes e conexão de contas')).toBeInTheDocument()
   })
 
   it('hides Social Networks accordion when socialMedia feature is disabled', () => {
@@ -212,13 +212,13 @@ describe('SettingsPageClient', () => {
     expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
   })
 
-  it('hides Social Networks accordion when socialNetworks is null', () => {
-    const podcastWithSocialMedia = {
+  it('hides Social Networks accordion when both socialMedia and socialPublish are disabled', () => {
+    const podcastNoSocial = {
       ...mockPodcast,
-      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false },
+      features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, socialPublish: false, adwords: false, newsletter: false, llmDebugMode: false },
     }
 
-    render(<SettingsPageClient podcast={podcastWithSocialMedia} socialNetworks={null as never} />)
+    render(<SettingsPageClient podcast={podcastNoSocial} socialNetworks={null as never} />)
 
     expect(screen.queryByText('Redes Sociais')).not.toBeInTheDocument()
   })

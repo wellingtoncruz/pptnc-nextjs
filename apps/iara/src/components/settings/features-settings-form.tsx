@@ -14,6 +14,7 @@ interface PodcastFeatures {
   adwords: boolean
   newsletter: boolean
   llmDebugMode: boolean
+  socialPublish: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -45,10 +46,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [adwords, setAdwords] = useState(features.adwords)
   const [newsletter, setNewsletter] = useState(features.newsletter)
   const [llmDebugMode, setLlmDebugMode] = useState(features.llmDebugMode)
+  const [socialPublish, setSocialPublish] = useState(features.socialPublish)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode'
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish'
   const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
@@ -57,10 +59,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
     adwords: setAdwords,
     newsletter: setNewsletter,
     llmDebugMode: setLlmDebugMode,
+    socialPublish: setSocialPublish,
   }
 
   async function handleToggle(key: FeatureKey, value: boolean) {
-    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, [key]: value }
+    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, [key]: value }
 
     setters[key](value)
 
@@ -188,6 +191,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-llmDebugMode"
             checked={llmDebugMode}
             onCheckedChange={(value) => handleToggle('llmDebugMode', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-socialPublish">Publicação em Redes Sociais</Label>
+            <p className="text-xs text-muted-foreground">
+              Habilita agendamento de publicações em redes sociais
+            </p>
+          </div>
+          <Switch
+            id="feature-socialPublish"
+            checked={socialPublish}
+            onCheckedChange={(value) => handleToggle('socialPublish', value)}
             disabled={saving}
           />
         </div>

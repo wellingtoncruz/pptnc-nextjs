@@ -9,8 +9,11 @@ import type {
 
 /**
  * LinkedIn profile data from BrightData API response.
+ * Includes _raw with the full unfiltered BrightData response.
  */
-export type LinkedInGuestProfile = z.infer<typeof LinkedInGuestSchema>
+export type LinkedInGuestProfile = z.infer<typeof LinkedInGuestSchema> & {
+  _raw?: Record<string, unknown>
+}
 
 /**
  * Guest document stored in `podcasts/{podcastId}/guests/{docId}`.

@@ -251,8 +251,16 @@ function parseProfileData(
     return null
   }
 
+  const rawItem = items[0] as Record<string, unknown>
+
+  // Log all available fields for discovery (keys only, not values — privacy)
+  log('INFO', 'BrightData raw response fields', {
+    linkedinUrl,
+    fields: Object.keys(rawItem),
+  })
+
   // Validate with Zod before returning (enforcement rule #2)
-  const parsed = LinkedInGuestSchema.safeParse(items[0])
+  const parsed = LinkedInGuestSchema.safeParse(rawItem)
 
   if (!parsed.success) {
     log('WARN', 'BrightData response failed Zod validation', {
@@ -262,10 +270,17 @@ function parseProfileData(
     return null
   }
 
+  // Attach the full raw response for storage (not just the parsed fields)
+  const result = { ...parsed.data, _raw: rawItem }
+
   log('INFO', 'LinkedIn profile scraped successfully', {
     linkedinUrl,
     name: parsed.data.name,
+    hasLinkedinId: !!rawItem.linkedin_id,
+    hasEntityUrn: !!rawItem.entity_urn,
+    hasMemberId: !!rawItem.member_id,
+    hasLinkedinInternalId: !!rawItem.linkedin_internal_id,
   })
 
-  return parsed.data
+  return result
 }

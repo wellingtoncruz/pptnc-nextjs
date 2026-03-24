@@ -37,7 +37,7 @@ describe('getMaxReachablePhase', () => {
   })
 
   it('returns 3 when selected_video exists', () => {
-    expect(getMaxReachablePhase({ ...baseNews, selected_video: 'ep-1' } as never)).toBe(3)
+    expect(getMaxReachablePhase({ ...baseNews, related_videos: ['ep-1'], selected_video: 'ep-1' } as never)).toBe(3)
   })
 
   it('returns 1 when related_videos is empty array', () => {
@@ -56,14 +56,29 @@ describe('NewsWorkspace component', () => {
   })
 
   function mockFetchNews(data = mockNewsData) {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ data }),
-    } as never)
+    vi.mocked(fetch).mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (urlStr.includes('/api/podcast')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ data: { features: { socialPublish: false } } }),
+        } as Response)
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data }),
+      } as Response)
+    })
   }
 
   it('shows loading state initially', () => {
-    vi.mocked(fetch).mockReturnValue(new Promise(() => {}))
+    vi.mocked(fetch).mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (urlStr.includes('/api/podcast')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { features: {} } }) } as Response)
+      }
+      return new Promise(() => {}) // never resolves for news
+    })
     render(<NewsWorkspace newsId="news-1" />)
 
     expect(screen.getByTestId('news-workspace-loading')).toBeInTheDocument()
@@ -83,10 +98,13 @@ describe('NewsWorkspace component', () => {
   })
 
   it('shows error state on fetch failure', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockResolvedValue({}),
-    } as never)
+    vi.mocked(fetch).mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (urlStr.includes('/api/podcast')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { features: {} } }) } as Response)
+      }
+      return Promise.resolve({ ok: false, json: () => Promise.resolve({}) } as Response)
+    })
 
     render(<NewsWorkspace newsId="news-1" />)
 
@@ -96,10 +114,18 @@ describe('NewsWorkspace component', () => {
   })
 
   it('retries fetch when retry button is clicked', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockResolvedValue({}),
-    } as never)
+    let callCount = 0
+    vi.mocked(fetch).mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (urlStr.includes('/api/podcast')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { features: {} } }) } as Response)
+      }
+      callCount++
+      if (callCount === 1) {
+        return Promise.resolve({ ok: false, json: () => Promise.resolve({}) } as Response)
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: mockNewsData }) } as Response)
+    })
 
     render(<NewsWorkspace newsId="news-1" />)
 
@@ -107,7 +133,6 @@ describe('NewsWorkspace component', () => {
       expect(screen.getByTestId('news-workspace-error')).toBeInTheDocument()
     })
 
-    mockFetchNews()
     const user = userEvent.setup()
     await user.click(screen.getByText('Tentar novamente'))
 
@@ -131,17 +156,24 @@ describe('NewsWorkspace component', () => {
   })
 
   it('handleDataUpdate re-fetches news without resetting phase', async () => {
-    // Initial fetch returns news without related_videos
-    mockFetchNews()
+    let newsCallCount = 0
+    vi.mocked(fetch).mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (urlStr.includes('/api/podcast')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { features: {} } }) } as Response)
+      }
+      if (urlStr.includes('/find-episodes')) {
+        return new Promise(() => {}) // never resolves
+      }
+      newsCallCount++
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: mockNewsData }) } as Response)
+    })
+
     render(<NewsWorkspace newsId="news-1" />)
 
     await waitFor(() => {
       expect(screen.getByTestId('news-workspace')).toBeInTheDocument()
     })
-
-    // Phase 2 auto-fetch returns episodes, then calls onDataUpdate
-    // which triggers handleDataUpdate → re-fetches news with related_videos
-    vi.mocked(fetch).mockReturnValueOnce(new Promise(() => {})) // Phase 2 find-episodes (pending)
 
     const user = userEvent.setup()
     await user.click(screen.getByTestId('find-episodes-button'))
@@ -152,16 +184,23 @@ describe('NewsWorkspace component', () => {
   })
 
   it('navigates to phase 2 when find episodes button is clicked', async () => {
-    mockFetchNews()
+    vi.mocked(fetch).mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (urlStr.includes('/api/podcast')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { features: {} } }) } as Response)
+      }
+      if (urlStr.includes('/find-episodes')) {
+        return new Promise(() => {}) // never resolves
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: mockNewsData }) } as Response)
+    })
+
     const user = userEvent.setup()
     render(<NewsWorkspace newsId="news-1" />)
 
     await waitFor(() => {
       expect(screen.getByTestId('find-episodes-button')).toBeInTheDocument()
     })
-
-    // Phase 2 will auto-fetch via POST find-episodes
-    vi.mocked(fetch).mockReturnValueOnce(new Promise(() => {}))
 
     await user.click(screen.getByTestId('find-episodes-button'))
 

@@ -18,6 +18,7 @@ import { SocialLayout } from '@/components/social/social-layout'
 import { AdwordsLayout } from '@/components/adwords/adwords-layout'
 import { DebugLogsLayout } from '@/components/debug/debug-logs-layout'
 import { NewsletterLayout } from '@/components/newsletter/newsletter-layout'
+import { ScheduledPostsPanel } from '@/components/scheduled-posts/scheduled-posts-panel'
 import { useVideos } from '@/hooks/use-videos'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { log } from '@/lib/logger'
@@ -40,7 +41,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   const currentView = searchParams.get('view')
 
   // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode)
-  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; llmDebugMode?: boolean }>()
+  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean }>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   useEffect(() => {
     fetch('/api/podcast')
@@ -290,6 +291,23 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
           </div>
         </div>
       </LLMProcessingProvider>
+    )
+  }
+
+  // When in scheduled-posts view, show sidebar and scheduled posts panel
+  if (currentView === 'scheduled-posts') {
+    if (podcastFeatures?.socialPublish !== true) {
+      return null
+    }
+    return (
+      <div className="flex h-screen">
+        <div className="shrink-0">
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <ScheduledPostsPanel />
+        </div>
+      </div>
     )
   }
 

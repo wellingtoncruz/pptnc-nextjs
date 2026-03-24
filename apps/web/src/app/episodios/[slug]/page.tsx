@@ -112,6 +112,7 @@ export default async function EpisodePage({
     notFound();
   }
 
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
   const episodeUrl = `${baseUrl}/episodios/${episode.slug}`;
 

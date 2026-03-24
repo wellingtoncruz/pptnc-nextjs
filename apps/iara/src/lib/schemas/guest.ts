@@ -22,6 +22,8 @@ export const LinkedInGuestSchema = z.object({
   city: z.string().optional(),
   country_code: z.string().optional(),
   linkedin_id: z.string().optional(),
+  /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedin_num_id} for API mentions */
+  linkedin_num_id: z.union([z.string(), z.number()]).optional(),
 })
 
 // ============================================================================
@@ -42,6 +44,8 @@ export const GuestDocSchema = z.object({
   city: z.string().optional(),
   countryCode: z.string().optional(),
   linkedinId: z.string().optional(),
+  /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedinNumId} for API mentions */
+  linkedinNumId: z.union([z.string(), z.number()]).optional(),
   photoPath: z.string().optional(),
   raw: z.record(z.string(), z.unknown()),
   scrapedAt: TimestampSchema,
@@ -63,6 +67,8 @@ export const GuestDocCreateSchema = z.object({
   city: z.string().optional(),
   countryCode: z.string().optional(),
   linkedinId: z.string().optional(),
+  /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedinNumId} for API mentions */
+  linkedinNumId: z.union([z.string(), z.number()]).optional(),
   photoPath: z.string().optional(),
   raw: z.record(z.string(), z.unknown()),
 })

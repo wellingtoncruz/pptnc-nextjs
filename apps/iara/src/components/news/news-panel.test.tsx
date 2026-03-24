@@ -130,11 +130,14 @@ describe('NewsPanel', () => {
       expect(screen.getByText('Notícia Alpha')).toBeInTheDocument()
     })
 
-    // After click, NewsWorkspace mounts and fetches /api/news/news-1
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ data: mockNewsItems[0] }),
-    } as never)
+    // After click, NewsWorkspace mounts and fetches /api/news/news-1 + /api/podcast
+    vi.mocked(fetch).mockImplementation((url: string | URL | Request) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.toString() : url.url
+      if (urlStr.includes('/api/podcast')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: { features: {} } }) } as Response)
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: mockNewsItems[0] }) } as Response)
+    })
 
     fireEvent.click(screen.getByText('Notícia Alpha'))
 

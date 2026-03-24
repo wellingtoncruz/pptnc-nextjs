@@ -55,7 +55,18 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
       } as React.CSSProperties}
     >
       {/* Episode Title */}
-      <h1 className="text-3xl font-bold tracking-tight">{video.title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+        {video.title}
+        <a
+          href={`https://www.youtube.com/watch?v=${video.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Abrir vídeo no YouTube"
+          className="text-muted-foreground hover:text-primary transition-colors print:hidden"
+        >
+          <ExternalLinkIcon className="size-5 shrink-0" />
+        </a>
+      </h1>
 
       <Separator className="my-6" />
 
@@ -151,7 +162,18 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
           <h2 className="mb-4 text-2xl font-bold">Cortes</h2>
           {cuts.map((cut, i) => (
             <div key={cut.id} className="print:break-inside-avoid">
-              <h3 className="text-lg font-semibold">{cut.title}</h3>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                {cut.title}
+                <a
+                  href={`https://www.youtube.com/watch?v=${cut.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Abrir corte no YouTube"
+                  className="text-muted-foreground hover:text-primary transition-colors print:hidden"
+                >
+                  <ExternalLinkIcon className="size-4 shrink-0" />
+                </a>
+              </h3>
               {cut.shortTitle && (
                 <p className="mt-1 text-sm">
                   <span className="font-medium">Título para thumb:</span>{' '}
@@ -191,7 +213,18 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
           <h2 className="mb-4 text-2xl font-bold">Reels</h2>
           {reels.map((reel, i) => (
             <div key={reel.id} className="print:break-inside-avoid">
-              <h3 className="text-lg font-semibold">{reel.title}</h3>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                {reel.title}
+                <a
+                  href={`https://www.youtube.com/watch?v=${reel.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Abrir reel no YouTube"
+                  className="text-muted-foreground hover:text-primary transition-colors print:hidden"
+                >
+                  <ExternalLinkIcon className="size-4 shrink-0" />
+                </a>
+              </h3>
               {reel.description && (
                 <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
                   {reel.description}

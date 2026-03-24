@@ -17,6 +17,7 @@ import { PromptsSettingsForm } from './prompts-settings-form'
 import { PersonasSettingsForm } from './personas-settings-form'
 import { DurationSettingsForm } from './duration-settings-form'
 import { SocialNetworksSettingsForm } from './social-networks-settings-form'
+import { SocialPublishSettings } from './social-publish-settings'
 import { ResyncSection } from './resync-section'
 import { PromptFieldEditor } from './prompt-field-editor'
 import { useAccordionState } from '@/hooks/use-accordion-state'
@@ -276,6 +277,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             adwords: podcast.features?.adwords ?? false,
             newsletter: podcast.features?.newsletter ?? false,
             llmDebugMode: podcast.features?.llmDebugMode ?? false,
+            socialPublish: podcast.features?.socialPublish ?? false,
           }} />
         </AccordionContent>
       </AccordionItem>
@@ -296,24 +298,37 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
         </AccordionContent>
       </AccordionItem>
 
-      {/* Social Networks Settings (conditional on socialMedia feature toggle) */}
-      {podcast.features?.socialMedia && socialNetworks && (
+      {/* Social Networks Settings (conditional on socialMedia OR socialPublish) */}
+      {(podcast.features?.socialMedia || podcast.features?.socialPublish) && (
         <AccordionItem value={SECTION_IDS.SOCIAL_NETWORKS} className="border rounded-lg">
           <AccordionTrigger className="px-6 py-4 hover:no-underline">
             <div className="flex items-start gap-3">
               <Share2 className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
               <div className="text-left">
                 <div className="text-lg font-semibold">Redes Sociais</div>
-                <div className="text-sm font-normal text-muted-foreground">Configure quais redes sociais estão habilitadas</div>
+                <div className="text-sm font-normal text-muted-foreground">Habilitação de redes e conexão de contas</div>
               </div>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-6 pb-6">
-            <SocialNetworksSettingsForm
-              socialNetworks={socialNetworks}
-              enabledNetworks={podcast.enabledSocialNetworks ?? []}
-              onSave={handleSaveEnabledNetworks}
-            />
+          <AccordionContent className="px-6 pb-6 space-y-8">
+            {/* Sub-section 1: Enable/disable networks */}
+            {podcast.features?.socialMedia && socialNetworks && (
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Habilitar Redes Sociais</h3>
+                <SocialNetworksSettingsForm
+                  socialNetworks={socialNetworks}
+                  enabledNetworks={podcast.enabledSocialNetworks ?? []}
+                  onSave={handleSaveEnabledNetworks}
+                />
+              </div>
+            )}
+            {/* Sub-section 2: Connect accounts for publishing */}
+            {podcast.features?.socialPublish && (
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Conectar Redes Sociais</h3>
+                <SocialPublishSettings />
+              </div>
+            )}
           </AccordionContent>
         </AccordionItem>
       )}

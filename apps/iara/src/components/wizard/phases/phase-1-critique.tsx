@@ -177,9 +177,15 @@ export function Phase1Critique({
       throw new Error(errorData.error?.message || 'Falha ao salvar contexto')
     }
 
-    // Scrape LinkedIn profiles for guests (only new URLs)
-    // Awaited so we can track loading state and block advancement during scraping
-    const linkedinUrls = guests.map(g => g.linkedin).filter(Boolean) as string[]
+    // Scrape LinkedIn profiles for ALL guests with linkedin URL (not just complete ones)
+    // This ensures scraping happens even if role is not yet filled
+    const allGuests: Guest[] = []
+    if (formData.hasCoHost && formData.coHost?.linkedin?.trim()) {
+      allGuests.push(formData.coHost)
+    }
+    allGuests.push(...formData.guests.filter(g => g.linkedin?.trim()))
+
+    const linkedinUrls = allGuests.map(g => g.linkedin).filter(Boolean) as string[]
     const newUrls = linkedinUrls.filter(url => !scrapedLinkedInUrlsRef.current.has(url))
 
     if (newUrls.length > 0) {

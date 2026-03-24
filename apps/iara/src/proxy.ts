@@ -54,8 +54,9 @@ export const proxy = auth((req) => {
     return NextResponse.next()
   }
 
-  // Protected API routes (except /api/auth and /api/admin which bypass auth)
-  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/admin')) {
+  // Protected API routes (except /api/auth, /api/admin, /api/social/execute which bypass auth)
+  // /api/social/execute is called by Cloud Tasks — authenticates internally via task headers
+  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/admin') && !pathname.startsWith('/api/social/execute')) {
     if (!isAuthenticated) {
       log('INFO', 'API route auth failed', { pathname, reason: 'unauthenticated' })
       return createUnauthorizedResponse()
@@ -102,6 +103,6 @@ export const config = {
      * - auth/error (auth error page)
      * - Public assets with extensions
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|api/social/execute|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

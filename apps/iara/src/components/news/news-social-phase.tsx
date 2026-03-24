@@ -16,6 +16,7 @@ interface NewsSocialPhaseProps {
 export function NewsSocialPhase({ news, onDataUpdate }: NewsSocialPhaseProps) {
   const [localText, setLocalText] = useState(news.social ?? '')
   const [isGenerating, setIsGenerating] = useState(news.social === null || news.social === undefined)
+
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [showContextInput, setShowContextInput] = useState(false)
@@ -44,6 +45,14 @@ export function NewsSocialPhase({ news, onDataUpdate }: NewsSocialPhaseProps) {
   }, [news.id])
 
   const { saveStatus, save: flushSave, resetValue } = useAutoSave(localText, saveFn)
+
+  // Sync local text when news.social changes (e.g., after re-fetch on phase switch)
+  useEffect(() => {
+    if (news.social !== null && news.social !== undefined) {
+      setLocalText(news.social)
+      resetValue(news.social)
+    }
+  }, [news.social, resetValue])
 
   const generateSocial = useCallback(async (context?: string) => {
     setIsGenerating(true)

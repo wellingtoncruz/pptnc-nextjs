@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Megaphone, Mail, Users, Settings, Bug, LogOut } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Megaphone, Mail, CalendarClock, Users, Settings, Bug, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
@@ -21,6 +21,7 @@ interface PodcastFeatures {
   socialMedia?: boolean
   adwords?: boolean
   newsletter?: boolean
+  socialPublish?: boolean
   llmDebugMode?: boolean
 }
 
@@ -69,13 +70,14 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
     const isAdwordsView = searchParams.get('view') === 'adwords'
     const isNewsletterView = searchParams.get('view') === 'newsletter'
     const isDebugView = searchParams.get('view') === 'debug'
+    const isScheduledPostsView = searchParams.get('view') === 'scheduled-posts'
 
     const items = [
       {
         href: '/videos',
         label: 'Vídeos',
         icon: Video,
-        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView && !isSocialView && !isAdwordsView && !isNewsletterView && !isDebugView,
+        isActive: (pathname === '/videos' || pathname?.startsWith('/videos/')) && !isSettingsView && !isUsersView && !isEditorialView && !isNewsView && !isSocialView && !isAdwordsView && !isNewsletterView && !isScheduledPostsView && !isDebugView,
         adminOnly: false,
       },
       ...(features?.editorial !== false ? [{
@@ -113,6 +115,13 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
         label: 'Newsletter',
         icon: Mail,
         isActive: isNewsletterView,
+        adminOnly: false,
+      }] : []),
+      ...(features?.socialPublish === true ? [{
+        href: '/videos?view=scheduled-posts',
+        label: 'Agendamentos',
+        icon: CalendarClock,
+        isActive: isScheduledPostsView,
         adminOnly: false,
       }] : []),
       {

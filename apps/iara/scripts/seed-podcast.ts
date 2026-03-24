@@ -159,6 +159,7 @@ async function seedPodcast() {
       socialMedia: false,
       adwords: false,
       llmDebugMode: false,
+      socialPublish: false,
     },
     enabledSocialNetworks: [],
     createdAt: FieldValue.serverTimestamp(),
