@@ -114,6 +114,39 @@ describe("sitemap", () => {
     expect(episodePage?.lastModified).toEqual(publishDate);
   });
 
+  it("uses latest episode date for dynamic static pages", async () => {
+    const latestDate = new Date("2026-03-15T10:00:00Z");
+    vi.mocked(getEpisodes).mockResolvedValue([
+      { slug: "latest-ep", publishedAt: latestDate },
+      { slug: "older-ep", publishedAt: new Date("2026-01-01") },
+    ] as any);
+
+    const result = await sitemap();
+
+    const homePage = result.find((item) => item.url?.endsWith("pptnaocompila.com.br"));
+    const episodesPage = result.find((item) => item.url?.endsWith("/episodios"));
+    const midiakit = result.find((item) => item.url?.includes("/midiakit"));
+
+    expect(homePage?.lastModified).toEqual(latestDate);
+    expect(episodesPage?.lastModified).toEqual(latestDate);
+    expect(midiakit?.lastModified).toEqual(latestDate);
+  });
+
+  it("uses fixed date for rarely-changing pages", async () => {
+    vi.mocked(getEpisodes).mockResolvedValue([
+      { slug: "ep", publishedAt: new Date("2026-03-20") },
+    ] as any);
+
+    const result = await sitemap();
+
+    const contato = result.find((item) => item.url?.includes("/contato"));
+    const sugerirPauta = result.find((item) => item.url?.includes("/sugerir-pauta"));
+    const fixedDate = new Date("2026-01-01");
+
+    expect(contato?.lastModified).toEqual(fixedDate);
+    expect(sugerirPauta?.lastModified).toEqual(fixedDate);
+  });
+
   it("handles datastore errors gracefully", async () => {
     vi.mocked(getEpisodes).mockRejectedValue(new Error("Datastore unavailable"));
 

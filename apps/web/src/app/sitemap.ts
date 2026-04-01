@@ -16,35 +16,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
+  // For dynamic pages (home, episodes list), use the most recent episode date
+  const latestEpisodeDate =
+    episodes.length > 0 ? episodes[0].publishedAt : new Date("2026-01-01");
+
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date(),
+      lastModified: latestEpisodeDate,
       changeFrequency: "daily",
       priority: 1.0,
     },
     {
       url: `${baseUrl}/episodios`,
-      lastModified: new Date(),
+      lastModified: latestEpisodeDate,
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${baseUrl}/contato`,
-      lastModified: new Date(),
+      lastModified: new Date("2026-01-01"),
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${baseUrl}/sugerir-pauta`,
-      lastModified: new Date(),
+      lastModified: new Date("2026-01-01"),
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${baseUrl}/midiakit`,
-      lastModified: new Date(),
+      lastModified: latestEpisodeDate,
       changeFrequency: "monthly",
       priority: 0.6,
     },

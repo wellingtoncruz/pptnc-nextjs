@@ -64,6 +64,11 @@ export const metadata: Metadata = {
     description: "O podcast de tecnologia brasileiro com +200 episódios sobre transformação digital, carreira tech, IA e inovação.",
     images: ["/og-image.png"],
   },
+  alternates: {
+    types: {
+      "application/rss+xml": "/feed.xml",
+    },
+  },
   robots: {
     index: true,
     follow: true,

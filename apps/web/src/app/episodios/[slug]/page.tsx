@@ -12,6 +12,7 @@ import {
   getRelatedEpisodes,
 } from "@/lib/datastore/episodes";
 import { getChaptersByVideoId } from "@/lib/datastore/chunks";
+import { resolveSpotifyUrl } from "@/lib/spotify/resolve-url";
 
 interface EpisodePageProps {
   params: Promise<{
@@ -127,18 +128,23 @@ export default async function EpisodePage({
     ? (tab as typeof validTabs[number])
     : undefined;
 
-  // Fetch related episodes and chapters in parallel
-  const [relatedEpisodes, chapters] = await Promise.all([
+  // Fetch related episodes, chapters, and resolve Spotify URL in parallel
+  const [relatedEpisodes, chapters, resolvedSpotifyUrl] = await Promise.all([
     getRelatedEpisodes(episode, 4),
     getChaptersByVideoId(episode.youtubeId),
+    resolveSpotifyUrl(episode.spotifyUrl),
   ]);
+
+  const resolvedEpisode = resolvedSpotifyUrl !== episode.spotifyUrl
+    ? { ...episode, spotifyUrl: resolvedSpotifyUrl }
+    : episode;
 
   return (
     <>
       <EpisodeJsonLd episode={episode} baseUrl={baseUrl} />
       <Container className="py-8 md:py-12">
         <EpisodeYouTubeWrapper
-          episode={episode}
+          episode={resolvedEpisode}
           episodeUrl={episodeUrl}
           relatedEpisodes={relatedEpisodes}
           chapters={chapters}
