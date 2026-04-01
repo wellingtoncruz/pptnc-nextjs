@@ -67,14 +67,20 @@ export function MediaTabs({
 
   return (
     <Tabs defaultValue="video" className={cn("w-full", className)}>
-      <TabsList className="mb-4">
-        <TabsTrigger value="video" className="gap-2">
-          <Youtube className="h-4 w-4" />
-          Vídeo
+      <TabsList className="mb-4 h-11 gap-2 border border-border">
+        <TabsTrigger
+          value="video"
+          className="gap-2 text-sm data-[state=active]:border-b-2 data-[state=active]:border-b-[#FF0000] data-[state=active]:shadow-none"
+        >
+          <Youtube className="h-5 w-5 text-[#FF0000]" />
+          YouTube
         </TabsTrigger>
-        <TabsTrigger value="audio" className="gap-2">
-          <SpotifyIcon className="h-4 w-4" />
-          Áudio
+        <TabsTrigger
+          value="audio"
+          className="gap-2 text-sm data-[state=active]:border-b-2 data-[state=active]:border-b-[#1DB954] data-[state=active]:shadow-none"
+        >
+          <SpotifyIcon className="h-5 w-5 text-[#1DB954]" />
+          Spotify
         </TabsTrigger>
       </TabsList>
 

@@ -60,7 +60,7 @@ describe("MediaTabs", () => {
   });
 
   describe("with Spotify URL", () => {
-    it("renders tabs with Vídeo and Áudio options", () => {
+    it("renders tabs with YouTube and Spotify options", () => {
       render(
         <MediaTabs
           youtubeId="abc123"
@@ -72,12 +72,12 @@ describe("MediaTabs", () => {
       // Should render tablist
       expect(screen.getByRole("tablist")).toBeInTheDocument();
 
-      // Should render both tab triggers with new labels
-      expect(screen.getByRole("tab", { name: /vídeo/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /áudio/i })).toBeInTheDocument();
+      // Should render both tab triggers with platform labels
+      expect(screen.getByRole("tab", { name: /youtube/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /spotify/i })).toBeInTheDocument();
     });
 
-    it("shows Vídeo tab content by default", () => {
+    it("shows YouTube tab content by default", () => {
       render(
         <MediaTabs
           youtubeId="abc123"
@@ -93,7 +93,7 @@ describe("MediaTabs", () => {
       expect(screen.queryByTestId("spotify-embed")).not.toBeInTheDocument();
     });
 
-    it("Vídeo tab is active by default", () => {
+    it("YouTube tab is active by default", () => {
       render(
         <MediaTabs
           youtubeId="abc123"
@@ -103,8 +103,8 @@ describe("MediaTabs", () => {
       );
 
       // Video is selected by default
-      expect(screen.getByRole("tab", { name: /vídeo/i })).toHaveAttribute("data-state", "active");
-      expect(screen.getByRole("tab", { name: /áudio/i })).toHaveAttribute("data-state", "inactive");
+      expect(screen.getByRole("tab", { name: /youtube/i })).toHaveAttribute("data-state", "active");
+      expect(screen.getByRole("tab", { name: /spotify/i })).toHaveAttribute("data-state", "inactive");
     });
 
     it("tabs have correct data attributes for state", () => {
@@ -116,8 +116,8 @@ describe("MediaTabs", () => {
         />
       );
 
-      const videoTab = screen.getByRole("tab", { name: /vídeo/i });
-      const audioTab = screen.getByRole("tab", { name: /áudio/i });
+      const videoTab = screen.getByRole("tab", { name: /youtube/i });
+      const audioTab = screen.getByRole("tab", { name: /spotify/i });
 
       // Verify data-state attributes exist and have correct initial values
       expect(videoTab).toHaveAttribute("data-state", "active");
@@ -164,7 +164,7 @@ describe("MediaTabs", () => {
       const tabs = screen.getAllByRole("tab");
       expect(tabs).toHaveLength(2);
 
-      // First tab (Vídeo) should be selected by default
+      // First tab (YouTube) should be selected by default
       expect(tabs[0]).toHaveAttribute("aria-selected", "true");
       expect(tabs[1]).toHaveAttribute("aria-selected", "false");
     });
@@ -180,7 +180,7 @@ describe("MediaTabs", () => {
 
       const [videoTab, audioTab] = screen.getAllByRole("tab");
 
-      // Vídeo should be selected by default (it's now first)
+      // YouTube should be selected by default (it's first)
       expect(videoTab).toHaveAttribute("aria-selected", "true");
       expect(audioTab).toHaveAttribute("aria-selected", "false");
     });
