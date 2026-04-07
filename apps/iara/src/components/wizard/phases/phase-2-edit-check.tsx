@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRightIcon, CheckCircleIcon, AlertTriangleIcon, RefreshCwIcon, Loader2Icon } from 'lucide-react'
 
 import {
@@ -83,6 +83,41 @@ export function Phase2EditCheck({
   // Check if can advance: result must exist, no error, and (not from cache OR already reviewed)
   const canAdvance = editCheckResult !== null && !hasError && !needsReviewConfirmation && !isAdvancing
 
+  // Progressive feedback timer for long-running LLM calls.
+  // Note: isProcessing is true on mount before the LLM call fires (via useEffect in orchestrator).
+  // This is acceptable because: (1) the default spinnerText matches the normal message,
+  // (2) the LLM call fires within ~16ms of mount, and (3) progressive messages only appear after 30s.
+  const isProcessing = !editCheckResult && !hasError
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (isProcessing) {
+      setElapsedSeconds(0)
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds(prev => prev + 1)
+      }, 1000)
+    } else {
+      setElapsedSeconds(0)
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+    }
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+    }
+  }, [isProcessing])
+
+  const spinnerText = elapsedSeconds >= 60
+    ? 'Processamento em andamento. Aguarde, não feche a página.'
+    : elapsedSeconds >= 30
+      ? 'Análise em andamento — vídeos longos podem demorar mais...'
+      : 'Analisando transcrição para falhas de edição...'
+
   const handleAdvance = () => {
     if (canAdvance && editCheckResult) {
       setIsAdvancing(true)
@@ -146,7 +181,7 @@ export function Phase2EditCheck({
 
         {/* Loading state when no result yet */}
         {!editCheckResult && !hasError && (
-          <ProcessingSpinner text="Analisando transcrição para falhas de edição..." />
+          <ProcessingSpinner text={spinnerText} />
         )}
 
         {/* Review confirmation alert when data is from cache */}

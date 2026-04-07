@@ -75,9 +75,10 @@ export function createLLMError(error: unknown): LLMError {
       return new LLMError('NETWORK_ERROR', LLM_ERROR_MESSAGES.NETWORK_ERROR, true)
     }
 
-    if (message.includes('json') || message.includes('parse')) {
-      return new LLMError('PARSE_ERROR', LLM_ERROR_MESSAGES.PARSE_ERROR, false)
-    }
+    // Note: PARSE_ERROR from our code is thrown explicitly as LLMError in _callGenAIInner
+    // and caught by the `instanceof LLMError` check above. SDK errors containing "json" or
+    // "parse" (e.g., "Failed to parse response from server") should fall through to API_ERROR
+    // (retryable) rather than being misclassified as non-retryable PARSE_ERROR (F10 fix).
 
     return new LLMError('API_ERROR', error.message, true)
   }

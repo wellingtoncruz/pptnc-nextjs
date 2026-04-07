@@ -802,6 +802,108 @@ describe('PARSE_ERROR retry behavior', () => {
 })
 
 // =============================================================================
+// RETRYABLE ERROR RETRY TESTS
+// =============================================================================
+//
+// Tests for the outer retry loop that handles transient errors
+// (RATE_LIMIT, TIMEOUT, NETWORK_ERROR, API_ERROR) with exponential backoff.
+// =============================================================================
+
+describe('Retryable error retry configuration', () => {
+  it('MAX_RETRYABLE_ATTEMPTS is derived from RETRYABLE_DELAYS.length + 1', async () => {
+    const { MAX_RETRYABLE_ATTEMPTS, RETRYABLE_DELAYS } = await import('./types')
+    expect(MAX_RETRYABLE_ATTEMPTS).toBe(RETRYABLE_DELAYS.length + 1)
+    expect(MAX_RETRYABLE_ATTEMPTS).toBe(4)
+  })
+
+  it('RETRYABLE_DELAYS has 3 entries with exponential backoff (30s, 60s, 120s)', async () => {
+    const { RETRYABLE_DELAYS } = await import('./types')
+    expect(RETRYABLE_DELAYS).toEqual([30000, 60000, 120000])
+    expect(RETRYABLE_DELAYS).toHaveLength(3)
+  })
+
+  it('exports retryable constants from types.ts', async () => {
+    const types = await import('./types')
+
+    expect(types.MAX_RETRYABLE_ATTEMPTS).toBeDefined()
+    expect(types.RETRYABLE_DELAYS).toBeDefined()
+    expect(typeof types.MAX_RETRYABLE_ATTEMPTS).toBe('number')
+    expect(Array.isArray(types.RETRYABLE_DELAYS)).toBe(true)
+  })
+})
+
+describe('Retryable error classification', () => {
+  it('isRetryableError returns true for all retryable error codes', async () => {
+    const { isRetryableError } = await import('./errors')
+
+    expect(isRetryableError('RATE_LIMIT')).toBe(true)
+    expect(isRetryableError('TIMEOUT')).toBe(true)
+    expect(isRetryableError('NETWORK_ERROR')).toBe(true)
+    expect(isRetryableError('API_ERROR')).toBe(true)
+  })
+
+  it('isRetryableError returns false for non-retryable error codes', async () => {
+    const { isRetryableError } = await import('./errors')
+
+    expect(isRetryableError('PARSE_ERROR')).toBe(false)
+    expect(isRetryableError('INVALID_RESPONSE')).toBe(false)
+    expect(isRetryableError('MISSING_TRANSCRIPT')).toBe(false)
+    expect(isRetryableError('MISSING_CONTEXT')).toBe(false)
+    expect(isRetryableError('UNKNOWN')).toBe(false)
+  })
+
+  it('createLLMError classifies rate limit errors as retryable', async () => {
+    const { createLLMError } = await import('./errors')
+
+    const error429 = createLLMError(new Error('Rate limit exceeded (429)'))
+    expect(error429.code).toBe('RATE_LIMIT')
+    expect(error429.retryable).toBe(true)
+
+    const errorRateLimit = createLLMError(new Error('rate limit reached'))
+    expect(errorRateLimit.code).toBe('RATE_LIMIT')
+    expect(errorRateLimit.retryable).toBe(true)
+  })
+
+  it('createLLMError classifies timeout errors as retryable', async () => {
+    const { createLLMError } = await import('./errors')
+
+    const error = createLLMError(new Error('Request timed out'))
+    expect(error.code).toBe('TIMEOUT')
+    expect(error.retryable).toBe(true)
+  })
+
+  it('createLLMError classifies network errors as retryable', async () => {
+    const { createLLMError } = await import('./errors')
+
+    const error = createLLMError(new Error('Network request failed'))
+    expect(error.code).toBe('NETWORK_ERROR')
+    expect(error.retryable).toBe(true)
+  })
+
+  it('createLLMError classifies generic API errors as retryable', async () => {
+    const { createLLMError } = await import('./errors')
+
+    const error = createLLMError(new Error('Internal server error'))
+    expect(error.code).toBe('API_ERROR')
+    expect(error.retryable).toBe(true)
+  })
+
+  it('createLLMError classifies SDK parse/json errors as retryable API_ERROR (F10 fix)', async () => {
+    const { createLLMError } = await import('./errors')
+
+    // SDK errors with "parse" or "json" should be API_ERROR (retryable),
+    // NOT PARSE_ERROR (non-retryable). Our PARSE_ERROR is thrown explicitly as LLMError.
+    const parseError = createLLMError(new Error('Failed to parse response from server'))
+    expect(parseError.code).toBe('API_ERROR')
+    expect(parseError.retryable).toBe(true)
+
+    const jsonError = createLLMError(new Error('Invalid json in API response'))
+    expect(jsonError.code).toBe('API_ERROR')
+    expect(jsonError.retryable).toBe(true)
+  })
+})
+
+// =============================================================================
 // CALL LLM VALIDATION TESTS
 // =============================================================================
 //

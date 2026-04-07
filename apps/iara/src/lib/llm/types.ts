@@ -248,6 +248,22 @@ export const MAX_PARSE_RETRIES = 3
 export const RETRY_DELAY_MS = 1000
 
 /**
+ * Delay between retry attempts for retryable errors, in milliseconds.
+ * Uses exponential backoff: 30s → 60s → 120s.
+ * Long delays are intentional — Gemini rate limit is quota per minute.
+ *
+ * Total attempts = RETRYABLE_DELAYS.length + 1 (initial attempt + N retries).
+ * With 3 delays: 4 total attempts, 3 wait intervals, ~3.5min max total wait.
+ */
+export const RETRYABLE_DELAYS = [30000, 60000, 120000]
+
+/**
+ * Total number of attempts for retryable errors.
+ * Derived from RETRYABLE_DELAYS to prevent mismatch (F1 fix).
+ */
+export const MAX_RETRYABLE_ATTEMPTS = RETRYABLE_DELAYS.length + 1
+
+/**
  * Timeout per phase (in ms).
  * Phases 1-4 use SRT transcription as input (can be 100K+ tokens for long episodes).
  * Gemini 2.5 Flash thinking tokens increase processing time for large inputs.

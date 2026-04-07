@@ -11,12 +11,12 @@ import type { Podcast } from '@/types/podcast'
 import type { DebugContext } from '@/types/llm-log'
 import type { Video } from '@/types/video'
 
-import { createLLMError, LLMError } from './errors'
+import { createLLMError, isRetryableError, LLMError } from './errors'
 import { extractVariables, interpolatePrompt, validateVideoForPhase } from './interpolation'
 import { parseJSONFromLLM } from './parse-json'
 import { buildPhasePrompt, getSystemPrompt, getUserPromptTemplate, PHASE_CONFIG } from './prompts'
 import { llmQueue } from './queue'
-import { MAX_PARSE_RETRIES, PHASE_TIMEOUTS, RETRY_DELAY_MS } from './types'
+import { MAX_PARSE_RETRIES, MAX_RETRYABLE_ATTEMPTS, PHASE_TIMEOUTS, RETRY_DELAY_MS, RETRYABLE_DELAYS } from './types'
 import type {
   LLMCallOptions,
   LLMResult,
@@ -132,6 +132,7 @@ async function readFileAsBase64(filePath: string): Promise<string> {
  * @param userPrompt - User prompt with context (without transcription)
  * @param _timeout - Timeout in milliseconds (reserved for future use)
  * @param attachmentPath - Optional path to transcription file to attach
+ * @param cachedContentName - Optional cache resource name (mutually exclusive with attachmentPath)
  *
  * @see Story 5.4 - Auto-Retry em PARSE_ERROR
  */
@@ -141,7 +142,8 @@ export async function callGenAI<T>(
   _timeout: number,
   attachmentPath: string | undefined,
   debugContext?: DebugContext,
-  modelOverride?: string
+  modelOverride?: string,
+  cachedContentName?: string
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   const client = getAI()
   const modelName = modelOverride || VERTEX_AI_MODEL || DEFAULT_MODEL
@@ -154,7 +156,11 @@ export async function callGenAI<T>(
   // Track attachment metadata for debug logging
   let attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined
 
-  if (attachmentPath) {
+  // cachedContentName and attachmentPath are mutually exclusive.
+  // When cache is available, skip inlineData entirely — the content is already cached server-side.
+  if (cachedContentName) {
+    log('INFO', 'Using cached content for request', { cachedContentName })
+  } else if (attachmentPath) {
     const base64Content = await readFileAsBase64(attachmentPath)
     parts.push({
       inlineData: {
@@ -178,31 +184,99 @@ export async function callGenAI<T>(
     })
   }
 
-  // Retry loop for PARSE_ERROR only
+  // Outer retry loop for retryable errors (RATE_LIMIT, TIMEOUT, NETWORK_ERROR, API_ERROR)
+  for (let retryAttempt = 0; retryAttempt < MAX_RETRYABLE_ATTEMPTS; retryAttempt++) {
+    try {
+      return await _callGenAIInner<T>(
+        client, modelName, parts, systemPrompt, attachmentInfo, debugContext, userPrompt, cachedContentName
+      )
+    } catch (error) {
+      const llmError = error instanceof LLMError ? error : createLLMError(error)
+
+      // Log full error details for non-LLMError
+      if (!(error instanceof LLMError)) {
+        const err = error as Error & { status?: number; statusText?: string; cause?: unknown }
+        log('ERROR', 'Raw API error details', {
+          retryAttempt,
+          name: err?.name,
+          message: err?.message,
+          status: err?.status,
+          statusText: err?.statusText,
+          cause: err?.cause ? String(err.cause) : undefined,
+          stack: err?.stack?.split('\n').slice(0, 5).join('\n'),
+        })
+      }
+
+      // Check if this error is retryable and we have attempts remaining
+      if (isRetryableError(llmError.code) && retryAttempt < MAX_RETRYABLE_ATTEMPTS - 1) {
+        const delayMs = RETRYABLE_DELAYS[retryAttempt]
+        log('WARN', `Retryable error "${llmError.code}" on attempt ${retryAttempt + 1}/${MAX_RETRYABLE_ATTEMPTS}, waiting ${delayMs / 1000}s before retry...`, {
+          errorCode: llmError.code,
+          errorMessage: llmError.message,
+          nextAttempt: retryAttempt + 2,
+          delaySeconds: delayMs / 1000,
+        })
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+        continue
+      }
+
+      // Not retryable or retries exhausted — propagate
+      if (isRetryableError(llmError.code) && retryAttempt === MAX_RETRYABLE_ATTEMPTS - 1) {
+        log('ERROR', `All ${MAX_RETRYABLE_ATTEMPTS} retry attempts exhausted for "${llmError.code}"`, {
+          errorCode: llmError.code,
+          totalAttempts: MAX_RETRYABLE_ATTEMPTS,
+        })
+      }
+
+      throw llmError
+    }
+  }
+
+  // Should not reach here, but TypeScript needs this
+  throw new LLMError('UNKNOWN', 'Erro inesperado no loop de retry', false)
+}
+
+/**
+ * Inner implementation of callGenAI with parse retry logic.
+ * Separated from callGenAI to allow the outer retryable error loop to wrap this cleanly.
+ * Handles streaming, response parsing, debug logging, and PARSE_ERROR retry.
+ * Non-retryable errors (INVALID_RESPONSE, etc.) and API errors propagate as LLMError.
+ */
+async function _callGenAIInner<T>(
+  client: GoogleGenAI,
+  modelName: string,
+  parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }>,
+  systemPrompt: string,
+  attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined,
+  debugContext: DebugContext | undefined,
+  userPrompt: string,
+  cachedContentName?: string
+): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
+  // Parse retry loop - only for PARSE_ERROR
   for (let attempt = 1; attempt <= MAX_PARSE_RETRIES; attempt++) {
     try {
-      // Use streaming API to keep the connection alive during model thinking.
-      // Each chunk keeps the HTTP connection active, preventing idle timeouts.
+      // Vertex AI restriction: when using cachedContent, systemInstruction, tools,
+      // and toolConfig CANNOT be set in the request — even if the cache doesn't include them.
+      // Workaround: prepend the system prompt as a user message in contents.
+      const effectiveContents = cachedContentName
+        ? [{ text: `[INSTRUÇÃO DE SISTEMA]\n${systemPrompt}\n[FIM DA INSTRUÇÃO]\n\n` }, ...parts]
+        : parts
+
       const stream = await client.models.generateContentStream({
         model: modelName,
-        contents: parts,
+        contents: effectiveContents,
         config: {
-          systemInstruction: systemPrompt,
+          // systemInstruction is omitted when using cachedContent (Vertex AI restriction)
+          ...(cachedContentName ? {} : { systemInstruction: systemPrompt }),
           responseMimeType: 'application/json',
           temperature: 0.7,
           maxOutputTokens: 65536,
-          // Gemini 2.5 Flash thinking tokens share the maxOutputTokens budget (65K).
-          // Without a cap, the model non-deterministically consumes 60K+ on thinking,
-          // leaving insufficient room for output → MAX_TOKENS truncation.
-          // API max for thinking_budget is 24576. Leaves ~41K for visible output.
           thinkingConfig: { thinkingBudget: 24576 },
+          ...(cachedContentName ? { cachedContent: cachedContentName } : {}),
         },
       })
 
       // Consume stream chunks and accumulate text.
-      // The SDK sends incremental chunks (deltas) — each chunk.text only
-      // contains the NEW text since the last chunk, not the full response.
-      // We must concatenate all chunks to reconstruct the complete response.
       let chunkCount = 0
       let fullText = ''
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chunk type inferred from stream
@@ -218,14 +292,13 @@ export async function callGenAI<T>(
       }
       log('INFO', `Stream completed (${chunkCount} chunks)`, { attempt, fullTextLength: fullText.length })
 
-      // Extract metadata from last chunk (finishReason, usageMetadata arrive in the final SSE event)
+      // Extract metadata from last chunk
       const candidate = lastChunk!.candidates?.[0]
       const finishReason = candidate?.finishReason
       const safetyRatings = candidate?.safetyRatings
       const usageMetadata = lastChunk!.usageMetadata
       const text = fullText || undefined
 
-      // Diagnostic logging for every attempt
       log('INFO', `LLM response received (attempt ${attempt}/${MAX_PARSE_RETRIES})`, {
         finishReason,
         safetyRatings,
@@ -239,14 +312,12 @@ export async function callGenAI<T>(
         throw new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
       }
 
-      // Parse JSON with robust extraction (handles markdown code blocks, extra text, etc.)
+      // Parse JSON with robust extraction
       const data = parseJSONFromLLM<T>(text)
       if (data === null) {
-        // Dump full raw response to file for debugging
         const dumpPath = path.join(os.tmpdir(), `iara-parse-error-attempt${attempt}-${Date.now()}.txt`)
         await fs.writeFile(dumpPath, text, 'utf-8')
 
-        // Log parse failure with attempt info
         log('WARN', `PARSE_ERROR on attempt ${attempt}/${MAX_PARSE_RETRIES}`, {
           finishReason,
           rawResponseLength: text.length,
@@ -255,14 +326,12 @@ export async function callGenAI<T>(
           dumpPath,
         })
 
-        // Check if we should retry
         if (attempt < MAX_PARSE_RETRIES) {
           log('INFO', `Retrying LLM call (attempt ${attempt + 1}/${MAX_PARSE_RETRIES})`)
           await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
-          continue // Try again
+          continue
         }
 
-        // All retries exhausted
         log('ERROR', 'Failed to parse JSON after all retries', {
           attempts: MAX_PARSE_RETRIES,
           rawResponseEnd: text.length > 500 ? text.substring(text.length - 200) : text,
@@ -274,19 +343,17 @@ export async function callGenAI<T>(
         )
       }
 
-      // Success - log if this was a retry
       if (attempt > 1) {
         log('INFO', `LLM call succeeded on attempt ${attempt}/${MAX_PARSE_RETRIES}`)
       }
 
-      // Extract usage metadata
       const usage = {
         promptTokens: usageMetadata?.promptTokenCount || 0,
         completionTokens: usageMetadata?.candidatesTokenCount || 0,
         totalTokens: usageMetadata?.totalTokenCount || 0,
       }
 
-      // Save debug log if debugContext provided (llmDebugMode enabled at caller)
+      // Save debug log if debugContext provided
       if (debugContext) {
         try {
           const { saveLlmLog } = await import('@/lib/firebase/llm-log-admin')
@@ -301,7 +368,6 @@ export async function callGenAI<T>(
             usage,
           })
         } catch (logError) {
-          // Never fail the LLM call because of debug logging
           log('WARN', 'Failed to save LLM debug log', {
             error: logError instanceof Error ? logError.message : JSON.stringify(logError),
           })
@@ -310,20 +376,6 @@ export async function callGenAI<T>(
 
       return { data, usage }
     } catch (error) {
-      // Log full error details before converting
-      if (!(error instanceof LLMError)) {
-        const err = error as Error & { status?: number; statusText?: string; cause?: unknown }
-        log('ERROR', 'Raw API error details', {
-          attempt,
-          name: err?.name,
-          message: err?.message,
-          status: err?.status,
-          statusText: err?.statusText,
-          cause: err?.cause ? String(err.cause) : undefined,
-          stack: err?.stack?.split('\n').slice(0, 5).join('\n'),
-        })
-      }
-
       if (error instanceof LLMError) {
         throw error
       }
@@ -331,7 +383,6 @@ export async function callGenAI<T>(
     }
   }
 
-  // Should not reach here, but TypeScript needs this
   throw new LLMError('PARSE_ERROR', 'Erro inesperado no loop de retry', false)
 }
 
@@ -456,7 +507,38 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       transcriptionLength: transcription.length,
     })
 
-    // Create transcription file and call API with attachment
+    // Resolve model name for cache creation (same logic as callGenAI)
+    const modelName = podcast?.llmConfig?.textModel || VERTEX_AI_MODEL || DEFAULT_MODEL
+
+    // Try to use Gemini Context Caching for the transcription.
+    // Cache is isolated per videoId + format (SRT/TXT) — never shared between videos.
+    const cacheFormat = phaseConfig.attachmentType.toLowerCase() as 'srt' | 'txt'
+    const { getOrCreateCache } = await import('./cache')
+    const cacheName = await getOrCreateCache(video.id, cacheFormat, transcription, modelName)
+
+    if (cacheName) {
+      // Cache path: use cachedContentName, skip temp file entirely
+      log('INFO', 'Using cached transcription for LLM call', {
+        phase,
+        videoId: video.id,
+        cacheFormat,
+        cacheName,
+      })
+
+      const { data, usage } = await callGenAI<PhaseResponseMap[P]>(
+        systemPrompt,
+        userPrompt,
+        timeout,
+        undefined, // no attachment path
+        options?.debugContext,
+        podcast?.llmConfig?.textModel,
+        cacheName
+      )
+
+      return { success: true, data, usage }
+    }
+
+    // Fallback path: create temp file and send as inlineData (original flow)
     transcriptionFilePath = await createTranscriptionFile(transcription, phase)
 
     const { data, usage } = await callGenAI<PhaseResponseMap[P]>(
@@ -480,7 +562,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
 
     return createLLMError(error).toResult()
   } finally {
-    // Always cleanup temporary file
+    // Always cleanup temporary file (only exists in fallback path)
     if (transcriptionFilePath) {
       await cleanupTranscriptionFile(transcriptionFilePath)
     }
