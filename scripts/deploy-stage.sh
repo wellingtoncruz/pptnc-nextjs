@@ -18,6 +18,7 @@ REGISTRY="us-east1-docker.pkg.dev/${PROJECT_ID}/pptnc/pptnc"
 IMAGE_TAG="latest"
 # NEXT_PUBLIC_* vars are inlined at build time by Next.js
 NEXT_PUBLIC_BASE_URL="${NEXT_PUBLIC_BASE_URL:-https://pptnaocompila.com.br}"
+NEXT_PUBLIC_GA_MEASUREMENT_ID="G-98JTY09J5V"
 
 # Colors for output
 RED='\033[0;31m'
@@ -142,7 +143,9 @@ fi
 # Step 2: Build Next.js (NEXT_PUBLIC_* vars are inlined at build time)
 log_step "Building Next.js application"
 log_success "NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}"
+log_success "NEXT_PUBLIC_GA_MEASUREMENT_ID=${NEXT_PUBLIC_GA_MEASUREMENT_ID}"
 export NEXT_PUBLIC_BASE_URL
+export NEXT_PUBLIC_GA_MEASUREMENT_ID
 run_cmd pnpm --filter @pptnc/web build
 log_success "Next.js build completed"
 

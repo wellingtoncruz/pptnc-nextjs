@@ -1,13 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
-
 import { ThemeProvider } from "@/components/theme-provider";
+import { AnalyticsProvider } from "@/components/analytics-provider";
 import { Header } from "@/components/layout/header";
 import { Sponsors } from "@/components/layout/sponsors";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
-import { GA_MEASUREMENT_ID } from "@/lib/analytics/gtag";
 
 import "./globals.css";
 
@@ -92,31 +90,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {/* Google Analytics - only load when configured */}
-        {GA_MEASUREMENT_ID && (
-          <>
-            <Script
-              strategy="afterInteractive"
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-            />
-            <Script
-              id="google-analytics"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  var debugMode = new URLSearchParams(window.location.search).get('debug_mode') === '1';
-                  gtag('config', '${GA_MEASUREMENT_ID}', {
-                    page_path: window.location.pathname,
-                    debug_mode: debugMode,
-                  });
-                `,
-              }}
-            />
-          </>
-        )}
+        <AnalyticsProvider />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
