@@ -13,7 +13,15 @@
  * - Phase 6: Description (Phase6Response)
  * - Phase 7: Tags (Phase7Response)
  *
+ * Supports two execution modes (selected by `?mode` query param):
+ * - sync (default): waits for LLM completion, returns 200 + result
+ * - async: returns 202 + jobId immediately; frontend listens via Firestore
+ *   onSnapshot. Required for long-running phases on the public domain
+ *   (Cloud Run domain mapping has a ~60s edge timeout that severs the
+ *   browser connection even though the service completes successfully).
+ *
  * @see lib/llm/types.ts for response schemas
+ * @see lib/firebase/wizard-jobs-admin.ts for the async job model
  * @see architecture-iara.md#LLM Integration
  */
 
@@ -24,23 +32,22 @@ import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
+import { createWizardJob, updateWizardJob } from '@/lib/firebase/wizard-jobs-admin'
 import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase6Response, Phase7Response } from '@/lib/llm'
 import { callLLMQueued, type PhaseResponse } from '@/lib/llm'
+import type { LLMResult } from '@/lib/llm/types'
 import { log } from '@/lib/logger'
+import type { Podcast } from '@/types/podcast'
+import type { Video } from '@/types/video'
+import type { WizardPhase } from '@/lib/wizard'
 import { WizardPhaseSchema } from '@/lib/wizard'
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin and Vertex AI
 
-/**
- * Schema for validating phase processing request body.
- */
 const PhaseRequestSchema = z.object({
   videoId: z.string().min(1, 'videoId é obrigatório'),
-  // Optional prompt override for reprocessable phases
   promptOverride: z.string().optional(),
-  // Optional additional context for reprocessable phases
   additionalContext: z.string().optional(),
-  // Optional previous phase data for SEO chain (phases 5-7)
   previousPhaseData: z.record(z.string(), z.unknown()).optional(),
 })
 
@@ -48,21 +55,209 @@ interface RouteContext {
   params: Promise<{ phase: string }>
 }
 
+type LLMPhase = Exclude<WizardPhase, 8>
+
 /**
- * POST /api/wizard/phase/[phase]
- *
- * Processes a specific wizard phase for a video using LLM.
- *
- * Request body:
- * - videoId: The video to process
- * - promptOverride: Optional custom prompt (for reprocessable phases)
- * - additionalContext: Optional additional context
- * - previousPhaseData: Optional data from previous phases (for SEO chain)
- *
- * Response:
- * - data: Phase-specific response (Phase1Response, Phase2Response, etc.)
- * - usage: Token usage information
+ * Persists the phase result to the parent video document and returns the
+ * (possibly normalized) result data. Phases 4 and 7 normalize before persist
+ * (chapters first-timestamp, tags YouTube limits).
  */
+async function persistPhaseResult(
+  phase: LLMPhase,
+  videoId: string,
+  data: PhaseResponse
+): Promise<PhaseResponse> {
+  if (phase === 1) {
+    const phase1Data = data as Phase1Response
+    await updateVideoAdmin(PODCAST_ID, videoId, { critique: phase1Data.critique })
+    log('INFO', 'Phase 1 critique persisted to video', { videoId })
+    return phase1Data
+  }
+
+  if (phase === 2) {
+    const phase2Data = data as Phase2Response
+    await updateVideoAdmin(PODCAST_ID, videoId, { editingIssues: phase2Data.issues })
+    log('INFO', 'Phase 2 editing issues persisted to video', {
+      videoId,
+      hasIssues: phase2Data.hasIssues,
+      issueCount: phase2Data.issues.length,
+    })
+    return phase2Data
+  }
+
+  if (phase === 3) {
+    const phase3Data = data as Phase3Response
+    await updateVideoAdmin(PODCAST_ID, videoId, { riskAndCompliance: phase3Data.risks })
+    log('INFO', 'Phase 3 compliance risks persisted to video', {
+      videoId,
+      hasRisks: phase3Data.hasRisks,
+      riskCount: phase3Data.risks.length,
+    })
+    return phase3Data
+  }
+
+  if (phase === 4) {
+    const phase4Data = data as Phase4Response
+    let normalizedChapters = phase4Data.chapters
+
+    // YouTube requires the first chapter to start at 00:00:00
+    if (normalizedChapters.length > 0) {
+      const firstChapter = normalizedChapters[0]
+      if (firstChapter.timestamp !== '00:00:00' && firstChapter.timestamp !== '00:00') {
+        log('INFO', 'Normalizing first chapter timestamp to 00:00:00', {
+          videoId,
+          originalTimestamp: firstChapter.timestamp,
+        })
+        normalizedChapters = [
+          { ...firstChapter, timestamp: '00:00:00' },
+          ...normalizedChapters.slice(1),
+        ]
+      }
+    }
+
+    phase4Data.chapters = normalizedChapters
+    await updateVideoAdmin(PODCAST_ID, videoId, { chapters: normalizedChapters })
+    log('INFO', 'Phase 4 chapters persisted to video', {
+      videoId,
+      chapterCount: normalizedChapters.length,
+    })
+    return phase4Data
+  }
+
+  if (phase === 5) {
+    const phase5Data = data as Phase5Response
+    await updateVideoAdmin(PODCAST_ID, videoId, { suggestedTitles: phase5Data.titles })
+    log('INFO', 'Phase 5 suggested titles persisted to video', {
+      videoId,
+      titleCount: phase5Data.titles.length,
+    })
+    return phase5Data
+  }
+
+  if (phase === 6) {
+    const phase6Data = data as Phase6Response
+    await updateVideoAdmin(PODCAST_ID, videoId, { description: phase6Data.description })
+    log('INFO', 'Phase 6 description persisted to video', {
+      videoId,
+      descriptionLength: phase6Data.description.length,
+    })
+    return phase6Data
+  }
+
+  if (phase === 7) {
+    const phase7Data = data as Phase7Response
+    let normalizedTags = phase7Data.tags
+
+    // YouTube limits: max 30 tags, max 500 characters total
+    if (normalizedTags.length > 30) {
+      log('WARN', 'LLM generated too many tags, truncating', {
+        videoId,
+        originalCount: normalizedTags.length,
+      })
+      normalizedTags = normalizedTags.slice(0, 30)
+    }
+
+    let totalChars = normalizedTags.join(',').length
+    while (totalChars > 500 && normalizedTags.length > 1) {
+      normalizedTags.pop()
+      totalChars = normalizedTags.join(',').length
+    }
+
+    phase7Data.tags = normalizedTags
+    await updateVideoAdmin(PODCAST_ID, videoId, { tags: normalizedTags })
+    log('INFO', 'Phase 7 tags normalized and persisted', {
+      videoId,
+      tagCount: normalizedTags.length,
+      totalChars,
+    })
+    return phase7Data
+  }
+
+  return data
+}
+
+/**
+ * Background worker for the async path. Runs the LLM call and persists
+ * results, updating the wizard job document along the way. Never throws —
+ * errors are written to the job document so the frontend can react.
+ */
+async function processWizardJobInBackground(params: {
+  jobId: string
+  phase: LLMPhase
+  video: Video
+  podcast: Podcast | null
+  options: {
+    promptOverride?: string
+    additionalContext?: string
+    previousPhaseData?: Record<string, unknown>
+    debugContext?: { component: string; videoId: string; videoType: 'episode' | 'cut' | 'reel'; podcastId: string }
+  }
+}): Promise<void> {
+  const { jobId, phase, video, podcast, options } = params
+  const videoId = video.id
+
+  try {
+    await updateWizardJob(PODCAST_ID, videoId, jobId, { status: 'processing' })
+
+    const result: LLMResult<PhaseResponse> = await callLLMQueued(
+      phase,
+      video,
+      podcast ?? undefined,
+      options
+    )
+
+    if (!result.success) {
+      log('WARN', 'Async LLM call failed', {
+        jobId,
+        videoId,
+        phase,
+        errorCode: result.error.code,
+        errorMessage: result.error.message,
+      })
+      await updateWizardJob(PODCAST_ID, videoId, jobId, {
+        status: 'failed',
+        error: {
+          code: result.error.code,
+          message: result.error.message,
+          retryable: result.error.retryable,
+        },
+      })
+      return
+    }
+
+    const persisted = await persistPhaseResult(phase, videoId, result.data)
+
+    await updateWizardJob(PODCAST_ID, videoId, jobId, {
+      status: 'complete',
+      result: persisted,
+      usage: result.usage,
+    })
+
+    log('INFO', 'Async wizard job completed', {
+      jobId,
+      videoId,
+      phase,
+      tokensUsed: result.usage.totalTokens,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro desconhecido'
+    log('ERROR', 'Async wizard job crashed', { jobId, videoId, phase, error: message })
+
+    try {
+      await updateWizardJob(PODCAST_ID, videoId, jobId, {
+        status: 'failed',
+        error: { code: 'UNKNOWN', message, retryable: false },
+      })
+    } catch (updateError) {
+      log('ERROR', 'Failed to record job failure', {
+        jobId,
+        videoId,
+        updateError: updateError instanceof Error ? updateError.message : String(updateError),
+      })
+    }
+  }
+}
+
 export async function POST(
   request: NextRequest,
   context: RouteContext
@@ -76,8 +271,6 @@ export async function POST(
   }
 
   const { phase: phaseParam } = await context.params
-
-  // Validate phase number
   const phaseNumber = parseInt(phaseParam, 10)
   const phaseResult = WizardPhaseSchema.safeParse(phaseNumber)
 
@@ -90,7 +283,6 @@ export async function POST(
 
   const phase = phaseResult.data
 
-  // Phase 8 has no LLM processing
   if (phase === 8) {
     return NextResponse.json(
       { error: { code: 'VALIDATION_ERROR', message: 'Fase 8 não usa LLM. Use a API do YouTube.' } },
@@ -98,16 +290,14 @@ export async function POST(
     )
   }
 
+  const isAsync = request.nextUrl.searchParams.get('mode') === 'async'
+
   try {
     const body = await request.json()
-
-    // Validate request body
     const requestData = PhaseRequestSchema.parse(body)
     const { videoId, promptOverride, additionalContext, previousPhaseData } = requestData
 
-    // Get video from Firestore
     const video = await getVideoAdmin(PODCAST_ID, videoId)
-
     if (!video) {
       return NextResponse.json(
         { error: { code: 'NOT_FOUND', message: 'Vídeo não encontrado' } },
@@ -115,32 +305,52 @@ export async function POST(
       )
     }
 
-    // Load podcast with personas and prompts configuration (per llm.md spec)
     const podcast = await getPodcastAdmin(PODCAST_ID)
 
     log('INFO', 'Processing wizard phase', {
       videoId,
       phase,
+      mode: isAsync ? 'async' : 'sync',
       hasPromptOverride: !!promptOverride,
       hasAdditionalContext: !!additionalContext,
       hasPreviousPhaseData: !!previousPhaseData,
       hasPodcastConfig: !!(podcast?.personas && podcast?.prompts),
     })
 
-    // Build debug context only when llmDebugMode is enabled (zero overhead when disabled)
     const debugContext = podcast?.features?.llmDebugMode
-      ? { component: `wizard/phase-${phase}`, videoId, videoType: video.videoType || 'episode', podcastId: PODCAST_ID }
+      ? { component: `wizard/phase-${phase}`, videoId, videoType: video.videoType || 'episode' as const, podcastId: PODCAST_ID }
       : undefined
 
-    // Call LLM for this phase with podcast configuration (using queue)
-    // Per llm.md: uses podcast.personas and podcast.prompts for dynamic prompt building
-    // Queue ensures sequential processing to prevent rate-limit issues
-    const result = await callLLMQueued(phase, video, podcast ?? undefined, {
-      promptOverride,
-      additionalContext,
-      previousPhaseData,
-      debugContext,
-    })
+    const callOptions = { promptOverride, additionalContext, previousPhaseData, debugContext }
+
+    if (isAsync) {
+      const jobId = await createWizardJob(PODCAST_ID, {
+        videoId,
+        phase,
+        ...(additionalContext ? { additionalContext } : {}),
+        ...(promptOverride ? { promptOverride } : {}),
+      })
+
+      // Fire-and-forget. Cloud Run with --no-cpu-throttling keeps the
+      // instance alive while the Promise is pending, until --timeout (1800s)
+      // or the worker resolves. Errors are captured inside the worker and
+      // written to the job document.
+      void processWizardJobInBackground({
+        jobId,
+        phase,
+        video,
+        podcast: podcast ?? null,
+        options: callOptions,
+      })
+
+      return NextResponse.json(
+        { jobId, podcastId: PODCAST_ID, status: 'pending' },
+        { status: 202 }
+      )
+    }
+
+    // ───── Sync path (legacy) ─────
+    const result = await callLLMQueued(phase, video, podcast ?? undefined, callOptions)
 
     if (!result.success) {
       log('WARN', 'LLM call failed', {
@@ -168,133 +378,10 @@ export async function POST(
       tokensUsed: result.usage.totalTokens,
     })
 
-    // Persist phase data (immutable phases 1-4)
-    if (phase === 1) {
-      const phase1Data = result.data as Phase1Response
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        critique: phase1Data.critique,
-      })
-      log('INFO', 'Phase 1 critique persisted to video', { videoId })
-    }
-
-    if (phase === 2) {
-      const phase2Data = result.data as Phase2Response
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        editingIssues: phase2Data.issues,
-      })
-      log('INFO', 'Phase 2 editing issues persisted to video', {
-        videoId,
-        hasIssues: phase2Data.hasIssues,
-        issueCount: phase2Data.issues.length,
-      })
-    }
-
-    if (phase === 3) {
-      const phase3Data = result.data as Phase3Response
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        riskAndCompliance: phase3Data.risks,
-      })
-      log('INFO', 'Phase 3 compliance risks persisted to video', {
-        videoId,
-        hasRisks: phase3Data.hasRisks,
-        riskCount: phase3Data.risks.length,
-      })
-    }
-
-    if (phase === 4) {
-      const phase4Data = result.data as Phase4Response
-      let normalizedChapters = phase4Data.chapters
-
-      // YouTube requires the first chapter to start at 00:00:00
-      // Normalize the first chapter timestamp to ensure compliance
-      if (normalizedChapters.length > 0) {
-        const firstChapter = normalizedChapters[0]
-        if (firstChapter.timestamp !== '00:00:00' && firstChapter.timestamp !== '00:00') {
-          log('INFO', 'Normalizing first chapter timestamp to 00:00:00', {
-            videoId,
-            originalTimestamp: firstChapter.timestamp,
-          })
-          normalizedChapters = [
-            { ...firstChapter, timestamp: '00:00:00' },
-            ...normalizedChapters.slice(1),
-          ]
-        }
-      }
-
-      // Update result data with normalized chapters
-      phase4Data.chapters = normalizedChapters
-
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        chapters: normalizedChapters,
-      })
-      log('INFO', 'Phase 4 chapters persisted to video', {
-        videoId,
-        chapterCount: normalizedChapters.length,
-      })
-    }
-
-    if (phase === 5) {
-      const phase5Data = result.data as Phase5Response
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        suggestedTitles: phase5Data.titles,
-      })
-      log('INFO', 'Phase 5 suggested titles persisted to video', {
-        videoId,
-        titleCount: phase5Data.titles.length,
-      })
-    }
-
-    // Persist description for Phase 6
-    if (phase === 6) {
-      const phase6Data = result.data as Phase6Response
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        description: phase6Data.description,
-      })
-      log('INFO', 'Phase 6 description persisted to video', {
-        videoId,
-        descriptionLength: phase6Data.description.length,
-      })
-    }
-
-    // For Phase 7, normalize tags to respect YouTube limits
-    // Max 30 tags, max 500 characters total
-    if (phase === 7) {
-      const phase7Data = result.data as Phase7Response
-      let normalizedTags = phase7Data.tags
-
-      // Limit to 30 tags
-      if (normalizedTags.length > 30) {
-        log('WARN', 'LLM generated too many tags, truncating', {
-          videoId,
-          originalCount: normalizedTags.length,
-        })
-        normalizedTags = normalizedTags.slice(0, 30)
-      }
-
-      // Ensure total characters don't exceed 500
-      let totalChars = normalizedTags.join(',').length
-      while (totalChars > 500 && normalizedTags.length > 1) {
-        normalizedTags.pop()
-        totalChars = normalizedTags.join(',').length
-      }
-
-      // Update result data with normalized tags
-      phase7Data.tags = normalizedTags
-
-      // Persist normalized tags to Firestore
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        tags: normalizedTags,
-      })
-
-      log('INFO', 'Phase 7 tags normalized and persisted', {
-        videoId,
-        tagCount: normalizedTags.length,
-        totalChars,
-      })
-    }
+    const persisted = await persistPhaseResult(phase, videoId, result.data)
 
     return NextResponse.json({
-      data: result.data as PhaseResponse,
+      data: persisted,
       usage: result.usage,
     })
   } catch (error) {

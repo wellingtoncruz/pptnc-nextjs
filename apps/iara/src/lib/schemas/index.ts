@@ -88,3 +88,11 @@ export {
 } from './newsletter'
 
 export { LlmLogSchema, LlmLogCreateSchema } from './llm-log'
+
+export {
+  WizardJobSchema,
+  WizardJobCreateSchema,
+  WizardJobUpdateSchema,
+  WizardJobStatusSchema,
+  WizardJobPhaseSchema,
+} from './wizard-job'

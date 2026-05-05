@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import { useLLMProcessing } from '@/contexts'
 import { useWizard } from '@/hooks/use-wizard'
+import { subscribeToWizardJob } from '@/lib/firebase/wizard-jobs-client'
 import { log } from '@/lib/logger'
 import { buildCompleteYouTubeDescription } from '@/lib/youtube'
 import type { Video, Guest } from '@/types/video'
@@ -833,54 +834,100 @@ export function WizardOrchestrator({
   const processPhase2EditCheck = useCallback(async () => {
     log('INFO', 'Processing Phase 2 edit check', { videoId: video.id })
 
-    // Clear previous error state on retry
     setEditCheckError(null)
 
     const spinnerId = wizard.addSpinner(2, 'Verificando se existem falhas de edição perceptíveis...')
     wizard.setPhaseLoading(2)
 
-    try {
-      const response = await fetch(`/api/wizard/phase/2`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: video.id }),
-      })
+    // Async pattern: bypass the Cloud Run domain mapping ~60s edge timeout
+    // by returning 202+jobId immediately and listening to the result
+    // via Firestore onSnapshot. See @/lib/firebase/wizard-jobs-admin.ts.
+    return new Promise<void>((resolve) => {
+      let unsubscribe: (() => void) | null = null
+      let settled = false
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 2'
-        throw new Error(errorMessage)
+      const isStaleVideo = () => activeVideoIdRef.current !== video.id
+
+      const finishWithError = (message: string) => {
+        if (settled) return
+        settled = true
+        unsubscribe?.()
+        if (isStaleVideo()) {
+          log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
+          resolve()
+          return
+        }
+        wizard.removeSpinner(spinnerId)
+        wizard.setPhaseError(2, message)
+        wizard.addAlert(2, 'Erro', message, 'error')
+        setEditCheckError(message)
+        log('ERROR', 'Phase 2 edit check failed', { videoId: video.id, error: message })
+        resolve()
       }
 
-      const result = await response.json()
-      const phase2Data = result.data as Phase2Response
+      const finishWithResult = (phase2Data: Phase2Response) => {
+        if (settled) return
+        settled = true
+        unsubscribe?.()
+        if (isStaleVideo()) {
+          log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
+          resolve()
+          return
+        }
+        wizard.removeSpinner(spinnerId)
+        wizard.setPhaseStatus(2, 'needs_review')
+        setPhase2FromCache(true)
+        wizard.addAlert(
+          2,
+          'Checagem de Edição',
+          'Verifique acima se existem trechos que você deveria verificar. Obs: Nada substitui a revisão humana, ok?',
+          'success'
+        )
+        setEditCheckResult(phase2Data)
+        log('INFO', 'Phase 2 edit check completed', {
+          videoId: video.id,
+          hasIssues: phase2Data.hasIssues,
+          issueCount: phase2Data.issues.length,
+        })
+        resolve()
+      }
 
-      wizard.removeSpinner(spinnerId)
-      // Phase 2 requires user confirmation before being marked as completed
-      // Set to 'needs_review' (yellow in breadcrumb) to indicate it needs confirmation
-      wizard.setPhaseStatus(2, 'needs_review')
-      setPhase2FromCache(true) // Indicate that confirmation is needed
-      wizard.addAlert(
-        2,
-        'Checagem de Edição',
-        'Verifique acima se existem trechos que você deveria verificar. Obs: Nada substitui a revisão humana, ok?',
-        'success'
-      )
-      setEditCheckResult(phase2Data)
+      ;(async () => {
+        try {
+          const response = await fetch('/api/wizard/phase/2?mode=async', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId: video.id }),
+          })
 
-      log('INFO', 'Phase 2 edit check completed', {
-        videoId: video.id,
-        hasIssues: phase2Data.hasIssues,
-        issueCount: phase2Data.issues.length,
-      })
-    } catch (error) {
-      wizard.removeSpinner(spinnerId)
-      const message = error instanceof Error ? error.message : 'Erro ao verificar edição'
-      wizard.setPhaseError(2, message)
-      wizard.addAlert(2, 'Erro', message, 'error')
-      setEditCheckError(message)
-      log('ERROR', 'Phase 2 edit check failed', { videoId: video.id, error: message })
-    }
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            finishWithError(errorData.error?.message || 'Erro ao iniciar fase 2')
+            return
+          }
+
+          const { jobId, podcastId } = await response.json() as { jobId: string; podcastId: string }
+
+          unsubscribe = subscribeToWizardJob(
+            podcastId,
+            video.id,
+            jobId,
+            (snapshot) => {
+              if (!snapshot) return // doc not yet visible — keep waiting
+              if (snapshot.status === 'complete') {
+                finishWithResult(snapshot.result as Phase2Response)
+              } else if (snapshot.status === 'failed') {
+                finishWithError(snapshot.error?.message || 'Erro ao verificar edição')
+              }
+              // 'pending' / 'processing' → keep waiting
+            },
+            (err) => finishWithError(err.message)
+          )
+        } catch (error) {
+          finishWithError(error instanceof Error ? error.message : 'Erro ao verificar edição')
+        }
+      })()
+    })
   }, [video.id, wizard])
 
   /**
