@@ -69,7 +69,7 @@ steps:
       - '--memory'
       - '1Gi'
       - '--timeout'
-      - '300'
+      - '1800'
       - '--update-env-vars'
       - 'PODCAST_ID=${_PODCAST_ID},GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=${_REGION},FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID},NEWSLETTER_IMAGES_BUCKET=${_NEWSLETTER_IMAGES_BUCKET}'
 
