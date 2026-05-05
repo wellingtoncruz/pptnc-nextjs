@@ -132,7 +132,6 @@ async function readFileAsBase64(filePath: string): Promise<string> {
  * @param userPrompt - User prompt with context (without transcription)
  * @param _timeout - Timeout in milliseconds (reserved for future use)
  * @param attachmentPath - Optional path to transcription file to attach
- * @param cachedContentName - Optional cache resource name (mutually exclusive with attachmentPath)
  *
  * @see Story 5.4 - Auto-Retry em PARSE_ERROR
  */
@@ -142,8 +141,7 @@ export async function callGenAI<T>(
   _timeout: number,
   attachmentPath: string | undefined,
   debugContext?: DebugContext,
-  modelOverride?: string,
-  cachedContentName?: string
+  modelOverride?: string
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   const client = getAI()
   const modelName = modelOverride || VERTEX_AI_MODEL || DEFAULT_MODEL
@@ -156,11 +154,7 @@ export async function callGenAI<T>(
   // Track attachment metadata for debug logging
   let attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined
 
-  // cachedContentName and attachmentPath are mutually exclusive.
-  // When cache is available, skip inlineData entirely — the content is already cached server-side.
-  if (cachedContentName) {
-    log('INFO', 'Using cached content for request', { cachedContentName })
-  } else if (attachmentPath) {
+  if (attachmentPath) {
     const base64Content = await readFileAsBase64(attachmentPath)
     parts.push({
       inlineData: {
@@ -188,7 +182,7 @@ export async function callGenAI<T>(
   for (let retryAttempt = 0; retryAttempt < MAX_RETRYABLE_ATTEMPTS; retryAttempt++) {
     try {
       return await _callGenAIInner<T>(
-        client, modelName, parts, systemPrompt, attachmentInfo, debugContext, userPrompt, cachedContentName
+        client, modelName, parts, systemPrompt, attachmentInfo, debugContext, userPrompt
       )
     } catch (error) {
       const llmError = error instanceof LLMError ? error : createLLMError(error)
@@ -249,30 +243,20 @@ async function _callGenAIInner<T>(
   systemPrompt: string,
   attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined,
   debugContext: DebugContext | undefined,
-  userPrompt: string,
-  cachedContentName?: string
+  userPrompt: string
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   // Parse retry loop - only for PARSE_ERROR
   for (let attempt = 1; attempt <= MAX_PARSE_RETRIES; attempt++) {
     try {
-      // Vertex AI restriction: when using cachedContent, systemInstruction, tools,
-      // and toolConfig CANNOT be set in the request — even if the cache doesn't include them.
-      // Workaround: prepend the system prompt as a user message in contents.
-      const effectiveContents = cachedContentName
-        ? [{ text: `[INSTRUÇÃO DE SISTEMA]\n${systemPrompt}\n[FIM DA INSTRUÇÃO]\n\n` }, ...parts]
-        : parts
-
       const stream = await client.models.generateContentStream({
         model: modelName,
-        contents: effectiveContents,
+        contents: parts,
         config: {
-          // systemInstruction is omitted when using cachedContent (Vertex AI restriction)
-          ...(cachedContentName ? {} : { systemInstruction: systemPrompt }),
+          systemInstruction: systemPrompt,
           responseMimeType: 'application/json',
           temperature: 0.7,
           maxOutputTokens: 65536,
           thinkingConfig: { thinkingBudget: 24576 },
-          ...(cachedContentName ? { cachedContent: cachedContentName } : {}),
         },
       })
 
@@ -507,38 +491,6 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       transcriptionLength: transcription.length,
     })
 
-    // Resolve model name for cache creation (same logic as callGenAI)
-    const modelName = podcast?.llmConfig?.textModel || VERTEX_AI_MODEL || DEFAULT_MODEL
-
-    // Try to use Gemini Context Caching for the transcription.
-    // Cache is isolated per videoId + format (SRT/TXT) — never shared between videos.
-    const cacheFormat = phaseConfig.attachmentType.toLowerCase() as 'srt' | 'txt'
-    const { getOrCreateCache } = await import('./cache')
-    const cacheName = await getOrCreateCache(video.id, cacheFormat, transcription, modelName)
-
-    if (cacheName) {
-      // Cache path: use cachedContentName, skip temp file entirely
-      log('INFO', 'Using cached transcription for LLM call', {
-        phase,
-        videoId: video.id,
-        cacheFormat,
-        cacheName,
-      })
-
-      const { data, usage } = await callGenAI<PhaseResponseMap[P]>(
-        systemPrompt,
-        userPrompt,
-        timeout,
-        undefined, // no attachment path
-        options?.debugContext,
-        podcast?.llmConfig?.textModel,
-        cacheName
-      )
-
-      return { success: true, data, usage }
-    }
-
-    // Fallback path: create temp file and send as inlineData (original flow)
     transcriptionFilePath = await createTranscriptionFile(transcription, phase)
 
     const { data, usage } = await callGenAI<PhaseResponseMap[P]>(
@@ -562,7 +514,6 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
 
     return createLLMError(error).toResult()
   } finally {
-    // Always cleanup temporary file (only exists in fallback path)
     if (transcriptionFilePath) {
       await cleanupTranscriptionFile(transcriptionFilePath)
     }
