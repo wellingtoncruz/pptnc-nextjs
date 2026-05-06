@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useLLMProcessing } from '@/contexts'
 import { useWizard } from '@/hooks/use-wizard'
 import { log } from '@/lib/logger'
-import { pollWizardJob } from '@/lib/wizard/poll-job'
+import { runAsyncPhase } from '@/lib/wizard/run-async-phase'
 import { buildCompleteYouTubeDescription } from '@/lib/youtube'
 import type { Video, Guest } from '@/types/video'
 import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase5BResponse, Phase6Response, Phase7Response } from '@/lib/llm'
@@ -730,20 +730,16 @@ export function WizardOrchestrator({
     wizard.setPhaseLoading(1)
 
     try {
-      const response = await fetch(`/api/wizard/phase/1`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: video.id }),
+      const phase1Data = await runAsyncPhase<Phase1Response>({
+        phase: 1,
+        videoId: video.id,
+        pollIntervalMs: 10_000,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 1'
-        throw new Error(errorMessage)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 1 result discarded — video switched', { jobVideoId: video.id })
+        return
       }
-
-      const result = await response.json()
-      const phase1Data = result.data as Phase1Response
 
       wizard.removeSpinner(spinnerId)
       // Don't call setPhaseData here - it would mark phase as completed
@@ -755,6 +751,10 @@ export function WizardOrchestrator({
 
       log('INFO', 'Phase 1 critique completed', { videoId: video.id })
     } catch (error) {
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 1 error discarded — video switched', { jobVideoId: video.id })
+        return
+      }
       wizard.removeSpinner(spinnerId)
       const message = error instanceof Error ? error.message : 'Erro ao processar crítica'
       wizard.setPhaseError(1, message)
@@ -839,30 +839,18 @@ export function WizardOrchestrator({
     const spinnerId = wizard.addSpinner(2, 'Verificando se existem falhas de edição perceptíveis...')
     wizard.setPhaseLoading(2)
 
-    // Async pattern: bypass the Cloud Run domain mapping ~60s edge timeout
-    // by returning 202+jobId immediately and polling /api/wizard/jobs/[jobId]
-    // until the job reaches a terminal status. Each poll is a short request
-    // (well under any edge timeout); the actual LLM work runs as a background
-    // task on the same Cloud Run instance.
-    const isStaleVideo = () => activeVideoIdRef.current !== video.id
+    try {
+      const phase2Data = await runAsyncPhase<Phase2Response>({
+        phase: 2,
+        videoId: video.id,
+        pollIntervalMs: 10_000,
+      })
 
-    const finishWithError = (message: string) => {
-      if (isStaleVideo()) {
+      if (activeVideoIdRef.current !== video.id) {
         log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
         return
       }
-      wizard.removeSpinner(spinnerId)
-      wizard.setPhaseError(2, message)
-      wizard.addAlert(2, 'Erro', message, 'error')
-      setEditCheckError(message)
-      log('ERROR', 'Phase 2 edit check failed', { videoId: video.id, error: message })
-    }
 
-    const finishWithResult = (phase2Data: Phase2Response) => {
-      if (isStaleVideo()) {
-        log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
-        return
-      }
       wizard.removeSpinner(spinnerId)
       wizard.setPhaseStatus(2, 'needs_review')
       setPhase2FromCache(true)
@@ -878,32 +866,17 @@ export function WizardOrchestrator({
         hasIssues: phase2Data.hasIssues,
         issueCount: phase2Data.issues.length,
       })
-    }
-
-    try {
-      const response = await fetch('/api/wizard/phase/2?mode=async', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: video.id }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        finishWithError(errorData.error?.message || 'Erro ao iniciar fase 2')
+    } catch (error) {
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 2 error discarded — video switched', { jobVideoId: video.id })
         return
       }
-
-      const { jobId } = await response.json() as { jobId: string }
-
-      const outcome = await pollWizardJob({ jobId, videoId: video.id })
-
-      if (outcome.status === 'complete') {
-        finishWithResult(outcome.result as Phase2Response)
-      } else {
-        finishWithError(outcome.error.message)
-      }
-    } catch (error) {
-      finishWithError(error instanceof Error ? error.message : 'Erro ao verificar edição')
+      const message = error instanceof Error ? error.message : 'Erro ao verificar edição'
+      wizard.removeSpinner(spinnerId)
+      wizard.setPhaseError(2, message)
+      wizard.addAlert(2, 'Erro', message, 'error')
+      setEditCheckError(message)
+      log('ERROR', 'Phase 2 edit check failed', { videoId: video.id, error: message })
     }
   }, [video.id, wizard])
 
@@ -986,26 +959,20 @@ export function WizardOrchestrator({
     wizard.setPhaseLoading(3)
 
     try {
-      const response = await fetch(`/api/wizard/phase/3`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: video.id }),
+      const phase3Data = await runAsyncPhase<Phase3Response>({
+        phase: 3,
+        videoId: video.id,
+        pollIntervalMs: 10_000,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 3'
-        throw new Error(errorMessage)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 3 result discarded — video switched', { jobVideoId: video.id })
+        return
       }
 
-      const result = await response.json()
-      const phase3Data = result.data as Phase3Response
-
       wizard.removeSpinner(spinnerId)
-      // Phase 3 requires user confirmation before being marked as completed
-      // Set to 'needs_review' (yellow in breadcrumb) to indicate it needs confirmation
       wizard.setPhaseStatus(3, 'needs_review')
-      setPhase3FromCache(true) // Indicate that confirmation is needed
+      setPhase3FromCache(true)
       wizard.addAlert(
         3,
         'Riscos e Conformidade',
@@ -1020,8 +987,12 @@ export function WizardOrchestrator({
         riskCount: phase3Data.risks.length,
       })
     } catch (error) {
-      wizard.removeSpinner(spinnerId)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 3 error discarded — video switched', { jobVideoId: video.id })
+        return
+      }
       const message = error instanceof Error ? error.message : 'Erro ao verificar compliance'
+      wizard.removeSpinner(spinnerId)
       wizard.setPhaseError(3, message)
       wizard.addAlert(3, 'Erro', message, 'error')
       setComplianceError(message)
@@ -1108,28 +1079,21 @@ export function WizardOrchestrator({
     wizard.setPhaseLoading(4)
 
     try {
-      const response = await fetch(`/api/wizard/phase/4`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: video.id }),
+      const phase4Data = await runAsyncPhase<Phase4Response>({
+        phase: 4,
+        videoId: video.id,
+        pollIntervalMs: 10_000,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 4'
-        throw new Error(errorMessage)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 4 result discarded — video switched', { jobVideoId: video.id })
+        return
       }
 
-      const result = await response.json()
-      const phase4Data = result.data as Phase4Response
-
       wizard.removeSpinner(spinnerId)
-      // Phase 4 requires user confirmation before being marked as completed
-      // Set to 'needs_review' (yellow in breadcrumb) to indicate it needs confirmation
       wizard.setPhaseStatus(4, 'needs_review')
-      setPhase4FromCache(true) // Indicate that confirmation is needed
+      setPhase4FromCache(true)
 
-      // Format chapters for console alert
       const chaptersText = phase4Data.chapters
         .map(c => `${c.timestamp} ${c.title}`)
         .join('\n')
@@ -1144,8 +1108,12 @@ export function WizardOrchestrator({
         chapterCount: phase4Data.chapters.length,
       })
     } catch (error) {
-      wizard.removeSpinner(spinnerId)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 4 error discarded — video switched', { jobVideoId: video.id })
+        return
+      }
       const message = error instanceof Error ? error.message : 'Erro ao gerar capítulos'
+      wizard.removeSpinner(spinnerId)
       wizard.setPhaseError(4, message)
       wizard.addAlert(4, 'Erro', message, 'error')
       setChaptersError(message)
@@ -1236,23 +1204,17 @@ export function WizardOrchestrator({
     wizard.setPhaseLoading(5)
 
     try {
-      const response = await fetch(`/api/wizard/phase/5`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videoId: video.id,
-          additionalContext,
-        }),
+      const phase5Data = await runAsyncPhase<Phase5Response>({
+        phase: 5,
+        videoId: video.id,
+        body: additionalContext ? { additionalContext } : undefined,
+        pollIntervalMs: 5_000,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 5'
-        throw new Error(errorMessage)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 5 result discarded — video switched', { jobVideoId: video.id })
+        return
       }
-
-      const result = await response.json()
-      const phase5Data = result.data as Phase5Response
 
       wizard.removeSpinner(spinnerId)
       wizard.setPhaseStatus(5, 'pending')
@@ -1269,8 +1231,12 @@ export function WizardOrchestrator({
         titleCount: phase5Data.titles.length,
       })
     } catch (error) {
-      wizard.removeSpinner(spinnerId)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 5 error discarded — video switched', { jobVideoId: video.id })
+        return
+      }
       const message = error instanceof Error ? error.message : 'Erro ao gerar titulos'
+      wizard.removeSpinner(spinnerId)
       wizard.setPhaseError(5, message)
       wizard.addAlert(5, 'Erro', message, 'error')
       setTitlesError(message)
@@ -1457,23 +1423,17 @@ export function WizardOrchestrator({
     const spinnerId = wizard.addSpinner(5, 'Gerando sugestoes de titulo curto para thumbnail...')
 
     try {
-      const response = await fetch(`/api/wizard/phase/5b`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videoId: video.id,
-          additionalContext,
-        }),
+      const phase5BData = await runAsyncPhase<Phase5BResponse>({
+        phase: '5b',
+        videoId: video.id,
+        body: additionalContext ? { additionalContext } : undefined,
+        pollIntervalMs: 5_000,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 5B'
-        throw new Error(errorMessage)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 5B result discarded — video switched', { jobVideoId: video.id })
+        return
       }
-
-      const result = await response.json()
-      const phase5BData = result.data as Phase5BResponse
 
       wizard.removeSpinner(spinnerId)
       wizard.setPhaseStatus(5, 'completed')
@@ -1490,8 +1450,12 @@ export function WizardOrchestrator({
         shortTitleCount: phase5BData.shortTitles.length,
       })
     } catch (error) {
-      wizard.removeSpinner(spinnerId)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 5B error discarded — video switched', { jobVideoId: video.id })
+        return
+      }
       const message = error instanceof Error ? error.message : 'Erro ao gerar titulos curtos'
+      wizard.removeSpinner(spinnerId)
       wizard.setPhaseStatus(5, 'completed')
       wizard.addAlert(5, 'Erro', message, 'error')
       setShortTitlesError(message)
@@ -1624,26 +1588,19 @@ export function WizardOrchestrator({
     wizard.setPhaseLoading(6)
 
     try {
-      const response = await fetch(`/api/wizard/phase/6`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videoId: video.id,
-          additionalContext,
-        }),
+      const phase6Data = await runAsyncPhase<Phase6Response>({
+        phase: 6,
+        videoId: video.id,
+        body: additionalContext ? { additionalContext } : undefined,
+        pollIntervalMs: 5_000,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 6'
-        throw new Error(errorMessage)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 6 result discarded — video switched', { jobVideoId: video.id })
+        return
       }
 
-      const result = await response.json()
-      const phase6Data = result.data as Phase6Response
-
       wizard.removeSpinner(spinnerId)
-      // Mark phase as completed immediately after LLM returns
       wizard.setPhaseStatus(6, 'completed')
       wizard.addAlert(
         6,
@@ -1653,8 +1610,6 @@ export function WizardOrchestrator({
       )
       setDescriptionResult(phase6Data)
 
-      // Update videoData with the generated description
-      // Note: Description is already persisted server-side in the API route
       setVideoData(prev => ({ ...prev, description: phase6Data.description }))
 
       log('INFO', 'Phase 6 description generation completed', {
@@ -1662,8 +1617,12 @@ export function WizardOrchestrator({
         descriptionLength: phase6Data.description.length,
       })
     } catch (error) {
-      wizard.removeSpinner(spinnerId)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 6 error discarded — video switched', { jobVideoId: video.id })
+        return
+      }
       const message = error instanceof Error ? error.message : 'Erro ao gerar descricao'
+      wizard.removeSpinner(spinnerId)
       wizard.setPhaseError(6, message)
       wizard.addAlert(6, 'Erro', message, 'error')
       setDescriptionError(message)
@@ -1839,26 +1798,19 @@ export function WizardOrchestrator({
     wizard.setPhaseLoading(7)
 
     try {
-      const response = await fetch(`/api/wizard/phase/7`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videoId: video.id,
-          additionalContext,
-        }),
+      const phase7Data = await runAsyncPhase<Phase7Response>({
+        phase: 7,
+        videoId: video.id,
+        body: additionalContext ? { additionalContext } : undefined,
+        pollIntervalMs: 5_000,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.error?.message || 'Erro ao processar fase 7'
-        throw new Error(errorMessage)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 7 result discarded — video switched', { jobVideoId: video.id })
+        return
       }
 
-      const result = await response.json()
-      const phase7Data = result.data as Phase7Response
-
       wizard.removeSpinner(spinnerId)
-      // Mark phase as completed immediately after LLM returns
       wizard.setPhaseStatus(7, 'completed')
       wizard.addAlert(
         7,
@@ -1868,8 +1820,6 @@ export function WizardOrchestrator({
       )
       setTagsResult(phase7Data)
 
-      // Update videoData with the generated tags
-      // Note: Tags are already persisted server-side in the API route
       setVideoData(prev => ({ ...prev, tags: phase7Data.tags }))
 
       log('INFO', 'Phase 7 tags generation completed', {
@@ -1877,8 +1827,12 @@ export function WizardOrchestrator({
         tagCount: phase7Data.tags.length,
       })
     } catch (error) {
-      wizard.removeSpinner(spinnerId)
+      if (activeVideoIdRef.current !== video.id) {
+        log('WARN', 'Phase 7 error discarded — video switched', { jobVideoId: video.id })
+        return
+      }
       const message = error instanceof Error ? error.message : 'Erro ao gerar tags'
+      wizard.removeSpinner(spinnerId)
       wizard.setPhaseError(7, message)
       wizard.addAlert(7, 'Erro', message, 'error')
       setTagsError(message)

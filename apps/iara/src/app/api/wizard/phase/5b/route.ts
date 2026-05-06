@@ -8,8 +8,19 @@
  *
  * Body: { videoId: string, additionalContext?: string }
  *
- * Returns:
+ * Supports two execution modes (selected by `?mode` query param):
+ * - sync (default): waits for LLM completion, returns 200 + result
+ * - async: returns 202 + jobId immediately; frontend polls
+ *   GET /api/wizard/jobs/[jobId]. Required for the public domain (Cloud Run
+ *   domain mapping has a ~60s edge timeout that severs the browser
+ *   connection even when the LLM is still working).
+ *
+ * Returns (sync):
  * - Success: { data: { shortTitles: string[] }, usage: { ... } }
+ * - Error: { error: { code: string, message: string } }
+ *
+ * Returns (async):
+ * - Success: 202 { jobId, podcastId, status: 'pending' }
  * - Error: { error: { code: string, message: string } }
  */
 
@@ -20,6 +31,7 @@ import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
+import { createWizardJob, updateWizardJob } from '@/lib/firebase/wizard-jobs-admin'
 import {
   callGenAI,
   createTranscriptionFile,
@@ -29,6 +41,8 @@ import {
 } from '@/lib/llm'
 import type { Phase5BResponse } from '@/lib/llm'
 import { log } from '@/lib/logger'
+import type { Podcast } from '@/types/podcast'
+import type { Video } from '@/types/video'
 
 export const runtime = 'nodejs'
 
@@ -111,6 +125,128 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 }
 
 /**
+ * Core LLM execution + persistence for phase 5B. Used by both the sync and
+ * async paths. Caller is responsible for upstream validation (auth, video
+ * type, transcription presence) before invoking this.
+ */
+async function executePhase5B(
+  video: Video,
+  podcast: Podcast | null,
+  additionalContext: string | undefined
+): Promise<{ data: Phase5BResponse; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
+  const transcription = video.transcriptionTXT || video.transcriptionSRT
+  if (!transcription) {
+    throw new LLMError('MISSING_TRANSCRIPT', 'Vídeo não possui transcrição', false)
+  }
+
+  const systemPrompt = buildPhase5BPrompt(podcast, additionalContext)
+  const userPrompt = `## Contexto do Corte
+
+**Título do episódio original:** ${video.title || 'Sem título'}
+**Título selecionado para o corte:** ${video.title || 'Não definido'}
+**Duração:** ${video.duration ? `${Math.floor(video.duration / 60)}min ${video.duration % 60}s` : 'Não informada'}
+**Tema:** ${video.theme || 'Não informado'}
+
+**Convidados:**
+${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') || 'Não informado'}
+
+[Transcrição anexada como arquivo]`
+
+  const transcriptionFilePath = await createTranscriptionFile(transcription, 5)
+
+  const debugContext = podcast?.features?.llmDebugMode
+    ? { component: 'wizard/phase-5b', videoId: video.id, videoType: video.videoType || 'cut', podcastId: PODCAST_ID }
+    : undefined
+
+  try {
+    const { data, usage } = await callGenAI<Phase5BResponse>(
+      systemPrompt,
+      userPrompt,
+      120000,
+      transcriptionFilePath,
+      debugContext,
+      podcast?.llmConfig?.textModel
+    )
+
+    if (!data || !Array.isArray(data.shortTitles)) {
+      throw new LLMError('PARSE_ERROR', 'Resposta do LLM não contém shortTitles válido', false)
+    }
+
+    await updateVideoAdmin(PODCAST_ID, video.id, {
+      suggestedShortTitles: data.shortTitles,
+    })
+
+    log('INFO', 'Phase 5B short titles generated successfully', {
+      videoId: video.id,
+      shortTitleCount: data.shortTitles.length,
+      tokensUsed: usage.totalTokens,
+    })
+
+    return { data, usage }
+  } finally {
+    await cleanupTranscriptionFile(transcriptionFilePath)
+  }
+}
+
+/**
+ * Background worker for the async path. Mirrors the sync flow but writes the
+ * result/error to a wizard job document instead of the HTTP response. Never
+ * throws — failures are recorded on the job for the polling client to read.
+ */
+async function processPhase5BInBackground(params: {
+  jobId: string
+  video: Video
+  podcast: Podcast | null
+  additionalContext: string | undefined
+}): Promise<void> {
+  const { jobId, video, podcast, additionalContext } = params
+  const videoId = video.id
+
+  try {
+    await updateWizardJob(PODCAST_ID, videoId, jobId, { status: 'processing' })
+
+    const { data, usage } = await executePhase5B(video, podcast, additionalContext)
+
+    await updateWizardJob(PODCAST_ID, videoId, jobId, {
+      status: 'complete',
+      result: data,
+      usage,
+    })
+
+    log('INFO', 'Async phase 5B job completed', {
+      jobId,
+      videoId,
+      tokensUsed: usage.totalTokens,
+    })
+  } catch (error) {
+    const llmError = error instanceof LLMError ? error : createLLMError(error)
+    log('WARN', 'Async phase 5B job failed', {
+      jobId,
+      videoId,
+      errorCode: llmError.code,
+      errorMessage: llmError.message,
+    })
+
+    try {
+      await updateWizardJob(PODCAST_ID, videoId, jobId, {
+        status: 'failed',
+        error: {
+          code: llmError.code,
+          message: llmError.message,
+          retryable: llmError.retryable,
+        },
+      })
+    } catch (updateError) {
+      log('ERROR', 'Failed to record phase 5B job failure', {
+        jobId,
+        videoId,
+        updateError: updateError instanceof Error ? updateError.message : String(updateError),
+      })
+    }
+  }
+}
+
+/**
  * POST /api/wizard/phase/5b
  *
  * Processes phase 5B (Short Title) for cut videos.
@@ -124,14 +260,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     )
   }
 
+  const isAsync = request.nextUrl.searchParams.get('mode') === 'async'
+
   try {
     const body = await request.json()
     const requestData = Phase5BRequestSchema.parse(body)
     const { videoId, additionalContext } = requestData
 
-    // Get video from Firestore
     const video = await getVideoAdmin(PODCAST_ID, videoId)
-
     if (!video) {
       return NextResponse.json(
         { error: { code: 'NOT_FOUND', message: 'Vídeo não encontrado' } },
@@ -139,7 +275,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Validate video is a cut (only cuts have phase 5B)
     if (video.videoType !== 'cut') {
       return NextResponse.json(
         { error: { code: 'INVALID_VIDEO_TYPE', message: 'Fase 5B é exclusiva para vídeos do tipo cut' } },
@@ -147,7 +282,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Validate video has transcription
     const transcription = video.transcriptionTXT || video.transcriptionSRT
     if (!transcription) {
       return NextResponse.json(
@@ -156,71 +290,38 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Load podcast config for prompts
     const podcast = await getPodcastAdmin(PODCAST_ID)
 
     log('INFO', 'Processing phase 5B short titles', {
       videoId,
+      mode: isAsync ? 'async' : 'sync',
       hasAdditionalContext: !!additionalContext,
       hasPodcastConfig: !!(podcast?.prompts?.cut?.thumbs),
     })
 
-    // Build prompts
-    const systemPrompt = buildPhase5BPrompt(podcast, additionalContext)
-    const userPrompt = `## Contexto do Corte
-
-**Título do episódio original:** ${video.title || 'Sem título'}
-**Título selecionado para o corte:** ${video.title || 'Não definido'}
-**Duração:** ${video.duration ? `${Math.floor(video.duration / 60)}min ${video.duration % 60}s` : 'Não informada'}
-**Tema:** ${video.theme || 'Não informado'}
-
-**Convidados:**
-${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') || 'Não informado'}
-
-[Transcrição anexada como arquivo]`
-
-    // Create transcription file and call LLM via shared infrastructure
-    const transcriptionFilePath = await createTranscriptionFile(transcription, 5)
-
-    // Build debug context only when llmDebugMode is enabled
-    const debugContext = podcast?.features?.llmDebugMode
-      ? { component: 'wizard/phase-5b', videoId, videoType: video.videoType || 'cut', podcastId: PODCAST_ID }
-      : undefined
-
-    try {
-      const { data, usage } = await callGenAI<Phase5BResponse>(
-        systemPrompt,
-        userPrompt,
-        120000,
-        transcriptionFilePath,
-        debugContext,
-        podcast?.llmConfig?.textModel
-      )
-
-      // Validate response structure
-      if (!data || !Array.isArray(data.shortTitles)) {
-        throw new LLMError('PARSE_ERROR', 'Resposta do LLM não contém shortTitles válido', false)
-      }
-
-      // Persist suggestedShortTitles to Firestore
-      await updateVideoAdmin(PODCAST_ID, videoId, {
-        suggestedShortTitles: data.shortTitles,
-      })
-
-      log('INFO', 'Phase 5B short titles generated successfully', {
+    if (isAsync) {
+      const jobId = await createWizardJob(PODCAST_ID, {
         videoId,
-        shortTitleCount: data.shortTitles.length,
-        tokensUsed: usage.totalTokens,
+        phase: '5b',
+        ...(additionalContext ? { additionalContext } : {}),
       })
 
-      return NextResponse.json({
-        data,
-        usage,
+      void processPhase5BInBackground({
+        jobId,
+        video,
+        podcast: podcast ?? null,
+        additionalContext,
       })
-    } finally {
-      // Cleanup transcription file
-      await cleanupTranscriptionFile(transcriptionFilePath)
+
+      return NextResponse.json(
+        { jobId, podcastId: PODCAST_ID, status: 'pending' },
+        { status: 202 }
+      )
     }
+
+    // ───── Sync path (legacy) ─────
+    const { data, usage } = await executePhase5B(video, podcast ?? null, additionalContext)
+    return NextResponse.json({ data, usage })
   } catch (error) {
     if (error instanceof z.ZodError) {
       log('WARN', 'Invalid request data for phase 5B', { error: error.issues })
