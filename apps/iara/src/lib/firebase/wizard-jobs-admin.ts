@@ -8,13 +8,13 @@
  *   returns 202 + jobId immediately to bypass the Cloud Run domain
  *   mapping ~60s edge timeout.
  * - Background worker updates job status as it progresses.
- * - Frontend listens via Firestore onSnapshot to receive results.
+ * - Frontend polls GET /api/wizard/jobs/[jobId] to receive completion.
  */
 import { Timestamp } from 'firebase-admin/firestore'
 
 import { log } from '@/lib/logger'
 import { WizardJobCreateSchema, WizardJobUpdateSchema } from '@/lib/schemas/wizard-job'
-import type { WizardJobCreate, WizardJobUpdate } from '@/types/wizard-job'
+import type { WizardJob, WizardJobCreate, WizardJobUpdate } from '@/types/wizard-job'
 
 import { getAdminDb } from './admin'
 
@@ -79,4 +79,19 @@ export async function updateWizardJob(
     hasResult: validated.result !== undefined,
     hasError: !!validated.error,
   })
+}
+
+/**
+ * Reads a single wizard job document. Returns null when the job does not exist.
+ */
+export async function getWizardJob(
+  podcastId: string,
+  videoId: string,
+  jobId: string
+): Promise<WizardJob | null> {
+  const snap = await getWizardJobsCollection(podcastId, videoId).doc(jobId).get()
+  if (!snap.exists) return null
+
+  const data = snap.data() as Omit<WizardJob, 'id'>
+  return { id: snap.id, ...data }
 }

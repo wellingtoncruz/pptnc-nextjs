@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 
 import { useLLMProcessing } from '@/contexts'
 import { useWizard } from '@/hooks/use-wizard'
-import { subscribeToWizardJob } from '@/lib/firebase/wizard-jobs-client'
 import { log } from '@/lib/logger'
+import { pollWizardJob } from '@/lib/wizard/poll-job'
 import { buildCompleteYouTubeDescription } from '@/lib/youtube'
 import type { Video, Guest } from '@/types/video'
 import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase5BResponse, Phase6Response, Phase7Response } from '@/lib/llm'
@@ -840,94 +840,71 @@ export function WizardOrchestrator({
     wizard.setPhaseLoading(2)
 
     // Async pattern: bypass the Cloud Run domain mapping ~60s edge timeout
-    // by returning 202+jobId immediately and listening to the result
-    // via Firestore onSnapshot. See @/lib/firebase/wizard-jobs-admin.ts.
-    return new Promise<void>((resolve) => {
-      let unsubscribe: (() => void) | null = null
-      let settled = false
+    // by returning 202+jobId immediately and polling /api/wizard/jobs/[jobId]
+    // until the job reaches a terminal status. Each poll is a short request
+    // (well under any edge timeout); the actual LLM work runs as a background
+    // task on the same Cloud Run instance.
+    const isStaleVideo = () => activeVideoIdRef.current !== video.id
 
-      const isStaleVideo = () => activeVideoIdRef.current !== video.id
+    const finishWithError = (message: string) => {
+      if (isStaleVideo()) {
+        log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
+        return
+      }
+      wizard.removeSpinner(spinnerId)
+      wizard.setPhaseError(2, message)
+      wizard.addAlert(2, 'Erro', message, 'error')
+      setEditCheckError(message)
+      log('ERROR', 'Phase 2 edit check failed', { videoId: video.id, error: message })
+    }
 
-      const finishWithError = (message: string) => {
-        if (settled) return
-        settled = true
-        unsubscribe?.()
-        if (isStaleVideo()) {
-          log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
-          resolve()
-          return
-        }
-        wizard.removeSpinner(spinnerId)
-        wizard.setPhaseError(2, message)
-        wizard.addAlert(2, 'Erro', message, 'error')
-        setEditCheckError(message)
-        log('ERROR', 'Phase 2 edit check failed', { videoId: video.id, error: message })
-        resolve()
+    const finishWithResult = (phase2Data: Phase2Response) => {
+      if (isStaleVideo()) {
+        log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
+        return
+      }
+      wizard.removeSpinner(spinnerId)
+      wizard.setPhaseStatus(2, 'needs_review')
+      setPhase2FromCache(true)
+      wizard.addAlert(
+        2,
+        'Checagem de Edição',
+        'Verifique acima se existem trechos que você deveria verificar. Obs: Nada substitui a revisão humana, ok?',
+        'success'
+      )
+      setEditCheckResult(phase2Data)
+      log('INFO', 'Phase 2 edit check completed', {
+        videoId: video.id,
+        hasIssues: phase2Data.hasIssues,
+        issueCount: phase2Data.issues.length,
+      })
+    }
+
+    try {
+      const response = await fetch('/api/wizard/phase/2?mode=async', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId: video.id }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        finishWithError(errorData.error?.message || 'Erro ao iniciar fase 2')
+        return
       }
 
-      const finishWithResult = (phase2Data: Phase2Response) => {
-        if (settled) return
-        settled = true
-        unsubscribe?.()
-        if (isStaleVideo()) {
-          log('WARN', 'Phase 2 result discarded — video switched', { jobVideoId: video.id })
-          resolve()
-          return
-        }
-        wizard.removeSpinner(spinnerId)
-        wizard.setPhaseStatus(2, 'needs_review')
-        setPhase2FromCache(true)
-        wizard.addAlert(
-          2,
-          'Checagem de Edição',
-          'Verifique acima se existem trechos que você deveria verificar. Obs: Nada substitui a revisão humana, ok?',
-          'success'
-        )
-        setEditCheckResult(phase2Data)
-        log('INFO', 'Phase 2 edit check completed', {
-          videoId: video.id,
-          hasIssues: phase2Data.hasIssues,
-          issueCount: phase2Data.issues.length,
-        })
-        resolve()
+      const { jobId } = await response.json() as { jobId: string }
+
+      const outcome = await pollWizardJob({ jobId, videoId: video.id })
+
+      if (outcome.status === 'complete') {
+        finishWithResult(outcome.result as Phase2Response)
+      } else {
+        finishWithError(outcome.error.message)
       }
-
-      ;(async () => {
-        try {
-          const response = await fetch('/api/wizard/phase/2?mode=async', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoId: video.id }),
-          })
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}))
-            finishWithError(errorData.error?.message || 'Erro ao iniciar fase 2')
-            return
-          }
-
-          const { jobId, podcastId } = await response.json() as { jobId: string; podcastId: string }
-
-          unsubscribe = subscribeToWizardJob(
-            podcastId,
-            video.id,
-            jobId,
-            (snapshot) => {
-              if (!snapshot) return // doc not yet visible — keep waiting
-              if (snapshot.status === 'complete') {
-                finishWithResult(snapshot.result as Phase2Response)
-              } else if (snapshot.status === 'failed') {
-                finishWithError(snapshot.error?.message || 'Erro ao verificar edição')
-              }
-              // 'pending' / 'processing' → keep waiting
-            },
-            (err) => finishWithError(err.message)
-          )
-        } catch (error) {
-          finishWithError(error instanceof Error ? error.message : 'Erro ao verificar edição')
-        }
-      })()
-    })
+    } catch (error) {
+      finishWithError(error instanceof Error ? error.message : 'Erro ao verificar edição')
+    }
   }, [video.id, wizard])
 
   /**
