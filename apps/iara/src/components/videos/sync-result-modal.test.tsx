@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { SyncResultModal, type SyncResultData } from './sync-result-modal'
 
 // Note: transcription fields removed per Story 5.6 (Transcrição On-Demand)
+// Note: reopenedVideos removed — sent videos are never reopened by sync
 const createMockResult = (overrides: Partial<SyncResultData> = {}): SyncResultData => ({
   newVideos: 0,
-  reopenedVideos: 0,
   ...overrides,
 })
 
@@ -64,38 +64,12 @@ describe('SyncResultModal', () => {
       expect(screen.getByText(/novos vídeos encontrados/i)).toBeInTheDocument()
     })
 
-    it('mostra quantidade de vídeos reabertos (singular)', () => {
-      render(
-        <SyncResultModal
-          isOpen={true}
-          onClose={vi.fn()}
-          result={createMockResult({ reopenedVideos: 1 })}
-        />
-      )
-
-      expect(screen.getByText(/1/)).toBeInTheDocument()
-      expect(screen.getByText(/vídeo voltou/i)).toBeInTheDocument()
-    })
-
-    it('mostra quantidade de vídeos reabertos (plural)', () => {
-      render(
-        <SyncResultModal
-          isOpen={true}
-          onClose={vi.fn()}
-          result={createMockResult({ reopenedVideos: 3 })}
-        />
-      )
-
-      expect(screen.getByText(/3/)).toBeInTheDocument()
-      expect(screen.getByText(/vídeos voltaram/i)).toBeInTheDocument()
-    })
-
     it('mostra mensagem quando nenhum vídeo foi encontrado', () => {
       render(
         <SyncResultModal
           isOpen={true}
           onClose={vi.fn()}
-          result={createMockResult({ newVideos: 0, reopenedVideos: 0 })}
+          result={createMockResult({ newVideos: 0 })}
         />
       )
 

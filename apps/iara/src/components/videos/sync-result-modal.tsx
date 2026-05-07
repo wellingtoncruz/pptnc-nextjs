@@ -15,8 +15,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 export interface SyncResultData {
   /** Number of new videos found */
   newVideos: number
-  /** Number of videos that returned to editing */
-  reopenedVideos: number
 }
 
 interface SyncResultModalProps {
@@ -31,10 +29,11 @@ interface SyncResultModalProps {
  *
  * Shows:
  * - Number of new videos found
- * - Number of videos that returned to editing
  * - General error message if sync failed
  *
  * Note: Transcriptions are no longer fetched during sync (Story 5.6).
+ * Sent videos are never reopened by sync — only via explicit user action
+ * (POST /api/videos/[videoId]/reopen).
  */
 export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultModalProps) {
   // Handle escape key
@@ -96,13 +95,10 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
   if (!result) return null
 
   const hasNewVideos = result.newVideos > 0
-  const hasReopenedVideos = result.reopenedVideos > 0
 
-  // Determine icon and title based on result
-  const hasAnyChanges = hasNewVideos || hasReopenedVideos
-  const Icon = hasAnyChanges ? CheckCircle2 : Info
-  const iconColor = hasAnyChanges ? 'text-green-500' : 'text-muted-foreground'
-  const title = hasAnyChanges ? 'Sincronização Concluída' : 'Nenhum Vídeo Novo'
+  const Icon = hasNewVideos ? CheckCircle2 : Info
+  const iconColor = hasNewVideos ? 'text-green-500' : 'text-muted-foreground'
+  const title = hasNewVideos ? 'Sincronização Concluída' : 'Nenhum Vídeo Novo'
 
   return (
     <div
@@ -128,24 +124,12 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
         </CardHeader>
 
         <CardContent className="space-y-3">
-          {/* New videos */}
-          {hasNewVideos && (
+          {hasNewVideos ? (
             <p className="text-sm">
               <span className="font-medium">{result.newVideos}</span>{' '}
               {result.newVideos === 1 ? 'novo vídeo encontrado' : 'novos vídeos encontrados'}
             </p>
-          )}
-
-          {/* Reopened videos */}
-          {hasReopenedVideos && (
-            <p className="text-sm">
-              <span className="font-medium">{result.reopenedVideos}</span>{' '}
-              {result.reopenedVideos === 1 ? 'vídeo voltou' : 'vídeos voltaram'} para edição
-            </p>
-          )}
-
-          {/* No changes */}
-          {!hasAnyChanges && (
+          ) : (
             <p className="text-sm text-muted-foreground">
               Nenhum vídeo novo foi encontrado no canal.
             </p>

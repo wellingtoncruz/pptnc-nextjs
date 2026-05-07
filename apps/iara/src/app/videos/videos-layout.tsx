@@ -151,15 +151,13 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
 
       // Log sync summary
       const newCount = result.newVideos ?? 0
-      const reopenedCount = result.reopenedVideos ?? 0
-      log('INFO', 'Sync completed', { newVideos: newCount, reopenedVideos: reopenedCount })
+      log('INFO', 'Sync completed', { newVideos: newCount })
 
       // Show result modal
       // Note: Transcriptions are no longer fetched during sync (Story 5.6)
       // They are fetched on-demand when the producer selects a video
       setSyncResult({
         newVideos: newCount,
-        reopenedVideos: reopenedCount,
       })
       setSyncModalOpen(true)
     } catch (err) {

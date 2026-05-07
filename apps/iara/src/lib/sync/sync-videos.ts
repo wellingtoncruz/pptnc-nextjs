@@ -3,8 +3,10 @@
  *
  * Imports NEW videos from YouTube to Firestore:
  * - Creates new videos found on YouTube (only if not already exists)
- * - Existing videos are NOT modified
- * - Videos are NEVER deleted
+ * - Existing videos are NEVER modified — sent videos stay sent regardless of
+ *   any change in YouTube visibility. Reopening a sent video for editing only
+ *   happens through explicit user action (POST /api/videos/[videoId]/reopen).
+ * - Videos are NEVER deleted.
  *
  * Note: Transcriptions are NOT fetched during sync (Story 5.6 - Transcrição On-Demand).
  * They are fetched on-demand when the producer selects a video in the Wizard.
@@ -19,15 +21,14 @@
 
 import { Timestamp } from 'firebase-admin/firestore'
 
-import { batchWriteVideos, getAllVideosRaw, getExistingVideoIds } from '@/lib/firebase/videos-admin'
+import { batchWriteVideos, getExistingVideoIds } from '@/lib/firebase/videos-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { uploadVideoThumbnail } from '@/lib/firebase/storage-admin'
 import { log } from '@/lib/logger'
 import { classifyVideoType, getBestThumbnailUrl } from '@/lib/video-utils'
-import { transition } from '@/lib/video-state-machine'
 import { YouTubeClient, type YouTubeVideoDataFromAPI } from '@/lib/youtube'
 import { embedVideos } from '@/lib/embedding/video-embedding'
-import type { VideoCreate, VideoUpdate, VideoStatus, YouTubePrivacyStatus } from '@/types/video'
+import type { VideoCreate } from '@/types/video'
 
 /** Maximum concurrent thumbnail uploads to avoid overwhelming Firebase Storage */
 const THUMBNAIL_UPLOAD_CONCURRENCY = 5
@@ -84,14 +85,10 @@ export interface SyncResult {
   addedAsSent: number
   /** Number of existing videos (not modified) */
   skipped: number
-  /** Number of sent videos reopened (visibility changed to non-public) */
-  reopened: number
   /** Number of live broadcasts excluded from import */
   liveBroadcastsExcluded: number
   /** Summary for UI: total new videos found */
   newVideos: number
-  /** Summary for UI: videos that returned to edit mode */
-  reopenedVideos: number
 }
 
 /**
@@ -275,18 +272,7 @@ export function youtubeToVideoCreate(
 }
 
 /**
- * Interface for video data from Firestore (raw document).
- */
-interface FirestoreVideoRaw {
-  id: string
-  status?: VideoStatus
-  youtubePrivacyStatus?: YouTubePrivacyStatus
-  transcriptionSRT?: string
-  transcriptionTXT?: string
-}
-
-/**
- * Imports new videos from YouTube to Firestore and re-evaluates sent videos.
+ * Imports new videos from YouTube to Firestore.
  *
  * Uses DELTA SYNC with early exit optimization (Story 7.1):
  * - Only fetches new videos from YouTube (stops when finding existing video)
@@ -297,9 +283,12 @@ interface FirestoreVideoRaw {
  * 2. Fetch only NEW videos from YouTube using delta sync with early exit
  * 3. Filter out live broadcasts (live/upcoming are excluded from import)
  * 4. For NEW videos: create with status based on visibility (public → sent, others → new)
- * 5. For EXISTING sent videos: check if visibility changed to non-public → reopen to draft
  *
- * IMPORTANT: Videos are NEVER deleted. Live broadcasts are never imported.
+ * IMPORTANT: Existing videos are NEVER modified by sync. A sent video stays
+ * sent even if its YouTube visibility changes to private/unlisted — the only
+ * way back to draft is the explicit user-triggered reopen flow
+ * (POST /api/videos/[videoId]/reopen). Videos are NEVER deleted. Live
+ * broadcasts are never imported.
  *
  * @param podcastId - The podcast document ID
  * @param accessToken - YouTube OAuth access token
@@ -346,36 +335,7 @@ export async function syncVideos(
     existingVideosSkipped: existingIds.size,
   })
 
-  // 5. For re-evaluating sent videos, we need full Firestore data
-  // Note: We already have existingIds from delta sync, but need full docs for sent video re-evaluation
-  const firestoreVideosRaw = await getAllVideosRaw(podcastId) as FirestoreVideoRaw[]
-
-  // Create lookup map for new YouTube videos (for re-evaluation of sent videos)
-  // We need to fetch details of sent videos that might have changed visibility
-  const sentVideos = firestoreVideosRaw.filter((v) => v.status === 'sent')
-  let youtubeVideoMap: Map<string, YouTubeVideoDataFromAPI> = new Map()
-
-  // Only fetch details of sent videos if there are any to check
-  if (sentVideos.length > 0) {
-    // For sent videos re-evaluation, we need their current YouTube data
-    // This is a separate concern from new video discovery
-    const sentVideoIds = sentVideos.map((v) => v.id)
-    // Fetch in batches of 50 (YouTube API limit)
-    const batchSize = 50
-    for (let i = 0; i < sentVideoIds.length; i += batchSize) {
-      const batch = sentVideoIds.slice(i, i + batchSize)
-      const batchVideos = await client.getVideoDetails(batch)
-      for (const video of batchVideos) {
-        youtubeVideoMap.set(video.id, video)
-      }
-    }
-    log('INFO', 'Sent videos fetched for re-evaluation', {
-      podcastId,
-      sentVideosCount: sentVideos.length,
-    })
-  }
-
-  // 6. Process NEW videos (already filtered, no need to check existingVideoMap)
+  // 5. Process NEW videos (already filtered, no need to check existingVideoMap)
   const newVideosToProcess: Array<{ ytVideo: YouTubeVideoDataFromAPI; videoType: 'episode' | 'cut' | 'reel' }> = []
   let addedAsNew = 0
   let addedAsSent = 0
@@ -393,7 +353,7 @@ export async function syncVideos(
     }
   }
 
-  // 7. Upload thumbnails to Firebase Storage for new videos (PARALLEL)
+  // 6. Upload thumbnails to Firebase Storage for new videos (PARALLEL)
   // This ensures thumbnails work even for draft/private videos
   // Uses controlled concurrency to avoid overwhelming Firebase Storage
   const thumbnailStartTime = Date.now()
@@ -445,40 +405,6 @@ export async function syncVideos(
     })
   }
 
-  // 8. Re-evaluate sent videos - check if visibility changed to non-public
-  const toUpdate: { id: string; data: VideoUpdate }[] = []
-
-  for (const fsVideo of firestoreVideosRaw) {
-    // Only check videos with 'sent' status
-    if (fsVideo.status !== 'sent') continue
-
-    // Find corresponding YouTube video
-    const ytVideo = youtubeVideoMap.get(fsVideo.id)
-    if (!ytVideo) continue // Video no longer on YouTube, skip
-
-    // Check if visibility changed from public to non-public
-    if (ytVideo.privacyStatus !== 'public') {
-      // Use state machine to transition sent → draft via 'reopen' action
-      const newStatus = transition('sent', 'reopen')
-
-      toUpdate.push({
-        id: fsVideo.id,
-        data: {
-          status: newStatus,
-          youtubePrivacyStatus: ytVideo.privacyStatus,
-          visibilityUpdatedAt: Timestamp.now(),
-        },
-      })
-
-      log('INFO', 'Reopening sent video due to visibility change', {
-        videoId: fsVideo.id,
-        oldVisibility: fsVideo.youtubePrivacyStatus,
-        newVisibility: ytVideo.privacyStatus,
-        newStatus,
-      })
-    }
-  }
-
   // With delta sync, skipped = existing videos (not re-fetched)
   const skipped = existingIds.size
 
@@ -487,20 +413,19 @@ export async function syncVideos(
     newVideosAsNew: addedAsNew,
     newVideosAsSent: addedAsSent,
     existingVideosSkipped: skipped,
-    toReopen: toUpdate.length,
     deltaSyncSavings: `Skipped fetching ${skipped} existing videos`,
   })
 
-  // 9. Execute batch write for creates and status updates
-  if (toCreate.length > 0 || toUpdate.length > 0) {
+  // 7. Execute batch write for creates
+  if (toCreate.length > 0) {
     await batchWriteVideos(podcastId, {
       creates: toCreate,
-      updates: toUpdate,
+      updates: [],
       deletes: [],
     })
   }
 
-  // 10. Generate embeddings for new videos (best-effort, Epic 17)
+  // 8. Generate embeddings for new videos (best-effort, Epic 17)
   if (toCreate.length > 0) {
     try {
       const embeddingInputs = toCreate.map(v => ({
@@ -529,11 +454,9 @@ export async function syncVideos(
     added: addedAsNew,
     addedAsSent,
     skipped,
-    reopened: toUpdate.length,
     liveBroadcastsExcluded,
     // Summary fields for UI
     newVideos: toCreate.length,
-    reopenedVideos: toUpdate.length,
   }
 
   log('INFO', 'Video import completed', { podcastId, ...result })

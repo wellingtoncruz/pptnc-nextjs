@@ -163,14 +163,13 @@ describe('sync-videos.ts - Video import (create only)', () => {
       const result = await syncVideos('pptnc', 'access-token')
 
       // Note: transcription fields removed per Story 5.6 (Transcrição On-Demand)
+      // Note: reopened/reopenedVideos removed — sent videos are never reopened by sync
       expect(result).toEqual({
         added: 0,
         addedAsSent: 0,
         skipped: 0,
-        reopened: 0,
         liveBroadcastsExcluded: 0,
         newVideos: 0,
-        reopenedVideos: 0,
       })
       // batchWriteVideos should NOT be called when there are no new videos
       expect(mockBatchWriteVideos).not.toHaveBeenCalled()
@@ -430,27 +429,27 @@ describe('sync-videos.ts - Video import (create only)', () => {
       )
     })
 
-    it('reopens sent videos when visibility changes to non-public', async () => {
-      // With delta sync, the sent video is already in Firestore so won't be in new videos
-      // But we need to re-evaluate it via getVideoDetails
-
+    it('never modifies sent videos during sync, even when YouTube visibility changed', async () => {
+      // The auto-reopen behavior was removed: sent videos only return to draft via
+      // explicit user action (POST /api/videos/[videoId]/reopen). This guards
+      // against silent regressions where a producer toggling YouTube visibility
+      // would clobber finished work in IAra.
       const firestoreVideosRaw = [
         {
           id: 'sent-video',
           podcastId: 'pptnc',
           title: 'Previously Sent Video',
           status: 'sent',
-          youtubePrivacyStatus: 'public', // Was public when sent
+          youtubePrivacyStatus: 'public',
         },
       ]
 
-      // Delta sync: sent-video exists, so it's skipped in Phase 1
       mockGetExistingVideoIds.mockResolvedValue(new Set(['sent-video']))
       mockListPlaylistItems.mockResolvedValue({ videoIds: ['sent-video'], nextPageToken: undefined })
       mockGetAllVideosRaw.mockResolvedValue(firestoreVideosRaw)
       mockBatchWriteVideos.mockResolvedValue(undefined)
 
-      // getVideoDetails is called to re-evaluate sent videos (separate from 2-phase flow)
+      // Even if YouTube reports the video is no longer public, sync must not touch it.
       mockGetVideoDetails.mockResolvedValue([
         {
           id: 'sent-video',
@@ -459,30 +458,20 @@ describe('sync-videos.ts - Video import (create only)', () => {
           thumbnails: makeThumbnails('sent-video'),
           duration: 3600,
           publishedAt: '2024-01-15T00:00:00Z',
-          privacyStatus: 'private' as const, // Changed from public to private
+          privacyStatus: 'private' as const,
           liveBroadcastContent: 'none' as const,
         },
       ])
 
       const result = await syncVideos('pptnc', 'access-token')
 
-      expect(result.reopened).toBe(1)
-      expect(result.reopenedVideos).toBe(1)
-      expect(mockBatchWriteVideos).toHaveBeenCalledWith(
-        'pptnc',
-        expect.objectContaining({
-          creates: [],
-          updates: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'sent-video',
-              data: expect.objectContaining({
-                status: 'draft',
-                youtubePrivacyStatus: 'private',
-              }),
-            }),
-          ]),
-        })
-      )
+      expect(result.newVideos).toBe(0)
+      expect(result.added).toBe(0)
+      expect(result.addedAsSent).toBe(0)
+      // No write should happen — no creates, no updates.
+      expect(mockBatchWriteVideos).not.toHaveBeenCalled()
+      // Sync should not even bother fetching YouTube details for sent videos anymore.
+      expect(mockGetVideoDetails).not.toHaveBeenCalled()
     })
 
     it('throws error when podcast not found', async () => {
