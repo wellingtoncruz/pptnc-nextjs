@@ -1,5 +1,5 @@
 import { render, screen } from '@/test-utils'
-import { vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { VideoDetailPanel } from './video-detail-panel'
 

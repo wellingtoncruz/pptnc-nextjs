@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { act, renderHook, waitFor } from '@/test-utils'
 
 import { useNewsletterReport } from './use-newsletter-report'

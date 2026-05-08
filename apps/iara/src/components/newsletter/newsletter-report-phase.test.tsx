@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { render, screen, fireEvent, waitFor } from '@/test-utils'
 
 import type { NewsletterData } from '@/types/newsletter'
