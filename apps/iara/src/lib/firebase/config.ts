@@ -13,8 +13,23 @@
 /** GCP project ID */
 export const PROJECT_ID = process.env.GCP_PROJECT_ID || 'pptnc-stage'
 
-/** GCP region (Cloud Run, Vertex AI, Artifact Registry) */
+/** GCP region (Cloud Run, Firestore, Artifact Registry) */
 export const GCP_REGION = process.env.GCP_REGION || 'us-east1'
+
+/**
+ * Vertex AI endpoint location.
+ *
+ * Defaults to `'global'` so requests are routed across all regions with
+ * available capacity, mitigating Dynamic Shared Quota saturation that
+ * causes 429 RESOURCE_EXHAUSTED on regional endpoints (notably us-east1)
+ * for Gemini 2.5 models even at low traffic.
+ *
+ * Override via `VERTEX_AI_LOCATION` env var if a regional endpoint is
+ * needed (e.g., for data residency or debugging a specific region).
+ *
+ * @see https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429
+ */
+export const VERTEX_AI_LOCATION = process.env.VERTEX_AI_LOCATION || 'global'
 
 /** Firestore database ID */
 export const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'pptnc-stage'
@@ -57,7 +72,7 @@ if (!FIRESTORE_DATABASE_ID) {
 if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
   console.log(JSON.stringify({
     severity: 'INFO',
-    message: `[STARTUP] Tenant: ${PODCAST_ID} | Project: ${PROJECT_ID} | Region: ${GCP_REGION} | DB: ${FIRESTORE_DATABASE_ID}`,
+    message: `[STARTUP] Tenant: ${PODCAST_ID} | Project: ${PROJECT_ID} | Region: ${GCP_REGION} | Vertex: ${VERTEX_AI_LOCATION} | DB: ${FIRESTORE_DATABASE_ID}`,
     timestamp: new Date().toISOString(),
     podcastId: PODCAST_ID,
   }))

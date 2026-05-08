@@ -21,6 +21,7 @@ vi.mock('@/lib/logger', () => ({
 vi.mock('@/lib/firebase/config', () => ({
   PROJECT_ID: 'test-project',
   GCP_REGION: 'us-central1',
+  VERTEX_AI_LOCATION: 'global',
   VERTEX_AI_MODEL: 'gemini-2.5-flash',
   PODCAST_ID: 'pptnc',
 }))

@@ -4,7 +4,7 @@ import * as path from 'path'
 
 import { GoogleGenAI } from '@google/genai'
 
-import { GCP_REGION, PROJECT_ID, VERTEX_AI_MODEL } from '@/lib/firebase/config'
+import { PROJECT_ID, VERTEX_AI_LOCATION, VERTEX_AI_MODEL } from '@/lib/firebase/config'
 import { log } from '@/lib/logger'
 import type { WizardPhase } from '@/lib/wizard'
 import type { Podcast } from '@/types/podcast'
@@ -52,7 +52,7 @@ export function getAI(): GoogleGenAI {
   ai = new GoogleGenAI({
     vertexai: true,
     project: PROJECT_ID,
-    location: GCP_REGION,
+    location: VERTEX_AI_LOCATION,
   })
 
   return ai
@@ -212,7 +212,8 @@ export async function callGenAI<T>(
           quotaMetric: rateLimitDetails.quota.quotaMetric,
           quotaId: rateLimitDetails.quota.quotaId,
           modelName: rateLimitDetails.quota.modelName ?? modelName,
-          region: rateLimitDetails.quota.region,
+          endpointLocation: VERTEX_AI_LOCATION,
+          servedRegion: rateLimitDetails.quota.region,
           projectNumber: rateLimitDetails.quota.projectNumber,
           retryAfterSeconds: rateLimitDetails.quota.retryAfterSeconds,
           rawMessage: rateLimitDetails.rawMessage?.slice(0, 500),
