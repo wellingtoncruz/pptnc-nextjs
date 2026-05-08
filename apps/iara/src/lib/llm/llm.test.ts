@@ -6,7 +6,7 @@ import type { Video } from '@/types/video'
 import type { Persona, Prompts } from '@/types/podcast'
 
 import { cleanupTranscriptionFile, createTranscriptionFile } from './client'
-import { createLLMError, isRetryableError, LLMError, LLM_ERROR_MESSAGES } from './errors'
+import { createLLMError, extractRateLimitDetails, isRetryableError, LLMError, LLM_ERROR_MESSAGES } from './errors'
 import {
   extractVariables,
   formatDuration,
@@ -672,6 +672,18 @@ describe('createLLMError', () => {
     expect(result.retryable).toBe(true)
   })
 
+  it('detects RESOURCE_EXHAUSTED as RATE_LIMIT', () => {
+    const error = new Error('RESOURCE_EXHAUSTED: Quota exceeded for ...')
+    const result = createLLMError(error)
+    expect(result.code).toBe('RATE_LIMIT')
+  })
+
+  it('preserves original error as cause', () => {
+    const original = new Error('429 Too Many Requests')
+    const result = createLLMError(original)
+    expect(result.cause).toBe(original)
+  })
+
   it('detects timeout errors', () => {
     const error = new Error('Request timed out')
     const result = createLLMError(error)
@@ -690,6 +702,121 @@ describe('createLLMError', () => {
     const result = createLLMError('string error')
 
     expect(result.code).toBe('UNKNOWN')
+  })
+})
+
+// =============================================================================
+// EXTRACT RATE LIMIT DETAILS TESTS
+// =============================================================================
+
+describe('extractRateLimitDetails', () => {
+  it('returns empty quota for non-object input', () => {
+    expect(extractRateLimitDetails(null).quota).toEqual({})
+    expect(extractRateLimitDetails(undefined).quota).toEqual({})
+    expect(extractRateLimitDetails('string').quota).toEqual({})
+  })
+
+  it('extracts httpCode and status from a flat ApiError', () => {
+    const raw = {
+      code: 429,
+      status: 'RESOURCE_EXHAUSTED',
+      message: 'Quota exceeded',
+    }
+    const result = extractRateLimitDetails(raw)
+    expect(result.httpCode).toBe(429)
+    expect(result.status).toBe('RESOURCE_EXHAUSTED')
+    expect(result.rawMessage).toBe('Quota exceeded')
+  })
+
+  it('unwraps nested { error: { ... } } shape', () => {
+    const raw = {
+      error: {
+        code: 429,
+        status: 'RESOURCE_EXHAUSTED',
+        message: 'Quota exceeded for quota metric \'foo\'',
+      },
+    }
+    const result = extractRateLimitDetails(raw)
+    expect(result.httpCode).toBe(429)
+    expect(result.quota.quotaMetric).toBe('foo')
+  })
+
+  it('extracts quota fields from rawMessage via regex', () => {
+    const message =
+      "Quota exceeded for quota metric 'aiplatform.googleapis.com/online_prediction_requests_per_minute_per_base_model' " +
+      "and limit 'OnlinePredictionRequestsPerMinutePerRegionPerBaseModel' " +
+      "of service 'aiplatform.googleapis.com' for consumer 'project_number:123456789' " +
+      "in region 'us-central1' for base model 'gemini-2.0-flash'"
+    const result = extractRateLimitDetails(new Error(message))
+    expect(result.quota.quotaMetric).toBe(
+      'aiplatform.googleapis.com/online_prediction_requests_per_minute_per_base_model',
+    )
+    expect(result.quota.quotaId).toBe('OnlinePredictionRequestsPerMinutePerRegionPerBaseModel')
+    expect(result.quota.region).toBe('us-central1')
+    expect(result.quota.modelName).toBe('gemini-2.0-flash')
+    expect(result.quota.projectNumber).toBe('123456789')
+  })
+
+  it('prefers structured QuotaFailure over regex when both present', () => {
+    const raw = {
+      code: 429,
+      message: "Quota exceeded for quota metric 'wrong-from-regex'",
+      details: [
+        {
+          '@type': 'type.googleapis.com/google.rpc.QuotaFailure',
+          violations: [
+            {
+              quotaMetric: 'correct-from-structured',
+              quotaId: 'CorrectQuotaId',
+            },
+          ],
+        },
+      ],
+    }
+    const result = extractRateLimitDetails(raw)
+    expect(result.quota.quotaMetric).toBe('correct-from-structured')
+    expect(result.quota.quotaId).toBe('CorrectQuotaId')
+  })
+
+  it('extracts retryAfterSeconds from RetryInfo detail', () => {
+    const raw = {
+      code: 429,
+      message: 'rate limit',
+      details: [
+        {
+          '@type': 'type.googleapis.com/google.rpc.RetryInfo',
+          retryDelay: '60s',
+        },
+      ],
+    }
+    const result = extractRateLimitDetails(raw)
+    expect(result.quota.retryAfterSeconds).toBe(60)
+  })
+
+  it('unwraps an LLMError to use its preserved cause', () => {
+    const raw = {
+      code: 429,
+      status: 'RESOURCE_EXHAUSTED',
+      message: "Quota exceeded for base model 'gemini-2.5-flash'",
+    }
+    const llmError = new LLMError('RATE_LIMIT', 'PT-BR message', true, raw)
+    const result = extractRateLimitDetails(llmError)
+    expect(result.httpCode).toBe(429)
+    expect(result.status).toBe('RESOURCE_EXHAUSTED')
+    expect(result.quota.modelName).toBe('gemini-2.5-flash')
+  })
+
+  it('handles fractional retryDelay strings', () => {
+    const raw = {
+      details: [
+        {
+          '@type': 'google.rpc.RetryInfo',
+          retryDelay: '12.7s',
+        },
+      ],
+    }
+    const result = extractRateLimitDetails(raw)
+    expect(result.quota.retryAfterSeconds).toBe(13)
   })
 })
 

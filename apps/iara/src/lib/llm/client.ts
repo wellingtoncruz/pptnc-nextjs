@@ -11,7 +11,7 @@ import type { Podcast } from '@/types/podcast'
 import type { DebugContext } from '@/types/llm-log'
 import type { Video } from '@/types/video'
 
-import { createLLMError, isRetryableError, LLMError } from './errors'
+import { createLLMError, extractRateLimitDetails, isRetryableError, LLMError } from './errors'
 import { extractVariables, interpolatePrompt, validateVideoForPhase } from './interpolation'
 import { parseJSONFromLLM } from './parse-json'
 import { buildPhasePrompt, getSystemPrompt, getUserPromptTemplate, PHASE_CONFIG } from './prompts'
@@ -201,6 +201,24 @@ export async function callGenAI<T>(
         })
       }
 
+      // For RATE_LIMIT, surface Vertex quota metadata so we can identify which limit was hit.
+      // Vertex returns this via structured details[] (QuotaFailure/RetryInfo) and/or the message text.
+      let rateLimitDetails: ReturnType<typeof extractRateLimitDetails> | undefined
+      if (llmError.code === 'RATE_LIMIT') {
+        rateLimitDetails = extractRateLimitDetails(error)
+        log('WARN', '[Vertex AI] RATE_LIMIT details', {
+          httpCode: rateLimitDetails.httpCode,
+          status: rateLimitDetails.status,
+          quotaMetric: rateLimitDetails.quota.quotaMetric,
+          quotaId: rateLimitDetails.quota.quotaId,
+          modelName: rateLimitDetails.quota.modelName ?? modelName,
+          region: rateLimitDetails.quota.region,
+          projectNumber: rateLimitDetails.quota.projectNumber,
+          retryAfterSeconds: rateLimitDetails.quota.retryAfterSeconds,
+          rawMessage: rateLimitDetails.rawMessage?.slice(0, 500),
+        })
+      }
+
       // Check if this error is retryable and we have attempts remaining
       if (isRetryableError(llmError.code) && retryAttempt < MAX_RETRYABLE_ATTEMPTS - 1) {
         const delayMs = RETRYABLE_DELAYS[retryAttempt]
@@ -209,6 +227,9 @@ export async function callGenAI<T>(
           errorMessage: llmError.message,
           nextAttempt: retryAttempt + 2,
           delaySeconds: delayMs / 1000,
+          quotaMetric: rateLimitDetails?.quota.quotaMetric,
+          quotaId: rateLimitDetails?.quota.quotaId,
+          modelName: rateLimitDetails?.quota.modelName ?? (llmError.code === 'RATE_LIMIT' ? modelName : undefined),
         })
         await new Promise(resolve => setTimeout(resolve, delayMs))
         continue
