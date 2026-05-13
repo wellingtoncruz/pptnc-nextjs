@@ -40,8 +40,8 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
 
   const currentView = searchParams.get('view')
 
-  // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode)
-  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean }>()
+  // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode, thumbnailGeneration)
+  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean; thumbnailGeneration?: boolean }>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   useEffect(() => {
     fetch('/api/podcast')
@@ -431,7 +431,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         }
         detail={
           <div ref={detailPanelRef} className="h-full">
-            <VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} onVideoStatusChange={refresh} />
+            <VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} features={podcastFeatures} onVideoStatusChange={refresh} />
           </div>
         }
       />

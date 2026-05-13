@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   EXTENDED_PHASE_METADATA,
   ExtendedWizardPhase,
-  getPhasesForVideoType,
+  getPhasesForVideoTypeWithFeatures,
   VideoTypeForWizard,
   WizardState,
 } from '@/lib/wizard'
@@ -17,6 +17,13 @@ interface WizardBreadcrumbProps {
   videoType?: VideoTypeForWizard
   /** Video data used to determine completion of extended phases (0, 5B) */
   video?: Video
+  /**
+   * Optional podcast features. When `thumbnailGeneration` is enabled and the
+   * video type is episode or cut, the breadcrumb adds the Thumbnail phase
+   * between Tags (7) and Publicar (8). Epic 22 / Story 22.3a.
+   * When omitted, behavior is identical to before Epic 22 (no Thumbnail).
+   */
+  features?: { thumbnailGeneration?: boolean }
   onPhaseClick: (phase: ExtendedWizardPhase) => void
   canNavigateToPhase: (phase: ExtendedWizardPhase) => boolean
 }
@@ -74,10 +81,11 @@ export function WizardBreadcrumb({
   state,
   videoType = 'episode',
   video,
+  features,
   onPhaseClick,
   canNavigateToPhase,
 }: WizardBreadcrumbProps) {
-  const phases = getPhasesForVideoType(videoType)
+  const phases = getPhasesForVideoTypeWithFeatures(videoType, features)
 
   return (
     <nav aria-label="Wizard progress" className="w-full">

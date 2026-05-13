@@ -35,16 +35,20 @@ export const WizardPhaseSchema = z.union([
 export type WizardPhase = z.infer<typeof WizardPhaseSchema>
 
 /**
- * Extended wizard phase that includes phase 0 (parent selection) and 5B (short title).
- * Used for cut and reel video types which have different phase flows.
+ * Extended wizard phase that includes phase 0 (parent selection), 5B (short title)
+ * and 'THUMB' (thumbnail generation — Epic 22).
  *
  * - Phase 0: Parent video selection (cut/reel only) - NUMBER type
  * - Phase 5B: Short title selection (cut only) - STRING type to differentiate from phase 5
+ * - Phase 'THUMB': Thumbnail generation between Tags (7) and Publicar (8). Epic 22.
+ *   Gated by `podcast.features.thumbnailGeneration`. Applies to episode and cut only.
  *
  * Note: Phase 0 is numeric for consistency with other phases.
  * Phase '5B' is a string because it's a sub-phase of 5 and needs to be distinguishable.
+ * Phase 'THUMB' is a string because it doesn't fit the linear numeric flow
+ * (sits between 7 and 8 conditionally).
  */
-export type ExtendedWizardPhase = 0 | WizardPhase | '5B'
+export type ExtendedWizardPhase = 0 | WizardPhase | '5B' | 'THUMB'
 
 /**
  * Video types that the wizard can handle.

@@ -145,11 +145,12 @@ export function isPhaseValidForVideoType(
 }
 
 /**
- * Extended phase metadata including phase 0 and 5B.
- * Used for cut and reel video types.
+ * Extended phase metadata including phase 0, 5B and THUMB.
+ * Used for cut, reel and (with feature flag) episode/cut video types.
  *
  * Note: Phase 0 is numeric (consistent with other phases).
  * Phase '5B' is a string to differentiate from phase 5 (full title).
+ * Phase 'THUMB' is a string (Epic 22) for thumbnail generation between Tags and Publicar.
  */
 export const EXTENDED_PHASE_METADATA: Record<ExtendedWizardPhase, PhaseMetadata> = {
   ...PHASE_METADATA,
@@ -167,4 +168,31 @@ export const EXTENDED_PHASE_METADATA: Record<ExtendedWizardPhase, PhaseMetadata>
     spinnerText: 'Gerando sugestões de título curto para thumbnail...',
     alertTitle: 'Títulos Curtos',
   },
+  THUMB: {
+    phase: 7, // Uses phase 7 as base for compatibility (sits between 7 and 8)
+    label: 'Thumbnail',
+    type: 'reprocessable', // Producer can regenerate or upload manually multiple times
+    spinnerText: 'Gerando thumbnail...',
+    alertTitle: 'Thumbnail',
+  },
+}
+
+/**
+ * Returns the wizard phases for a given video type, optionally inserting the
+ * Thumbnail phase (Epic 22) between Tags (7) and Publicar (8) when the podcast
+ * has `features.thumbnailGeneration` enabled.
+ *
+ * Reels never get the Thumbnail phase (scope decision: only episode and cut).
+ */
+export function getPhasesForVideoTypeWithFeatures(
+  videoType: VideoTypeForWizard,
+  features?: { thumbnailGeneration?: boolean }
+): ExtendedWizardPhase[] {
+  const base = getPhasesForVideoType(videoType)
+  if (!features?.thumbnailGeneration) return base
+  if (videoType === 'reel') return base
+  // Insert 'THUMB' immediately before phase 8 (Publicar).
+  const publishIndex = base.indexOf(8)
+  if (publishIndex < 0) return base
+  return [...base.slice(0, publishIndex), 'THUMB', ...base.slice(publishIndex)]
 }

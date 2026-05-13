@@ -31,6 +31,13 @@ interface WizardLayoutProps {
   onTitleChange?: (newTitle: string) => Promise<void>
   /** Callback when short title is changed. If provided, short title becomes editable. */
   onShortTitleChange?: (newShortTitle: string) => Promise<void>
+  /**
+   * Optional podcast features used to gate phases conditionally in the
+   * breadcrumb. Currently only `thumbnailGeneration` (Epic 22 / Story 22.3a)
+   * is consumed — inserts the Thumbnail phase between Tags and Publicar for
+   * episode and cut video types.
+   */
+  features?: { thumbnailGeneration?: boolean }
   className?: string
 }
 
@@ -61,6 +68,7 @@ export function WizardLayout({
   interactivePanel,
   onTitleChange,
   onShortTitleChange,
+  features,
   className,
 }: WizardLayoutProps) {
   // Wrapper to handle ExtendedWizardPhase in navigation
@@ -104,6 +112,7 @@ export function WizardLayout({
             state={wizard.state}
             videoType={video.videoType ?? 'episode'}
             video={video}
+            features={features}
             onPhaseClick={handlePhaseClick}
             canNavigateToPhase={canNavigateToExtendedPhase}
           />

@@ -31,6 +31,7 @@ export {
   REPROCESSABLE_PHASES,
   WIZARD_PHASES,
   getPhasesForVideoType,
+  getPhasesForVideoTypeWithFeatures,
   getPhasesToInvalidate,
   isPhaseValidForVideoType,
   isReprocessablePhase,

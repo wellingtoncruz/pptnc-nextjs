@@ -23,10 +23,17 @@ import { Phase5BShortTitle } from './phases/phase-5b-short-title'
 import { Phase6Description } from './phases/phase-6-description'
 import { Phase7Tags } from './phases/phase-7-tags'
 import { Phase8Publish } from './phases/phase-8-publish'
+import { PhaseThumbnail } from './phases/phase-thumbnail'
 
 interface WizardOrchestratorProps {
   video: Video
   className?: string
+  /**
+   * Optional podcast features. Used to gate phases conditionally — currently
+   * only `thumbnailGeneration` (Epic 22 / Story 22.3a) which inserts the
+   * Thumbnail phase between Tags and Publicar for episode and cut.
+   */
+  features?: { thumbnailGeneration?: boolean }
   /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
   onVideoStatusChange?: () => void
 }
@@ -48,6 +55,7 @@ interface WizardOrchestratorProps {
 export function WizardOrchestrator({
   video,
   className,
+  features,
   onVideoStatusChange,
 }: WizardOrchestratorProps) {
   const router = useRouter()
@@ -2418,6 +2426,15 @@ export function WizardOrchestrator({
       )
     }
 
+    // Phase 'THUMB' — Epic 22 / Story 22.3a (skeleton only). Gated by
+    // podcast.features.thumbnailGeneration and only inserted into the wizard
+    // flow for episode/cut via getPhasesForVideoTypeWithFeatures.
+    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
+    // but can be 'THUMB' at runtime.
+    if ((wizard.currentPhase as unknown as string) === 'THUMB') {
+      return <PhaseThumbnail video={videoData} />
+    }
+
     switch (wizard.currentPhase) {
       case 1:
         return (
@@ -2639,6 +2656,7 @@ export function WizardOrchestrator({
       interactivePanel={interactivePanel}
       onTitleChange={handleTitleChange}
       onShortTitleChange={handleShortTitleChange}
+      features={features}
       className={className}
     />
   )

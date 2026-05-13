@@ -9,6 +9,11 @@ interface VideoDetailPanelProps {
   videoId?: string | null
   /** Video data for display (from selected video) */
   video?: VideoDetail | VideoSummary | null
+  /**
+   * Optional podcast features. Propagated to the wizard so phases gated by
+   * feature flags (Epic 22: Thumbnail) appear at the right moment in the flow.
+   */
+  features?: { thumbnailGeneration?: boolean }
   /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
   onVideoStatusChange?: () => void
 }
@@ -27,6 +32,7 @@ interface VideoDetailPanelProps {
 export function VideoDetailPanel({
   videoId,
   video,
+  features,
   onVideoStatusChange,
 }: VideoDetailPanelProps) {
   if (!videoId) {
@@ -53,6 +59,7 @@ export function VideoDetailPanel({
       <WizardOrchestrator
         key={video.id}
         video={video as Video}
+        features={features}
         className="flex flex-col h-full"
         onVideoStatusChange={onVideoStatusChange}
       />

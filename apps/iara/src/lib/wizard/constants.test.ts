@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import {
   EXTENDED_PHASE_METADATA,
   getPhasesForVideoType,
+  getPhasesForVideoTypeWithFeatures,
   isPhaseValidForVideoType,
   PHASE_METADATA,
   PHASES_BY_VIDEO_TYPE,
@@ -162,5 +163,60 @@ describe('EXTENDED_PHASE_METADATA', () => {
 
   it('phase 5B is reprocessable', () => {
     expect(EXTENDED_PHASE_METADATA['5B'].type).toBe('reprocessable')
+  })
+
+  it('phase THUMB is reprocessable (Epic 22)', () => {
+    expect(EXTENDED_PHASE_METADATA.THUMB.type).toBe('reprocessable')
+    expect(EXTENDED_PHASE_METADATA.THUMB.label).toBe('Thumbnail')
+  })
+})
+
+// ============================================================================
+// Epic 22 / Story 22.3a — getPhasesForVideoTypeWithFeatures
+// ============================================================================
+
+describe('getPhasesForVideoTypeWithFeatures (Epic 22)', () => {
+  describe('with thumbnailGeneration disabled or undefined', () => {
+    it('returns the same as getPhasesForVideoType for episode', () => {
+      expect(getPhasesForVideoTypeWithFeatures('episode')).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+      expect(getPhasesForVideoTypeWithFeatures('episode', {})).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+      expect(getPhasesForVideoTypeWithFeatures('episode', { thumbnailGeneration: false })).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    })
+
+    it('returns the same as getPhasesForVideoType for cut', () => {
+      expect(getPhasesForVideoTypeWithFeatures('cut')).toEqual([0, 5, '5B', 6, 7, 8])
+      expect(getPhasesForVideoTypeWithFeatures('cut', { thumbnailGeneration: false })).toEqual([0, 5, '5B', 6, 7, 8])
+    })
+
+    it('returns the same as getPhasesForVideoType for reel', () => {
+      expect(getPhasesForVideoTypeWithFeatures('reel')).toEqual([0, 5, 6, 7, 8])
+      expect(getPhasesForVideoTypeWithFeatures('reel', { thumbnailGeneration: false })).toEqual([0, 5, 6, 7, 8])
+    })
+  })
+
+  describe('with thumbnailGeneration enabled', () => {
+    it("inserts 'THUMB' between Tags and Publicar for episode", () => {
+      expect(getPhasesForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })).toEqual([
+        1, 2, 3, 4, 5, 6, 7, 'THUMB', 8,
+      ])
+    })
+
+    it("inserts 'THUMB' between Tags and Publicar for cut", () => {
+      expect(getPhasesForVideoTypeWithFeatures('cut', { thumbnailGeneration: true })).toEqual([
+        0, 5, '5B', 6, 7, 'THUMB', 8,
+      ])
+    })
+
+    it('does NOT insert THUMB for reel (out of scope by Epic 22 decision)', () => {
+      expect(getPhasesForVideoTypeWithFeatures('reel', { thumbnailGeneration: true })).toEqual([
+        0, 5, 6, 7, 8,
+      ])
+    })
+  })
+
+  it('does not mutate the original PHASES_BY_VIDEO_TYPE arrays', () => {
+    getPhasesForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })
+    expect(PHASES_BY_VIDEO_TYPE.episode).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    expect(PHASES_BY_VIDEO_TYPE.cut).toEqual([0, 5, '5B', 6, 7, 8])
   })
 })
