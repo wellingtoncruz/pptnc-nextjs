@@ -46,3 +46,6 @@ next-env.d.ts
 # temporary working files
 guests_for_photos.json
 missing_photos_report.md
+
+# binary media kept locally but not tracked — replaced manually outside git flow
+apps/web/public/midiakit.pdf
