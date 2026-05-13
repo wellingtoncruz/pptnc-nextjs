@@ -216,18 +216,18 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
   })
 
   describe('path cards (22.3b)', () => {
-    it('renders Caminho 1 (active) and Caminho 2 (placeholder pointing to 22.3e)', async () => {
+    it('renders the Gerar (active) and Upload (placeholder pointing to 22.3e) sections', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
 
       render(<PhaseThumbnail video={baseVideo} />)
       await waitFor(() => {
-        expect(screen.getByText('Caminho 1 — Gerar com IAra')).toBeInTheDocument()
+        expect(screen.getByText('Gerar com IAra')).toBeInTheDocument()
       })
-      expect(screen.getByText('Caminho 2 — Upload próprio')).toBeInTheDocument()
-      // Caminho 1 is now interactive (22.3c) — has a real textarea/button.
+      expect(screen.getByText('Upload próprio')).toBeInTheDocument()
+      // Gerar is now interactive (22.3c) — has a real textarea/button.
       expect(screen.getByTestId('thumbnail-observation')).toBeInTheDocument()
       expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
-      // Caminho 2 is still placeholder until 22.3e.
+      // Upload is still placeholder until 22.3e.
       expect(screen.getByText(/22\.3e/)).toBeInTheDocument()
     })
   })

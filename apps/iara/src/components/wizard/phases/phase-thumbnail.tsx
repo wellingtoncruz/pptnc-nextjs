@@ -110,7 +110,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
             <PlaceholderPathCard
               testid="path-upload"
               icon={<Upload className="h-4 w-4" />}
-              title="Caminho 2 — Upload próprio"
+              title="Upload próprio"
               description="Já tem uma thumbnail pronta? Arraste o arquivo aqui (PNG/JPEG/WebP, máx 2 MB)."
               footnote="Interface ativa em Story 22.3e."
             />
@@ -290,7 +290,7 @@ function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
     <div className="rounded-md border p-4 flex flex-col gap-3" data-testid="path-generate">
       <div className="flex items-center gap-2 font-medium">
         <Sparkles className="h-4 w-4" />
-        Caminho 1 — Gerar com IAra
+        Gerar com IAra
       </div>
       <p className="text-sm text-muted-foreground">
         Use Base + Referência configuradas + observações suas para o modelo gerar a thumbnail.
