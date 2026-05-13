@@ -1,14 +1,17 @@
 /**
- * Tests for PhaseThumbnail — Epic 22 / Story 22.3a (skeleton) + 22.3b (dual layout).
+ * Tests for PhaseThumbnail — Epic 22 / Story 22.3a..22.3c.
  *
- * 22.3a delivered the skeleton + wizard integration. 22.3b adds the dual
- * layout: Base/Referência previews on top, two paths side by side (Gerar /
- * Upload) as placeholders, "Thumbnail selecionada" area at the bottom, and
- * the disabled "Continuar para Publicar" button. Interactive behavior of
- * each path lands in 22.3c..22.3g.
+ * 22.3a delivered the skeleton + wizard integration.
+ * 22.3b added the dual layout: Base/Referência previews, two paths side by side,
+ *   "Thumbnail selecionada" summary and the disabled advance button.
+ * 22.3c (covered here) activates Caminho 1: textarea + Gerar Thumbnail button
+ *   chama o stub endpoint, mostra feedback temporal progressivo e seleciona a
+ *   URL retornada automaticamente.
  */
 
+import { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
 
 import { render, screen, waitFor } from '@/test-utils'
 
@@ -33,7 +36,22 @@ function mockPodcastResponse(payload: unknown) {
   } as Response)
 }
 
-describe('PhaseThumbnail (Story 22.3a skeleton + 22.3b dual layout)', () => {
+function mockGenerateResponse(thumbnailUrl: string) {
+  fetchMock.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ thumbnailUrl, generatedAt: '2026-05-13T12:00:00Z' }),
+  } as Response)
+}
+
+function mockGenerateError(status: number, message?: string) {
+  fetchMock.mockResolvedValueOnce({
+    ok: false,
+    status,
+    json: async () => (message ? { error: { code: 'X', message } } : { error: { code: 'X' } }),
+  } as Response)
+}
+
+describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
   beforeEach(() => {
     fetchMock.mockReset()
     global.fetch = fetchMock as unknown as typeof global.fetch
@@ -198,7 +216,7 @@ describe('PhaseThumbnail (Story 22.3a skeleton + 22.3b dual layout)', () => {
   })
 
   describe('path cards (22.3b)', () => {
-    it('renders both placeholder cards with their footnotes pointing to next sub-stories', async () => {
+    it('renders Caminho 1 (active) and Caminho 2 (placeholder pointing to 22.3e)', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
 
       render(<PhaseThumbnail video={baseVideo} />)
@@ -206,7 +224,10 @@ describe('PhaseThumbnail (Story 22.3a skeleton + 22.3b dual layout)', () => {
         expect(screen.getByText('Caminho 1 — Gerar com IAra')).toBeInTheDocument()
       })
       expect(screen.getByText('Caminho 2 — Upload próprio')).toBeInTheDocument()
-      expect(screen.getByText(/22\.3c/)).toBeInTheDocument()
+      // Caminho 1 is now interactive (22.3c) — has a real textarea/button.
+      expect(screen.getByTestId('thumbnail-observation')).toBeInTheDocument()
+      expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      // Caminho 2 is still placeholder until 22.3e.
       expect(screen.getByText(/22\.3e/)).toBeInTheDocument()
     })
   })
@@ -234,6 +255,160 @@ describe('PhaseThumbnail (Story 22.3a skeleton + 22.3b dual layout)', () => {
         const img = screen.getByAltText('Thumbnail selecionada')
         expect(img).toHaveAttribute('src', 'https://storage.googleapis.com/bucket/picked.png')
       })
+    })
+  })
+
+  // ===========================================================================
+  // 22.3c — Caminho 1 (Gerar com IAra) com stub endpoint
+  // ===========================================================================
+
+  describe('Caminho 1 — Gerar com IAra (22.3c)', () => {
+    it('renders the observation textarea and the Gerar button', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('path-generate')).toBeInTheDocument()
+      })
+      expect(screen.getByTestId('thumbnail-observation')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Gerar Thumbnail/ })).toBeEnabled()
+    })
+
+    it('calls the stub endpoint and selects the returned URL on success', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateResponse('data:image/svg+xml;base64,PHN2Zy8+')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+
+      await user.type(screen.getByTestId('thumbnail-observation'), 'destaque o convidado')
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Thumbnail selecionada')
+        expect(img).toHaveAttribute('src', 'data:image/svg+xml;base64,PHN2Zy8+')
+      })
+
+      const generateCall = fetchMock.mock.calls.find(([url]) =>
+        String(url).includes('/api/wizard/thumbnail/generate')
+      )
+      expect(generateCall).toBeDefined()
+      const init = generateCall?.[1] as RequestInit | undefined
+      expect(init?.method).toBe('POST')
+      const body = JSON.parse(String(init?.body ?? '{}')) as { videoId: string; observation?: string }
+      expect(body.videoId).toBe('video-1')
+      expect(body.observation).toBe('destaque o convidado')
+    })
+
+    it('omits observation from the payload when the textarea is empty', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateResponse('data:image/svg+xml;base64,PHN2Zy8+')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+      await waitFor(() => {
+        const call = fetchMock.mock.calls.find(([url]) =>
+          String(url).includes('/api/wizard/thumbnail/generate')
+        )
+        expect(call).toBeDefined()
+        const body = JSON.parse(String((call?.[1] as RequestInit | undefined)?.body ?? '{}')) as {
+          videoId: string
+          observation?: string
+        }
+        expect(body.observation).toBeUndefined()
+      })
+    })
+
+    it('shows the elapsed timer while generation is in flight', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      let resolveFetch: ((value: Response) => void) | null = null
+      fetchMock.mockReturnValueOnce(
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve
+        })
+      )
+
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      try {
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+        render(<PhaseThumbnail video={baseVideo} />)
+        await waitFor(() => {
+          expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+        })
+
+        await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+        await waitFor(() => {
+          expect(screen.getByTestId('thumbnail-elapsed')).toBeInTheDocument()
+        })
+        expect(screen.getByTestId('thumbnail-elapsed').textContent).toMatch(/Tempo decorrido: 0s/)
+
+        await act(async () => {
+          vi.advanceTimersByTime(2000)
+        })
+        expect(screen.getByTestId('thumbnail-elapsed').textContent).toMatch(/Tempo decorrido: 2s/)
+
+        // Resolve the pending fetch so the component leaves loading state cleanly.
+        resolveFetch?.({
+          ok: true,
+          json: async () => ({ thumbnailUrl: 'data:image/svg+xml;base64,PHN2Zy8+' }),
+        } as Response)
+        await waitFor(() => {
+          expect(screen.queryByTestId('thumbnail-elapsed')).not.toBeInTheDocument()
+        })
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('renders the error block when the stub endpoint fails', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateError(500, 'Servidor indisponível')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('thumbnail-error')).toBeInTheDocument()
+      })
+      expect(screen.getByTestId('thumbnail-error').textContent).toMatch(/Servidor indisponível/)
+      // Continuar must remain disabled — no thumbnail was selected.
+      expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeDisabled()
+    })
+
+    it('clears the previous error when a retry succeeds', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateError(500)
+      mockGenerateResponse('data:image/svg+xml;base64,PHN2Zy8+')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.getByTestId('thumbnail-error')).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.queryByTestId('thumbnail-error')).not.toBeInTheDocument()
+      })
+      expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeEnabled()
     })
   })
 })

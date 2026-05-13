@@ -224,10 +224,11 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       // 'THUMB' between Tags (7) and Publicar (8) for episode and cut.
       const nextPhase = getNextPhaseForType(action.phase, state.videoType, action.features)
 
-      // Extended phases (0 and '5B') are not tracked in the phases record.
-      // They are tracked via video data (parentEpisodeId for 0, shortTitle for 5B).
-      // For these phases, we only navigate - completion is determined by video data.
-      const isExtendedPhase = action.phase === 0 || action.phase === '5B'
+      // Extended phases (0, '5B', 'THUMB') are not tracked in the phases record.
+      // They are tracked via video data (parentEpisodeId for 0, shortTitle for 5B,
+      // storageThumbnailUrl for THUMB). For these phases, we only navigate —
+      // completion is determined by video data.
+      const isExtendedPhase = action.phase === 0 || action.phase === '5B' || action.phase === 'THUMB'
 
       if (isExtendedPhase) {
         return {

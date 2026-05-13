@@ -2426,13 +2426,20 @@ export function WizardOrchestrator({
       )
     }
 
-    // Phase 'THUMB' — Epic 22 / Story 22.3a (skeleton only). Gated by
-    // podcast.features.thumbnailGeneration and only inserted into the wizard
-    // flow for episode/cut via getPhasesForVideoTypeWithFeatures.
+    // Phase 'THUMB' — Epic 22 / Story 22.3 (sub-stories 22.3a..22.3g). Gated
+    // by podcast.features.thumbnailGeneration and only inserted into the
+    // wizard flow for episode/cut via getPhasesForVideoTypeWithFeatures.
     // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
-    // but can be 'THUMB' at runtime.
+    // but can be 'THUMB' at runtime. 22.3c wires the advance handler that
+    // marks THUMB completed and navigates to Publicar (8).
     if ((wizard.currentPhase as unknown as string) === 'THUMB') {
-      return <PhaseThumbnail video={videoData} />
+      return (
+        <PhaseThumbnail
+          video={videoData}
+          selectedThumbnailUrl={videoData.storageThumbnailUrl}
+          onAdvance={() => wizard.completePhaseAndAdvance('THUMB', {}, features)}
+        />
+      )
     }
 
     switch (wizard.currentPhase) {
