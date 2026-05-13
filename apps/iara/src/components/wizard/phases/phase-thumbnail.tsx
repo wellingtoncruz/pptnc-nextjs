@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertTriangleIcon, ImageIcon, ImageOff, Loader2, Sparkles, Upload } from 'lucide-react'
+import { AlertTriangleIcon, ImageIcon, ImageOff, Loader2, Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import {
   GeneratedVersionsGallery,
   type GeneratedThumbnailVersion,
 } from '@/components/wizard/thumbnail/generated-versions-gallery'
+import { ManualUploadDropzone } from '@/components/wizard/thumbnail/manual-upload-dropzone'
 import { ThumbnailLightbox } from '@/components/wizard/thumbnail/thumbnail-lightbox'
 import { log } from '@/lib/logger'
 import type { ThumbnailPromptField } from '@/types/podcast'
@@ -95,6 +96,19 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
       url: payload.url,
       observation: payload.observation,
       timestamp: new Date(),
+      source: 'generated',
+    }
+    setVersions((prev) => [...prev, version])
+    setSelectedVersionUrl(version.url)
+  }, [])
+
+  const handleUploaded = useCallback((payload: { url: string }) => {
+    const version: GeneratedThumbnailVersion = {
+      id: `up-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      url: payload.url,
+      observation: undefined,
+      timestamp: new Date(),
+      source: 'upload',
     }
     setVersions((prev) => [...prev, version])
     setSelectedVersionUrl(version.url)
@@ -130,13 +144,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
 
           <div className="flex flex-col gap-4">
             <GeneratePathCard videoId={video.id} onGenerated={handleGenerated} />
-            <PlaceholderPathCard
-              testid="path-upload"
-              icon={<Upload className="h-4 w-4" />}
-              title="Upload próprio"
-              description="Já tem uma thumbnail pronta? Arraste o arquivo aqui (PNG/JPEG/WebP, máx 2 MB)."
-              footnote="Interface ativa em Story 22.3e."
-            />
+            <ManualUploadDropzone videoId={video.id} onUploaded={handleUploaded} />
           </div>
 
           <GeneratedVersionsGallery
@@ -398,26 +406,6 @@ function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
   )
 }
 
-interface PlaceholderPathCardProps {
-  testid: string
-  icon: React.ReactNode
-  title: string
-  description: string
-  footnote: string
-}
-
-function PlaceholderPathCard({ testid, icon, title, description, footnote }: PlaceholderPathCardProps) {
-  return (
-    <div className="rounded-md border border-dashed p-4" data-testid={testid}>
-      <div className="flex items-center gap-2 font-medium">
-        {icon}
-        {title}
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-      <p className="mt-3 text-xs italic text-muted-foreground">{footnote}</p>
-    </div>
-  )
-}
 
 interface SelectedThumbnailSummaryProps {
   selectedThumbnailUrl?: string

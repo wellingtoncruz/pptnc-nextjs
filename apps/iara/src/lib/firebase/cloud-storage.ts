@@ -357,6 +357,97 @@ export async function uploadThumbnailConfigImage(
 }
 
 /**
+ * Thumbnail staging — Epic 22 / Story 22.3e (manual upload) + Story 22.4 (LLM gen).
+ *
+ * Staging holds candidate thumbnails the producer is evaluating during the
+ * wizard session. Story 22.3g moves the chosen one to a "final" path (or
+ * persists the staging URL directly to `video.storageThumbnailUrl`).
+ *
+ * `source` distinguishes the two paths so we can tell uploads from generated
+ * thumbnails at a glance in GCS, and so 22.4's retry/backoff doesn't collide
+ * with manual uploads in the same key namespace.
+ */
+const SAFE_VIDEO_ID = /^[a-zA-Z0-9_-]+$/
+export type ThumbnailStagingSource = 'upload' | 'generated'
+
+export async function uploadThumbnailStagingImage(
+  videoId: string,
+  source: ThumbnailStagingSource,
+  imageBuffer: Buffer,
+  mimeType: string
+): Promise<{ filePath: string; mimeType: string }> {
+  if (!SAFE_VIDEO_ID.test(videoId)) {
+    throw new CloudStorageError('Invalid video ID for thumbnail staging path', 'UPLOAD_FAILED')
+  }
+  const ext = MIME_TO_EXT[mimeType]
+  if (!ext) {
+    throw new CloudStorageError('Unsupported MIME type for thumbnail staging', 'UPLOAD_FAILED')
+  }
+  if (imageBuffer.length === 0) {
+    throw new CloudStorageError('Empty image buffer for thumbnail staging', 'UPLOAD_FAILED')
+  }
+
+  const prefix = source === 'upload' ? 'upload' : 'gen'
+  const filePath = `thumbnail-staging/${PODCAST_ID}/${videoId}/${prefix}-${Date.now()}.${ext}`
+
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    await file.save(imageBuffer, {
+      contentType: mimeType,
+      resumable: false,
+    })
+
+    log('INFO', 'Thumbnail staging image uploaded', {
+      podcastId: PODCAST_ID,
+      videoId,
+      source,
+      filePath,
+      size: imageBuffer.length,
+      mimeType,
+    })
+
+    return { filePath, mimeType }
+  } catch (error) {
+    if (error instanceof CloudStorageError) throw error
+    log('ERROR', 'Thumbnail staging image upload failed', {
+      podcastId: PODCAST_ID,
+      videoId,
+      source,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to upload thumbnail staging image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'UPLOAD_FAILED'
+    )
+  }
+}
+
+export async function downloadThumbnailStagingImage(filePath: string): Promise<Buffer> {
+  if (!filePath.startsWith('thumbnail-staging/') || filePath.includes('..')) {
+    throw new CloudStorageError('Invalid file path for thumbnail staging download', 'DOWNLOAD_FAILED')
+  }
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    const [contents] = await file.download()
+    log('INFO', 'Thumbnail staging image downloaded', { podcastId: PODCAST_ID, filePath })
+    return contents
+  } catch (error) {
+    log('ERROR', 'Thumbnail staging image download failed', {
+      podcastId: PODCAST_ID,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to download thumbnail staging image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DOWNLOAD_FAILED'
+    )
+  }
+}
+
+/**
  * Downloads a thumbnail config image from Cloud Storage.
  *
  * Path-validated to ensure the request stays within the thumbnail-config prefix

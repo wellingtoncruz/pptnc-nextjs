@@ -216,7 +216,7 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
   })
 
   describe('path cards (22.3b)', () => {
-    it('renders the Gerar (active) and Upload (placeholder pointing to 22.3e) sections', async () => {
+    it('renders both interactive sections (Gerar via IAra and Upload manual)', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
 
       render(<PhaseThumbnail video={baseVideo} />)
@@ -224,11 +224,12 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
         expect(screen.getByText('Gerar com IAra')).toBeInTheDocument()
       })
       expect(screen.getByText('Upload próprio')).toBeInTheDocument()
-      // Gerar is now interactive (22.3c) — has a real textarea/button.
+      // Gerar (22.3c) — textarea + botão Gerar.
       expect(screen.getByTestId('thumbnail-observation')).toBeInTheDocument()
       expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
-      // Upload is still placeholder until 22.3e.
-      expect(screen.getByText(/22\.3e/)).toBeInTheDocument()
+      // Upload (22.3e) — input + botão Selecionar arquivo.
+      expect(screen.getByTestId('upload-input')).toBeInTheDocument()
+      expect(screen.getByTestId('upload-pick-button')).toBeInTheDocument()
     })
   })
 
@@ -450,7 +451,7 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       await waitFor(() => {
         expect(screen.getAllByTestId('version-card')).toHaveLength(3)
       })
-      expect(screen.getByText('Versões geradas (3)')).toBeInTheDocument()
+      expect(screen.getByText('Versões (3)')).toBeInTheDocument()
 
       // Most recent (THIRD) is auto-selected — feeds into the summary preview.
       const summaryImg = screen.getByAltText('Thumbnail selecionada')
@@ -550,6 +551,47 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       // Selection (summary preview) should still be SECOND.
       const summaryImg = screen.getByAltText('Thumbnail selecionada')
       expect(summaryImg).toHaveAttribute('src', 'data:image/svg+xml;base64,SECOND')
+    })
+
+    it('adds a manual upload to the gallery as source=upload and auto-selects it', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      // Mock the upload endpoint response (the only fetch after podcast).
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          thumbnailUrl: '/api/wizard/thumbnail/upload?path=staging%2Fa.png',
+          mimeType: 'image/png',
+        }),
+      } as Response)
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('upload-input')).toBeInTheDocument()
+      })
+
+      const file = new File(['imagebytes'], 'foto.png', { type: 'image/png' })
+      await user.upload(screen.getByTestId('upload-input') as HTMLInputElement, file)
+
+      // Upload aparece na galeria como única versão e fica selecionada.
+      await waitFor(() => {
+        expect(screen.getByTestId('generated-versions-gallery')).toBeInTheDocument()
+      })
+      const cards = screen.getAllByTestId('version-card')
+      expect(cards).toHaveLength(1)
+      expect(cards[0]).toHaveAttribute('data-selected', 'true')
+
+      // Label da miniatura mostra "Upload manual" (sem observação).
+      expect(screen.getByText('Upload manual')).toBeInTheDocument()
+
+      // Summary embaixo reflete a URL do upload.
+      expect(screen.getByAltText('Thumbnail selecionada')).toHaveAttribute(
+        'src',
+        '/api/wizard/thumbnail/upload?path=staging%2Fa.png'
+      )
+
+      // Botão Continuar habilita.
+      expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeEnabled()
     })
 
     it('clears the previous error when a retry succeeds', async () => {

@@ -5,21 +5,28 @@ import { Maximize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /**
- * One thumbnail version produced by Caminho 1 (Gerar com IAra) during the
- * current wizard session. Versions are kept in component state only — they
- * are not persisted to Firestore yet (Story 22.3g covers persistence of the
- * final pick). The producer regenera ilimitadamente e cada chamada adiciona
- * uma nova entrada, sem substituir as anteriores.
+ * One thumbnail version no histórico da sessão atual. Pode ter vindo de:
+ * - **Gerar com IAra** (Caminho 1, Story 22.3c — stub; 22.4 — real generation)
+ * - **Upload manual** (Caminho 2, Story 22.3e)
+ *
+ * Versions são mantidas só no estado do componente — Story 22.3g cuida da
+ * persistência da escolha final em `video.storageThumbnailUrl`. O produtor
+ * pode acumular ilimitadamente sem perder versões anteriores.
  */
 export interface GeneratedThumbnailVersion {
   /** Unique id for the React key — survives reorder/insert. */
   id: string
   /** URL (data: ou https://) que vai pra `<img src>` da miniatura e do summary. */
   url: string
-  /** Texto livre que o produtor escreveu antes de clicar Gerar. Undefined = não preencheu. */
+  /** Texto livre que o produtor escreveu antes de clicar Gerar. Undefined = não preencheu / não se aplica. */
   observation: string | undefined
-  /** Quando a geração concluiu (cliente — Story 22.4 trocará pelo timestamp do server). */
+  /** Quando a versão entrou no histórico (cliente — Story 22.4 trocará pelo timestamp do server). */
   timestamp: Date
+  /**
+   * Origem da versão. Determina o label exibido sob a miniatura quando o
+   * produtor não digitou observação ("Sem observação" vs "Upload manual").
+   */
+  source: 'generated' | 'upload'
 }
 
 interface GeneratedVersionsGalleryProps {
@@ -63,7 +70,7 @@ export function GeneratedVersionsGallery({
       data-testid="generated-versions-gallery"
     >
       <p className="text-sm font-medium mb-3">
-        Versões geradas ({versions.length})
+        Versões ({versions.length})
       </p>
       <div
         className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar"
@@ -93,9 +100,12 @@ interface VersionCardProps {
 }
 
 function VersionCard({ version, isSelected, onClick, onPreview }: VersionCardProps) {
-  const observationLabel = version.observation?.trim()
-    ? truncate(version.observation.trim(), 48)
-    : 'Sem observação'
+  const trimmedObservation = version.observation?.trim()
+  const observationLabel = trimmedObservation
+    ? truncate(trimmedObservation, 48)
+    : version.source === 'upload'
+      ? 'Upload manual'
+      : 'Sem observação'
 
   return (
     <div

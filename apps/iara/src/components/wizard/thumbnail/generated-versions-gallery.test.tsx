@@ -20,6 +20,7 @@ const sampleVersion = (overrides: Partial<GeneratedThumbnailVersion> = {}): Gene
   url: overrides.url ?? 'data:image/svg+xml;base64,PHN2Zy8+',
   observation: overrides.observation,
   timestamp: overrides.timestamp ?? new Date(),
+  source: overrides.source ?? 'generated',
 })
 
 describe('GeneratedVersionsGallery', () => {
@@ -41,7 +42,7 @@ describe('GeneratedVersionsGallery', () => {
     )
     expect(screen.getByTestId('generated-versions-gallery')).toBeInTheDocument()
     expect(screen.getAllByTestId('version-card')).toHaveLength(3)
-    expect(screen.getByText('Versões geradas (3)')).toBeInTheDocument()
+    expect(screen.getByText('Versões (3)')).toBeInTheDocument()
   })
 
   it('marks the version whose URL matches selectedUrl as selected', () => {
@@ -131,16 +132,27 @@ describe('GeneratedVersionsGallery', () => {
     expect((label.textContent ?? '').length).toBeLessThanOrEqual(48)
   })
 
-  it('falls back to "Sem observação" when observation is undefined or whitespace', () => {
+  it('falls back to "Sem observação" when observation is undefined for a generated version', () => {
     const versions = [
-      sampleVersion({ id: 'a', observation: undefined, url: 'data:a' }),
-      sampleVersion({ id: 'b', observation: '   ', url: 'data:b' }),
+      sampleVersion({ id: 'a', observation: undefined, source: 'generated', url: 'data:a' }),
+      sampleVersion({ id: 'b', observation: '   ', source: 'generated', url: 'data:b' }),
     ]
     render(
       <GeneratedVersionsGallery versions={versions} selectedUrl="data:a" onSelect={() => {}} />
     )
-    const labels = screen.getAllByText('Sem observação')
-    expect(labels).toHaveLength(2)
+    expect(screen.getAllByText('Sem observação')).toHaveLength(2)
+  })
+
+  it('uses "Upload manual" as the label when source=upload and there is no observation', () => {
+    const versions = [
+      sampleVersion({ id: 'a', observation: undefined, source: 'upload', url: 'data:a' }),
+      sampleVersion({ id: 'b', observation: '   ', source: 'upload', url: 'data:b' }),
+    ]
+    render(
+      <GeneratedVersionsGallery versions={versions} selectedUrl="data:a" onSelect={() => {}} />
+    )
+    expect(screen.getAllByText('Upload manual')).toHaveLength(2)
+    expect(screen.queryByText('Sem observação')).toBeNull()
   })
 
   it('uses an img tag for each miniature pointing at the version URL', () => {
