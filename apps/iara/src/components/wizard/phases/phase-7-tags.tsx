@@ -594,7 +594,7 @@ export function Phase7Tags({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseNameForType(7, video.videoType)}
+                Avançar para {getNextPhaseNameForType(7, video.videoType, features)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

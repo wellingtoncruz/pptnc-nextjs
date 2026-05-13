@@ -345,7 +345,8 @@ describe('Phase7Tags', () => {
         />
       )
 
-      fireEvent.click(screen.getByRole('button', { name: /avançar para publicar/i }))
+      // Button label reflects the real next phase ('Thumbnail'), not 'Publicar'.
+      fireEvent.click(screen.getByRole('button', { name: /avançar para thumbnail/i }))
 
       // The third arg ensures the reducer uses getPhasesForVideoTypeWithFeatures
       // and routes 7 -> 'THUMB' instead of skipping straight to 8.
@@ -356,6 +357,36 @@ describe('Phase7Tags', () => {
           { thumbnailGeneration: true }
         )
       })
+    })
+
+    it('shows the advance button label "Avançar para Thumbnail" when feature flag is on', () => {
+      const wizard = createMockWizard()
+      render(
+        <Phase7Tags
+          wizard={wizard}
+          video={mockVideo}
+          tagsResult={mockTagsWithData}
+          features={{ thumbnailGeneration: true }}
+        />
+      )
+      expect(screen.getByRole('button', { name: /avançar para thumbnail/i })).toBeInTheDocument()
+    })
+
+    it('shows "Avançar para Publicar" when feature flag is off (legacy behavior)', () => {
+      const wizard = createMockWizard()
+      render(
+        <Phase7Tags
+          wizard={wizard}
+          video={mockVideo}
+          tagsResult={mockTagsWithData}
+        />
+      )
+      // Without features prop the button label resolves via the legacy 7 → 8
+      // sequence ('Publicar no YouTube') — partial match keeps the test robust
+      // to the surrounding markup (icon, whitespace).
+      expect(
+        screen.getByRole('button', { name: /avançar para publicar/i })
+      ).toBeInTheDocument()
     })
   })
 

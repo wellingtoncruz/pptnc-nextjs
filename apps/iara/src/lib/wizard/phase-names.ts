@@ -41,21 +41,27 @@ export function getNextPhaseName(currentPhase: WizardPhase): string | null {
 /**
  * Get the name of the next phase based on video type's phase flow.
  *
- * Uses PHASES_BY_VIDEO_TYPE to determine the correct sequence.
  * For example:
  * - episode: 5 → 6 (Descrição)
  * - cut: 5 → 5B (Título Curto)
  * - reel: 5 → 6 (Descrição)
  *
+ * When `features.thumbnailGeneration` is on (Epic 22), advancing from Tags
+ * for episode/cut returns "Thumbnail" instead of "Publicar no YouTube" —
+ * keeps the advance button label honest about where the user is going.
+ *
  * @param currentPhase - The current phase
  * @param videoType - The video type (episode, cut, reel)
+ * @param features - Optional podcast feature flags. When omitted, behaves
+ *                   identically to before Epic 22 (no Thumbnail phase).
  * @returns The name of the next phase, or null if at the last phase
  */
 export function getNextPhaseNameForType(
   currentPhase: ExtendedWizardPhase,
-  videoType: VideoTypeForWizard = 'episode'
+  videoType: VideoTypeForWizard = 'episode',
+  features?: { thumbnailGeneration?: boolean }
 ): string | null {
-  const nextPhase = getNextPhaseForType(currentPhase, videoType)
+  const nextPhase = getNextPhaseForType(currentPhase, videoType, features)
   if (nextPhase === null) return null
   return EXTENDED_PHASE_METADATA[nextPhase]?.label ?? null
 }
