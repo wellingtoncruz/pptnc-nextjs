@@ -1,0 +1,37 @@
+[
+  {
+    "id": "next-js-startup",
+    "description": "Tema framework — debate técnico com tom opinativo",
+    "video": {
+      "title": "Por que toda startup escolhe Next.js (e quando isso é um erro)"
+    }
+  },
+  {
+    "id": "ai-code-review",
+    "description": "Tema AI/tooling — comparativo de ferramentas",
+    "video": {
+      "title": "AI Code Review: Cursor, Copilot e Claude no dia a dia do dev"
+    }
+  },
+  {
+    "id": "saas-empreender",
+    "description": "Tema carreira/empreendedorismo — relato",
+    "video": {
+      "title": "Saí da CLT pra empreender em SaaS — o que ninguém te conta"
+    }
+  },
+  {
+    "id": "postgres-mongo",
+    "description": "Tema banco de dados — comparativo",
+    "video": {
+      "title": "Postgres ou MongoDB? A pergunta errada que todo backend faz"
+    }
+  },
+  {
+    "id": "carreira-cloud",
+    "description": "Tema carreira — progressão",
+    "video": {
+      "title": "Carreira em Cloud: do júnior ao staff em 5 anos"
+    }
+  }
+]

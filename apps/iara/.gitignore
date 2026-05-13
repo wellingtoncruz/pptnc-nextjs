@@ -44,3 +44,6 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+
+# Epic 22 spike — local outputs from scripts/spike-thumbnail-bench.ts
+spike-tmp/
