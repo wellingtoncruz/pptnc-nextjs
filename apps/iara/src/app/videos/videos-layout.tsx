@@ -43,6 +43,11 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode, thumbnailGeneration)
   const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean; thumbnailGeneration?: boolean }>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
+  // Refetch on every view change so that toggling a feature flag inside
+  // Settings and navigating back to the videos/editorial/news view picks up
+  // the new value immediately (the layout component does not unmount when
+  // currentView changes — only its body is swapped — so state would otherwise
+  // stay stale until a full page refresh).
   useEffect(() => {
     fetch('/api/podcast')
       .then(r => r.ok ? r.json() : null)
@@ -51,7 +56,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         if (d?.data?.enabledSocialNetworks) setEnabledSocialNetworks(d.data.enabledSocialNetworks)
       })
       .catch(() => { /* features default to enabled on error */ })
-  }, [])
+  }, [currentView])
 
   // Track if initial mount check has been done
   const hasCheckedInitialUrl = useRef(false)
