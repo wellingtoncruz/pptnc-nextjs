@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  GeneratedVersionsGallery,
+  type GeneratedThumbnailVersion,
+} from '@/components/wizard/thumbnail/generated-versions-gallery'
 import { log } from '@/lib/logger'
 import type { ThumbnailPromptField } from '@/types/podcast'
 import type { Video } from '@/types/video'
@@ -32,15 +36,13 @@ interface PhaseThumbnailProps {
  * Phase Thumbnail — Epic 22 / Story 22.3 (split into sub-stories 22.3a..22.3g).
  *
  * 22.3a delivered the skeleton + wizard integration. 22.3b added the dual layout:
- * Base/Referência previews on top, two paths side by side (Gerar / Upload), the
- * "Thumbnail selecionada" summary and the disabled advance button.
+ * Base/Referência previews + duas seções (Gerar/Upload) + Thumbnail selecionada.
+ * 22.3c activates Caminho 1 (Gerar) via stub endpoint com feedback temporal.
  *
- * 22.3c (this revision) activates Caminho 1: textarea de observações + botão
- * "Gerar Thumbnail" que chama o endpoint stub `POST /api/wizard/thumbnail/generate`.
- * Durante a chamada, exibe feedback temporal progressivo (mesmo padrão de
- * `phase-2-edit-check.tsx`). Ao concluir, a URL retornada vira a thumbnail
- * selecionada e habilita o botão "Continuar para Publicar". A versão real do
- * endpoint (fire-and-forget + Firestore status polling) entra na Story 22.4.
+ * 22.3d (this revision) adds the generated-versions gallery: cada chamada a
+ * Gerar adiciona uma entrada ao histórico (não substitui a anterior). Click
+ * numa miniatura troca a versão selecionada sem perder as outras. A versão
+ * recém-gerada é auto-selecionada. O upload manual chega na 22.3e.
  *
  * Gated by `podcast.features.thumbnailGeneration` e renderizada apenas para
  * `episode` e `cut` (ver `getPhasesForVideoTypeWithFeatures`).
@@ -48,13 +50,13 @@ interface PhaseThumbnailProps {
 export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, className }: PhaseThumbnailProps) {
   const [config, setConfig] = useState<ThumbnailPromptField | null>(null)
   const [configLoaded, setConfigLoaded] = useState(false)
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
-  // Local generation always wins over the hydrated `selectedThumbnailUrl` prop.
-  // Without this, a video with a pre-existing storageThumbnailUrl (e.g. the
-  // legacy base64 thumbnail from YouTube — TD-5) would mask the freshly
-  // generated mock/result and the producer wouldn't see the change after
-  // clicking Gerar Thumbnail.
-  const effectiveSelectedUrl = generatedUrl ?? selectedThumbnailUrl ?? undefined
+  const [versions, setVersions] = useState<GeneratedThumbnailVersion[]>([])
+  const [selectedVersionUrl, setSelectedVersionUrl] = useState<string | null>(null)
+  // Local generation/selection always wins over the hydrated `selectedThumbnailUrl`
+  // prop. Sem isso, um vídeo com `storageThumbnailUrl` pré-existente (ex.: base64
+  // legado da YouTube — TD-5) mascararia a thumbnail recém-gerada e o produtor não
+  // veria mudança ao clicar Gerar.
+  const effectiveSelectedUrl = selectedVersionUrl ?? selectedThumbnailUrl ?? undefined
   const canAdvance = Boolean(effectiveSelectedUrl)
   const videoType = video.videoType
 
@@ -85,8 +87,19 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
     }
   }, [videoType])
 
-  const handleGenerated = useCallback((url: string) => {
-    setGeneratedUrl(url)
+  const handleGenerated = useCallback((payload: { url: string; observation: string | undefined }) => {
+    const version: GeneratedThumbnailVersion = {
+      id: `gen-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      url: payload.url,
+      observation: payload.observation,
+      timestamp: new Date(),
+    }
+    setVersions((prev) => [...prev, version])
+    setSelectedVersionUrl(version.url)
+  }, [])
+
+  const handleSelectVersion = useCallback((url: string) => {
+    setSelectedVersionUrl(url)
   }, [])
 
   return (
@@ -115,6 +128,12 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
               footnote="Interface ativa em Story 22.3e."
             />
           </div>
+
+          <GeneratedVersionsGallery
+            versions={versions}
+            selectedUrl={effectiveSelectedUrl}
+            onSelect={handleSelectVersion}
+          />
 
           <SelectedThumbnailSummary selectedThumbnailUrl={effectiveSelectedUrl} />
 
@@ -198,17 +217,23 @@ function ReferenceSlot({ label, url, testid }: ReferenceSlotProps) {
 
 interface GeneratePathCardProps {
   videoId: string
-  onGenerated: (url: string) => void
+  /**
+   * Disparado a cada sucesso de geração. Repassa também a observação usada
+   * (trimada — undefined se vazia) pra que a galeria de versões mostre ao
+   * lado da miniatura. Story 22.3d depende dessa informação.
+   */
+  onGenerated: (payload: { url: string; observation: string | undefined }) => void
 }
 
 /**
- * Caminho 1 — Gerar com IAra (Story 22.3c).
+ * Gerar com IAra (Story 22.3c + 22.3d).
  *
  * Renderiza textarea de observações e botão Gerar Thumbnail. Durante a chamada
  * ao stub, mantém um timer de tempo decorrido que troca a mensagem do spinner
- * em 30s e 60s (mesmo padrão das fases LLM). Em sucesso, repassa a URL via
- * `onGenerated`. Em erro, mostra a mensagem com botão de tentar novamente —
- * upload manual (Caminho 2) permanece disponível como alternativa.
+ * em 30s e 60s (mesmo padrão das fases LLM). Em sucesso, repassa URL + observação
+ * via `onGenerated` — o pai adiciona ao histórico de versões. Em erro, mostra a
+ * mensagem com botão de tentar novamente; upload manual permanece disponível
+ * como alternativa quando 22.3e entrar.
  */
 function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
   const [observation, setObservation] = useState('')
@@ -272,7 +297,11 @@ function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
         setError('Resposta inválida do servidor. Tente novamente.')
         return
       }
-      onGenerated(data.thumbnailUrl)
+      const trimmedForPayload = observation.trim()
+      onGenerated({
+        url: data.thumbnailUrl,
+        observation: trimmedForPayload.length > 0 ? trimmedForPayload : undefined,
+      })
       log('INFO', 'Thumbnail generated (stub)', { videoId })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro inesperado.'

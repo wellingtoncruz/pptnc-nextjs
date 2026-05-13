@@ -418,6 +418,85 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       })
     })
 
+    it('accumulates each successful generation in the versions gallery', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateResponse('data:image/svg+xml;base64,FIRST')
+      mockGenerateResponse('data:image/svg+xml;base64,SECOND')
+      mockGenerateResponse('data:image/svg+xml;base64,THIRD')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+
+      // 1st generation
+      await user.type(screen.getByTestId('thumbnail-observation'), 'um')
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.getByTestId('generated-versions-gallery')).toBeInTheDocument()
+      })
+
+      // 2nd generation
+      await user.clear(screen.getByTestId('thumbnail-observation'))
+      await user.type(screen.getByTestId('thumbnail-observation'), 'dois')
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+      // 3rd generation
+      await user.clear(screen.getByTestId('thumbnail-observation'))
+      await user.type(screen.getByTestId('thumbnail-observation'), 'tres')
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId('version-card')).toHaveLength(3)
+      })
+      expect(screen.getByText('Versões geradas (3)')).toBeInTheDocument()
+
+      // Most recent (THIRD) is auto-selected — feeds into the summary preview.
+      const summaryImg = screen.getByAltText('Thumbnail selecionada')
+      expect(summaryImg).toHaveAttribute('src', 'data:image/svg+xml;base64,THIRD')
+    })
+
+    it('lets the producer pick an older version from the gallery', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateResponse('data:image/svg+xml;base64,FIRST')
+      mockGenerateResponse('data:image/svg+xml;base64,SECOND')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.getAllByTestId('version-card')).toHaveLength(1)
+      })
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.getAllByTestId('version-card')).toHaveLength(2)
+      })
+
+      // Summary defaults to the latest (SECOND).
+      expect(screen.getByAltText('Thumbnail selecionada')).toHaveAttribute(
+        'src',
+        'data:image/svg+xml;base64,SECOND'
+      )
+
+      // Click the first miniature — selection reverts to the older version.
+      const [firstCard] = screen.getAllByTestId('version-card')
+      await user.click(firstCard)
+
+      await waitFor(() => {
+        expect(screen.getByAltText('Thumbnail selecionada')).toHaveAttribute(
+          'src',
+          'data:image/svg+xml;base64,FIRST'
+        )
+      })
+      // History is preserved — second card is still there.
+      expect(screen.getAllByTestId('version-card')).toHaveLength(2)
+    })
+
     it('clears the previous error when a retry succeeds', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
       mockGenerateError(500)
