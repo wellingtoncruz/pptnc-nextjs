@@ -176,7 +176,18 @@ export type WizardAction =
   | { type: 'SET_PHASE_DATA'; phase: WizardPhase; data: unknown }
   | { type: 'SET_PHASE_ERROR'; phase: WizardPhase; error: string }
   | { type: 'INVALIDATE_FROM_PHASE'; phase: WizardPhase }
-  | { type: 'COMPLETE_PHASE_AND_ADVANCE'; phase: ExtendedWizardPhase; data: unknown }
+  | {
+      type: 'COMPLETE_PHASE_AND_ADVANCE'
+      phase: ExtendedWizardPhase
+      data: unknown
+      /**
+       * Optional podcast features (Epic 22). When `thumbnailGeneration` is on,
+       * advancing from Tags (7) goes to 'THUMB' instead of Publicar (8). Without
+       * this, the state machine falls back to the legacy sequence and SKIPS the
+       * Thumbnail phase silently — bug fixed in Story 22.3b follow-up.
+       */
+      features?: { thumbnailGeneration?: boolean }
+    }
   | { type: 'SYNC_WITH_VIDEO_DATA'; videoData: VideoDataForSync }
   | { type: 'HYDRATE_FROM_VIDEO_DATA'; videoData: VideoDataForSync; isRehydration?: boolean }
   | { type: 'RESET' }

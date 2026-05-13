@@ -239,9 +239,22 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
    * Extended phases don't update the phases record - their completion
    * is tracked via video data (parentEpisodeId for 0, shortTitle for 5B).
    */
-  const completePhaseAndAdvance = useCallback((phase: ExtendedWizardPhase, data: unknown) => {
-    dispatch({ type: 'COMPLETE_PHASE_AND_ADVANCE', phase, data })
-  }, [])
+  /**
+   * @param features Optional podcast features. Pass `{ thumbnailGeneration: true }`
+   * to make the wizard route from Tags (7) to 'THUMB' instead of jumping to
+   * Publicar (8). Without this, the state machine falls back to the legacy
+   * sequence and SKIPS the Thumbnail phase silently. Epic 22 / Story 22.3a.
+   */
+  const completePhaseAndAdvance = useCallback(
+    (
+      phase: ExtendedWizardPhase,
+      data: unknown,
+      features?: { thumbnailGeneration?: boolean }
+    ) => {
+      dispatch({ type: 'COMPLETE_PHASE_AND_ADVANCE', phase, data, features })
+    },
+    []
+  )
 
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' })

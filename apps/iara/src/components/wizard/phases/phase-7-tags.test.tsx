@@ -293,9 +293,11 @@ describe('Phase7Tags', () => {
 
       // Wait for async operations to complete
       await waitFor(() => {
-        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(7, {
-          tags: mockTagsWithData.tags,
-        })
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(
+          7,
+          { tags: mockTagsWithData.tags },
+          undefined // features prop not passed in this test
+        )
       })
 
       // Verify onTagsChange was called to save before advancing
@@ -319,13 +321,41 @@ describe('Phase7Tags', () => {
 
       // Wait for async operations to complete
       await waitFor(() => {
-        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(7, {
-          tags: mockTagsWithData.tags,
-        })
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(
+          7,
+          { tags: mockTagsWithData.tags },
+          undefined // features prop not passed in this test
+        )
       })
 
       // Should still advance even though save failed
       expect(onTagsChange).toHaveBeenCalledWith(mockTagsWithData.tags)
+    })
+
+    it('forwards features to completePhaseAndAdvance so state machine routes to THUMB (Epic 22)', async () => {
+      const wizard = createMockWizard()
+      const onTagsChange = vi.fn().mockResolvedValue(undefined)
+      render(
+        <Phase7Tags
+          wizard={wizard}
+          video={mockVideo}
+          tagsResult={mockTagsWithData}
+          onTagsChange={onTagsChange}
+          features={{ thumbnailGeneration: true }}
+        />
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: /avançar para publicar/i }))
+
+      // The third arg ensures the reducer uses getPhasesForVideoTypeWithFeatures
+      // and routes 7 -> 'THUMB' instead of skipping straight to 8.
+      await waitFor(() => {
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(
+          7,
+          { tags: mockTagsWithData.tags },
+          { thumbnailGeneration: true }
+        )
+      })
     })
   })
 

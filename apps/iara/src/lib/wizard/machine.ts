@@ -8,7 +8,7 @@
  * - Cascade invalidation when reprocessing
  */
 
-import { PHASES_BY_VIDEO_TYPE, WIZARD_PHASES } from './constants'
+import { getPhasesForVideoTypeWithFeatures, PHASES_BY_VIDEO_TYPE, WIZARD_PHASES } from './constants'
 import type {
   ExtendedWizardPhase,
   PhaseState,
@@ -220,7 +220,9 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       //
       // IMPORTANT: Uses getNextPhaseForType to respect video type's phase flow.
       // For example: cut videos go 5 → 5B → 6, not 5 → 6.
-      const nextPhase = getNextPhaseForType(action.phase, state.videoType)
+      // When features.thumbnailGeneration is on (Epic 22), the sequence inserts
+      // 'THUMB' between Tags (7) and Publicar (8) for episode and cut.
+      const nextPhase = getNextPhaseForType(action.phase, state.videoType, action.features)
 
       // Extended phases (0 and '5B') are not tracked in the phases record.
       // They are tracked via video data (parentEpisodeId for 0, shortTitle for 5B).
@@ -493,22 +495,32 @@ export function getNextPhase(currentPhase: WizardPhase): WizardPhase | null {
 
 /**
  * Gets the next phase based on the video type's phase flow.
- * Uses PHASES_BY_VIDEO_TYPE to determine the correct sequence.
  *
  * For example:
  * - episode: 5 → 6
  * - cut: 5 → '5B' → 6
  * - reel: 5 → 6
  *
+ * When `features.thumbnailGeneration` is on (Epic 22) the sequence inserts
+ * 'THUMB' between Tags (7) and Publicar (8) for episode and cut — the Reel
+ * flow is unaffected.
+ *
  * @param currentPhase - The current phase
  * @param videoType - The video type (episode, cut, reel)
+ * @param features - Optional podcast feature flags. When omitted, behaves
+ *                   identically to before Epic 22 (no Thumbnail phase).
  * @returns The next phase, or null if at the last phase
  */
 export function getNextPhaseForType(
   currentPhase: ExtendedWizardPhase,
-  videoType: VideoTypeForWizard
+  videoType: VideoTypeForWizard,
+  features?: { thumbnailGeneration?: boolean }
 ): ExtendedWizardPhase | null {
-  const phases = PHASES_BY_VIDEO_TYPE[videoType] ?? PHASES_BY_VIDEO_TYPE.episode
+  // Use the feature-aware sequence when features are provided so we don't
+  // skip the Thumbnail phase silently when advancing past Tags.
+  const phases = features
+    ? getPhasesForVideoTypeWithFeatures(videoType, features)
+    : PHASES_BY_VIDEO_TYPE[videoType] ?? PHASES_BY_VIDEO_TYPE.episode
   const currentIndex = phases.indexOf(currentPhase)
 
   // Current phase not found in this video type's phases, or at last phase

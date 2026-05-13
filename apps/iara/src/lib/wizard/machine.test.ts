@@ -1446,6 +1446,49 @@ describe('getNextPhaseForType', () => {
       expect(getNextPhaseForType('5B', 'reel')).toBeNull()
     })
   })
+
+  // ===========================================================================
+  // Epic 22 — features-aware navigation (Story 22.3a follow-up bug fix)
+  // ===========================================================================
+
+  describe('with features.thumbnailGeneration enabled', () => {
+    const features = { thumbnailGeneration: true }
+
+    it("routes Tags (7) → 'THUMB' (not 8) for episode", () => {
+      // This was the bug: without features, getNextPhaseForType(7, 'episode')
+      // returned 8, silently skipping the Thumbnail phase even when the flag
+      // was on and PhaseThumbnail was already rendered in the breadcrumb.
+      expect(getNextPhaseForType(7, 'episode', features)).toBe('THUMB')
+    })
+
+    it("routes 'THUMB' → 8 (Publicar) for episode", () => {
+      expect(getNextPhaseForType('THUMB', 'episode', features)).toBe(8)
+    })
+
+    it("routes Tags (7) → 'THUMB' for cut", () => {
+      expect(getNextPhaseForType(7, 'cut', features)).toBe('THUMB')
+    })
+
+    it("does NOT insert 'THUMB' for reel even with flag on", () => {
+      // Reel is out of scope for the Thumbnail phase by Epic 22 decision.
+      expect(getNextPhaseForType(7, 'reel', features)).toBe(8)
+    })
+
+    it('keeps earlier phases unchanged for episode (5 → 6, 6 → 7)', () => {
+      expect(getNextPhaseForType(5, 'episode', features)).toBe(6)
+      expect(getNextPhaseForType(6, 'episode', features)).toBe(7)
+    })
+
+    it('keeps the Cut 5B step intact (5 → 5B → 6)', () => {
+      expect(getNextPhaseForType(5, 'cut', features)).toBe('5B')
+      expect(getNextPhaseForType('5B', 'cut', features)).toBe(6)
+    })
+
+    it('falls back to legacy sequence when features.thumbnailGeneration is false', () => {
+      // Same shape as omitting features — flag off must behave like before.
+      expect(getNextPhaseForType(7, 'episode', { thumbnailGeneration: false })).toBe(8)
+    })
+  })
 })
 
 describe('getPreviousPhase', () => {

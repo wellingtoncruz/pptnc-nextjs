@@ -39,6 +39,14 @@ interface Phase7TagsProps {
   onRevalidate?: (additionalContext: string) => void
   /** Callback when tags are changed. Returns promise for advance sync. */
   onTagsChange?: (tags: string[]) => Promise<void>
+  /**
+   * Optional podcast features (Epic 22 / Story 22.3a). When
+   * `thumbnailGeneration` is on, advancing from this phase routes to
+   * 'THUMB' before Publicar (8) for episode/cut. Without this prop the
+   * state machine falls back to the legacy 7 → 8 sequence and SKIPS the
+   * Thumbnail phase silently.
+   */
+  features?: { thumbnailGeneration?: boolean }
   className?: string
 }
 
@@ -264,6 +272,7 @@ export function Phase7Tags({
   onRetry,
   onRevalidate,
   onTagsChange,
+  features,
   className,
 }: Phase7TagsProps) {
   const hasResult = tagsResult !== null
@@ -415,7 +424,7 @@ export function Phase7Tags({
         error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
-    wizard.completePhaseAndAdvance(7, { tags })
+    wizard.completePhaseAndAdvance(7, { tags }, features)
   }
 
   const handleRevalidateClick = () => {

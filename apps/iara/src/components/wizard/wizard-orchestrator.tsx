@@ -2547,6 +2547,7 @@ export function WizardOrchestrator({
             }}
             onRevalidate={handleRevalidatePhase7}
             onTagsChange={handleTagsChange}
+            features={features}
           />
         )
       case 8:
