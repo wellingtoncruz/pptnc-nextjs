@@ -75,9 +75,34 @@ export const PromptFieldSchema = z.object({
 })
 
 /**
+ * ThumbnailPromptField schema — extension of PromptFieldSchema with two reference images
+ * for the image generation flow added in Epic 22.
+ *
+ * - description/expectedOutput: same semantics as PromptFieldSchema
+ * - baseImageUrl/baseImageMimeType: image that defines the composition / art style starting point
+ * - referenceImageUrl/referenceImageMimeType: image whose visual characteristics the model adapts
+ *
+ * Coexists with `cut.thumbs` (PromptFieldSchema, legacy — used by Phase 5B to generate textual brief).
+ */
+export const ThumbnailPromptFieldSchema = z.object({
+  description: z.string().max(MAX_PROMPT_LENGTH, 'Descrição deve ter no máximo 10000 caracteres'),
+  expectedOutput: z.string().max(MAX_PROMPT_LENGTH, 'Retorno esperado deve ter no máximo 10000 caracteres'),
+  /**
+   * URL of the Base image (path through authenticated proxy or full URL).
+   * Relative paths are accepted because the bucket is private and served via
+   * the app's GET proxy at /api/settings/thumbnail-config.
+   */
+  baseImageUrl: z.string().min(1).max(2000).optional(),
+  baseImageMimeType: z.string().max(50).optional(),
+  /** URL of the Reference image (same proxy convention as baseImageUrl). */
+  referenceImageUrl: z.string().min(1).max(2000).optional(),
+  referenceImageMimeType: z.string().max(50).optional(),
+})
+
+/**
  * Episode prompts - prompts specific to full episodes.
  *
- * Includes: critique, editing, compliance, chapters, titles, description, tags, social (optional), adwords (optional)
+ * Includes: critique, editing, compliance, chapters, titles, description, tags, social (optional), adwords (optional), newsletter (optional), thumbnail (optional, Epic 22)
  */
 export const EpisodePromptsSchema = z.object({
   critique: PromptFieldSchema,
@@ -100,12 +125,18 @@ export const EpisodePromptsSchema = z.object({
     image: PromptFieldSchema,
     format: PromptFieldSchema,
   }).optional(),
+  /** Thumbnail generation config (Epic 22). Optional for backward-compat with existing podcasts. */
+  thumbnail: ThumbnailPromptFieldSchema.optional(),
 })
 
 /**
  * Cut prompts - prompts specific to video cuts.
  *
- * Includes: titles, thumbs, description, tags, social (optional)
+ * Includes: titles, thumbs (legacy textual brief), description, tags, social (optional), thumbnail (optional, Epic 22 — image generation)
+ *
+ * Note: `thumbs` (PromptFieldSchema) generates textual brief for Phase 5B (kept for backward compat).
+ *       `thumbnail` (ThumbnailPromptFieldSchema, Epic 22) is the new image-generation config.
+ *       Both coexist intentionally — Phase 5B output can feed Phase Thumbnail as additional context.
  */
 export const CutPromptsSchema = z.object({
   titles: PromptFieldSchema,
@@ -116,6 +147,8 @@ export const CutPromptsSchema = z.object({
   topics: PromptFieldSchema.optional(),
   /** Social media prompts keyed by networkId (e.g., 'instagram', 'linkedin'). */
   social: z.record(z.string(), PromptFieldSchema).optional(),
+  /** Thumbnail generation config (Epic 22). Optional for backward-compat with existing podcasts. */
+  thumbnail: ThumbnailPromptFieldSchema.optional(),
 })
 
 /**
@@ -208,6 +241,14 @@ export const DEFAULT_PROMPT_FIELD = {
 }
 
 /**
+ * Default ThumbnailPromptField value (Epic 22).
+ */
+export const DEFAULT_THUMBNAIL_PROMPT_FIELD = {
+  description: '',
+  expectedOutput: '',
+}
+
+/**
  * Default Episode prompts.
  */
 export const DEFAULT_EPISODE_PROMPTS = {
@@ -225,6 +266,7 @@ export const DEFAULT_EPISODE_PROMPTS = {
     image: { ...DEFAULT_PROMPT_FIELD },
     format: { ...DEFAULT_PROMPT_FIELD },
   },
+  thumbnail: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
 }
 
 /**
@@ -235,6 +277,7 @@ export const DEFAULT_CUT_PROMPTS = {
   thumbs: { ...DEFAULT_PROMPT_FIELD },
   description: { ...DEFAULT_PROMPT_FIELD },
   tags: { ...DEFAULT_PROMPT_FIELD },
+  thumbnail: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
 }
 
 /**

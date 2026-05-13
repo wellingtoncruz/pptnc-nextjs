@@ -7,6 +7,7 @@ import type {
   LlmConfigSchema,
   PromptsSchema,
   PromptFieldSchema,
+  ThumbnailPromptFieldSchema,
   EpisodePromptsSchema,
   CutPromptsSchema,
   ReelPromptsSchema,
@@ -47,6 +48,11 @@ export type Prompts = z.infer<typeof PromptsSchema>
  * Individual prompt field with description and expectedOutput.
  */
 export type PromptField = z.infer<typeof PromptFieldSchema>
+
+/**
+ * Thumbnail prompt field — description/expectedOutput + Base/Reference image URLs (Epic 22).
+ */
+export type ThumbnailPromptField = z.infer<typeof ThumbnailPromptFieldSchema>
 
 /**
  * Episode-specific prompts.

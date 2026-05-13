@@ -7,14 +7,15 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { PromptFieldEditor } from './prompt-field-editor'
-import { DEFAULT_PROMPT_FIELD } from '@/lib/schemas/podcast'
-import type { Prompts, PromptField, EpisodePrompts, CutPrompts, ReelPrompts } from '@/types/podcast'
+import { ThumbnailPromptFieldEditor } from './thumbnail-prompt-field-editor'
+import { DEFAULT_PROMPT_FIELD, DEFAULT_THUMBNAIL_PROMPT_FIELD } from '@/lib/schemas/podcast'
+import type { Prompts, PromptField, ThumbnailPromptField, EpisodePrompts, CutPrompts, ReelPrompts } from '@/types/podcast'
 
 /**
  * Type-safe field keys for each video type.
  */
-type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social' | 'adwords' | 'newsletter'>
-type CutFieldKey = Exclude<keyof CutPrompts, 'social'>
+type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social' | 'adwords' | 'newsletter' | 'thumbnail'>
+type CutFieldKey = Exclude<keyof CutPrompts, 'social' | 'thumbnail'>
 type ReelFieldKey = Exclude<keyof ReelPrompts, 'social'>
 
 interface PromptsSettingsFormProps {
@@ -25,6 +26,14 @@ interface PromptsSettingsFormProps {
     videoType: 'episode' | 'cut' | 'reel',
     fieldName: string,
     value: PromptField
+  ) => Promise<void>
+  /**
+   * Save handler for thumbnail prompt fields (Epic 22).
+   * Called when the producer edits the Thumbnail sub-section in Episode or Cut.
+   */
+  onSaveThumbnailPromptField?: (
+    videoType: 'episode' | 'cut',
+    value: ThumbnailPromptField
   ) => Promise<void>
 }
 
@@ -41,8 +50,9 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
   description: 'Descrição',
   tags: 'Tags',
   topics: 'Tópicos',
-  // Cut-specific
-  thumbs: 'Thumbnails',
+  // Cut-specific — legacy textual brief (Phase 5B). Renamed to disambiguate from
+  // the image generation flow added in Epic 22 (see ThumbnailPromptFieldEditor below).
+  thumbs: 'Brief de Thumbnail (texto)',
 }
 
 /**
@@ -64,7 +74,7 @@ const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags', 'topics']
  * Note: Title is rendered by parent AccordionTrigger.
  * @see docs/stories/8-2-secoes-colapsaveis.md
  */
-export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetworks, onSavePromptField }: PromptsSettingsFormProps) {
+export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetworks, onSavePromptField, onSaveThumbnailPromptField }: PromptsSettingsFormProps) {
   function renderSocialPrompts(videoType: 'episode' | 'cut' | 'reel') {
     if (enabledSocialNetworks.length === 0) return null
 
@@ -134,6 +144,29 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
     )
   }
 
+  function renderThumbnailPrompt(videoType: 'episode' | 'cut' | 'reel') {
+    if (videoType !== 'episode' && videoType !== 'cut') return null
+    if (!onSaveThumbnailPromptField) return null
+
+    return (
+      <div key={`${videoType}-thumbnail-section`} className="mt-6 pt-4 border-t">
+        <h4 className="text-sm font-medium text-muted-foreground mb-4">Geração de Thumbnail (imagem)</h4>
+        <p className="text-xs text-muted-foreground mb-4">
+          Configuração da geração de thumbnail via IAra para a fase Thumbnail do wizard.
+          A imagem <strong>Base</strong> define a composição/arte que o modelo usa como ponto
+          de partida. A imagem <strong>Referência</strong> tem suas características visuais
+          reproduzidas pelo modelo, adaptadas ao novo contexto.
+        </p>
+        <ThumbnailPromptFieldEditor
+          fieldKey={`${videoType}-thumbnail`}
+          videoType={videoType}
+          initialValue={prompts[videoType].thumbnail ?? DEFAULT_THUMBNAIL_PROMPT_FIELD}
+          onSave={(value) => onSaveThumbnailPromptField(videoType, value)}
+        />
+      </div>
+    )
+  }
+
   return (
     <Accordion type="single" collapsible className="w-full">
       {/* Episode prompts */}
@@ -141,15 +174,24 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
         <AccordionTrigger>Episódios</AccordionTrigger>
         <AccordionContent forceOverflow>
           <div className="space-y-4">
-            {EPISODE_FIELDS.map((fieldName) => (
-              <PromptFieldEditor
-                key={`episode-${fieldName}`}
-                fieldKey={`episode-${fieldName}`}
-                label={FIELD_LABELS[fieldName]}
-                initialValue={prompts.episode[fieldName] ?? DEFAULT_PROMPT_FIELD}
-                onSave={(value) => onSavePromptField('episode', fieldName, value)}
-              />
-            ))}
+            {EPISODE_FIELDS.flatMap((fieldName) => {
+              const editor = (
+                <PromptFieldEditor
+                  key={`episode-${fieldName}`}
+                  fieldKey={`episode-${fieldName}`}
+                  label={FIELD_LABELS[fieldName]}
+                  initialValue={prompts.episode[fieldName] ?? DEFAULT_PROMPT_FIELD}
+                  onSave={(value) => onSavePromptField('episode', fieldName, value)}
+                />
+              )
+              // Thumbnail (Epic 22) is a wizard phase between Tags and Publicar,
+              // so it renders immediately after the `tags` field in Settings.
+              if (fieldName === 'tags') {
+                const thumbnail = renderThumbnailPrompt('episode')
+                return thumbnail ? [editor, thumbnail] : [editor]
+              }
+              return [editor]
+            })}
             {renderSocialPrompts('episode')}
             {renderAdwordsPrompt('episode')}
             {renderNewsletterPrompts('episode')}
@@ -162,15 +204,22 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
         <AccordionTrigger>Cortes</AccordionTrigger>
         <AccordionContent forceOverflow>
           <div className="space-y-4">
-            {CUT_FIELDS.map((fieldName) => (
-              <PromptFieldEditor
-                key={`cut-${fieldName}`}
-                fieldKey={`cut-${fieldName}`}
-                label={FIELD_LABELS[fieldName]}
-                initialValue={prompts.cut[fieldName] ?? DEFAULT_PROMPT_FIELD}
-                onSave={(value) => onSavePromptField('cut', fieldName, value)}
-              />
-            ))}
+            {CUT_FIELDS.flatMap((fieldName) => {
+              const editor = (
+                <PromptFieldEditor
+                  key={`cut-${fieldName}`}
+                  fieldKey={`cut-${fieldName}`}
+                  label={FIELD_LABELS[fieldName]}
+                  initialValue={prompts.cut[fieldName] ?? DEFAULT_PROMPT_FIELD}
+                  onSave={(value) => onSavePromptField('cut', fieldName, value)}
+                />
+              )
+              if (fieldName === 'tags') {
+                const thumbnail = renderThumbnailPrompt('cut')
+                return thumbnail ? [editor, thumbnail] : [editor]
+              }
+              return [editor]
+            })}
             {renderSocialPrompts('cut')}
           </div>
         </AccordionContent>

@@ -75,7 +75,7 @@ describe('PromptsSettingsForm', () => {
 
     await waitFor(() => {
       // Cut has 4 fields: titles, thumbs, description, tags
-      expect(screen.getByText('Thumbnails')).toBeInTheDocument()
+      expect(screen.getByText('Brief de Thumbnail (texto)')).toBeInTheDocument()
     })
   })
 
@@ -122,7 +122,7 @@ describe('PromptsSettingsForm', () => {
     // Expand cut
     await user.click(screen.getByText('Cortes'))
     await waitFor(() => {
-      expect(screen.getByText('Thumbnails')).toBeVisible()
+      expect(screen.getByText('Brief de Thumbnail (texto)')).toBeVisible()
     })
 
     // Episode content should be collapsed (content not visible)
@@ -148,7 +148,7 @@ describe('PromptsSettingsForm', () => {
     // Check cut fields
     await user.click(screen.getByText('Cortes'))
     await waitFor(() => {
-      expect(screen.getByText('Thumbnails')).toBeInTheDocument()
+      expect(screen.getByText('Brief de Thumbnail (texto)')).toBeInTheDocument()
     })
   })
 
@@ -253,7 +253,7 @@ describe('PromptsSettingsForm', () => {
     await user.click(screen.getByText('Cortes'))
 
     await waitFor(() => {
-      expect(screen.getByText('Thumbnails')).toBeInTheDocument()
+      expect(screen.getByText('Brief de Thumbnail (texto)')).toBeInTheDocument()
     })
 
     expect(screen.queryByText('Tráfego Pago')).not.toBeInTheDocument()
@@ -372,7 +372,7 @@ describe('PromptsSettingsForm', () => {
     await user.click(screen.getByText('Cortes'))
 
     await waitFor(() => {
-      expect(screen.getByText('Thumbnails')).toBeInTheDocument()
+      expect(screen.getByText('Brief de Thumbnail (texto)')).toBeInTheDocument()
     })
 
     expect(screen.queryByText('Newsletter')).not.toBeInTheDocument()
@@ -431,6 +431,114 @@ describe('PromptsSettingsForm', () => {
         'newsletter.draft',
         expect.objectContaining({ description: 'Newsletter draft prompt' })
       )
+    })
+  })
+
+  // =========================================================================
+  // Epic 22 — Story 22.1 — Thumbnail subsection ordering
+  // =========================================================================
+
+  describe('Thumbnail subsection ordering (Epic 22)', () => {
+    const mockOnSaveThumbnailPromptField = vi.fn<
+      (videoType: 'episode' | 'cut', value: import('@/types/podcast').ThumbnailPromptField) => Promise<void>
+    >()
+
+    beforeEach(() => {
+      mockOnSaveThumbnailPromptField.mockResolvedValue(undefined)
+    })
+
+    it('renders Thumbnail subsection in Episode immediately after Tags (and before Newsletter)', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+      render(
+        <PromptsSettingsForm
+          {...defaultProps}
+          onSavePromptField={mockOnSavePromptField}
+          onSaveThumbnailPromptField={mockOnSaveThumbnailPromptField}
+        />
+      )
+
+      await user.click(screen.getByText('Episódios'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Geração de Thumbnail (imagem)')).toBeInTheDocument()
+      })
+
+      // Verify DOM order: Tags → Geração de Thumbnail (imagem) → Newsletter
+      const tagsHeading = screen.getByText('Tags')
+      const thumbnailHeading = screen.getByText('Geração de Thumbnail (imagem)')
+      const newsletterHeading = screen.getByText('Newsletter')
+
+      const tagsPos = tagsHeading.compareDocumentPosition(thumbnailHeading)
+      expect(tagsPos & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+      const thumbnailPos = thumbnailHeading.compareDocumentPosition(newsletterHeading)
+      expect(thumbnailPos & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+
+    it('renders Thumbnail subsection in Cut immediately after Tags', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+      render(
+        <PromptsSettingsForm
+          {...defaultProps}
+          onSavePromptField={mockOnSavePromptField}
+          onSaveThumbnailPromptField={mockOnSaveThumbnailPromptField}
+        />
+      )
+
+      await user.click(screen.getByText('Cortes'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Geração de Thumbnail (imagem)')).toBeInTheDocument()
+      })
+
+      const cutTagsHeadings = screen.getAllByText('Tags')
+      // The Cut tab has its own "Tags" heading (the Episode one also exists in DOM after expand).
+      // We want the one inside the cut accordion — pick the last occurrence as the cut tab was opened most recently.
+      const cutTagsHeading = cutTagsHeadings[cutTagsHeadings.length - 1]
+      const cutThumbnailHeading = screen.getByText('Geração de Thumbnail (imagem)')
+
+      const pos = cutTagsHeading.compareDocumentPosition(cutThumbnailHeading)
+      expect(pos & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+
+    it('does NOT render Thumbnail subsection when onSaveThumbnailPromptField handler is absent', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+      render(
+        <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+      )
+
+      await user.click(screen.getByText('Episódios'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Tags')).toBeInTheDocument()
+      })
+
+      expect(screen.queryByText('Geração de Thumbnail (imagem)')).not.toBeInTheDocument()
+    })
+
+    it('does NOT render Thumbnail subsection in Reels (Epic 22 covers only episode and cut)', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+      render(
+        <PromptsSettingsForm
+          {...defaultProps}
+          onSavePromptField={mockOnSavePromptField}
+          onSaveThumbnailPromptField={mockOnSaveThumbnailPromptField}
+        />
+      )
+
+      await user.click(screen.getByText('Reels'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Reels')).toBeInTheDocument()
+      })
+
+      // Reels accordion is open; if the heading appeared, it would be the only "Geração de Thumbnail (imagem)" in DOM.
+      // Episode and Cut accordions are not expanded by default in this test, so they don't render their headings either.
+      expect(screen.queryByText('Geração de Thumbnail (imagem)')).not.toBeInTheDocument()
     })
   })
 })

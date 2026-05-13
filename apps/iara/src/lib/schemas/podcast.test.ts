@@ -7,6 +7,7 @@ import {
   PodcastUpdateSchema,
   PromptsSchema,
   PromptFieldSchema,
+  ThumbnailPromptFieldSchema,
   EpisodePromptsSchema,
   CutPromptsSchema,
   ReelPromptsSchema,
@@ -718,5 +719,131 @@ describe('DEFAULT_PERSONAS', () => {
 
   it('validates against PersonasSchema', () => {
     expect(() => PersonasSchema.parse(DEFAULT_PERSONAS)).not.toThrow()
+  })
+})
+
+// ============================================================================
+// Epic 22 — Story 22.1 — ThumbnailPromptFieldSchema and thumbnail subsection
+// ============================================================================
+
+describe('ThumbnailPromptFieldSchema (Epic 22)', () => {
+  it('accepts only description and expectedOutput (image URLs optional)', () => {
+    const minimal = { description: 'desc', expectedOutput: 'output' }
+    expect(() => ThumbnailPromptFieldSchema.parse(minimal)).not.toThrow()
+  })
+
+  it('accepts both image URLs and mime types when provided', () => {
+    const withImages = {
+      description: 'desc',
+      expectedOutput: 'output',
+      baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config/pptnc/cut/base-1.png',
+      baseImageMimeType: 'image/png',
+      referenceImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config/pptnc/cut/reference-1.png',
+      referenceImageMimeType: 'image/png',
+    }
+    expect(() => ThumbnailPromptFieldSchema.parse(withImages)).not.toThrow()
+  })
+
+  it('rejects empty URLs (must be at least 1 char when present)', () => {
+    expect(() =>
+      ThumbnailPromptFieldSchema.parse({
+        description: 'desc',
+        expectedOutput: 'output',
+        baseImageUrl: '',
+      })
+    ).toThrow(ZodError)
+  })
+
+  it('enforces MAX_PROMPT_LENGTH on description and expectedOutput', () => {
+    const tooLong = 'x'.repeat(MAX_PROMPT_LENGTH + 1)
+    expect(() =>
+      ThumbnailPromptFieldSchema.parse({
+        description: tooLong,
+        expectedOutput: 'ok',
+      })
+    ).toThrow(ZodError)
+  })
+
+  it('caps URL length at 2000 characters to prevent abuse', () => {
+    const longUrl = '/api/' + 'x'.repeat(2000)
+    expect(() =>
+      ThumbnailPromptFieldSchema.parse({
+        description: 'desc',
+        expectedOutput: 'output',
+        baseImageUrl: longUrl,
+      })
+    ).toThrow(ZodError)
+  })
+})
+
+describe('EpisodePromptsSchema — thumbnail subsection (Epic 22)', () => {
+  it('accepts episode prompts without thumbnail (backward-compat)', () => {
+    const promptField = { description: '', expectedOutput: '' }
+    const episode = {
+      critique: promptField,
+      editing: promptField,
+      compliance: promptField,
+      chapters: promptField,
+      titles: promptField,
+      description: promptField,
+      tags: promptField,
+    }
+    expect(() => EpisodePromptsSchema.parse(episode)).not.toThrow()
+  })
+
+  it('accepts episode prompts with thumbnail filled', () => {
+    const promptField = { description: '', expectedOutput: '' }
+    const episode = {
+      critique: promptField,
+      editing: promptField,
+      compliance: promptField,
+      chapters: promptField,
+      titles: promptField,
+      description: promptField,
+      tags: promptField,
+      thumbnail: {
+        description: 'Generate a 16:9 thumbnail',
+        expectedOutput: 'PNG image',
+        baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config/pptnc/episode/base-1.png',
+        baseImageMimeType: 'image/png',
+      },
+    }
+    expect(() => EpisodePromptsSchema.parse(episode)).not.toThrow()
+  })
+})
+
+describe('CutPromptsSchema — thumbnail subsection coexists with legacy thumbs (Epic 22)', () => {
+  it('accepts cut prompts with both thumbs (legacy textual brief) and thumbnail (Epic 22)', () => {
+    const promptField = { description: '', expectedOutput: '' }
+    const cut = {
+      titles: promptField,
+      thumbs: { description: 'textual brief for Phase 5B', expectedOutput: '...' },
+      description: promptField,
+      tags: promptField,
+      thumbnail: { description: 'image generation prompt', expectedOutput: 'PNG 16:9' },
+    }
+    expect(() => CutPromptsSchema.parse(cut)).not.toThrow()
+  })
+
+  it('accepts cut prompts with thumbs but no thumbnail (backward-compat)', () => {
+    const promptField = { description: '', expectedOutput: '' }
+    const cut = {
+      titles: promptField,
+      thumbs: promptField,
+      description: promptField,
+      tags: promptField,
+    }
+    expect(() => CutPromptsSchema.parse(cut)).not.toThrow()
+  })
+})
+
+describe('DEFAULT_PROMPTS — Epic 22 thumbnail defaults', () => {
+  it('episode and cut defaults include empty thumbnail subsection', () => {
+    expect(DEFAULT_PROMPTS.episode.thumbnail).toEqual({ description: '', expectedOutput: '' })
+    expect(DEFAULT_PROMPTS.cut.thumbnail).toEqual({ description: '', expectedOutput: '' })
+  })
+
+  it('reel default does NOT include thumbnail (Epic 22 covers only episode and cut)', () => {
+    expect((DEFAULT_PROMPTS.reel as Record<string, unknown>).thumbnail).toBeUndefined()
   })
 })

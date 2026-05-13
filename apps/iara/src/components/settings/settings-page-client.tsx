@@ -23,7 +23,7 @@ import { PromptFieldEditor } from './prompt-field-editor'
 import { useAccordionState } from '@/hooks/use-accordion-state'
 import { log } from '@/lib/logger'
 import { DEFAULT_PROMPT_FIELD, DEFAULT_EPISODE_PROMPTS } from '@/lib/schemas'
-import type { SerializedPodcast, PromptField, Persona, PersonaKey, Prompts, Personas } from '@/types/podcast'
+import type { SerializedPodcast, PromptField, ThumbnailPromptField, Persona, PersonaKey, Prompts, Personas } from '@/types/podcast'
 
 const DEFAULT_NEWSLETTER_PROMPTS = DEFAULT_EPISODE_PROMPTS.newsletter
 
@@ -141,6 +141,37 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
       }
     },
     [] // No dependencies - uses refs instead
+  )
+
+  const handleSaveThumbnailPromptField = useCallback(
+    async (videoType: 'episode' | 'cut', value: ThumbnailPromptField) => {
+      const currentPrompts = promptsRef.current
+      const currentVideoType = currentPrompts[videoType]
+      const updatedPrompts = {
+        ...currentPrompts,
+        [videoType]: {
+          ...currentVideoType,
+          thumbnail: value,
+        },
+      }
+      promptsRef.current = updatedPrompts
+
+      const response = await fetch('/api/podcast', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompts: updatedPrompts,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        const message = error?.error?.message || 'Erro ao salvar configuração de thumbnail'
+        log('ERROR', 'Failed to save thumbnail prompt field', { videoType, error: message })
+        throw new Error(message)
+      }
+    },
+    []
   )
 
   const handleSaveNewsPrompt = useCallback(
@@ -382,6 +413,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             enabledSocialNetworks={podcast.enabledSocialNetworks ?? []}
             socialNetworks={socialNetworks ?? []}
             onSavePromptField={handleSavePromptField}
+            onSaveThumbnailPromptField={handleSaveThumbnailPromptField}
           />
         </AccordionContent>
       </AccordionItem>

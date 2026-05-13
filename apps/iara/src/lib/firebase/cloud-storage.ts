@@ -265,3 +265,125 @@ export async function deleteNewsletterImage(filePath: string): Promise<void> {
     })
   }
 }
+
+// ==========================================================================
+// Epic 22 — Thumbnail config images (Base, Referência)
+// ==========================================================================
+
+/** Allowed video types for thumbnail config uploads. */
+const THUMBNAIL_CONFIG_VIDEO_TYPES = ['episode', 'cut'] as const
+type ThumbnailConfigVideoType = (typeof THUMBNAIL_CONFIG_VIDEO_TYPES)[number]
+
+/** Allowed roles inside the thumbnail config. */
+const THUMBNAIL_CONFIG_ROLES = ['base', 'reference'] as const
+type ThumbnailConfigRole = (typeof THUMBNAIL_CONFIG_ROLES)[number]
+
+/** MIME → extension mapping for thumbnail config uploads. */
+const MIME_TO_EXT: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+}
+
+/**
+ * Uploads a thumbnail config image (Base or Referência) to Cloud Storage.
+ *
+ * Path: `thumbnail-config/{PODCAST_ID}/{videoType}/{role}-{timestamp}.{ext}`.
+ * The timestamp prevents stale-cache issues when the producer replaces an
+ * existing image. The previous file is left in the bucket — cleanup is manual
+ * per the Epic 22 decision (no lifecycle policy).
+ *
+ * Returns the GCS path (not a public URL); the proxy route is responsible for
+ * serving it to authenticated clients.
+ *
+ * @throws {CloudStorageError} If the upload fails or inputs are invalid.
+ */
+export async function uploadThumbnailConfigImage(
+  videoType: ThumbnailConfigVideoType,
+  role: ThumbnailConfigRole,
+  imageBuffer: Buffer,
+  mimeType: string
+): Promise<{ filePath: string; mimeType: string }> {
+  if (!THUMBNAIL_CONFIG_VIDEO_TYPES.includes(videoType)) {
+    throw new CloudStorageError('Invalid video type for thumbnail config', 'UPLOAD_FAILED')
+  }
+  if (!THUMBNAIL_CONFIG_ROLES.includes(role)) {
+    throw new CloudStorageError('Invalid role for thumbnail config', 'UPLOAD_FAILED')
+  }
+  const ext = MIME_TO_EXT[mimeType]
+  if (!ext) {
+    throw new CloudStorageError('Unsupported MIME type for thumbnail config', 'UPLOAD_FAILED')
+  }
+  if (imageBuffer.length === 0) {
+    throw new CloudStorageError('Empty image buffer for thumbnail config', 'UPLOAD_FAILED')
+  }
+
+  const filePath = `thumbnail-config/${PODCAST_ID}/${videoType}/${role}-${Date.now()}.${ext}`
+
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    await file.save(imageBuffer, {
+      contentType: mimeType,
+      resumable: false,
+    })
+
+    log('INFO', 'Thumbnail config image uploaded', {
+      podcastId: PODCAST_ID,
+      videoType,
+      role,
+      filePath,
+      size: imageBuffer.length,
+      mimeType,
+    })
+
+    return { filePath, mimeType }
+  } catch (error) {
+    if (error instanceof CloudStorageError) throw error
+
+    log('ERROR', 'Thumbnail config image upload failed', {
+      podcastId: PODCAST_ID,
+      videoType,
+      role,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    throw new CloudStorageError(
+      `Failed to upload thumbnail config image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'UPLOAD_FAILED'
+    )
+  }
+}
+
+/**
+ * Downloads a thumbnail config image from Cloud Storage.
+ *
+ * Path-validated to ensure the request stays within the thumbnail-config prefix
+ * and cannot traverse into other parts of the bucket.
+ */
+export async function downloadThumbnailConfigImage(filePath: string): Promise<Buffer> {
+  if (!filePath.startsWith('thumbnail-config/') || filePath.includes('..')) {
+    throw new CloudStorageError('Invalid file path for thumbnail config download', 'DOWNLOAD_FAILED')
+  }
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    const [contents] = await file.download()
+
+    log('INFO', 'Thumbnail config image downloaded', { podcastId: PODCAST_ID, filePath })
+
+    return contents
+  } catch (error) {
+    log('ERROR', 'Thumbnail config image download failed', {
+      podcastId: PODCAST_ID,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    throw new CloudStorageError(
+      `Failed to download thumbnail config image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DOWNLOAD_FAILED'
+    )
+  }
+}

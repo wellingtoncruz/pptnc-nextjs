@@ -59,6 +59,9 @@ const DEFAULT_VIDEO_TYPES = {
 
 const DEFAULT_PROMPT_FIELD = { description: '', expectedOutput: '' }
 
+/** Default Thumbnail prompt sub-section (Epic 22, Story 22.1). */
+const DEFAULT_THUMBNAIL_PROMPT_FIELD = { description: '', expectedOutput: '' }
+
 const DEFAULT_PROMPTS = {
   episode: {
     critique: { ...DEFAULT_PROMPT_FIELD },
@@ -71,6 +74,7 @@ const DEFAULT_PROMPTS = {
     topics: { ...DEFAULT_PROMPT_FIELD },
     social: {},
     adwords: { ...DEFAULT_PROMPT_FIELD },
+    thumbnail: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
   },
   cut: {
     titles: { ...DEFAULT_PROMPT_FIELD },
@@ -79,6 +83,7 @@ const DEFAULT_PROMPTS = {
     tags: { ...DEFAULT_PROMPT_FIELD },
     topics: { ...DEFAULT_PROMPT_FIELD },
     social: {},
+    thumbnail: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
   },
   reel: {
     titles: { ...DEFAULT_PROMPT_FIELD },
