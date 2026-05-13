@@ -49,7 +49,12 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
   const [config, setConfig] = useState<ThumbnailPromptField | null>(null)
   const [configLoaded, setConfigLoaded] = useState(false)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
-  const effectiveSelectedUrl = selectedThumbnailUrl ?? generatedUrl ?? undefined
+  // Local generation always wins over the hydrated `selectedThumbnailUrl` prop.
+  // Without this, a video with a pre-existing storageThumbnailUrl (e.g. the
+  // legacy base64 thumbnail from YouTube — TD-5) would mask the freshly
+  // generated mock/result and the producer wouldn't see the change after
+  // clicking Gerar Thumbnail.
+  const effectiveSelectedUrl = generatedUrl ?? selectedThumbnailUrl ?? undefined
   const canAdvance = Boolean(effectiveSelectedUrl)
   const videoType = video.videoType
 
@@ -100,7 +105,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
         <CardContent className="space-y-6">
           <ReferencesPanel config={config} configLoaded={configLoaded} />
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-4">
             <GeneratePathCard videoId={video.id} onGenerated={handleGenerated} />
             <PlaceholderPathCard
               testid="path-upload"

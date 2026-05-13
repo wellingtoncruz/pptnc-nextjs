@@ -388,6 +388,36 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeDisabled()
     })
 
+    it('locally generated URL takes precedence over the hydrated selectedThumbnailUrl prop', async () => {
+      // Regression: a video carrying a legacy base64 storageThumbnailUrl (TD-5)
+      // was masking the newly generated mock — producer clicked Gerar, got 200,
+      // and saw nothing change because the prop won the `??` short-circuit.
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateResponse('data:image/svg+xml;base64,FRESH')
+
+      const user = userEvent.setup()
+      render(
+        <PhaseThumbnail
+          video={baseVideo}
+          selectedThumbnailUrl="https://i.ytimg.com/vi/legacy.jpg"
+        />
+      )
+
+      // Initial state: prop hydrates the summary.
+      await waitFor(() => {
+        const img = screen.getByAltText('Thumbnail selecionada')
+        expect(img).toHaveAttribute('src', 'https://i.ytimg.com/vi/legacy.jpg')
+      })
+
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+      // After generation, the freshly generated URL must replace the prop.
+      await waitFor(() => {
+        const img = screen.getByAltText('Thumbnail selecionada')
+        expect(img).toHaveAttribute('src', 'data:image/svg+xml;base64,FRESH')
+      })
+    })
+
     it('clears the previous error when a retry succeeds', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
       mockGenerateError(500)
