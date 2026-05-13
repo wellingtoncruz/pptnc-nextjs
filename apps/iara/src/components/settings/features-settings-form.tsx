@@ -15,6 +15,7 @@ interface PodcastFeatures {
   newsletter: boolean
   llmDebugMode: boolean
   socialPublish: boolean
+  thumbnailGeneration: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -47,10 +48,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [newsletter, setNewsletter] = useState(features.newsletter)
   const [llmDebugMode, setLlmDebugMode] = useState(features.llmDebugMode)
   const [socialPublish, setSocialPublish] = useState(features.socialPublish)
+  const [thumbnailGeneration, setThumbnailGeneration] = useState(features.thumbnailGeneration)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish'
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish' | 'thumbnailGeneration'
   const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
@@ -60,10 +62,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
     newsletter: setNewsletter,
     llmDebugMode: setLlmDebugMode,
     socialPublish: setSocialPublish,
+    thumbnailGeneration: setThumbnailGeneration,
   }
 
   async function handleToggle(key: FeatureKey, value: boolean) {
-    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, [key]: value }
+    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, thumbnailGeneration, [key]: value }
 
     setters[key](value)
 
@@ -206,6 +209,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-socialPublish"
             checked={socialPublish}
             onCheckedChange={(value) => handleToggle('socialPublish', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-thumbnailGeneration">Geração de Thumbnails (preview)</Label>
+            <p className="text-xs text-muted-foreground">
+              Habilita a fase Thumbnail no wizard (Epic 22). O modelo padrão está em preview na Vertex AI — sem SLA, com quota agressiva.
+            </p>
+          </div>
+          <Switch
+            id="feature-thumbnailGeneration"
+            checked={thumbnailGeneration}
+            onCheckedChange={(value) => handleToggle('thumbnailGeneration', value)}
             disabled={saving}
           />
         </div>

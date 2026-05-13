@@ -48,15 +48,21 @@ async function updateLlmConfigViaApi(llmConfig: LlmConfig): Promise<void> {
 export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps) {
   const [textModel, setTextModel] = useState(sanitizeModelValue(llmConfig?.textModel, AVAILABLE_TEXT_MODELS))
   const [imageModel, setImageModel] = useState(sanitizeModelValue(llmConfig?.imageModel, AVAILABLE_IMAGE_MODELS))
+  const [thumbnailImageModel, setThumbnailImageModel] = useState(sanitizeModelValue(llmConfig?.thumbnailImageModel, AVAILABLE_IMAGE_MODELS))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleChange(
-    field: 'textModel' | 'imageModel',
-    value: string
-  ) {
-    const prev = field === 'textModel' ? textModel : imageModel
-    const setter = field === 'textModel' ? setTextModel : setImageModel
+  type LlmField = 'textModel' | 'imageModel' | 'thumbnailImageModel'
+
+  async function handleChange(field: LlmField, value: string) {
+    const currentByField: Record<LlmField, string> = { textModel, imageModel, thumbnailImageModel }
+    const setterByField: Record<LlmField, (v: string) => void> = {
+      textModel: setTextModel,
+      imageModel: setImageModel,
+      thumbnailImageModel: setThumbnailImageModel,
+    }
+    const prev = currentByField[field]
+    const setter = setterByField[field]
 
     // Optimistic update
     setter(value)
@@ -64,11 +70,11 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
     setSaving(true)
 
     // Build payload: empty string → undefined (omitted in JSON, cleared in Firestore)
+    const merged: Record<LlmField, string> = { ...currentByField, [field]: value }
     const updatedConfig: LlmConfig = {}
-    const newTextModel = field === 'textModel' ? value : textModel
-    const newImageModel = field === 'imageModel' ? value : imageModel
-    if (newTextModel) updatedConfig.textModel = newTextModel
-    if (newImageModel) updatedConfig.imageModel = newImageModel
+    if (merged.textModel) updatedConfig.textModel = merged.textModel
+    if (merged.imageModel) updatedConfig.imageModel = merged.imageModel
+    if (merged.thumbnailImageModel) updatedConfig.thumbnailImageModel = merged.thumbnailImageModel
 
     try {
       await updateLlmConfigViaApi(updatedConfig)
@@ -110,11 +116,32 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="llm-image-model">Modelo de Imagem</Label>
+          <Label htmlFor="llm-image-model">Modelo de Imagem (Newsletter)</Label>
           <select
             id="llm-image-model"
             value={imageModel}
             onChange={(e) => handleChange('imageModel', e.target.value)}
+            disabled={saving}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <option value="">Padrão do sistema</option>
+            {AVAILABLE_IMAGE_MODELS.map((model) => (
+              <option key={model.id} value={model.id}>
+                {model.label} — {model.description}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="llm-thumbnail-image-model">Modelo de Imagem (Thumbnail)</Label>
+          <p className="text-xs text-muted-foreground">
+            Usado pela fase Thumbnail do wizard (Epic 22). Separado do modelo da Newsletter para permitir uso de preview models.
+          </p>
+          <select
+            id="llm-thumbnail-image-model"
+            value={thumbnailImageModel}
+            onChange={(e) => handleChange('thumbnailImageModel', e.target.value)}
             disabled={saving}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >

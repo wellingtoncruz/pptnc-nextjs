@@ -535,6 +535,51 @@ describe('PodcastSchema features defaults', () => {
     const result = PodcastSchema.parse(withDebug)
     expect(result.features?.llmDebugMode).toBe(true)
   })
+
+  // ===========================================================================
+  // Epic 22 / Story 22.2-bis — thumbnailGeneration feature flag
+  // ===========================================================================
+
+  it('defaults thumbnailGeneration to false when not provided (Epic 22)', () => {
+    const withFeatures = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false } }
+    const result = PodcastSchema.parse(withFeatures)
+    expect(result.features?.thumbnailGeneration).toBe(false)
+  })
+
+  it('preserves thumbnailGeneration true when explicitly set (Epic 22)', () => {
+    const withThumb = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false, thumbnailGeneration: true } }
+    const result = PodcastSchema.parse(withThumb)
+    expect(result.features?.thumbnailGeneration).toBe(true)
+  })
+})
+
+describe('LlmConfigSchema (Epic 22 / Story 22.2-bis)', () => {
+  it('accepts thumbnailImageModel separately from imageModel', () => {
+    const withThumbModel = {
+      ...validPodcast,
+      llmConfig: {
+        imageModel: 'gemini-2.5-flash-image',
+        thumbnailImageModel: 'gemini-3.1-flash-image-preview',
+      },
+    }
+    const result = PodcastSchema.parse(withThumbModel)
+    expect(result.llmConfig?.imageModel).toBe('gemini-2.5-flash-image')
+    expect(result.llmConfig?.thumbnailImageModel).toBe('gemini-3.1-flash-image-preview')
+  })
+
+  it('accepts llmConfig without thumbnailImageModel (backward compat)', () => {
+    const without = { ...validPodcast, llmConfig: { imageModel: 'gemini-2.5-flash-image' } }
+    const result = PodcastSchema.parse(without)
+    expect(result.llmConfig?.thumbnailImageModel).toBeUndefined()
+  })
+
+  it('rejects thumbnailImageModel that is not in IMAGE_MODEL_IDS allowlist', () => {
+    const invalid = {
+      ...validPodcast,
+      llmConfig: { thumbnailImageModel: 'gemini-fictitious-model' },
+    }
+    expect(() => PodcastSchema.parse(invalid)).toThrow(ZodError)
+  })
 })
 
 describe('PodcastSchema enabledSocialNetworks', () => {

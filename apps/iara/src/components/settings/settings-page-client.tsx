@@ -309,6 +309,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             newsletter: podcast.features?.newsletter ?? false,
             llmDebugMode: podcast.features?.llmDebugMode ?? false,
             socialPublish: podcast.features?.socialPublish ?? false,
+            thumbnailGeneration: podcast.features?.thumbnailGeneration ?? false,
           }} />
         </AccordionContent>
       </AccordionItem>

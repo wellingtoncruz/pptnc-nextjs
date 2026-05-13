@@ -329,14 +329,21 @@ export const DEFAULT_PERSONAS = {
 /**
  * LLM configuration schema — model selection for Vertex AI.
  *
- * Both fields are optional. When undefined, the system uses the
+ * All fields are optional. When undefined, the system uses the
  * fallback chain: env var → hardcoded default.
  *
+ * `imageModel` controls the Newsletter cover image generation.
+ * `thumbnailImageModel` (Epic 22) controls the Thumbnail wizard phase, isolated
+ * because the two flows have different model-status trade-offs (Newsletter must
+ * stay on GA; Thumbnail accepts preview for the feature/quality win).
+ *
  * @see Story 18.11 — Parametrização do Modelo LLM
+ * @see Epic 22 / Story 22.2-bis — separação Newsletter vs Thumbnail
  */
 export const LlmConfigSchema = z.object({
   textModel: z.enum(TEXT_MODEL_IDS as [string, ...string[]]).optional(),
   imageModel: z.enum(IMAGE_MODEL_IDS as [string, ...string[]]).optional(),
+  thumbnailImageModel: z.enum(IMAGE_MODEL_IDS as [string, ...string[]]).optional(),
 })
 
 /**
@@ -376,6 +383,13 @@ export const PodcastSchema = z.object({
     llmDebugMode: z.boolean().default(false),
     /** Enable scheduled publishing to social networks. Default: false. */
     socialPublish: z.boolean().default(false),
+    /**
+     * Enable LLM-assisted thumbnail generation (Epic 22). Default: false because
+     * the only viable model today (`gemini-3.1-flash-image-preview`) is still
+     * in preview — flag stays off until ops accepts the preview risks (no SLA,
+     * aggressive quota).
+     */
+    thumbnailGeneration: z.boolean().default(false),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

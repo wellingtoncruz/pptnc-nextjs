@@ -20,13 +20,13 @@ describe('LlmConfigSettingsForm', () => {
   it('renders text and image model selects', () => {
     render(<LlmConfigSettingsForm />)
     expect(screen.getByLabelText('Modelo de Texto')).toBeInTheDocument()
-    expect(screen.getByLabelText('Modelo de Imagem')).toBeInTheDocument()
+    expect(screen.getByLabelText('Modelo de Imagem (Newsletter)')).toBeInTheDocument()
   })
 
   it('shows "Padrão do sistema" as default for both selects', () => {
     render(<LlmConfigSettingsForm />)
     expect(screen.getByLabelText('Modelo de Texto')).toHaveValue('')
-    expect(screen.getByLabelText('Modelo de Imagem')).toHaveValue('')
+    expect(screen.getByLabelText('Modelo de Imagem (Newsletter)')).toHaveValue('')
   })
 
   it('shows configured values when llmConfig is provided', () => {
@@ -36,7 +36,7 @@ describe('LlmConfigSettingsForm', () => {
       />
     )
     expect(screen.getByLabelText('Modelo de Texto')).toHaveValue('gemini-2.5-pro')
-    expect(screen.getByLabelText('Modelo de Imagem')).toHaveValue('gemini-2.5-flash-image')
+    expect(screen.getByLabelText('Modelo de Imagem (Newsletter)')).toHaveValue('gemini-2.5-flash-image')
   })
 
   it('lists all available text models plus system default', () => {
@@ -48,9 +48,10 @@ describe('LlmConfigSettingsForm', () => {
 
   it('lists all available image models plus system default', () => {
     render(<LlmConfigSettingsForm />)
-    const imageSelect = screen.getByLabelText('Modelo de Imagem')
-    // 1 image model + 1 "Padrão do sistema" option
-    expect(imageSelect.querySelectorAll('option')).toHaveLength(2)
+    const imageSelect = screen.getByLabelText('Modelo de Imagem (Newsletter)')
+    // 2 image models (gemini-2.5-flash-image GA + gemini-3.1-flash-image-preview from Epic 22)
+    // + 1 "Padrão do sistema" option
+    expect(imageSelect.querySelectorAll('option')).toHaveLength(3)
   })
 
   it('displays model label and description in option text', () => {
@@ -80,7 +81,7 @@ describe('LlmConfigSettingsForm', () => {
     const user = userEvent.setup()
     render(<LlmConfigSettingsForm />)
 
-    await user.selectOptions(screen.getByLabelText('Modelo de Imagem'), 'gemini-2.5-flash-image')
+    await user.selectOptions(screen.getByLabelText('Modelo de Imagem (Newsletter)'), 'gemini-2.5-flash-image')
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
@@ -98,7 +99,7 @@ describe('LlmConfigSettingsForm', () => {
       <LlmConfigSettingsForm llmConfig={{ textModel: 'gemini-2.5-pro' }} />
     )
 
-    await user.selectOptions(screen.getByLabelText('Modelo de Imagem'), 'gemini-2.5-flash-image')
+    await user.selectOptions(screen.getByLabelText('Modelo de Imagem (Newsletter)'), 'gemini-2.5-flash-image')
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalled()
@@ -173,7 +174,7 @@ describe('LlmConfigSettingsForm', () => {
     await user.selectOptions(screen.getByLabelText('Modelo de Texto'), 'gemini-2.5-pro')
 
     expect(screen.getByLabelText('Modelo de Texto')).toBeDisabled()
-    expect(screen.getByLabelText('Modelo de Imagem')).toBeDisabled()
+    expect(screen.getByLabelText('Modelo de Imagem (Newsletter)')).toBeDisabled()
 
     resolvePromise!({ ok: true, json: () => Promise.resolve({}) })
 
@@ -201,6 +202,74 @@ describe('LlmConfigSettingsForm', () => {
     render(
       <LlmConfigSettingsForm llmConfig={{ imageModel: 'gemini-old-image' }} />
     )
-    expect(screen.getByLabelText('Modelo de Imagem')).toHaveValue('')
+    expect(screen.getByLabelText('Modelo de Imagem (Newsletter)')).toHaveValue('')
+  })
+
+  // =========================================================================
+  // Epic 22 / Story 22.2-bis — thumbnailImageModel (separated from Newsletter)
+  // =========================================================================
+
+  describe('thumbnailImageModel (Epic 22)', () => {
+    it('renders a dedicated select for Thumbnail image model', () => {
+      render(<LlmConfigSettingsForm />)
+      expect(screen.getByLabelText('Modelo de Imagem (Thumbnail)')).toBeInTheDocument()
+    })
+
+    it('hydrates from llmConfig.thumbnailImageModel when provided', () => {
+      render(
+        <LlmConfigSettingsForm
+          llmConfig={{ thumbnailImageModel: 'gemini-3.1-flash-image-preview' }}
+        />
+      )
+      expect(screen.getByLabelText('Modelo de Imagem (Thumbnail)')).toHaveValue(
+        'gemini-3.1-flash-image-preview'
+      )
+    })
+
+    it('falls back to system default when stored thumbnailImageModel is not in allowlist', () => {
+      render(
+        <LlmConfigSettingsForm llmConfig={{ thumbnailImageModel: 'gemini-old-thumb' }} />
+      )
+      expect(screen.getByLabelText('Modelo de Imagem (Thumbnail)')).toHaveValue('')
+    })
+
+    it('persists thumbnailImageModel alongside other fields on change', async () => {
+      const user = userEvent.setup()
+      render(
+        <LlmConfigSettingsForm
+          llmConfig={{ textModel: 'gemini-2.5-pro', imageModel: 'gemini-2.5-flash-image' }}
+        />
+      )
+
+      await user.selectOptions(
+        screen.getByLabelText('Modelo de Imagem (Thumbnail)'),
+        'gemini-3.1-flash-image-preview'
+      )
+
+      await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body).toEqual({
+        llmConfig: {
+          textModel: 'gemini-2.5-pro',
+          imageModel: 'gemini-2.5-flash-image',
+          thumbnailImageModel: 'gemini-3.1-flash-image-preview',
+        },
+      })
+    })
+
+    it('omits thumbnailImageModel from payload when set back to system default', async () => {
+      const user = userEvent.setup()
+      render(
+        <LlmConfigSettingsForm
+          llmConfig={{ thumbnailImageModel: 'gemini-3.1-flash-image-preview' }}
+        />
+      )
+
+      await user.selectOptions(screen.getByLabelText('Modelo de Imagem (Thumbnail)'), '')
+
+      await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body).toEqual({ llmConfig: {} })
+    })
   })
 })
