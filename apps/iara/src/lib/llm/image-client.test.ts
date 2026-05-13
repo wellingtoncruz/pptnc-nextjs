@@ -37,6 +37,7 @@ vi.mock('@/lib/firebase/llm-log-admin', () => ({
 }))
 
 import { callGenAIImage, IMAGE_MODEL } from './image-client'
+import type { ReferenceImage } from './image-client'
 import { LLMError } from './errors'
 
 describe('callGenAIImage', () => {
@@ -291,5 +292,194 @@ describe('callGenAIImage', () => {
 
     expect(result.imageBuffer).toEqual(imageData)
     expect(log).toHaveBeenCalledWith('WARN', expect.stringContaining('debug log'), expect.any(Object))
+  })
+
+  // ==========================================================================
+  // Epic 22 — Story 22.2 — referenceImages support
+  // ==========================================================================
+
+  describe('referenceImages (Epic 22, Story 22.2)', () => {
+    function mockSuccess(buffer = Buffer.from('binary')) {
+      mockGenerateContent.mockResolvedValue({
+        candidates: [{
+          content: {
+            parts: [{
+              inlineData: { data: buffer.toString('base64'), mimeType: 'image/png' },
+            }],
+          },
+        }],
+      })
+      return buffer
+    }
+
+    it('passes contents as a plain string (legacy newsletter form) when referenceImages is omitted', async () => {
+      mockSuccess()
+      await callGenAIImage('A sunset over the mountains')
+
+      expect(mockGenerateContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contents: 'A sunset over the mountains',
+        })
+      )
+    })
+
+    it('passes contents as a structured parts array with inlineData reference + text last', async () => {
+      mockSuccess()
+      await callGenAIImage(
+        'Generate a thumbnail',
+        undefined,
+        undefined,
+        {
+          referenceImages: [
+            {
+              role: 'base',
+              inlineData: { data: Buffer.from('base-bytes').toString('base64'), mimeType: 'image/png' },
+            },
+          ],
+        }
+      )
+
+      const call = mockGenerateContent.mock.calls[0][0]
+      expect(Array.isArray(call.contents)).toBe(true)
+      expect(call.contents).toEqual([
+        expect.objectContaining({
+          inlineData: expect.objectContaining({ mimeType: 'image/png' }),
+        }),
+        { text: 'Generate a thumbnail' },
+      ])
+    })
+
+    it('passes contents with fileData when reference uses GCS uri', async () => {
+      mockSuccess()
+      await callGenAIImage(
+        'Generate a thumbnail',
+        undefined,
+        undefined,
+        {
+          referenceImages: [
+            {
+              role: 'reference',
+              uri: 'gs://pptnc-stage/thumbnail-config/pptnc/cut/reference-123.png',
+              mimeType: 'image/png',
+            },
+          ],
+        }
+      )
+
+      const call = mockGenerateContent.mock.calls[0][0]
+      expect(call.contents).toEqual([
+        {
+          fileData: {
+            fileUri: 'gs://pptnc-stage/thumbnail-config/pptnc/cut/reference-123.png',
+            mimeType: 'image/png',
+          },
+        },
+        { text: 'Generate a thumbnail' },
+      ])
+    })
+
+    it('accepts a mix of inlineData and fileData references in the order provided', async () => {
+      mockSuccess()
+      await callGenAIImage(
+        'Generate a thumbnail',
+        undefined,
+        undefined,
+        {
+          referenceImages: [
+            { role: 'base', uri: 'gs://bucket/base.png', mimeType: 'image/png' },
+            { role: 'reference', uri: 'gs://bucket/reference.png', mimeType: 'image/jpeg' },
+            {
+              role: 'guest',
+              inlineData: { data: Buffer.from('guest').toString('base64'), mimeType: 'image/jpeg' },
+            },
+          ],
+        }
+      )
+
+      const call = mockGenerateContent.mock.calls[0][0]
+      expect(call.contents).toHaveLength(4)
+      expect(call.contents[0]).toMatchObject({ fileData: { fileUri: 'gs://bucket/base.png' } })
+      expect(call.contents[1]).toMatchObject({ fileData: { fileUri: 'gs://bucket/reference.png' } })
+      expect(call.contents[2]).toMatchObject({ inlineData: { mimeType: 'image/jpeg' } })
+      expect(call.contents[3]).toEqual({ text: 'Generate a thumbnail' })
+    })
+
+    it('logs referenceImageCount and roles on success (no binary payload)', async () => {
+      const { log } = await import('@/lib/logger')
+      mockSuccess()
+      await callGenAIImage(
+        'prompt',
+        undefined,
+        undefined,
+        {
+          referenceImages: [
+            { role: 'base', uri: 'gs://b/base.png', mimeType: 'image/png' },
+            { role: 'guest', inlineData: { data: Buffer.from('x').toString('base64'), mimeType: 'image/jpeg' } },
+          ],
+        }
+      )
+
+      expect(log).toHaveBeenCalledWith(
+        'INFO',
+        'Image generated via Gemini',
+        expect.objectContaining({
+          referenceImageCount: 2,
+          referenceImageRoles: ['base', 'guest'],
+        })
+      )
+    })
+
+    it('throws LLMError when reference provides neither inlineData nor uri', async () => {
+      mockSuccess()
+      await expect(
+        callGenAIImage('prompt', undefined, undefined, {
+          // Cast around the discriminated union for the negative test only.
+          referenceImages: [{ role: 'base' } as unknown as ReferenceImage],
+        })
+      ).rejects.toThrow(LLMError)
+      expect(mockGenerateContent).not.toHaveBeenCalled()
+    })
+
+    it('throws LLMError when reference provides BOTH inlineData and uri', async () => {
+      mockSuccess()
+      await expect(
+        callGenAIImage('prompt', undefined, undefined, {
+          referenceImages: [
+            {
+              role: 'base',
+              uri: 'gs://b/x.png',
+              mimeType: 'image/png',
+              // Force-add inlineData to violate the XOR invariant.
+              inlineData: { data: 'AAA', mimeType: 'image/png' },
+            } as unknown as ReferenceImage,
+          ],
+        })
+      ).rejects.toThrow(LLMError)
+      expect(mockGenerateContent).not.toHaveBeenCalled()
+    })
+
+    it('throws LLMError when uri is provided without mimeType', async () => {
+      mockSuccess()
+      await expect(
+        callGenAIImage('prompt', undefined, undefined, {
+          referenceImages: [
+            { role: 'base', uri: 'gs://b/x.png' } as unknown as ReferenceImage,
+          ],
+        })
+      ).rejects.toThrow(LLMError)
+      expect(mockGenerateContent).not.toHaveBeenCalled()
+    })
+
+    it('still propagates remote errors via createLLMError (LLMError chain preserved)', async () => {
+      mockGenerateContent.mockRejectedValueOnce(new Error('429 Resource exhausted'))
+
+      const err = await callGenAIImage('prompt', undefined, undefined, {
+        referenceImages: [
+          { role: 'base', uri: 'gs://b/x.png', mimeType: 'image/png' },
+        ],
+      }).catch((e) => e)
+
+      expect(err).toBeInstanceOf(LLMError)
+    })
   })
 })
