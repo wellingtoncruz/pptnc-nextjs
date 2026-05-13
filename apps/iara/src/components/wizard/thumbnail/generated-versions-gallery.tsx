@@ -1,5 +1,7 @@
 'use client'
 
+import { Maximize2 } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
 
 /**
@@ -26,6 +28,12 @@ interface GeneratedVersionsGalleryProps {
   selectedUrl: string | undefined
   /** Disparado ao clicar numa miniatura — pai atualiza a seleção. */
   onSelect: (url: string) => void
+  /**
+   * Disparado ao clicar no ícone Expand sobre uma miniatura — pai abre o
+   * lightbox para a URL passada **sem alterar a seleção**. Opcional para
+   * preservar compatibilidade com testes legados.
+   */
+  onPreview?: (url: string) => void
   className?: string
 }
 
@@ -44,6 +52,7 @@ export function GeneratedVersionsGallery({
   versions,
   selectedUrl,
   onSelect,
+  onPreview,
   className,
 }: GeneratedVersionsGalleryProps) {
   if (versions.length === 0) return null
@@ -67,6 +76,7 @@ export function GeneratedVersionsGallery({
             version={version}
             isSelected={version.url === selectedUrl}
             onClick={() => onSelect(version.url)}
+            onPreview={onPreview ? () => onPreview(version.url) : undefined}
           />
         ))}
       </div>
@@ -78,41 +88,67 @@ interface VersionCardProps {
   version: GeneratedThumbnailVersion
   isSelected: boolean
   onClick: () => void
+  /** Quando definido, mostra ícone Expand sobre a miniatura que abre o lightbox sem alterar a seleção. */
+  onPreview?: () => void
 }
 
-function VersionCard({ version, isSelected, onClick }: VersionCardProps) {
+function VersionCard({ version, isSelected, onClick, onPreview }: VersionCardProps) {
   const observationLabel = version.observation?.trim()
     ? truncate(version.observation.trim(), 48)
     : 'Sem observação'
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
       data-testid="version-card"
       data-version-id={version.id}
       data-selected={isSelected ? 'true' : 'false'}
       className={cn(
-        'flex flex-col gap-1 shrink-0 rounded-md border-2 p-1 text-left transition-colors',
-        'hover:border-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'relative flex flex-col gap-1 shrink-0 rounded-md border-2 transition-colors',
         isSelected ? 'border-primary' : 'border-transparent'
       )}
-      aria-pressed={isSelected}
-      aria-label={`Selecionar versão gerada — ${observationLabel}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={version.url}
-        alt={`Versão gerada ${observationLabel}`}
-        className="h-20 w-36 rounded border bg-muted object-cover"
-      />
-      <p className="w-36 text-xs text-foreground truncate" title={observationLabel}>
-        {observationLabel}
-      </p>
-      <p className="text-[10px] text-muted-foreground">
-        {formatRelativeTime(version.timestamp)}
-      </p>
-    </button>
+      <button
+        type="button"
+        onClick={onClick}
+        data-testid="version-select-button"
+        className={cn(
+          'flex flex-col gap-1 rounded-md p-1 text-left',
+          'hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        )}
+        aria-pressed={isSelected}
+        aria-label={`Selecionar versão gerada — ${observationLabel}`}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={version.url}
+          alt={`Versão gerada ${observationLabel}`}
+          className="h-20 w-36 rounded border bg-muted object-cover"
+        />
+        <p className="w-36 text-xs text-foreground truncate" title={observationLabel}>
+          {observationLabel}
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          {formatRelativeTime(version.timestamp)}
+        </p>
+      </button>
+      {onPreview && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onPreview()
+          }}
+          data-testid="version-preview-button"
+          className={cn(
+            'absolute right-1 top-1 rounded bg-background/80 p-1 backdrop-blur',
+            'hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+          )}
+          aria-label={`Ver versão gerada em tamanho real — ${observationLabel}`}
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
   )
 }
 

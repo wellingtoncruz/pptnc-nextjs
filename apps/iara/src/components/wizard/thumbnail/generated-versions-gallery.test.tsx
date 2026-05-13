@@ -54,9 +54,10 @@ describe('GeneratedVersionsGallery', () => {
     )
     const [first, second] = screen.getAllByTestId('version-card')
     expect(first).toHaveAttribute('data-selected', 'false')
-    expect(first).toHaveAttribute('aria-pressed', 'false')
     expect(second).toHaveAttribute('data-selected', 'true')
-    expect(second).toHaveAttribute('aria-pressed', 'true')
+    const [firstSelect, secondSelect] = screen.getAllByTestId('version-select-button')
+    expect(firstSelect).toHaveAttribute('aria-pressed', 'false')
+    expect(secondSelect).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('marks no version as selected when selectedUrl does not match', () => {
@@ -67,7 +68,7 @@ describe('GeneratedVersionsGallery', () => {
     expect(screen.getByTestId('version-card')).toHaveAttribute('data-selected', 'false')
   })
 
-  it('calls onSelect with the version URL when a miniature is clicked', () => {
+  it('calls onSelect with the version URL when the miniature is clicked', () => {
     const versions = [
       sampleVersion({ id: 'a', url: 'data:a' }),
       sampleVersion({ id: 'b', url: 'data:b' }),
@@ -76,9 +77,47 @@ describe('GeneratedVersionsGallery', () => {
     render(
       <GeneratedVersionsGallery versions={versions} selectedUrl="data:a" onSelect={onSelect} />
     )
-    screen.getAllByTestId('version-card')[1].click()
+    screen.getAllByTestId('version-select-button')[1].click()
     expect(onSelect).toHaveBeenCalledTimes(1)
     expect(onSelect).toHaveBeenCalledWith('data:b')
+  })
+
+  it('shows the Expand preview button only when onPreview is provided', () => {
+    const versions = [sampleVersion({ id: 'a', url: 'data:a' })]
+
+    const { rerender } = render(
+      <GeneratedVersionsGallery versions={versions} selectedUrl={undefined} onSelect={() => {}} />
+    )
+    expect(screen.queryByTestId('version-preview-button')).toBeNull()
+
+    rerender(
+      <GeneratedVersionsGallery
+        versions={versions}
+        selectedUrl={undefined}
+        onSelect={() => {}}
+        onPreview={() => {}}
+      />
+    )
+    expect(screen.getByTestId('version-preview-button')).toBeInTheDocument()
+  })
+
+  it('calls onPreview with the version URL without triggering onSelect', () => {
+    const versions = [sampleVersion({ id: 'a', url: 'data:a' })]
+    const onSelect = vi.fn()
+    const onPreview = vi.fn()
+    render(
+      <GeneratedVersionsGallery
+        versions={versions}
+        selectedUrl={undefined}
+        onSelect={onSelect}
+        onPreview={onPreview}
+      />
+    )
+    screen.getByTestId('version-preview-button').click()
+    expect(onPreview).toHaveBeenCalledTimes(1)
+    expect(onPreview).toHaveBeenCalledWith('data:a')
+    // The select button must NOT be triggered when the producer only wants to preview.
+    expect(onSelect).not.toHaveBeenCalled()
   })
 
   it('shows the observation as the card label (truncated when longer than 48 chars)', () => {

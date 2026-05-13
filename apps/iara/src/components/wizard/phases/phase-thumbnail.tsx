@@ -11,6 +11,7 @@ import {
   GeneratedVersionsGallery,
   type GeneratedThumbnailVersion,
 } from '@/components/wizard/thumbnail/generated-versions-gallery'
+import { ThumbnailLightbox } from '@/components/wizard/thumbnail/thumbnail-lightbox'
 import { log } from '@/lib/logger'
 import type { ThumbnailPromptField } from '@/types/podcast'
 import type { Video } from '@/types/video'
@@ -52,6 +53,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
   const [configLoaded, setConfigLoaded] = useState(false)
   const [versions, setVersions] = useState<GeneratedThumbnailVersion[]>([])
   const [selectedVersionUrl, setSelectedVersionUrl] = useState<string | null>(null)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   // Local generation/selection always wins over the hydrated `selectedThumbnailUrl`
   // prop. Sem isso, um vídeo com `storageThumbnailUrl` pré-existente (ex.: base64
   // legado da YouTube — TD-5) mascararia a thumbnail recém-gerada e o produtor não
@@ -102,6 +104,14 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
     setSelectedVersionUrl(url)
   }, [])
 
+  const handleOpenLightbox = useCallback((url: string) => {
+    setLightboxUrl(url)
+  }, [])
+
+  const handleCloseLightbox = useCallback(() => {
+    setLightboxUrl(null)
+  }, [])
+
   return (
     <div className={className} data-testid="phase-thumbnail" data-video-id={video.id}>
       <Card>
@@ -133,9 +143,13 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
             versions={versions}
             selectedUrl={effectiveSelectedUrl}
             onSelect={handleSelectVersion}
+            onPreview={handleOpenLightbox}
           />
 
-          <SelectedThumbnailSummary selectedThumbnailUrl={effectiveSelectedUrl} />
+          <SelectedThumbnailSummary
+            selectedThumbnailUrl={effectiveSelectedUrl}
+            onPreview={handleOpenLightbox}
+          />
 
           <div className="flex justify-end">
             <Button onClick={onAdvance} disabled={!canAdvance}>
@@ -144,6 +158,8 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
           </div>
         </CardContent>
       </Card>
+
+      <ThumbnailLightbox url={lightboxUrl} onClose={handleCloseLightbox} />
     </div>
   )
 }
@@ -339,6 +355,9 @@ function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
           maxLength={2000}
           disabled={isGenerating}
         />
+        <p className="text-[11px] text-muted-foreground">
+          Pode gerar direto sem digitar nada — a IAra usa Base + Referência como contexto. Use a observação para refinar pontualmente.
+        </p>
       </div>
 
       <Button
@@ -402,21 +421,33 @@ function PlaceholderPathCard({ testid, icon, title, description, footnote }: Pla
 
 interface SelectedThumbnailSummaryProps {
   selectedThumbnailUrl?: string
+  /** Click na imagem abre o lightbox em tamanho real para avaliação. */
+  onPreview?: (url: string) => void
 }
 
-function SelectedThumbnailSummary({ selectedThumbnailUrl }: SelectedThumbnailSummaryProps) {
+function SelectedThumbnailSummary({ selectedThumbnailUrl, onPreview }: SelectedThumbnailSummaryProps) {
   return (
     <div className="rounded-md border bg-card p-4" data-testid="selected-summary">
       <p className="text-sm font-medium mb-2">Thumbnail selecionada</p>
       {selectedThumbnailUrl ? (
         <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={selectedThumbnailUrl}
-            alt="Thumbnail selecionada"
-            className="h-24 w-auto rounded border bg-muted object-cover"
-          />
-          <p className="text-xs text-muted-foreground">Pronta para publicar.</p>
+          <button
+            type="button"
+            onClick={() => onPreview?.(selectedThumbnailUrl)}
+            data-testid="selected-preview-button"
+            className="cursor-zoom-in rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Ver thumbnail selecionada em tamanho real"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={selectedThumbnailUrl}
+              alt="Thumbnail selecionada"
+              className="h-24 w-auto rounded border bg-muted object-cover"
+            />
+          </button>
+          <p className="text-xs text-muted-foreground">
+            Pronta para publicar. Clique na imagem para ver em tamanho real.
+          </p>
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">

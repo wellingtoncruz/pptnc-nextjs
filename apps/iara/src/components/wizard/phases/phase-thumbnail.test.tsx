@@ -483,9 +483,9 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
         'data:image/svg+xml;base64,SECOND'
       )
 
-      // Click the first miniature — selection reverts to the older version.
-      const [firstCard] = screen.getAllByTestId('version-card')
-      await user.click(firstCard)
+      // Click the first miniature's select button — selection reverts to the older version.
+      const [firstSelect] = screen.getAllByTestId('version-select-button')
+      await user.click(firstSelect)
 
       await waitFor(() => {
         expect(screen.getByAltText('Thumbnail selecionada')).toHaveAttribute(
@@ -495,6 +495,61 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       })
       // History is preserved — second card is still there.
       expect(screen.getAllByTestId('version-card')).toHaveLength(2)
+    })
+
+    it('opens the lightbox when the selected thumbnail summary image is clicked', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateResponse('data:image/svg+xml;base64,FRESH')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('selected-preview-button')).toBeInTheDocument()
+      })
+      await user.click(screen.getByTestId('selected-preview-button'))
+
+      const lightbox = await screen.findByTestId('thumbnail-lightbox')
+      expect(lightbox).toBeInTheDocument()
+      // The lightbox renders the same URL that's currently selected.
+      const lightboxImg = screen.getAllByAltText('Thumbnail em tamanho real')[0]
+      expect(lightboxImg).toHaveAttribute('src', 'data:image/svg+xml;base64,FRESH')
+    })
+
+    it('opens the lightbox from a gallery miniature without changing the selection', async () => {
+      mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+      mockGenerateResponse('data:image/svg+xml;base64,FIRST')
+      mockGenerateResponse('data:image/svg+xml;base64,SECOND')
+
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.getAllByTestId('version-card')).toHaveLength(1)
+      })
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.getAllByTestId('version-card')).toHaveLength(2)
+      })
+
+      // Selected version defaults to SECOND. Now preview FIRST via the Expand icon.
+      const [firstPreview] = screen.getAllByTestId('version-preview-button')
+      await user.click(firstPreview)
+
+      const lightboxImg = (await screen.findAllByAltText(/Versão gerada/))[0]
+      expect(lightboxImg.getAttribute('src')).toBe('data:image/svg+xml;base64,FIRST')
+
+      // Selection (summary preview) should still be SECOND.
+      const summaryImg = screen.getByAltText('Thumbnail selecionada')
+      expect(summaryImg).toHaveAttribute('src', 'data:image/svg+xml;base64,SECOND')
     })
 
     it('clears the previous error when a retry succeeds', async () => {
