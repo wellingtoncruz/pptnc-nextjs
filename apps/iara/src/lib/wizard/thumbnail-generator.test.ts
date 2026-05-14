@@ -85,6 +85,46 @@ describe('buildThumbnailPrompt', () => {
     expect(prompt).toContain('destaque o convidado')
   })
 
+  it('for cut videos, {{video.title}} resolves to shortTitle (the short title selected in phase 5B)', () => {
+    const prompt = buildThumbnailPrompt(
+      { description: 'Corte do episódio {{video.title}}', expectedOutput: 'PNG' },
+      {
+        id: 'c1',
+        videoType: 'cut',
+        title: 'Por que Rust é melhor que C — episódio longo',
+        shortTitle: 'Rust > C',
+      } as never,
+      undefined
+    )
+    expect(prompt).toContain('Corte do episódio Rust > C')
+    expect(prompt).not.toContain('episódio longo')
+  })
+
+  it('for cut videos without shortTitle, falls back to the long title', () => {
+    const prompt = buildThumbnailPrompt(
+      { description: '{{video.title}}', expectedOutput: 'PNG' },
+      { id: 'c1', videoType: 'cut', title: 'Título longo', shortTitle: '   ' } as never,
+      undefined
+    )
+    expect(prompt).toContain('Título longo')
+  })
+
+  it('for episode videos, {{video.title}} keeps using the canonical title (no shortTitle override)', () => {
+    const prompt = buildThumbnailPrompt(
+      { description: '{{video.title}}', expectedOutput: 'PNG' },
+      {
+        id: 'e1',
+        videoType: 'episode',
+        title: 'Episódio canônico',
+        // shortTitle não deve influenciar pra episodes mesmo se presente por algum motivo.
+        shortTitle: 'IGNORAR',
+      } as never,
+      undefined
+    )
+    expect(prompt).toContain('Episódio canônico')
+    expect(prompt).not.toContain('IGNORAR')
+  })
+
   it('omits the observation block when empty/whitespace', () => {
     const prompt = buildThumbnailPrompt(
       { description: 'X', expectedOutput: 'Y' },

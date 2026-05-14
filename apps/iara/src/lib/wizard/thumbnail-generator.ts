@@ -101,13 +101,23 @@ function pathToReferenceImage(
  * - description (interpolada com {{video.field}})
  * - expectedOutput
  * - Instrução priorizada do produtor (observation), se houver
+ *
+ * **Cut:** o placeholder `{{video.title}}` resolve para o **shortTitle** (título
+ * curto selecionado na fase 5B) em vez do título longo do episódio pai — o
+ * thumbnail de um corte deve refletir o título curto que efetivamente aparece
+ * impresso no YouTube. Fallback: se shortTitle estiver vazio, usa `title`.
  */
 export function buildThumbnailPrompt(
   config: ThumbnailPromptField,
   video: Video,
   observation: string | undefined
 ): string {
-  const videoForPlaceholders = video as unknown as Record<string, unknown>
+  const videoForPlaceholders: Record<string, unknown> = {
+    ...(video as unknown as Record<string, unknown>),
+  }
+  if (video.videoType === 'cut' && video.shortTitle && video.shortTitle.trim() !== '') {
+    videoForPlaceholders.title = video.shortTitle
+  }
   const description = resolveVideoPlaceholders(config.description ?? '', videoForPlaceholders).trim()
   const expectedOutput = (config.expectedOutput ?? '').trim()
 
