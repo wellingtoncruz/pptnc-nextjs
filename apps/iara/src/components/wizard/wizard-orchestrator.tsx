@@ -2437,7 +2437,13 @@ export function WizardOrchestrator({
         <PhaseThumbnail
           video={videoData}
           selectedThumbnailUrl={videoData.storageThumbnailUrl}
-          onAdvance={() => wizard.completePhaseAndAdvance('THUMB', {}, features)}
+          onAdvance={(payload) => {
+            // Story 22.3g: PhaseThumbnail já persistiu a URL final via POST /select.
+            // Atualizamos o videoData local pra que Phase 8 leia o URL correto sem
+            // depender de um novo fetch — o storage Firestore já está coerente.
+            setVideoData((prev) => ({ ...prev, storageThumbnailUrl: payload.newStorageUrl }))
+            wizard.completePhaseAndAdvance('THUMB', {}, features)
+          }}
         />
       )
     }

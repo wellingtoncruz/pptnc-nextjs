@@ -436,6 +436,93 @@ export async function uploadThumbnailStagingImage(
   }
 }
 
+/**
+ * Copia uma thumbnail de staging para o path final canônico do vídeo.
+ *
+ * Path final: `thumbnails/{PODCAST_ID}/{videoId}/final.{ext}`. Sobrescreve o
+ * existente — só uma thumbnail final por vídeo. Não apaga o staging (limpeza
+ * é feita por lifecycle policy ou follow-up). A extensão é herdada do path
+ * de staging pra preservar o MIME original.
+ *
+ * Idempotente: se `stagingPath` já for um final path, retorna o próprio path
+ * sem copiar (cobre o caso do produtor reabrir a fase e clicar Continuar
+ * sem trocar a seleção).
+ *
+ * Story 22.3g.
+ */
+export async function copyThumbnailStagingToFinal(
+  stagingPath: string,
+  videoId: string
+): Promise<{ filePath: string }> {
+  if (!SAFE_VIDEO_ID.test(videoId)) {
+    throw new CloudStorageError('Invalid video ID for thumbnail final path', 'UPLOAD_FAILED')
+  }
+  const finalPrefix = `thumbnails/${PODCAST_ID}/${videoId}/`
+  if (stagingPath.startsWith(finalPrefix)) {
+    // Already final — no copy needed.
+    return { filePath: stagingPath }
+  }
+  if (!stagingPath.startsWith('thumbnail-staging/') || stagingPath.includes('..')) {
+    throw new CloudStorageError('Invalid staging path for thumbnail copy', 'UPLOAD_FAILED')
+  }
+  const ext = stagingPath.split('.').pop() ?? 'png'
+  const destPath = `${finalPrefix}final.${ext}`
+
+  try {
+    const bucket = getBucket()
+    const source = bucket.file(stagingPath)
+    const dest = bucket.file(destPath)
+    await source.copy(dest)
+    log('INFO', 'Thumbnail copied staging → final', {
+      podcastId: PODCAST_ID,
+      videoId,
+      stagingPath,
+      destPath,
+    })
+    return { filePath: destPath }
+  } catch (error) {
+    log('ERROR', 'Thumbnail staging → final copy failed', {
+      podcastId: PODCAST_ID,
+      videoId,
+      stagingPath,
+      destPath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to copy thumbnail to final: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'UPLOAD_FAILED'
+    )
+  }
+}
+
+/**
+ * Baixa uma thumbnail final do bucket. Path-validated — só serve arquivos
+ * sob `thumbnails/{PODCAST_ID}/`. Story 22.3g.
+ */
+export async function downloadThumbnailFinalImage(filePath: string): Promise<Buffer> {
+  const prefix = `thumbnails/${PODCAST_ID}/`
+  if (!filePath.startsWith(prefix) || filePath.includes('..')) {
+    throw new CloudStorageError('Invalid file path for thumbnail final download', 'DOWNLOAD_FAILED')
+  }
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    const [contents] = await file.download()
+    log('INFO', 'Thumbnail final image downloaded', { podcastId: PODCAST_ID, filePath })
+    return contents
+  } catch (error) {
+    log('ERROR', 'Thumbnail final image download failed', {
+      podcastId: PODCAST_ID,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to download thumbnail final image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DOWNLOAD_FAILED'
+    )
+  }
+}
+
 export async function downloadThumbnailStagingImage(filePath: string): Promise<Buffer> {
   if (!filePath.startsWith('thumbnail-staging/') || filePath.includes('..')) {
     throw new CloudStorageError('Invalid file path for thumbnail staging download', 'DOWNLOAD_FAILED')

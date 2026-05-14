@@ -100,19 +100,45 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
     expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeEnabled()
   })
 
-  it('calls onAdvance when the enabled button is clicked', async () => {
+  it('calls /select then onAdvance with the new storage URL when Continuar is clicked', async () => {
     mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+    // Story 22.3g: o botão agora dispara POST /api/wizard/thumbnail/select
+    // antes de chamar onAdvance. O retorno do endpoint vira o newStorageUrl.
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        thumbnailUrl: '/api/wizard/thumbnail/select?path=thumbnails%2Fpptnc%2Fvid-1%2Ffinal.png',
+      }),
+    } as Response)
 
     const onAdvance = vi.fn()
+    const user = userEvent.setup()
     render(
       <PhaseThumbnail
         video={baseVideo}
-        selectedThumbnailUrl="https://storage.googleapis.com/bucket/thumb.png"
+        selectedThumbnailUrl="/api/wizard/thumbnail/upload?path=thumbnail-staging%2Fa.png"
         onAdvance={onAdvance}
       />
     )
-    screen.getByRole('button', { name: 'Continuar para Publicar' }).click()
-    expect(onAdvance).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole('button', { name: 'Continuar para Publicar' }))
+
+    await waitFor(() => {
+      expect(onAdvance).toHaveBeenCalledTimes(1)
+    })
+    expect(onAdvance).toHaveBeenCalledWith({
+      newStorageUrl: '/api/wizard/thumbnail/select?path=thumbnails%2Fpptnc%2Fvid-1%2Ffinal.png',
+    })
+
+    const selectCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes('/api/wizard/thumbnail/select')
+    )
+    expect(selectCall).toBeDefined()
+    const init = selectCall?.[1] as RequestInit | undefined
+    expect(init?.method).toBe('POST')
+    const body = JSON.parse(String(init?.body ?? '{}')) as { videoId: string; selectedThumbnailUrl: string }
+    expect(body.videoId).toBe('video-1')
+    expect(body.selectedThumbnailUrl).toBe('/api/wizard/thumbnail/upload?path=thumbnail-staging%2Fa.png')
   })
 
   it('does not call onAdvance when the button is disabled', async () => {
@@ -121,6 +147,33 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
     const onAdvance = vi.fn()
     render(<PhaseThumbnail video={baseVideo} onAdvance={onAdvance} />)
     screen.getByRole('button', { name: 'Continuar para Publicar' }).click()
+    expect(onAdvance).not.toHaveBeenCalled()
+  })
+
+  it('renders inline error and does NOT call onAdvance when /select fails', async () => {
+    mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: { message: 'Servidor com problema' } }),
+    } as Response)
+
+    const onAdvance = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <PhaseThumbnail
+        video={baseVideo}
+        selectedThumbnailUrl="/api/wizard/thumbnail/upload?path=thumbnail-staging%2Fa.png"
+        onAdvance={onAdvance}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Continuar para Publicar' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('select-error')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('select-error').textContent).toMatch(/Servidor com problema/)
     expect(onAdvance).not.toHaveBeenCalled()
   })
 

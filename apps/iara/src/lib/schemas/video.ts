@@ -384,6 +384,10 @@ export const VideoUpdateSchema = z.object({
 
   // Smart loading - phases confirmed by producer (2 and 3 require review)
   reviewedPhases: z.array(z.number()).optional(),
+
+  // Epic 22 / Story 22.3g — proxy URL da thumbnail final no Cloud Storage.
+  // Atualizado quando o produtor clica Continuar na fase Thumbnail.
+  storageThumbnailUrl: z.string().optional(),
 })
 
 /**
