@@ -34,10 +34,14 @@ interface WizardBreadcrumbProps {
 const DEFAULT_PHASE_STATE = { status: 'pending' as const, data: null, error: null }
 
 /**
- * Determines the phase state for extended phases (0 and 5B) based on video data.
+ * Determines the phase state for extended phases (0, 5B, THUMB) based on video data.
  *
  * - Phase 0: completed if video.parentEpisodeId is defined
  * - Phase 5B: completed if video.shortTitle is defined
+ * - Phase THUMB: completed if video.storageThumbnailUrl is defined (Epic 22 / Story 22.3g
+ *   persiste a URL final aqui ao clicar Continuar). Aceita tanto Cloud Storage
+ *   URLs novas quanto base64 legacy (TD-5) — qualquer thumbnail conta como
+ *   "produtor decidiu" para fins de progresso visual no breadcrumb.
  */
 function getExtendedPhaseState(
   phase: ExtendedWizardPhase,
@@ -57,6 +61,13 @@ function getExtendedPhaseState(
   if (phase === '5B') {
     // Phase 5B is complete when shortTitle is set
     return video.shortTitle
+      ? { status: 'completed', data: null, error: null }
+      : DEFAULT_PHASE_STATE
+  }
+
+  if (phase === 'THUMB') {
+    // Phase THUMB is complete when storageThumbnailUrl is set
+    return video.storageThumbnailUrl
       ? { status: 'completed', data: null, error: null }
       : DEFAULT_PHASE_STATE
   }
