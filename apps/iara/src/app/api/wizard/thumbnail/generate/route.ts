@@ -60,12 +60,18 @@ async function processThumbnailJob(params: {
   try {
     await updateWizardJob(PODCAST_ID, video.id, jobId, { status: 'processing' })
     const result = await generateThumbnail({ video, podcast, observation, guestPhotoUrl })
+    // Firestore rejeita `undefined` em qualquer field — só inclui observation
+    // no result quando o produtor de fato digitou algo.
+    const trimmedObservation = observation?.trim()
+    const jobResult: { thumbnailUrl: string; observation?: string } = {
+      thumbnailUrl: result.thumbnailUrl,
+    }
+    if (trimmedObservation) {
+      jobResult.observation = trimmedObservation
+    }
     await updateWizardJob(PODCAST_ID, video.id, jobId, {
       status: 'complete',
-      result: {
-        thumbnailUrl: result.thumbnailUrl,
-        observation: observation?.trim() || undefined,
-      },
+      result: jobResult,
     })
     log('INFO', 'Async thumbnail job completed', { jobId, videoId: video.id })
   } catch (error) {
