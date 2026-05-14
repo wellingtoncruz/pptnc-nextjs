@@ -40,22 +40,16 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-    // Next.js 16 exige declarar query-string patterns para URLs locais usadas
-    // em `<Image>`. Epic 22 introduz proxies autenticados pra Cloud Storage
-    // que sempre vêm como `?path=...` — todos os três precisam estar aqui.
+    // Next.js 16 transforma `localPatterns` numa allowlist estrita — sem ele
+    // qualquer URL local é permitida, com ele só o que está listado. Epic 22
+    // adiciona proxies autenticados pra Cloud Storage com `?path=...`, então
+    // listamos cada um; o catch-all `pathname:'/**', search:''` preserva o
+    // comportamento de antes pros assets estáticos do `/public` (logos etc.).
     localPatterns: [
-      {
-        pathname: '/api/wizard/thumbnail/select',
-        search: '?path=**',
-      },
-      {
-        pathname: '/api/wizard/thumbnail/upload',
-        search: '?path=**',
-      },
-      {
-        pathname: '/api/settings/thumbnail-config',
-        search: '?path=**',
-      },
+      { pathname: '/**', search: '' },
+      { pathname: '/api/wizard/thumbnail/select', search: '?path=**' },
+      { pathname: '/api/wizard/thumbnail/upload', search: '?path=**' },
+      { pathname: '/api/settings/thumbnail-config', search: '?path=**' },
     ],
   },
 }
