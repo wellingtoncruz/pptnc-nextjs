@@ -16,6 +16,17 @@ import { ManualUploadDropzone } from '@/components/wizard/thumbnail/manual-uploa
 import { ThumbnailLightbox } from '@/components/wizard/thumbnail/thumbnail-lightbox'
 import { log } from '@/lib/logger'
 import type { VideoTypeForWizard } from '@/lib/wizard/types'
+
+/**
+ * Intervalo entre polls do job de geração (Story 22.4). Mutável só pra
+ * permitir que a suíte reduza pra ~10ms — produção sempre usa 3s.
+ */
+let thumbnailPollIntervalMs = 3000
+
+/** @internal — usado apenas em testes; não chamar de código de produção. */
+export function __setThumbnailPollIntervalForTesting(ms: number): void {
+  thumbnailPollIntervalMs = ms
+}
 import type { ThumbnailPromptField } from '@/types/podcast'
 import type { Video } from '@/types/video'
 
@@ -367,6 +378,20 @@ function GeneratePathCard({ videoId, videoType, guestPhotoUrl, onGuestPhotoChang
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  /**
+   * Quando o produtor desmonta o componente (troca de fase, fecha o wizard,
+   * navega pra outro vídeo) durante uma geração, abortamos o polling pra
+   * não disparar `onGenerated` num pai já desmontado nem consumir mocks
+   * de fetch em testes subsequentes.
+   */
+  const abortedRef = useRef(false)
+  useEffect(() => {
+    abortedRef.current = false
+    return () => {
+      abortedRef.current = true
+    }
+  }, [])
+
   useEffect(() => {
     if (isGenerating) {
       setElapsedSeconds(0)
@@ -392,43 +417,117 @@ function GeneratePathCard({ videoId, videoType, guestPhotoUrl, onGuestPhotoChang
         ? 'Gerando thumbnail — modelos preview podem demorar um pouco mais...'
         : 'Gerando thumbnail com IAra...'
 
+  /**
+   * Story 22.4 — geração agora é async via wizard jobs.
+   *
+   * Fluxo:
+   * 1. POST `/api/wizard/thumbnail/generate` retorna 202 + `jobId`.
+   * 2. Polling em `/api/wizard/jobs/{jobId}?videoId=...` a cada `POLL_INTERVAL_MS`.
+   * 3. Quando status='complete', extrai `result.thumbnailUrl` e dispara onGenerated.
+   * 4. Em status='failed', mostra erro.
+   *
+   * O cleanup do polling (timeout, AbortController) é feito no useEffect que
+   * observa `isGenerating` — sair da fase enquanto está rodando para o timer.
+   */
   const handleGenerate = useCallback(async () => {
     setError(null)
     setIsGenerating(true)
+    const observationForVersion = observation.trim() || undefined
     try {
-      const trimmed = observation.trim()
       const body: { videoId: string; observation?: string; guestPhotoUrl?: string } = { videoId }
-      if (trimmed.length > 0) body.observation = trimmed
+      if (observationForVersion) body.observation = observationForVersion
       if (guestPhotoUrl) body.guestPhotoUrl = guestPhotoUrl
 
-      const response = await fetch('/api/wizard/thumbnail/generate', {
+      const startResponse = await fetch('/api/wizard/thumbnail/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!response.ok) {
-        let message = 'Falha ao gerar thumbnail. Tente novamente em alguns instantes.'
+      if (!startResponse.ok) {
+        let message = 'Falha ao iniciar a geração. Tente novamente.'
         try {
-          const payload = await response.json()
+          const payload = await startResponse.json()
           if (payload?.error?.message) message = payload.error.message
         } catch {
-          // ignore body parse error, fall back to default message
+          // ignore
         }
         setError(message)
-        log('WARN', 'Thumbnail generation request failed', { videoId, status: response.status })
+        setIsGenerating(false)
+        log('WARN', 'Thumbnail generation start failed', { videoId, status: startResponse.status })
         return
       }
-      const data = (await response.json()) as { thumbnailUrl?: string }
-      if (!data?.thumbnailUrl) {
+      const startData = (await startResponse.json()) as { jobId?: string }
+      if (!startData?.jobId) {
         setError('Resposta inválida do servidor. Tente novamente.')
+        setIsGenerating(false)
         return
       }
-      const trimmedForPayload = observation.trim()
-      onGenerated({
-        url: data.thumbnailUrl,
-        observation: trimmedForPayload.length > 0 ? trimmedForPayload : undefined,
-      })
-      log('INFO', 'Thumbnail generated (stub)', { videoId })
+
+      // Polling loop — segue até status='complete' ou 'failed' (ou aborto).
+      const jobId = startData.jobId
+      const POLL_INTERVAL_MS = thumbnailPollIntervalMs
+      const POLL_TIMEOUT_MS = 5 * 60 * 1000 // 5 min (cobertura pra retry/backoff 30+60+120s)
+      const startedAt = Date.now()
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (abortedRef.current) {
+          log('INFO', 'Thumbnail polling aborted (unmount)', { videoId, jobId })
+          return
+        }
+        if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
+          setError('Geração demorou demais. Tente novamente.')
+          log('WARN', 'Thumbnail polling timed out', { videoId, jobId })
+          break
+        }
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+        if (abortedRef.current) {
+          return
+        }
+        let jobResponse: Response
+        try {
+          jobResponse = await fetch(`/api/wizard/jobs/${jobId}?videoId=${encodeURIComponent(videoId)}`)
+        } catch (err) {
+          log('WARN', 'Thumbnail polling fetch threw, retrying', {
+            videoId,
+            jobId,
+            error: err instanceof Error ? err.message : String(err),
+          })
+          continue
+        }
+        if (abortedRef.current) {
+          return
+        }
+        if (!jobResponse.ok) {
+          // Job não encontrado ou auth — desiste.
+          setError('Não foi possível acompanhar a geração. Tente novamente.')
+          log('WARN', 'Thumbnail polling got non-ok', { videoId, jobId, status: jobResponse.status })
+          break
+        }
+        const job = (await jobResponse.json()) as {
+          status?: 'pending' | 'processing' | 'complete' | 'failed'
+          result?: { thumbnailUrl?: string }
+          error?: { message?: string }
+        }
+        if (job.status === 'complete') {
+          const url = job.result?.thumbnailUrl
+          if (!url) {
+            setError('Geração concluiu sem URL — tente novamente.')
+            log('WARN', 'Thumbnail job complete but no URL', { videoId, jobId })
+            break
+          }
+          onGenerated({ url, observation: observationForVersion })
+          log('INFO', 'Thumbnail generated', { videoId, jobId })
+          break
+        }
+        if (job.status === 'failed') {
+          const message = job.error?.message ?? 'Falha na geração. Tente novamente.'
+          setError(message)
+          log('WARN', 'Thumbnail job failed', { videoId, jobId, message })
+          break
+        }
+        // pending or processing — continue polling
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro inesperado.'
       setError(`Erro inesperado ao gerar thumbnail: ${message}`)

@@ -15,7 +15,7 @@ import userEvent from '@testing-library/user-event'
 
 import { render, screen, waitFor } from '@/test-utils'
 
-import { PhaseThumbnail } from './phase-thumbnail'
+import { PhaseThumbnail, __setThumbnailPollIntervalForTesting } from './phase-thumbnail'
 import type { Video } from '@/types/video'
 
 vi.mock('@/lib/logger', () => ({ log: vi.fn() }))
@@ -36,10 +36,20 @@ function mockPodcastResponse(payload: unknown) {
   } as Response)
 }
 
-function mockGenerateResponse(thumbnailUrl: string) {
+/**
+ * Story 22.4 — geração agora é async (POST devolve 202 + jobId, cliente
+ * polla GET /api/wizard/jobs/{jobId}). Esse helper monta os dois
+ * `fetchMock.mockResolvedValueOnce`: o POST de start e o primeiro poll que
+ * já entrega `status='complete'`.
+ */
+function mockGenerateResponse(thumbnailUrl: string, jobId = 'job-1') {
   fetchMock.mockResolvedValueOnce({
     ok: true,
-    json: async () => ({ thumbnailUrl, generatedAt: '2026-05-13T12:00:00Z' }),
+    json: async () => ({ jobId, podcastId: 'pptnc', status: 'pending' }),
+  } as Response)
+  fetchMock.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ status: 'complete', result: { thumbnailUrl } }),
   } as Response)
 }
 
@@ -51,14 +61,16 @@ function mockGenerateError(status: number, message?: string) {
   } as Response)
 }
 
-describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
+describe('PhaseThumbnail (Story 22.3a..22.4)', () => {
   beforeEach(() => {
     fetchMock.mockReset()
     global.fetch = fetchMock as unknown as typeof global.fetch
+    __setThumbnailPollIntervalForTesting(5)
   })
 
   afterEach(() => {
     global.fetch = originalFetch
+    __setThumbnailPollIntervalForTesting(3000)
   })
 
   it('renders the phase heading and main sections', async () => {
@@ -381,46 +393,46 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       })
     })
 
-    it('shows the elapsed timer while generation is in flight', async () => {
+    it('shows the elapsed timer while generation is in flight (async polling)', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
-      let resolveFetch: ((value: Response) => void) | null = null
+      // POST resolve imediato (202 + jobId). Primeiro poll fica pendente até
+      // o teste liberar, assim o componente fica com `isGenerating=true` e
+      // exibe o counter do tempo decorrido.
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ jobId: 'job-elapsed', podcastId: 'pptnc', status: 'pending' }),
+      } as Response)
+      let resolvePoll: ((value: Response) => void) | null = null
       fetchMock.mockReturnValueOnce(
         new Promise<Response>((resolve) => {
-          resolveFetch = resolve
+          resolvePoll = resolve
         })
       )
 
-      vi.useFakeTimers({ shouldAdvanceTime: true })
-      try {
-        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-        render(<PhaseThumbnail video={baseVideo} />)
-        await waitFor(() => {
-          expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
-        })
+      const user = userEvent.setup()
+      render(<PhaseThumbnail video={baseVideo} />)
+      await waitFor(() => {
+        expect(screen.getByTestId('generate-thumbnail-button')).toBeInTheDocument()
+      })
 
-        await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await user.click(screen.getByTestId('generate-thumbnail-button'))
 
-        await waitFor(() => {
+      await waitFor(
+        () => {
           expect(screen.getByTestId('thumbnail-elapsed')).toBeInTheDocument()
-        })
-        expect(screen.getByTestId('thumbnail-elapsed').textContent).toMatch(/Tempo decorrido: 0s/)
+        },
+        { timeout: 3000 }
+      )
+      expect(screen.getByTestId('thumbnail-elapsed').textContent).toMatch(/Tempo decorrido: \d+s/)
 
-        await act(async () => {
-          vi.advanceTimersByTime(2000)
-        })
-        expect(screen.getByTestId('thumbnail-elapsed').textContent).toMatch(/Tempo decorrido: 2s/)
-
-        // Resolve the pending fetch so the component leaves loading state cleanly.
-        resolveFetch?.({
-          ok: true,
-          json: async () => ({ thumbnailUrl: 'data:image/svg+xml;base64,PHN2Zy8+' }),
-        } as Response)
-        await waitFor(() => {
-          expect(screen.queryByTestId('thumbnail-elapsed')).not.toBeInTheDocument()
-        })
-      } finally {
-        vi.useRealTimers()
-      }
+      // Libera o poll como complete pra fechar o loop e deixar o teste sair sem leak.
+      resolvePoll?.({
+        ok: true,
+        json: async () => ({ status: 'complete', result: { thumbnailUrl: 'data:image/svg+xml;base64,DONE' } }),
+      } as Response)
+      await waitFor(() => {
+        expect(screen.queryByTestId('thumbnail-elapsed')).not.toBeInTheDocument()
+      })
     })
 
     it('renders the error block when the stub endpoint fails', async () => {
@@ -474,9 +486,9 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
 
     it('accumulates each successful generation in the versions gallery', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
-      mockGenerateResponse('data:image/svg+xml;base64,FIRST')
-      mockGenerateResponse('data:image/svg+xml;base64,SECOND')
-      mockGenerateResponse('data:image/svg+xml;base64,THIRD')
+      mockGenerateResponse('data:image/svg+xml;base64,FIRST', 'job-1')
+      mockGenerateResponse('data:image/svg+xml;base64,SECOND', 'job-2')
+      mockGenerateResponse('data:image/svg+xml;base64,THIRD', 'job-3')
 
       const user = userEvent.setup()
       render(<PhaseThumbnail video={baseVideo} />)
@@ -487,14 +499,22 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       // 1st generation
       await user.type(screen.getByTestId('thumbnail-observation'), 'um')
       await user.click(screen.getByTestId('generate-thumbnail-button'))
+      // Aguardar fim do isGenerating (textarea volta a ficar enabled).
       await waitFor(() => {
-        expect(screen.getByTestId('generated-versions-gallery')).toBeInTheDocument()
+        expect(screen.getByTestId('thumbnail-observation')).not.toBeDisabled()
       })
+      expect(screen.getAllByTestId('version-card')).toHaveLength(1)
 
       // 2nd generation
       await user.clear(screen.getByTestId('thumbnail-observation'))
       await user.type(screen.getByTestId('thumbnail-observation'), 'dois')
       await user.click(screen.getByTestId('generate-thumbnail-button'))
+      await waitFor(() => {
+        expect(screen.getAllByTestId('version-card')).toHaveLength(2)
+      })
+      await waitFor(() => {
+        expect(screen.getByTestId('thumbnail-observation')).not.toBeDisabled()
+      })
 
       // 3rd generation
       await user.clear(screen.getByTestId('thumbnail-observation'))
@@ -513,8 +533,8 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
 
     it('lets the producer pick an older version from the gallery', async () => {
       mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
-      mockGenerateResponse('data:image/svg+xml;base64,FIRST')
-      mockGenerateResponse('data:image/svg+xml;base64,SECOND')
+      mockGenerateResponse('data:image/svg+xml;base64,FIRST', 'job-1')
+      mockGenerateResponse('data:image/svg+xml;base64,SECOND', 'job-2')
 
       const user = userEvent.setup()
       render(<PhaseThumbnail video={baseVideo} />)
@@ -525,6 +545,10 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       await user.click(screen.getByTestId('generate-thumbnail-button'))
       await waitFor(() => {
         expect(screen.getAllByTestId('version-card')).toHaveLength(1)
+      })
+      // Wait for isGenerating cleanup before clicking again.
+      await waitFor(() => {
+        expect(screen.getByTestId('thumbnail-observation')).not.toBeDisabled()
       })
       await user.click(screen.getByTestId('generate-thumbnail-button'))
       await waitFor(() => {
@@ -667,7 +691,9 @@ describe('PhaseThumbnail (Story 22.3a..22.3c)', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('thumbnail-error')).not.toBeInTheDocument()
       })
-      expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeEnabled()
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeEnabled()
+      })
     })
   })
 })

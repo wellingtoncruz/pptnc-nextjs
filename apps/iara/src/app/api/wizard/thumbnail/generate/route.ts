@@ -1,23 +1,37 @@
 /**
- * STUB endpoint for Story 22.3c — Caminho 1 (Gerar com IAra).
+ * Geração assíncrona de thumbnail — Epic 22 / Story 22.4.
  *
- * Returns a placeholder SVG data URL after a short simulated delay so the
- * wizard's progressive temporal feedback (timer + 30s/60s messages) can be
- * exercised end-to-end without burning Vertex AI quota.
+ * Substitui o stub da 22.3c. Fluxo:
+ * 1. Frontend POST `/api/wizard/thumbnail/generate` com `{ videoId, observation?, guestPhotoUrl? }`.
+ * 2. Endpoint valida sessão + vídeo, cria um wizard job (`phase='thumbnail'`,
+ *    `status='pending'`) e dispara o worker em background (fire-and-forget).
+ *    Retorna 202 com `{ jobId, podcastId, status: 'pending' }`.
+ * 3. Worker chama `generateThumbnail()` (lib/wizard/thumbnail-generator) que
+ *    monta prompt + reference images (Base, Referência, foto do convidado),
+ *    chama Vertex AI com retry/backoff 30s/60s/120s para RATE_LIMIT, sobe o
+ *    PNG resultante pro staging e devolve `{ thumbnailUrl, filePath }`.
+ * 4. Worker grava o resultado no job (`status='complete'`, `result`). Em
+ *    erro: `status='failed'` + `error` PT-BR.
+ * 5. Frontend faz polling em `GET /api/wizard/jobs/{jobId}?videoId=...` no
+ *    mesmo ritmo das demais fases async.
  *
- * Story 22.4 replaces this with the real `runAsyncPhase` pattern:
- * fire-and-forget + Firestore status polling + reference image composition.
- * The shape of the success response (`{ thumbnailUrl }`) is intentionally
- * close to what 22.4 will emit, so the client-side wiring in PhaseThumbnail
- * does not have to change again.
+ * Nada aqui depende de `runAsyncPhase` direto — usamos a infra de wizard
+ * jobs existente (criada pra outras fases) por já oferecer signal channel
+ * idêntico ao que precisamos.
  */
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
+import { createWizardJob, updateWizardJob } from '@/lib/firebase/wizard-jobs-admin'
+import { LLMError, createLLMError } from '@/lib/llm'
 import { log } from '@/lib/logger'
+import { generateThumbnail } from '@/lib/wizard/thumbnail-generator'
+import type { Podcast } from '@/types/podcast'
+import type { Video } from '@/types/video'
 
 export const runtime = 'nodejs'
 
@@ -25,42 +39,62 @@ const RequestSchema = z.object({
   videoId: z.string().min(1, 'videoId é obrigatório'),
   observation: z.string().max(2000).optional(),
   /**
-   * URL (proxy autenticado) da foto do convidado já cropada. Usada como
-   * reference image extra na chamada ao LLM em Story 22.4. O stub atual
-   * apenas valida e registra — não influencia o mock SVG.
+   * URL (proxy autenticado) da foto do convidado já cropada (Story 22.3f).
+   * Quando presente, vira reference image extra na chamada Vertex (role=guest).
    */
   guestPhotoUrl: z.string().url().or(z.string().startsWith('/api/')).optional(),
 })
 
-const STUB_DELAY_MS = Number(process.env.THUMBNAIL_STUB_DELAY_MS ?? 4000)
-
-function buildPlaceholderDataUrl(title: string, observation: string | undefined): string {
-  const safeTitle = (title || 'Sem título').replace(/[<>&]/g, '').slice(0, 60)
-  const safeObservation = (observation ?? '').replace(/[<>&]/g, '').slice(0, 80)
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1f2937"/>
-      <stop offset="100%" stop-color="#0f172a"/>
-    </linearGradient>
-  </defs>
-  <rect width="1280" height="720" fill="url(#g)"/>
-  <text x="640" y="320" text-anchor="middle" fill="#f97316" font-family="sans-serif" font-size="64" font-weight="bold">STUB · Thumbnail mock</text>
-  <text x="640" y="400" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="36">${safeTitle}</text>
-  <text x="640" y="470" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="24">${safeObservation || 'sem observação'}</text>
-  <text x="640" y="640" text-anchor="middle" fill="#64748b" font-family="sans-serif" font-size="20">Story 22.4 substitui este stub pela geração real via Vertex AI</text>
-</svg>`
-  const base64 = Buffer.from(svg, 'utf-8').toString('base64')
-  return `data:image/svg+xml;base64,${base64}`
+/**
+ * Worker em background — nunca lança. Toda falha é persistida no job pra
+ * polling do cliente. Não usar `await` no caller; deve ser fire-and-forget.
+ */
+async function processThumbnailJob(params: {
+  jobId: string
+  video: Video
+  podcast: Podcast
+  observation: string | undefined
+  guestPhotoUrl: string | undefined
+}): Promise<void> {
+  const { jobId, video, podcast, observation, guestPhotoUrl } = params
+  try {
+    await updateWizardJob(PODCAST_ID, video.id, jobId, { status: 'processing' })
+    const result = await generateThumbnail({ video, podcast, observation, guestPhotoUrl })
+    await updateWizardJob(PODCAST_ID, video.id, jobId, {
+      status: 'complete',
+      result: {
+        thumbnailUrl: result.thumbnailUrl,
+        observation: observation?.trim() || undefined,
+      },
+    })
+    log('INFO', 'Async thumbnail job completed', { jobId, videoId: video.id })
+  } catch (error) {
+    const llmError = error instanceof LLMError ? error : createLLMError(error)
+    log('WARN', 'Async thumbnail job failed', {
+      jobId,
+      videoId: video.id,
+      errorCode: llmError.code,
+      errorMessage: llmError.message,
+    })
+    try {
+      await updateWizardJob(PODCAST_ID, video.id, jobId, {
+        status: 'failed',
+        error: {
+          code: llmError.code,
+          message: llmError.message,
+          retryable: llmError.retryable,
+        },
+      })
+    } catch (updateError) {
+      log('ERROR', 'Failed to record thumbnail job failure', {
+        jobId,
+        videoId: video.id,
+        updateError: updateError instanceof Error ? updateError.message : String(updateError),
+      })
+    }
+  }
 }
 
-/**
- * POST /api/wizard/thumbnail/generate
- *
- * Body: `{ videoId, observation? }`
- * Returns: `{ thumbnailUrl, generatedAt }` after `STUB_DELAY_MS`.
- */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const session = await auth()
   if (!session) {
@@ -109,22 +143,38 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     )
   }
 
-  log('INFO', 'Thumbnail stub generation started', {
+  const podcast = await getPodcastAdmin(PODCAST_ID)
+  if (!podcast) {
+    return NextResponse.json(
+      { error: { code: 'NOT_FOUND', message: 'Podcast não encontrado' } },
+      { status: 404 }
+    )
+  }
+
+  log('INFO', 'Async thumbnail job starting', {
     videoId,
     videoType: video.videoType,
     hasObservation: Boolean(observation),
     hasGuestPhoto: Boolean(guestPhotoUrl),
-    delayMs: STUB_DELAY_MS,
   })
 
-  if (STUB_DELAY_MS > 0) {
-    await new Promise<void>((resolve) => setTimeout(resolve, STUB_DELAY_MS))
-  }
+  const jobId = await createWizardJob(PODCAST_ID, {
+    videoId,
+    phase: 'thumbnail',
+    ...(observation ? { additionalContext: observation } : {}),
+  })
 
-  const thumbnailUrl = buildPlaceholderDataUrl(video.title ?? '', observation)
-  const generatedAt = new Date().toISOString()
+  // Fire-and-forget — worker grava status/result no job pro polling.
+  void processThumbnailJob({
+    jobId,
+    video,
+    podcast,
+    observation,
+    guestPhotoUrl,
+  })
 
-  log('INFO', 'Thumbnail stub generation completed', { videoId, generatedAt })
-
-  return NextResponse.json({ thumbnailUrl, generatedAt })
+  return NextResponse.json(
+    { jobId, podcastId: PODCAST_ID, status: 'pending' },
+    { status: 202 }
+  )
 }

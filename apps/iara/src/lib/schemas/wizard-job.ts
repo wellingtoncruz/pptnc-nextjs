@@ -26,6 +26,8 @@ export const WizardJobPhaseSchema = z.union([
   z.literal(6),
   z.literal(7),
   z.literal('5b'),
+  // Epic 22 / Story 22.4 — geração de thumbnail via Vertex AI (Gemini image).
+  z.literal('thumbnail'),
 ])
 
 const WizardJobErrorSchema = z.object({
