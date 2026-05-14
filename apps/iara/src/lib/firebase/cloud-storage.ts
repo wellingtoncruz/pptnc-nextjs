@@ -439,16 +439,18 @@ export async function uploadThumbnailStagingImage(
 /**
  * Copia uma thumbnail de staging para o path final canônico do vídeo.
  *
- * Path final: `thumbnails/{PODCAST_ID}/{videoId}/final.{ext}`. Sobrescreve o
- * existente — só uma thumbnail final por vídeo. Não apaga o staging (limpeza
- * é feita por lifecycle policy ou follow-up). A extensão é herdada do path
- * de staging pra preservar o MIME original.
+ * Path final: `thumbnails/{PODCAST_ID}/{videoId}/final-{timestamp}.{ext}`.
+ * O **timestamp invalida cache de browser/CDN/next-image** — sem ele, o URL
+ * salvo em `video.storageThumbnailUrl` ficava idêntico entre sessões e o
+ * preview da Phase 8 mostrava a thumb antiga mesmo após gerar uma nova
+ * (bug detectado em 2026-05-14). Arquivos antigos viram lixo no bucket;
+ * limpeza fica pra lifecycle policy.
  *
- * Idempotente: se `stagingPath` já for um final path, retorna o próprio path
- * sem copiar (cobre o caso do produtor reabrir a fase e clicar Continuar
- * sem trocar a seleção).
+ * Idempotente: se `stagingPath` já for um final path, retorna o próprio
+ * sem copiar — cobre o caso do produtor reabrir a fase e clicar Continuar
+ * sem trocar a seleção.
  *
- * Story 22.3g.
+ * Story 22.3g + cache-bust fix 2026-05-14.
  */
 export async function copyThumbnailStagingToFinal(
   stagingPath: string,
@@ -466,7 +468,7 @@ export async function copyThumbnailStagingToFinal(
     throw new CloudStorageError('Invalid staging path for thumbnail copy', 'UPLOAD_FAILED')
   }
   const ext = stagingPath.split('.').pop() ?? 'png'
-  const destPath = `${finalPrefix}final.${ext}`
+  const destPath = `${finalPrefix}final-${Date.now()}.${ext}`
 
   try {
     const bucket = getBucket()
