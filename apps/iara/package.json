@@ -47,6 +47,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
+    "react-image-crop": "^11.0.10",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.5.1",
     "swr": "^2.3.8",

@@ -368,7 +368,20 @@ export async function uploadThumbnailConfigImage(
  * with manual uploads in the same key namespace.
  */
 const SAFE_VIDEO_ID = /^[a-zA-Z0-9_-]+$/
-export type ThumbnailStagingSource = 'upload' | 'generated'
+/**
+ * - `upload`: thumbnail própria enviada pelo produtor (Caminho 2 / Story 22.3e).
+ * - `generated`: thumbnail gerada pela IAra (Caminho 1 / Story 22.3c + 22.4).
+ * - `guest`: foto de convidado usada como reference image extra na geração
+ *   de cortes (Story 22.3f). Não é uma thumbnail candidata em si — é insumo
+ *   pro LLM. Fica em staging e morre com a sessão (não é movida pra final).
+ */
+export type ThumbnailStagingSource = 'upload' | 'generated' | 'guest'
+
+const STAGING_PREFIX: Record<ThumbnailStagingSource, string> = {
+  upload: 'upload',
+  generated: 'gen',
+  guest: 'guest',
+}
 
 export async function uploadThumbnailStagingImage(
   videoId: string,
@@ -387,8 +400,7 @@ export async function uploadThumbnailStagingImage(
     throw new CloudStorageError('Empty image buffer for thumbnail staging', 'UPLOAD_FAILED')
   }
 
-  const prefix = source === 'upload' ? 'upload' : 'gen'
-  const filePath = `thumbnail-staging/${PODCAST_ID}/${videoId}/${prefix}-${Date.now()}.${ext}`
+  const filePath = `thumbnail-staging/${PODCAST_ID}/${videoId}/${STAGING_PREFIX[source]}-${Date.now()}.${ext}`
 
   try {
     const bucket = getBucket()

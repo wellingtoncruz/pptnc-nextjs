@@ -24,6 +24,12 @@ export const runtime = 'nodejs'
 const RequestSchema = z.object({
   videoId: z.string().min(1, 'videoId é obrigatório'),
   observation: z.string().max(2000).optional(),
+  /**
+   * URL (proxy autenticado) da foto do convidado já cropada. Usada como
+   * reference image extra na chamada ao LLM em Story 22.4. O stub atual
+   * apenas valida e registra — não influencia o mock SVG.
+   */
+  guestPhotoUrl: z.string().url().or(z.string().startsWith('/api/')).optional(),
 })
 
 const STUB_DELAY_MS = Number(process.env.THUMBNAIL_STUB_DELAY_MS ?? 4000)
@@ -81,7 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 400 }
     )
   }
-  const { videoId, observation } = parsed.data
+  const { videoId, observation, guestPhotoUrl } = parsed.data
 
   const video = await getVideoAdmin(PODCAST_ID, videoId)
   if (!video) {
@@ -107,6 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     videoId,
     videoType: video.videoType,
     hasObservation: Boolean(observation),
+    hasGuestPhoto: Boolean(guestPhotoUrl),
     delayMs: STUB_DELAY_MS,
   })
 

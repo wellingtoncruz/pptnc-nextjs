@@ -177,6 +177,71 @@ describe('POST /api/wizard/thumbnail/upload (Epic 22, Story 22.3e)', () => {
     )
   })
 
+  it('accepts role=guest for cut videos and uploads with source=guest', async () => {
+    mockGetVideoAdmin.mockResolvedValue({ ...validVideo, videoType: 'cut' })
+    mockUploadThumbnailStagingImage.mockResolvedValue({
+      filePath: 'thumbnail-staging/pptnc/vid-1/guest-456.png',
+      mimeType: 'image/png',
+    })
+    const response = await POST(
+      buildMultipartRequest({
+        videoId: 'vid-1',
+        role: 'guest',
+        file: new File(['x'], 'guest.png', { type: 'image/png' }),
+      })
+    )
+    expect(response.status).toBe(200)
+    expect(mockUploadThumbnailStagingImage).toHaveBeenCalledWith(
+      'vid-1',
+      'guest',
+      expect.any(Buffer),
+      'image/png'
+    )
+    const body = await response.json()
+    expect(body.thumbnailUrl).toContain('thumbnail-staging%2Fpptnc%2Fvid-1%2Fguest-456.png')
+  })
+
+  it('rejects role=guest for episode videos (only cuts have guest photos)', async () => {
+    const response = await POST(
+      buildMultipartRequest({
+        videoId: 'vid-1',
+        role: 'guest',
+        file: new File(['x'], 'guest.png', { type: 'image/png' }),
+      })
+    )
+    expect(response.status).toBe(400)
+    const body = await response.json()
+    expect(body.error.message).toMatch(/cortes/)
+  })
+
+  it('allows up to 5 MB for role=guest (vs 2 MB for role=upload)', async () => {
+    mockGetVideoAdmin.mockResolvedValue({ ...validVideo, videoType: 'cut' })
+    const big = new Uint8Array(3 * 1024 * 1024) // 3 MB — would fail for upload, ok for guest
+    const response = await POST(
+      buildMultipartRequest({
+        videoId: 'vid-1',
+        role: 'guest',
+        file: new File([big], 'guest.png', { type: 'image/png' }),
+      })
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('rejects > 5 MB even for role=guest', async () => {
+    mockGetVideoAdmin.mockResolvedValue({ ...validVideo, videoType: 'cut' })
+    const big = new Uint8Array(5 * 1024 * 1024 + 1)
+    const response = await POST(
+      buildMultipartRequest({
+        videoId: 'vid-1',
+        role: 'guest',
+        file: new File([big], 'guest.png', { type: 'image/png' }),
+      })
+    )
+    expect(response.status).toBe(400)
+    const body = await response.json()
+    expect(body.error.message).toMatch(/Máximo 5 MB/)
+  })
+
   it('returns 500 when the cloud-storage helper throws', async () => {
     mockUploadThumbnailStagingImage.mockRejectedValue(
       new CloudStorageError('Boom', 'UPLOAD_FAILED')

@@ -33,11 +33,22 @@ export const runtime = 'nodejs'
 /** PNG/JPEG/WebP — YouTube `thumbnails.set` aceita apenas esses. */
 const ACCEPTED_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
 
-/** 2 MB — limite do YouTube `thumbnails.set`. Mesma constante da story spec. */
-const MAX_UPLOAD_BYTES = 2 * 1024 * 1024
+/**
+ * Limites por papel (role):
+ * - `upload`: 2 MB — limite duro do YouTube `thumbnails.set`.
+ * - `guest`: 5 MB — foto crua do convidado, sofre crop client-side antes
+ *   do upload; aceita arquivos maiores pra não rejeitar fotos modernas de
+ *   celular antes do produtor poder cortar.
+ */
+const MAX_UPLOAD_BYTES_BY_ROLE: Record<'upload' | 'guest', number> = {
+  upload: 2 * 1024 * 1024,
+  guest: 5 * 1024 * 1024,
+}
 
 /** Pattern restritivo para `videoId` no querystring/form (defesa contra path traversal). */
 const SAFE_VIDEO_ID = /^[a-zA-Z0-9_-]+$/
+
+const ROLES = new Set<'upload' | 'guest'>(['upload', 'guest'])
 
 export async function POST(request: Request): Promise<NextResponse> {
   const session = await auth()
@@ -63,6 +74,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const videoId = formData.get('videoId')
   const fileEntry = formData.get('file')
+  const roleRaw = formData.get('role')
+  const role: 'upload' | 'guest' =
+    typeof roleRaw === 'string' && ROLES.has(roleRaw as 'upload' | 'guest')
+      ? (roleRaw as 'upload' | 'guest')
+      : 'upload'
 
   if (typeof videoId !== 'string' || !SAFE_VIDEO_ID.test(videoId)) {
     return NextResponse.json(
@@ -98,9 +114,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       { status: 400 }
     )
   }
-  if (file.size > MAX_UPLOAD_BYTES) {
+  const maxBytes = MAX_UPLOAD_BYTES_BY_ROLE[role]
+  if (file.size > maxBytes) {
+    const maxMb = Math.round(maxBytes / (1024 * 1024))
     return NextResponse.json(
-      { error: { code: 'FILE_TOO_LARGE', message: 'Imagem muito grande. Máximo 2 MB.' } },
+      { error: { code: 'FILE_TOO_LARGE', message: `Imagem muito grande. Máximo ${maxMb} MB.` } },
       { status: 400 }
     )
   }
@@ -124,11 +142,24 @@ export async function POST(request: Request): Promise<NextResponse> {
     )
   }
 
+  // Foto do convidado é exclusiva de cortes — pra episódios não faz sentido.
+  if (role === 'guest' && video.videoType !== 'cut') {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INVALID_VIDEO_TYPE',
+          message: 'Foto do convidado está disponível apenas para cortes',
+        },
+      },
+      { status: 400 }
+    )
+  }
+
   try {
     const buffer = Buffer.from(await (file.arrayBuffer as () => Promise<ArrayBuffer>)())
     const { filePath, mimeType } = await uploadThumbnailStagingImage(
       videoId,
-      'upload',
+      role,
       buffer,
       file.type as string
     )

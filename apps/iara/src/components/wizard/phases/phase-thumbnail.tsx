@@ -11,9 +11,11 @@ import {
   GeneratedVersionsGallery,
   type GeneratedThumbnailVersion,
 } from '@/components/wizard/thumbnail/generated-versions-gallery'
+import { GuestPhotoUploader } from '@/components/wizard/thumbnail/guest-photo-uploader'
 import { ManualUploadDropzone } from '@/components/wizard/thumbnail/manual-upload-dropzone'
 import { ThumbnailLightbox } from '@/components/wizard/thumbnail/thumbnail-lightbox'
 import { log } from '@/lib/logger'
+import type { VideoTypeForWizard } from '@/lib/wizard/types'
 import type { ThumbnailPromptField } from '@/types/podcast'
 import type { Video } from '@/types/video'
 
@@ -55,6 +57,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
   const [versions, setVersions] = useState<GeneratedThumbnailVersion[]>([])
   const [selectedVersionUrl, setSelectedVersionUrl] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+  const [guestPhotoUrl, setGuestPhotoUrl] = useState<string | null>(null)
   // Local generation/selection always wins over the hydrated `selectedThumbnailUrl`
   // prop. Sem isso, um vídeo com `storageThumbnailUrl` pré-existente (ex.: base64
   // legado da YouTube — TD-5) mascararia a thumbnail recém-gerada e o produtor não
@@ -143,16 +146,23 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
           <ReferencesPanel config={config} configLoaded={configLoaded} />
 
           <div className="flex flex-col gap-4">
-            <GeneratePathCard videoId={video.id} onGenerated={handleGenerated} />
+            <GeneratePathCard
+              videoId={video.id}
+              videoType={videoType}
+              guestPhotoUrl={guestPhotoUrl}
+              onGuestPhotoChange={setGuestPhotoUrl}
+              onGenerated={handleGenerated}
+            />
+
+            <GeneratedVersionsGallery
+              versions={versions}
+              selectedUrl={effectiveSelectedUrl}
+              onSelect={handleSelectVersion}
+              onPreview={handleOpenLightbox}
+            />
+
             <ManualUploadDropzone videoId={video.id} onUploaded={handleUploaded} />
           </div>
-
-          <GeneratedVersionsGallery
-            versions={versions}
-            selectedUrl={effectiveSelectedUrl}
-            onSelect={handleSelectVersion}
-            onPreview={handleOpenLightbox}
-          />
 
           <SelectedThumbnailSummary
             selectedThumbnailUrl={effectiveSelectedUrl}
@@ -242,6 +252,17 @@ function ReferenceSlot({ label, url, testid }: ReferenceSlotProps) {
 interface GeneratePathCardProps {
   videoId: string
   /**
+   * Tipo do vídeo — usado pra gatear o uploader da foto do convidado, que só
+   * faz sentido em cortes (cuts).
+   */
+  videoType: VideoTypeForWizard | undefined
+  /**
+   * URL atual da foto do convidado (apenas cortes). Quando definida, é
+   * incluída como reference extra no body do POST /generate.
+   */
+  guestPhotoUrl: string | null
+  onGuestPhotoChange: (url: string | null) => void
+  /**
    * Disparado a cada sucesso de geração. Repassa também a observação usada
    * (trimada — undefined se vazia) pra que a galeria de versões mostre ao
    * lado da miniatura. Story 22.3d depende dessa informação.
@@ -259,7 +280,7 @@ interface GeneratePathCardProps {
  * mensagem com botão de tentar novamente; upload manual permanece disponível
  * como alternativa quando 22.3e entrar.
  */
-function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
+function GeneratePathCard({ videoId, videoType, guestPhotoUrl, onGuestPhotoChange, onGenerated }: GeneratePathCardProps) {
   const [observation, setObservation] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -296,8 +317,9 @@ function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
     setIsGenerating(true)
     try {
       const trimmed = observation.trim()
-      const body: { videoId: string; observation?: string } = { videoId }
+      const body: { videoId: string; observation?: string; guestPhotoUrl?: string } = { videoId }
       if (trimmed.length > 0) body.observation = trimmed
+      if (guestPhotoUrl) body.guestPhotoUrl = guestPhotoUrl
 
       const response = await fetch('/api/wizard/thumbnail/generate', {
         method: 'POST',
@@ -337,7 +359,7 @@ function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
     } finally {
       setIsGenerating(false)
     }
-  }, [observation, onGenerated, videoId])
+  }, [guestPhotoUrl, observation, onGenerated, videoId])
 
   return (
     <div className="rounded-md border p-4 flex flex-col gap-3" data-testid="path-generate">
@@ -367,6 +389,14 @@ function GeneratePathCard({ videoId, onGenerated }: GeneratePathCardProps) {
           Pode gerar direto sem digitar nada — a IAra usa Base + Referência como contexto. Use a observação para refinar pontualmente.
         </p>
       </div>
+
+      {videoType === 'cut' && (
+        <GuestPhotoUploader
+          videoId={videoId}
+          currentUrl={guestPhotoUrl ?? undefined}
+          onChange={onGuestPhotoChange}
+        />
+      )}
 
       <Button
         onClick={handleGenerate}
