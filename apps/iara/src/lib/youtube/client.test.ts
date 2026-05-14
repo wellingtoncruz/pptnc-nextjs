@@ -469,6 +469,57 @@ describe('YouTubeClient', () => {
     })
   })
 
+  describe('uploadThumbnail (Epic 22, Story 22.5)', () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+
+    it('POSTs to thumbnails/set with the image MIME as Content-Type and binary body', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+      await client.uploadThumbnail('video-1', png, 'image/png')
+
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+      const [url, init] = mockFetch.mock.calls[0]
+      expect(url).toContain('upload/youtube/v3/thumbnails/set?videoId=video-1')
+      expect(url).toContain('uploadType=media')
+      expect(init.method).toBe('POST')
+      expect(init.headers['Content-Type']).toBe('image/png')
+      expect(init.headers.Authorization).toBe('Bearer test-access-token')
+      expect(init.body).toBeInstanceOf(Uint8Array)
+    })
+
+    it('rejects empty buffer before hitting the network', async () => {
+      await expect(client.uploadThumbnail('video-1', Buffer.alloc(0), 'image/png')).rejects.toThrow(
+        /empty/i
+      )
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects buffers larger than 2 MB', async () => {
+      const big = Buffer.alloc(2 * 1024 * 1024 + 1)
+      await expect(client.uploadThumbnail('video-1', big, 'image/png')).rejects.toThrow(
+        /too large/i
+      )
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects unsupported MIME types', async () => {
+      await expect(
+        client.uploadThumbnail('video-1', png, 'image/webp' as never)
+      ).rejects.toThrow(/Invalid thumbnail MIME/)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('throws YouTubeAPIError on API failure', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: async () => ({ error: { errors: [{ reason: 'forbidden' }] } }),
+      })
+      await expect(client.uploadThumbnail('video-1', png, 'image/png')).rejects.toMatchObject({
+        code: 'YOUTUBE_FORBIDDEN',
+      })
+    })
+  })
+
   describe('error handling', () => {
     it('throws YOUTUBE_QUOTA on 403 quotaExceeded', async () => {
       mockFetch.mockResolvedValueOnce({

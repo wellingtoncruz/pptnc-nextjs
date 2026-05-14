@@ -83,6 +83,11 @@ export function WizardOrchestrator({
   const [isSending, setIsSending] = useState(false)
   const [isSent, setIsSent] = useState(false)
   const [phase8Error, setPhase8Error] = useState<string | null>(null)
+  // Story 22.5 — status do upload da thumbnail. Independente do `isSent`.
+  const [thumbnailStatus, setThumbnailStatus] = useState<
+    'idle' | 'uploaded' | 'skipped' | 'failed'
+  >('idle')
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null)
 
   // Track if processing has been initiated for this video (per phase)
   const processingVideoIdRef = useRef<string | null>(null)
@@ -196,6 +201,8 @@ export function WizardOrchestrator({
       setIsSending(false)
       setIsSent(false)
       setPhase8Error(null)
+      setThumbnailStatus('idle')
+      setThumbnailError(null)
 
       // Reset cache flags
       setPhase2FromCache(false)
@@ -2164,8 +2171,10 @@ export function WizardOrchestrator({
   const handleSendToYouTube = useCallback(async () => {
     log('INFO', 'Sending video to YouTube', { videoId: video.id })
 
-    // Clear previous error
+    // Clear previous errors / status
     setPhase8Error(null)
+    setThumbnailStatus('idle')
+    setThumbnailError(null)
 
     // VALIDATION: Check if phases 2 and 3 need review confirmation
     const phase2HasData = video.editingIssues !== undefined
@@ -2260,6 +2269,42 @@ export function WizardOrchestrator({
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error?.message || 'Erro ao enviar para o YouTube')
+      }
+
+      // Story 22.5 — upload da thumbnail customizada. Não-bloqueante: se falhar,
+      // os metadados continuam publicados e a UI sinaliza claramente. Vídeos
+      // legacy (storageThumbnailUrl base64) retornam `uploaded: false` sem erro.
+      try {
+        const thumbResponse = await fetch(`/api/youtube/videos/${video.id}/thumbnail`, {
+          method: 'POST',
+        })
+        if (thumbResponse.ok) {
+          const thumbData = await thumbResponse.json().catch(() => ({}))
+          if (thumbData?.data?.uploaded === true) {
+            setThumbnailStatus('uploaded')
+          } else {
+            setThumbnailStatus('skipped')
+            log('INFO', 'Thumbnail upload skipped (no cloud storage URL or legacy base64)', {
+              videoId: video.id,
+              reason: thumbData?.data?.reason,
+            })
+          }
+        } else {
+          const thumbError = await thumbResponse.json().catch(() => ({}))
+          const message = thumbError?.error?.message ?? 'Falha desconhecida no upload da thumbnail.'
+          setThumbnailStatus('failed')
+          setThumbnailError(message)
+          log('WARN', 'Thumbnail upload failed (non-blocking)', {
+            videoId: video.id,
+            status: thumbResponse.status,
+            message,
+          })
+        }
+      } catch (thumbErr) {
+        const message = thumbErr instanceof Error ? thumbErr.message : 'Erro inesperado.'
+        setThumbnailStatus('failed')
+        setThumbnailError(message)
+        log('WARN', 'Thumbnail upload threw (non-blocking)', { videoId: video.id, message })
       }
 
       // Update video status to 'sent' in Firestore
@@ -2572,6 +2617,8 @@ export function WizardOrchestrator({
             error={phase8Error}
             onSend={handleSendToYouTube}
             onRetry={handleRetryPhase8}
+            thumbnailStatus={thumbnailStatus}
+            thumbnailError={thumbnailError}
           />
         )
       default:

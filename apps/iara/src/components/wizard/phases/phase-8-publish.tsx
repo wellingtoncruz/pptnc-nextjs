@@ -13,6 +13,7 @@ import {
   UsersIcon,
   LinkedinIcon,
   ClockIcon,
+  ImageIcon,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,15 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { resolveVideoPlaceholders } from '@/lib/youtube/format-chapters'
 import type { Video } from '@/types/video'
+
+/**
+ * Resultado do upload da thumbnail pro YouTube — Story 22.5.
+ * - `uploaded`: enviada com sucesso.
+ * - `skipped`: vídeo não tinha `storageThumbnailUrl` válido (legacy base64 ou ausente).
+ * - `failed`: chamada à YouTube API falhou (metadados foram salvos mesmo assim).
+ * - `idle`: ainda não tentou (estado inicial / antes de clicar Publicar).
+ */
+export type ThumbnailPublishStatus = 'idle' | 'uploaded' | 'skipped' | 'failed'
 
 interface Phase8PublishProps {
   video: Video
@@ -34,6 +44,13 @@ interface Phase8PublishProps {
   onSend?: () => void
   /** Callback to retry after error */
   onRetry?: () => void
+  /**
+   * Status do upload da thumbnail pro YouTube (Story 22.5). Independente do
+   * `isSent` (que cobre só os metadados). Quando `failed` ou `skipped`, a UI
+   * sinaliza claramente que o vídeo subiu sem thumbnail customizada.
+   */
+  thumbnailStatus?: ThumbnailPublishStatus
+  thumbnailError?: string | null
   className?: string
 }
 
@@ -57,6 +74,8 @@ export function Phase8Publish({
   error,
   onSend,
   onRetry,
+  thumbnailStatus = 'idle',
+  thumbnailError,
   className,
 }: Phase8PublishProps) {
   const hasError = !!error
@@ -194,6 +213,31 @@ export function Phase8Publish({
                 Os metadados foram atualizados no YouTube com sucesso.
               </CardDescription>
             </CardHeader>
+            {thumbnailStatus !== 'idle' && (
+              <CardContent className="pt-0">
+                {thumbnailStatus === 'uploaded' && (
+                  <p className="text-sm text-green-600 flex items-center gap-2" data-testid="thumbnail-status-uploaded">
+                    <CheckCircleIcon className="size-4" />
+                    Thumbnail customizada enviada.
+                  </p>
+                )}
+                {thumbnailStatus === 'skipped' && (
+                  <p className="text-sm text-amber-500 flex items-center gap-2" data-testid="thumbnail-status-skipped">
+                    <AlertTriangleIcon className="size-4" />
+                    Thumbnail customizada não foi enviada — o vídeo continua com a do YouTube. Gere ou faça upload na fase Thumbnail antes de publicar.
+                  </p>
+                )}
+                {thumbnailStatus === 'failed' && (
+                  <p className="text-sm text-amber-500 flex items-start gap-2" data-testid="thumbnail-status-failed">
+                    <AlertTriangleIcon className="size-4 mt-0.5 shrink-0" />
+                    <span>
+                      Metadados publicados, mas o envio da thumbnail falhou
+                      {thumbnailError ? `: ${thumbnailError}` : '.'} Tente novamente direto no YouTube Studio.
+                    </span>
+                  </p>
+                )}
+              </CardContent>
+            )}
           </Card>
         )}
 
@@ -206,6 +250,35 @@ export function Phase8Publish({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Thumbnail preview (Story 22.5). Mostra a thumbnail final
+                que será enviada ao YouTube. Para storageThumbnailUrl legacy
+                em base64 (TD-5), exibe o preview mas o upload é skippado. */}
+            <div className="space-y-1" data-testid="thumbnail-summary">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <ImageIcon className="size-4" />
+                Thumbnail
+              </div>
+              {video.storageThumbnailUrl ? (
+                <div className="flex items-start gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={video.storageThumbnailUrl}
+                    alt="Thumbnail final"
+                    className="h-20 w-auto rounded border bg-muted object-cover"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Será enviada ao YouTube junto com os metadados.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-amber-500">
+                  Nenhuma thumbnail selecionada. O vídeo continuará com a thumbnail automática do YouTube.
+                </p>
+              )}
+            </div>
+
+            <Separator />
+
             {/* Title */}
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">

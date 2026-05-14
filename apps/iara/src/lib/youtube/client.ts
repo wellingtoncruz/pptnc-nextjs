@@ -686,4 +686,63 @@ export class YouTubeClient {
 
     return result.data.id
   }
+
+  /**
+   * Uploads a thumbnail image to a YouTube video — Epic 22 / Story 22.5.
+   *
+   * Endpoint: `POST upload/youtube/v3/thumbnails/set?videoId={id}&uploadType=media`.
+   *
+   * **Content-Type da request é o MIME da imagem**, não JSON — esse endpoint é
+   * o único do CRUD que aceita binário direto no body. A YouTube API rejeita
+   * imagens > 2 MB e formatos diferentes de PNG/JPEG. Recomendado 1280×720.
+   *
+   * @throws YouTubeAPIError pra erros HTTP (mesmo pattern do `updateVideo`).
+   */
+  async uploadThumbnail(
+    videoId: string,
+    imageBuffer: Buffer,
+    mimeType: 'image/png' | 'image/jpeg'
+  ): Promise<void> {
+    if (imageBuffer.length === 0) {
+      throw new YouTubeAPIError('YOUTUBE_ERROR', 'Thumbnail buffer is empty')
+    }
+    if (imageBuffer.length > 2 * 1024 * 1024) {
+      throw new YouTubeAPIError(
+        'YOUTUBE_ERROR',
+        `Thumbnail too large (${imageBuffer.length} bytes). YouTube allows up to 2 MB.`
+      )
+    }
+    if (mimeType !== 'image/png' && mimeType !== 'image/jpeg') {
+      throw new YouTubeAPIError(
+        'YOUTUBE_ERROR',
+        `Invalid thumbnail MIME type "${mimeType}". YouTube allows image/png or image/jpeg.`
+      )
+    }
+
+    log('INFO', 'Uploading thumbnail to YouTube', {
+      videoId,
+      size: imageBuffer.length,
+      mimeType,
+    })
+
+    const url = `https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(
+      videoId
+    )}&uploadType=media`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': mimeType,
+        Accept: 'application/json',
+      },
+      body: new Uint8Array(imageBuffer),
+    })
+
+    if (!response.ok) {
+      await this.handleErrorResponse(response)
+    }
+
+    log('INFO', 'YouTube thumbnail uploaded successfully', { videoId })
+  }
 }
