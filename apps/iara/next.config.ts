@@ -41,15 +41,23 @@ const nextConfig: NextConfig = {
       },
     ],
     // Next.js 16 transforma `localPatterns` numa allowlist estrita — sem ele
-    // qualquer URL local é permitida, com ele só o que está listado. Epic 22
-    // adiciona proxies autenticados pra Cloud Storage com `?path=...`, então
-    // listamos cada um; o catch-all `pathname:'/**', search:''` preserva o
-    // comportamento de antes pros assets estáticos do `/public` (logos etc.).
+    // qualquer URL local é permitida, com ele só o que está listado.
+    //
+    // **`search` é match literal exato**: a doc oficial diz "omitting search
+    // allows all search parameters". Não há suporte a glob em `search`
+    // (`**` ali vira string literal). Por isso os patterns dos proxies do
+    // Epic 22 deliberadamente OMITEM `search` — qualquer `?path=...` é
+    // aceito. Segurança fica nos endpoints (eles path-validam `thumbnail-
+    // staging/`, `thumbnails/`, `thumbnail-config/` prefixes), não no
+    // image-optimizer do Next.
+    //
+    // O primeiro pattern preserva os assets estáticos do `/public` (logos
+    // etc., sempre sem query string).
     localPatterns: [
       { pathname: '/**', search: '' },
-      { pathname: '/api/wizard/thumbnail/select', search: '?path=**' },
-      { pathname: '/api/wizard/thumbnail/upload', search: '?path=**' },
-      { pathname: '/api/settings/thumbnail-config', search: '?path=**' },
+      { pathname: '/api/wizard/thumbnail/select' },
+      { pathname: '/api/wizard/thumbnail/upload' },
+      { pathname: '/api/settings/thumbnail-config' },
     ],
   },
 }
