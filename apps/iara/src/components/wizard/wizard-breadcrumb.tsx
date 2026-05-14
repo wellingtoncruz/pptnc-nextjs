@@ -66,8 +66,15 @@ function getExtendedPhaseState(
   }
 
   if (phase === 'THUMB') {
-    // Phase THUMB is complete when storageThumbnailUrl is set
-    return video.storageThumbnailUrl
+    // Phase THUMB é "completada" SÓ quando a thumbnail veio do fluxo do
+    // wizard (Story 22.3g grava sempre como `/api/wizard/thumbnail/select?path=...`).
+    // Vídeos importados do YouTube já vêm com `storageThumbnailUrl` populado
+    // — seja em base64 legacy (TD-5) ou URL `i.ytimg.com` — mas isso é só a
+    // thumbnail automática do YouTube, não decisão do produtor. Marcar como
+    // completed nesse caso confunde o progresso visual.
+    const url = video.storageThumbnailUrl
+    const isFromWizard = typeof url === 'string' && url.startsWith('/api/wizard/thumbnail/select')
+    return isFromWizard
       ? { status: 'completed', data: null, error: null }
       : DEFAULT_PHASE_STATE
   }
