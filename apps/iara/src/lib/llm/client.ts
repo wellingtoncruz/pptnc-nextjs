@@ -15,6 +15,8 @@ import { createLLMError, extractRateLimitDetails, isRetryableError, LLMError } f
 import { extractVariables, interpolatePrompt, validateVideoForPhase } from './interpolation'
 import { parseJSONFromLLM } from './parse-json'
 import { buildPhasePrompt, getSystemPrompt, getUserPromptTemplate, PHASE_CONFIG } from './prompts'
+import { getGeminiProvider } from './providers/gemini-provider'
+import type { ProviderAttachment } from './providers/types'
 import { llmQueue } from './queue'
 import { MAX_PARSE_RETRIES, MAX_RETRYABLE_ATTEMPTS, PHASE_TIMEOUTS, RETRY_DELAY_MS, RETRYABLE_DELAYS } from './types'
 import type {
@@ -119,6 +121,14 @@ async function readFileAsBase64(filePath: string): Promise<string> {
 }
 
 /**
+ * Read a file as UTF-8 text. Used pra entregar transcrição crua ao provider —
+ * o provider faz a codificação base64 / inline conforme seu shape nativo.
+ */
+async function readFile(filePath: string): Promise<string> {
+  return fs.readFile(filePath, 'utf-8')
+}
+
+/**
  * Call GenAI with the given prompts and optional file attachment.
  *
  * Per llm.md specification:
@@ -143,37 +153,25 @@ export async function callGenAI<T>(
   debugContext?: DebugContext,
   modelOverride?: string
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
-  const client = getAI()
   const modelName = modelOverride || VERTEX_AI_MODEL || DEFAULT_MODEL
 
-  // Build parts array once - reused across retry attempts
-  const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
-    { text: userPrompt },
-  ]
-
-  // Track attachment metadata for debug logging
+  // Build attachment for provider (text/plain transcrição). Provider faz a
+  // codificação base64 internamente — não precisa pré-processar aqui.
+  let attachment: ProviderAttachment | undefined
   let attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined
 
   if (attachmentPath) {
-    const base64Content = await readFileAsBase64(attachmentPath)
-    parts.push({
-      inlineData: {
-        mimeType: 'text/plain',
-        data: base64Content,
-      },
-    })
-
-    // Compute attachment size: base64 inflates ~33%, so original ≈ base64 * 3/4
-    const originalSizeBytes = Math.ceil(base64Content.length * 3 / 4)
+    const content = await readFile(attachmentPath)
+    attachment = { mimeType: 'text/plain', content }
+    const originalSizeBytes = Buffer.byteLength(content, 'utf-8')
     attachmentInfo = {
-      sizeKB: Math.round(originalSizeBytes / 1024 * 100) / 100,
+      sizeKB: Math.round((originalSizeBytes / 1024) * 100) / 100,
       // Rough estimate: ~4 bytes per token for Portuguese text
       estimatedTokens: Math.round(originalSizeBytes / 4),
     }
 
     log('INFO', 'Added transcription attachment to request', {
       attachmentPath,
-      base64Length: base64Content.length,
       sizeKB: attachmentInfo.sizeKB,
     })
   }
@@ -182,7 +180,12 @@ export async function callGenAI<T>(
   for (let retryAttempt = 0; retryAttempt < MAX_RETRYABLE_ATTEMPTS; retryAttempt++) {
     try {
       return await _callGenAIInner<T>(
-        client, modelName, parts, systemPrompt, attachmentInfo, debugContext, userPrompt
+        modelName,
+        systemPrompt,
+        userPrompt,
+        attachment,
+        attachmentInfo,
+        debugContext
       )
     } catch (error) {
       const llmError = error instanceof LLMError ? error : createLLMError(error)
@@ -259,64 +262,40 @@ export async function callGenAI<T>(
  * Non-retryable errors (INVALID_RESPONSE, etc.) and API errors propagate as LLMError.
  */
 async function _callGenAIInner<T>(
-  client: GoogleGenAI,
   modelName: string,
-  parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }>,
   systemPrompt: string,
+  userPrompt: string,
+  attachment: ProviderAttachment | undefined,
   attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined,
-  debugContext: DebugContext | undefined,
-  userPrompt: string
+  debugContext: DebugContext | undefined
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
-  // Parse retry loop - only for PARSE_ERROR
+  const provider = getGeminiProvider()
+
+  // Parse retry loop - only for PARSE_ERROR. Retryable errors (RATE_LIMIT,
+  // TIMEOUT...) propagam pra fora e ficam por conta do outer retry loop
+  // em callGenAI.
   for (let attempt = 1; attempt <= MAX_PARSE_RETRIES; attempt++) {
     try {
-      const stream = await client.models.generateContentStream({
+      const result = await provider.generateText({
+        systemPrompt,
+        userPrompt,
+        attachment,
         model: modelName,
-        contents: parts,
-        config: {
-          systemInstruction: systemPrompt,
-          responseMimeType: 'application/json',
-          temperature: 0.7,
-          maxOutputTokens: 65536,
-          thinkingConfig: { thinkingBudget: 24576 },
-        },
+        debugContext,
       })
-
-      // Consume stream chunks and accumulate text.
-      let chunkCount = 0
-      let fullText = ''
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chunk type inferred from stream
-      let lastChunk: any
-      for await (const chunk of stream) {
-        chunkCount++
-        lastChunk = chunk
-        const chunkText = chunk.text
-        if (chunkText) fullText += chunkText
-        if (chunkCount === 1) {
-          log('INFO', 'First stream chunk received', { attempt })
-        }
-      }
-      log('INFO', `Stream completed (${chunkCount} chunks)`, { attempt, fullTextLength: fullText.length })
-
-      // Extract metadata from last chunk
-      const candidate = lastChunk!.candidates?.[0]
-      const finishReason = candidate?.finishReason
-      const safetyRatings = candidate?.safetyRatings
-      const usageMetadata = lastChunk!.usageMetadata
-      const text = fullText || undefined
+      const text = result.text
+      const usage = result.usage
 
       log('INFO', `LLM response received (attempt ${attempt}/${MAX_PARSE_RETRIES})`, {
-        finishReason,
-        safetyRatings,
-        promptTokens: usageMetadata?.promptTokenCount,
-        outputTokens: usageMetadata?.candidatesTokenCount,
-        totalTokens: usageMetadata?.totalTokenCount,
-        responseLength: text?.length ?? 0,
+        provider: provider.name,
+        model: result.modelUsed,
+        promptTokens: usage.promptTokens,
+        outputTokens: usage.completionTokens,
+        totalTokens: usage.totalTokens,
+        responseLength: text.length,
+        latencyMs: result.latencyMs,
+        estimatedCostUsd: result.estimatedCostUsd,
       })
-
-      if (!text) {
-        throw new LLMError('INVALID_RESPONSE', 'Nenhum texto na resposta', false)
-      }
 
       // Parse JSON with robust extraction
       const data = parseJSONFromLLM<T>(text)
@@ -325,7 +304,6 @@ async function _callGenAIInner<T>(
         await fs.writeFile(dumpPath, text, 'utf-8')
 
         log('WARN', `PARSE_ERROR on attempt ${attempt}/${MAX_PARSE_RETRIES}`, {
-          finishReason,
           rawResponseLength: text.length,
           rawResponsePreview: text.substring(0, 300),
           rawResponseEnd: text.length > 300 ? text.substring(text.length - 200) : undefined,
@@ -353,19 +331,13 @@ async function _callGenAIInner<T>(
         log('INFO', `LLM call succeeded on attempt ${attempt}/${MAX_PARSE_RETRIES}`)
       }
 
-      const usage = {
-        promptTokens: usageMetadata?.promptTokenCount || 0,
-        completionTokens: usageMetadata?.candidatesTokenCount || 0,
-        totalTokens: usageMetadata?.totalTokenCount || 0,
-      }
-
       // Save debug log if debugContext provided
       if (debugContext) {
         try {
           const { saveLlmLog } = await import('@/lib/firebase/llm-log-admin')
           await saveLlmLog(debugContext.podcastId, {
             component: debugContext.component,
-            model: modelName,
+            model: result.modelUsed,
             videoId: debugContext.videoId,
             videoType: debugContext.videoType,
             prompt: { system: systemPrompt, user: userPrompt },
