@@ -259,6 +259,7 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
       60000,
       '/tmp/iara-transcription-newsletter-123.txt',
       undefined,
+      undefined,
       undefined
     )
   })
@@ -328,6 +329,7 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
       expect.any(String),
       60000,
       expect.any(String),
+      undefined,
       undefined,
       undefined
     )
@@ -460,6 +462,7 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
       60000,
       expect.any(String), // attachment path
       expect.objectContaining({ component: 'newsletter/draft' }),
+      undefined,
       undefined
     )
   })
@@ -478,6 +481,7 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
       expect.any(String),
       60000,
       expect.any(String),
+      undefined,
       undefined,
       undefined
     )

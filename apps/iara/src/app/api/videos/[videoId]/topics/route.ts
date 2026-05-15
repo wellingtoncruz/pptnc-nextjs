@@ -127,7 +127,7 @@ export async function POST(
 
     // Call LLM via queue
     const { data } = await llmQueue.enqueue(() =>
-      callGenAI<{ topics: string[] }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel)
+      callGenAI<{ topics: string[] }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider)
     )
 
     // Filter: only keep topics that exist in the catalog

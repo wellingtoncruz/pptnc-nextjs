@@ -412,6 +412,7 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
       60000,
       undefined,
       undefined,
+      undefined,
       undefined
     )
   })
@@ -488,6 +489,7 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
       60000,
       undefined,
       expect.objectContaining({ component: 'newsletter/image-prompt' }),
+      undefined,
       undefined
     )
     // Call 2 (image): newsletter/image-generate
@@ -513,6 +515,7 @@ describe('POST /api/videos/[videoId]/newsletter/image', () => {
       expect.any(String),
       expect.any(String),
       60000,
+      undefined,
       undefined,
       undefined,
       undefined
