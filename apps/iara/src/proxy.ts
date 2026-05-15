@@ -103,6 +103,6 @@ export const config = {
      * - auth/error (auth error page)
      * - Public assets with extensions
      */
-    '/((?!api/auth|api/social/execute|api/spike-claude|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|api/social/execute|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }
