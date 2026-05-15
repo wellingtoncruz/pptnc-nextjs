@@ -65,10 +65,10 @@ describe('saveLlmLog', () => {
   it('includes server timestamp in saved data', async () => {
     await saveLlmLog('podcast-1', validLogData)
 
-    expect(mockSet).toHaveBeenCalledWith({
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
       ...validLogData,
       createdAt: 'MOCK_SERVER_TIMESTAMP',
-    })
+    }))
   })
 
   it('logs success after saving', async () => {

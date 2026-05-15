@@ -44,7 +44,7 @@ describe('DebugLogsLayout', () => {
     })
 
     expect(screen.getByText('Logs: 1')).toBeInTheDocument()
-    expect(screen.getByText('1 log')).toBeInTheDocument()
+    expect(screen.getByText('1 de 1 log')).toBeInTheDocument()
   })
 
   it('exibe mensagem de erro quando fetch falha', async () => {
@@ -100,7 +100,50 @@ describe('DebugLogsLayout', () => {
     render(<DebugLogsLayout />)
 
     await waitFor(() => {
-      expect(screen.getByText('2 logs')).toBeInTheDocument()
+      expect(screen.getByText('2 de 2 logs')).toBeInTheDocument()
     })
+  })
+
+  it('exibe total de custo somando estimatedCostUsd', async () => {
+    const mockLogs = [
+      { id: 'log-1', component: 'a', model: 'gemini-2.5-flash', provider: 'gemini', estimatedCostUsd: 0.05, videoId: 'v1', videoType: 'episode' as const, prompt: { system: 's', user: 'u' }, response: 'r', createdAt: '2026-05-15T10:00:00.000Z' },
+      { id: 'log-2', component: 'b', model: 'claude-sonnet-4-6', provider: 'claude', estimatedCostUsd: 0.15, videoId: 'v2', videoType: 'episode' as const, prompt: { system: 's', user: 'u' }, response: 'r', createdAt: '2026-05-15T11:00:00.000Z' },
+    ]
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { logs: mockLogs } }),
+    }) as unknown as typeof fetch
+
+    render(<DebugLogsLayout />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Total no período:')).toBeInTheDocument()
+    })
+    // 0.05 + 0.15 = 0.20 → $0.20
+    expect(screen.getByText(/\$0\.20/)).toBeInTheDocument()
+  })
+
+  it('filtra logs por provider', async () => {
+    const userEvent = (await import('@testing-library/user-event')).default
+    const user = userEvent.setup()
+
+    const mockLogs = [
+      { id: 'log-1', component: 'a', model: 'gemini-2.5-flash', provider: 'gemini', estimatedCostUsd: 0.01, videoId: 'v1', videoType: 'episode' as const, prompt: { system: 's', user: 'u' }, response: 'r', createdAt: '2026-05-15T10:00:00.000Z' },
+      { id: 'log-2', component: 'b', model: 'claude-sonnet-4-6', provider: 'claude', estimatedCostUsd: 0.15, videoId: 'v2', videoType: 'episode' as const, prompt: { system: 's', user: 'u' }, response: 'r', createdAt: '2026-05-15T11:00:00.000Z' },
+    ]
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { logs: mockLogs } }),
+    }) as unknown as typeof fetch
+
+    render(<DebugLogsLayout />)
+    await waitFor(() => expect(screen.getByTestId('filter-provider')).toBeInTheDocument())
+
+    await user.selectOptions(screen.getByTestId('filter-provider'), 'claude')
+
+    expect(screen.getByText('1 de 2 logs')).toBeInTheDocument()
+    expect(screen.getByText('Logs: 1')).toBeInTheDocument()
   })
 })

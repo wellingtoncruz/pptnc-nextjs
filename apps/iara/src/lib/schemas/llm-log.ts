@@ -28,6 +28,12 @@ export const LlmLogCreateSchema = z.object({
     completionTokens: z.number().int().nonnegative(),
     totalTokens: z.number().int().nonnegative(),
   }).optional(),
+  /** Provider que serviu a chamada. Docs legacy assumem `gemini`. */
+  provider: z.enum(['gemini', 'claude']).default('gemini').catch('gemini'),
+  /** Custo estimado em USD calculado pelo provider. Legacy = 0. */
+  estimatedCostUsd: z.number().nonnegative().default(0).catch(0),
+  /** Flag opcional indicando se a chamada se beneficiou de prompt caching. */
+  cacheHit: z.boolean().optional(),
 })
 
 /**

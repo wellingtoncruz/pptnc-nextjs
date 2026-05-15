@@ -95,6 +95,35 @@ describe('LlmLogCreateSchema', () => {
       attachment: { sizeKB: -1, estimatedTokens: 100 },
     })).toThrow(ZodError)
   })
+
+  it('defaults provider=gemini and cost=0 for legacy docs without those fields', () => {
+    const result = LlmLogCreateSchema.parse(validLogCreate)
+    expect(result.provider).toBe('gemini')
+    expect(result.estimatedCostUsd).toBe(0)
+    expect(result.cacheHit).toBeUndefined()
+  })
+
+  it('accepts provider=claude with cost and cacheHit', () => {
+    const result = LlmLogCreateSchema.parse({
+      ...validLogCreate,
+      provider: 'claude',
+      estimatedCostUsd: 0.042,
+      cacheHit: true,
+    })
+    expect(result.provider).toBe('claude')
+    expect(result.estimatedCostUsd).toBe(0.042)
+    expect(result.cacheHit).toBe(true)
+  })
+
+  it('coerces unknown provider value back to gemini default', () => {
+    const result = LlmLogCreateSchema.parse({ ...validLogCreate, provider: 'something-else' })
+    expect(result.provider).toBe('gemini')
+  })
+
+  it('coerces invalid cost back to zero default', () => {
+    const result = LlmLogCreateSchema.parse({ ...validLogCreate, estimatedCostUsd: -1 })
+    expect(result.estimatedCostUsd).toBe(0)
+  })
 })
 
 describe('LlmLogSchema', () => {

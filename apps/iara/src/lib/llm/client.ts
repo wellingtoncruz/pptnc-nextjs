@@ -196,6 +196,17 @@ export async function callGenAI<T>(
     } catch (error) {
       const llmError = error instanceof LLMError ? error : createLLMError(error)
 
+      // Structured event para Cloud Logging queries
+      log('ERROR', 'LLM call failed', {
+        event: 'llm.call.error',
+        provider: provider.name,
+        model: modelName,
+        phase: debugContext?.component,
+        videoId: debugContext?.videoId,
+        errorCode: llmError.code,
+        retryAttempt: retryAttempt + 1,
+      })
+
       // Log full error details for non-LLMError
       if (!(error instanceof LLMError)) {
         const err = error as Error & { status?: number; statusText?: string; cause?: unknown }
@@ -292,8 +303,11 @@ async function _callGenAIInner<T>(
       const usage = result.usage
 
       log('INFO', `LLM response received (attempt ${attempt}/${MAX_PARSE_RETRIES})`, {
+        event: 'llm.call.complete',
         provider: provider.name,
         model: result.modelUsed,
+        phase: debugContext?.component,
+        videoId: debugContext?.videoId,
         promptTokens: usage.promptTokens,
         outputTokens: usage.completionTokens,
         totalTokens: usage.totalTokens,
@@ -349,6 +363,8 @@ async function _callGenAIInner<T>(
             response: text,
             attachment: attachmentInfo,
             usage,
+            provider: provider.name,
+            estimatedCostUsd: result.estimatedCostUsd ?? 0,
           })
         } catch (logError) {
           log('WARN', 'Failed to save LLM debug log', {
