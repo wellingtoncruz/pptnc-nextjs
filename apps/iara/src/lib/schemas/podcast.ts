@@ -378,6 +378,11 @@ export const LlmConfigSchema = z.object({
     .enum(IMAGE_MODEL_IDS as [string, ...string[]])
     .optional()
     .catch(undefined),
+  /**
+   * Fallback automático quando o provider primário falhar persistentemente.
+   * Atualmente só faz sentido `'gemini'` (fallback do Claude). Epic 23 / Story 23.7.
+   */
+  fallbackProvider: z.enum(['gemini']).optional().catch(undefined),
 })
 
 /**

@@ -133,7 +133,8 @@ export async function POST(_request: Request, context: RouteContext): Promise<Ne
           undefined,
           debugContext,
           podcast?.llmConfig?.textModel,
-          podcast?.llmConfig?.provider
+          podcast?.llmConfig?.provider,
+          podcast?.llmConfig?.fallbackProvider
         )
       )
 

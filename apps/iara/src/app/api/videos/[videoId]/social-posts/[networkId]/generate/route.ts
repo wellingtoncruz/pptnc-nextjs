@@ -119,7 +119,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           attachmentPath,
           debugContext,
           podcast?.llmConfig?.textModel,
-          podcast?.llmConfig?.provider
+          podcast?.llmConfig?.provider,
+          podcast?.llmConfig?.fallbackProvider
         )
       )
 

@@ -130,7 +130,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
           attachmentPath,
           debugContext,
           podcast?.llmConfig?.textModel,
-          podcast?.llmConfig?.provider
+          podcast?.llmConfig?.provider,
+          podcast?.llmConfig?.fallbackProvider
         )
       )
 

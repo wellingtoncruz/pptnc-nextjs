@@ -152,7 +152,8 @@ export async function callGenAI<T>(
   attachmentPath: string | undefined,
   debugContext?: DebugContext,
   modelOverride?: string,
-  providerOverride?: 'gemini' | 'claude'
+  providerOverride?: 'gemini' | 'claude',
+  fallbackProviderOverride?: 'gemini'
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   // Resolver provider e default model. Pra Gemini, default é VERTEX_AI_MODEL ou
   // DEFAULT_MODEL; pra Claude, fica a cargo do AnthropicProvider.defaultModel
@@ -182,6 +183,7 @@ export async function callGenAI<T>(
   }
 
   // Outer retry loop for retryable errors (RATE_LIMIT, TIMEOUT, NETWORK_ERROR, API_ERROR)
+  try {
   for (let retryAttempt = 0; retryAttempt < MAX_RETRYABLE_ATTEMPTS; retryAttempt++) {
     try {
       return await _callGenAIInner<T>(
@@ -270,6 +272,32 @@ export async function callGenAI<T>(
 
   // Should not reach here, but TypeScript needs this
   throw new LLMError('UNKNOWN', 'Erro inesperado no loop de retry', false)
+  } catch (primaryError) {
+    // Auto-fallback: se Claude exauriu retries e há fallback configurado, tenta
+    // uma vez com Gemini. Evita loop infinito ao remover fallback na re-chamada.
+    if (fallbackProviderOverride && provider.name !== fallbackProviderOverride) {
+      const errorCode = primaryError instanceof LLMError ? primaryError.code : 'UNKNOWN'
+      log('WARN', 'Primary provider exhausted, attempting fallback', {
+        event: 'llm.call.fallback',
+        primaryProvider: provider.name,
+        fallbackProvider: fallbackProviderOverride,
+        phase: debugContext?.component,
+        videoId: debugContext?.videoId,
+        errorCode,
+      })
+      return callGenAI<T>(
+        systemPrompt,
+        userPrompt,
+        _timeout,
+        attachmentPath,
+        debugContext,
+        undefined,
+        fallbackProviderOverride,
+        undefined
+      )
+    }
+    throw primaryError
+  }
 }
 
 /**
@@ -515,7 +543,8 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       transcriptionFilePath,
       options?.debugContext,
       podcast?.llmConfig?.textModel,
-      podcast?.llmConfig?.provider
+      podcast?.llmConfig?.provider,
+      podcast?.llmConfig?.fallbackProvider
     )
 
     return {

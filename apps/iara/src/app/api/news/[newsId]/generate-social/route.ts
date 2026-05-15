@@ -117,7 +117,7 @@ export async function POST(
 
     // 5. Call LLM via queue
     const { data } = await llmQueue.enqueue(() =>
-      callGenAI<{ social: string }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider)
+      callGenAI<{ social: string }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider, podcast?.llmConfig?.fallbackProvider)
     )
 
     // 6. Persist social text

@@ -331,6 +331,7 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
       undefined
     )
   })
@@ -422,6 +423,7 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
       undefined,
       expect.objectContaining({ component: 'newsletter/format' }),
       undefined,
+      undefined,
       undefined
     )
   })
@@ -440,6 +442,7 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
       expect.any(String),
       expect.any(String),
       60000,
+      undefined,
       undefined,
       undefined,
       undefined,

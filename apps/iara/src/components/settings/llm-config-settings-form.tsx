@@ -73,17 +73,18 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
   const [thumbnailImageModel, setThumbnailImageModel] = useState(
     sanitizeModelValue(llmConfig?.thumbnailImageModel, AVAILABLE_IMAGE_MODELS)
   )
+  const [fallbackEnabled, setFallbackEnabled] = useState(llmConfig?.fallbackProvider === 'gemini')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type LlmField = 'provider' | 'textModel' | 'imageModel' | 'thumbnailImageModel'
+  type LlmField = 'provider' | 'textModel' | 'imageModel' | 'thumbnailImageModel' | 'fallbackEnabled'
 
-  async function handleChange(field: LlmField, value: string) {
+  async function handleChange(field: LlmField, value: string | boolean) {
     setError(null)
     setSaving(true)
 
     // Compute the next full state local-first, then push via API
-    const prev = { provider, textModel, imageModel, thumbnailImageModel }
+    const prev = { provider, textModel, imageModel, thumbnailImageModel, fallbackEnabled }
     const next = { ...prev }
     if (field === 'provider') {
       // Troca de provider zera o textModel — produtor reescolhe na nova lista.
@@ -92,14 +93,17 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
       setProvider(next.provider)
       setTextModel(SYSTEM_DEFAULT)
     } else if (field === 'textModel') {
-      next.textModel = value
-      setTextModel(value)
+      next.textModel = value as string
+      setTextModel(value as string)
     } else if (field === 'imageModel') {
-      next.imageModel = value
-      setImageModel(value)
+      next.imageModel = value as string
+      setImageModel(value as string)
     } else if (field === 'thumbnailImageModel') {
-      next.thumbnailImageModel = value
-      setThumbnailImageModel(value)
+      next.thumbnailImageModel = value as string
+      setThumbnailImageModel(value as string)
+    } else if (field === 'fallbackEnabled') {
+      next.fallbackEnabled = value as boolean
+      setFallbackEnabled(value as boolean)
     }
 
     // Build payload: empty string → undefined (omitido em JSON, limpo em Firestore).
@@ -111,6 +115,7 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
     if (next.textModel) payload.textModel = next.textModel
     if (next.imageModel) payload.imageModel = next.imageModel
     if (next.thumbnailImageModel) payload.thumbnailImageModel = next.thumbnailImageModel
+    if (next.fallbackEnabled) payload.fallbackProvider = 'gemini'
 
     try {
       await updateLlmConfigViaApi(payload)
@@ -120,6 +125,7 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
       setTextModel(prev.textModel)
       setImageModel(prev.imageModel)
       setThumbnailImageModel(prev.thumbnailImageModel)
+      setFallbackEnabled(prev.fallbackEnabled)
       const message = err instanceof Error ? err.message : 'Erro ao salvar'
       setError(message)
       log('ERROR', 'Failed to save LLM config', { field, error: message })
@@ -215,6 +221,26 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
             ))}
           </select>
         </div>
+
+        {provider === 'claude' && (
+          <div className="space-y-2 rounded-md border border-border bg-muted/30 p-3">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={fallbackEnabled}
+                onChange={(e) => handleChange('fallbackEnabled', e.target.checked)}
+                disabled={saving}
+                className="mt-0.5 h-4 w-4 rounded border-input bg-background"
+              />
+              <div className="space-y-1">
+                <div className="text-sm font-medium">Usar Gemini automaticamente quando Claude falhar</div>
+                <p className="text-xs text-muted-foreground">
+                  Após esgotar os retries (RATE_LIMIT/erro persistente), a chamada é re-executada uma vez com Gemini. Aviso silencioso — sem alerta na UI.
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
       </div>
 
       {error && <p className="text-xs text-destructive">{error}</p>}
