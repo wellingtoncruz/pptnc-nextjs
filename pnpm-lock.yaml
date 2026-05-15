@@ -21,9 +21,9 @@ importers:
 
   apps/iara:
     dependencies:
-      '@anthropic-ai/vertex-sdk':
-        specifier: 0.16.0
-        version: 0.16.0(zod@4.3.6)
+      '@anthropic-ai/sdk':
+        specifier: 0.96.0
+        version: 0.96.0(zod@4.3.6)
       '@google/genai':
         specifier: ^1.42.0
         version: 1.42.0
@@ -364,9 +364,6 @@ packages:
     peerDependenciesMeta:
       zod:
         optional: true
-
-  '@anthropic-ai/vertex-sdk@0.16.0':
-    resolution: {integrity: sha512-ntxemtRkwPsjVzGQJsmBPRW38tfas6VuVlD1v6pHffDJKLPtCdaiN9KUQeraJ/F34tjxEWlsaCnl3t/orJm1Xw==}
 
   '@asamuzakjp/css-color@4.1.1':
     resolution: {integrity: sha512-B0Hv6G3gWGMn0xKJ0txEi/jM5iFpT3MfDxmhZFb4W047GvytCf1DHQ1D69W3zHI4yWe2aTZAA0JnbMZ7Xc8DuQ==}
@@ -5346,15 +5343,6 @@ snapshots:
       standardwebhooks: 1.0.0
     optionalDependencies:
       zod: 4.3.6
-
-  '@anthropic-ai/vertex-sdk@0.16.0(zod@4.3.6)':
-    dependencies:
-      '@anthropic-ai/sdk': 0.96.0(zod@4.3.6)
-      google-auth-library: 9.15.1
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-      - zod
 
   '@asamuzakjp/css-color@4.1.1':
     dependencies:
