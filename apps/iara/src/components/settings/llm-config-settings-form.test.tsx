@@ -42,16 +42,19 @@ describe('LlmConfigSettingsForm', () => {
   it('lists all available text models plus system default', () => {
     render(<LlmConfigSettingsForm />)
     const textSelect = screen.getByLabelText('Modelo de Texto')
-    // 5 text models + 1 "Padrão do sistema" option
-    expect(textSelect.querySelectorAll('option')).toHaveLength(6)
+    // 5 GA (2.0-flash, 2.0-flash-lite, 2.5-flash, 2.5-flash-lite, 2.5-pro)
+    // + 3 preview 3.x (3.1-pro-preview, 3-flash, 3.1-flash-lite — adicionados 2026-05-14)
+    // + 1 "Padrão do sistema" option
+    expect(textSelect.querySelectorAll('option')).toHaveLength(9)
   })
 
   it('lists all available image models plus system default', () => {
     render(<LlmConfigSettingsForm />)
     const imageSelect = screen.getByLabelText('Modelo de Imagem (Newsletter)')
-    // 2 image models (gemini-2.5-flash-image GA + gemini-3.1-flash-image-preview from Epic 22)
+    // 1 GA (gemini-2.5-flash-image)
+    // + 2 preview (3.1-flash-image-preview do Epic 22 + 3-pro-image-preview adicionado 2026-05-14)
     // + 1 "Padrão do sistema" option
-    expect(imageSelect.querySelectorAll('option')).toHaveLength(3)
+    expect(imageSelect.querySelectorAll('option')).toHaveLength(4)
   })
 
   it('displays model label and description in option text', () => {

@@ -20,6 +20,10 @@ export interface ModelOption {
 
 /**
  * Available text generation models on Vertex AI.
+ *
+ * **Família 3.x adicionada em 2026-05-14** — todos em PREVIEW (sem SLA,
+ * quota agressiva). Use `gemini-2.5-flash` (default) ou `gemini-2.5-pro`
+ * em produção; os 3.x ficam como opt-in pra A/B test em fases LLM.
  */
 export const AVAILABLE_TEXT_MODELS: ModelOption[] = [
   {
@@ -47,6 +51,21 @@ export const AVAILABLE_TEXT_MODELS: ModelOption[] = [
     label: 'Gemini 2.5 Pro',
     description: 'Maior qualidade, custo maior',
   },
+  {
+    id: 'gemini-3.1-pro-preview',
+    label: 'Gemini 3.1 Pro (Preview)',
+    description: 'Reasoning de ponta + 1M context + adaptive thinking. Sem SLA, quota agressiva.',
+  },
+  {
+    id: 'gemini-3-flash',
+    label: 'Gemini 3 Flash (Preview)',
+    description: 'Reasoning + latência baixa. Param thinking_level (min/low/med/high). Sem SLA.',
+  },
+  {
+    id: 'gemini-3.1-flash-lite',
+    label: 'Gemini 3.1 Flash Lite (Preview)',
+    description: 'Mais econômico da família 3.x. Sem SLA, quota agressiva.',
+  },
 ]
 
 /**
@@ -70,6 +89,11 @@ export const AVAILABLE_IMAGE_MODELS: ModelOption[] = [
     id: 'gemini-3.1-flash-image-preview',
     label: 'Gemini 3.1 Flash Image (Nano Banana 2)',
     description: 'Preview — qualidade superior com reference images. Para Thumbnail (Epic 22). Sem SLA, quota agressiva.',
+  },
+  {
+    id: 'gemini-3-pro-image-preview',
+    label: 'Gemini 3 Pro Image (Preview)',
+    description: 'Preview — Nano Banana com reasoning. Melhor para gerações multi-turn e edições complexas. Sem SLA.',
   },
 ]
 
