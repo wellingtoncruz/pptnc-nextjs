@@ -32,8 +32,8 @@ describe('LLM Models constants', () => {
     expect(ids).toContain('gemini-2.5-pro')
     // Preview Gemini 3.x family (opt-in via Settings — sem SLA)
     expect(ids).toContain('gemini-3.1-pro-preview')
-    expect(ids).toContain('gemini-3-flash')
-    expect(ids).toContain('gemini-3.1-flash-lite')
+    expect(ids).toContain('gemini-3-flash-preview')
+    expect(ids).toContain('gemini-3.1-flash-lite-preview')
   })
 
   it('preview text models have "Preview" in label and "Sem SLA" warning', () => {

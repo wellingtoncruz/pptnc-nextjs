@@ -57,12 +57,12 @@ export const AVAILABLE_TEXT_MODELS: ModelOption[] = [
     description: 'Reasoning de ponta + 1M context + adaptive thinking. Sem SLA, quota agressiva.',
   },
   {
-    id: 'gemini-3-flash',
+    id: 'gemini-3-flash-preview',
     label: 'Gemini 3 Flash (Preview)',
     description: 'Reasoning + latência baixa. Param thinking_level (min/low/med/high). Sem SLA.',
   },
   {
-    id: 'gemini-3.1-flash-lite',
+    id: 'gemini-3.1-flash-lite-preview',
     label: 'Gemini 3.1 Flash Lite (Preview)',
     description: 'Mais econômico da família 3.x. Sem SLA, quota agressiva.',
   },
