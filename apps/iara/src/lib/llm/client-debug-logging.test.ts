@@ -93,7 +93,7 @@ describe('callGenAI debug logging', () => {
     )
 
     expect(mockSaveLlmLog).toHaveBeenCalledOnce()
-    expect(mockSaveLlmLog).toHaveBeenCalledWith('pptnc', {
+    expect(mockSaveLlmLog).toHaveBeenCalledWith('pptnc', expect.objectContaining({
       component: 'wizard/phase-5',
       model: 'gemini-2.5-flash',
       videoId: 'video-123',
@@ -102,7 +102,9 @@ describe('callGenAI debug logging', () => {
       response: responseJson,
       attachment: undefined,
       usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
-    })
+      provider: 'gemini',
+      estimatedCostUsd: expect.any(Number),
+    }))
   })
 
   it('does NOT save debug log when debugContext is undefined', async () => {

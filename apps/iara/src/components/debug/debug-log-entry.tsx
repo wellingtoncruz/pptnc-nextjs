@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Clock, Cpu, Film, Layers, Paperclip, Coins } from 'lucide-react'
+import { ChevronDown, ChevronRight, Clock, Cpu, DollarSign, Film, Layers, Paperclip, Coins } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 import { Badge } from '@/components/ui/badge'
@@ -58,6 +58,12 @@ export function DebugLogEntry({ log }: DebugLogEntryProps) {
             <Badge variant="outline" className="text-xs">
               <Coins className="mr-1 h-3 w-3" />
               {log.usage.promptTokens.toLocaleString('pt-BR')} → {log.usage.completionTokens.toLocaleString('pt-BR')} ({log.usage.totalTokens.toLocaleString('pt-BR')} total)
+            </Badge>
+          )}
+          {log.estimatedCostUsd > 0 && (
+            <Badge variant="outline" className="text-xs">
+              <DollarSign className="mr-1 h-3 w-3" />
+              {log.estimatedCostUsd < 0.01 ? '<$0.01' : `$${log.estimatedCostUsd.toFixed(4)}`}
             </Badge>
           )}
         </div>

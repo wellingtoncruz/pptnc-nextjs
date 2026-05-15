@@ -139,6 +139,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   let debugContextImage: typeof debugContextPrompt
   let textModelOverride: string | undefined
   let imageModelOverride: string | undefined
+  let providerOverride: 'gemini' | 'claude' | undefined
+  let fallbackProviderOverride: 'gemini' | undefined
 
   try {
     // Parse optional body
@@ -207,6 +209,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     // Extract LLM model config for override
     textModelOverride = podcast?.llmConfig?.textModel
     imageModelOverride = podcast?.llmConfig?.imageModel
+    providerOverride = podcast?.llmConfig?.provider
+    fallbackProviderOverride = podcast?.llmConfig?.fallbackProvider
   } catch (error) {
     log('ERROR', 'Newsletter image validation failed', {
       videoId,
@@ -238,7 +242,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
           const userPrompt = buildNewsletterImageUserPrompt(newsletterData.draft!, newsletterData.news)
 
           const { data: promptData } = await llmQueue.enqueue(() =>
-            callGenAI<{ imagePrompt: string }>(systemPrompt, userPrompt, 60000, undefined, debugContextPrompt, textModelOverride)
+            callGenAI<{ imagePrompt: string }>(systemPrompt, userPrompt, 60000, undefined, debugContextPrompt, textModelOverride, providerOverride, fallbackProviderOverride)
           )
 
           const validatedPrompt = NewsletterImageLLMResponseSchema.parse(promptData)

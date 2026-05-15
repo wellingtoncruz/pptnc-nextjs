@@ -175,6 +175,16 @@
 <li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
 </ul>
 </details></li>
+<li><details class="epic-group">
+<summary>Épico 23</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-23/epic-23-claude-provider.html">Visão Geral do Épico 23 — Claude (Multi-Provider LLM)</a></li>
+<li><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
+<li><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
+<li><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-23/epic-23-retro-2026-05-15.html">Retrospectiva Épico 23</a></li>
+</ul>
+</details></li>
 </ul>
 </details>
 <details class="phase-group">
@@ -1848,6 +1858,53 @@ Next.js 15+ App Router with Auth.js v5, Zustand, and Firestore provides a produc
 <p><strong>Architecture Status:</strong> READY FOR IMPLEMENTATION ✅</p>
 <p><strong>Next Phase:</strong> Begin implementation using the architectural decisions and patterns documented herein.</p>
 <p><strong>Document Maintenance:</strong> Update this architecture when major technical decisions are made during implementation.</p>
+<hr>
+<h2>Apêndice: Decisões Arquiteturais — Maio/2026</h2>
+<blockquote>
+<p>Adicionado em 2026-05-08 para documentar decisões pós Epic 21 que não tiveram epic formal mas alteram padrões arquiteturais centrais.</p>
+</blockquote>
+<h3>A.1 Wizard Async Pattern — fire-and-forget + HTTP polling</h3>
+<p><strong>Contexto.</strong> Após bump do Cloud Run timeout para 1800s (commit <code>6ddeec8</code>), jobs longos (&gt;2min) ainda perdiam a resposta no frontend com &quot;Failed to fetch&quot;. Causa: o GFE (Google Front End) e proxies intermediários derrubam conexões HTTP idle, mesmo que o Cloud Run mantenha o request vivo.</p>
+<p><strong>Decisão (commits <code>1407853</code>, <code>8cd85b0</code>, <code>5852d2b</code> — 2026-05-05/06).</strong> Todas as fases do wizard migradas para padrão <strong>fire-and-forget + HTTP polling</strong>:</p>
+<ul>
+<li>Backend de cada fase aceita <code>?mode=async</code>: cria documento em subcollection <code>wizardJobs</code>, dispara <code>processPhaseNInBackground</code>, retorna <code>jobId</code> imediatamente</li>
+<li>Frontend chama helper <code>runAsyncPhase&lt;T&gt;({ phase, videoId, body, pollIntervalMs })</code> em <code>apps/iara/src/lib/wizard/run-async-phase.ts</code></li>
+<li>Helper <code>pollWizardJob(jobId, { intervalMs, signal })</code> em <code>lib/wizard/poll-job.ts</code> — fetch + setTimeout cancelável via AbortSignal</li>
+<li>Endpoint de leitura: <code>GET /api/wizard/jobs/[jobId]?videoId=X</code> (auth + admin read)</li>
+<li><strong>Polling intervals</strong> (otimizados por custo Firestore reads):<ul>
+<li>Fases 1, 2, 3, 4 (LLM longos): <strong>10s</strong></li>
+<li>Fases 5, 5b, 6, 7 (LLM rápidos): <strong>5s</strong></li>
+<li>Job típico de 90-180s = ~20-40 reads, custo desprezível</li>
+</ul>
+</li>
+<li>Phase 5B é caso especial: <code>executePhase5B()</code> extraído para reuso entre sync/async; persiste com <code>phase: &#39;5b&#39;</code> literal</li>
+<li><strong>Race guard</strong>: <code>activeVideoIdRef !== video.id</code> em todos branches (success/error)</li>
+<li><strong>Caminho sync</strong> (sem <code>?mode=async</code>) mantido no backend para retrocompatibilidade — nenhum chamador interno usa mais</li>
+</ul>
+<p><strong>Consequência crítica.</strong> Firebase Web SDK foi <strong>removido do client</strong>. Motivo: as env vars <code>NEXT_PUBLIC_FIREBASE_*</code> precisam ser baked no bundle durante <code>next build</code> — não basta configurá-las em runtime no Cloud Run, e a POC inicial com <code>onSnapshot</code> quebrou em produção por isso. Polling HTTP elimina essa dependência.</p>
+<h3>A.2 Gemini Context Caching — REVERTIDO</h3>
+<p><strong>Contexto.</strong> Em 2026-04-07 (commit <code>af949d6</code>) foi implementado context caching via <code>ai.caches</code> para evitar reupload do SRT em fases sequenciais.</p>
+<p><strong>Decisão (commit <code>eceef2a</code> — 2026-05-05).</strong> Cache <strong>revertido</strong> por degradação de qualidade em vídeos longos (&gt;32K tokens).</p>
+<p><strong>Causa raiz.</strong> O Vertex AI proíbe <code>systemInstruction</code> quando <code>cachedContent</code> está setado na request (<a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-use">docs</a>). O workaround empurrava o systemPrompt como texto de usuário em <code>contents[]</code>, degradando persona, formato JSON e additionalContext (fases 5/6/7) de papel autoritativo para conteúdo comum.</p>
+<p>A correção estrita exigiria embarcar <code>systemInstruction</code> dentro do cache, forçando 1 cache por (vídeo, fase) — eliminando o ganho do design original (1 cache compartilhado entre N fases). Como cada fase é executada apenas 1× no caminho normal, cache por (vídeo, fase) seria usado exatamente 1×: ganho zero, complexidade alta, risco de regressão.</p>
+<p><strong>Mantidos do <code>af949d6</code> em produção:</strong></p>
+<ul>
+<li>Outer retry loop com backoff exponencial (30s/60s/120s)</li>
+<li>Feedback temporal progressivo nos spinners das fases 2/3</li>
+</ul>
+<p><strong>Implicação para futuro.</strong> Não reintroduzir context caching sem antes resolver a restrição systemInstruction. Avaliar <strong>qualidade do output</strong> (não só latência/custo) em vídeos longos antes de qualquer rollout.</p>
+<h3>A.3 Sync nunca reabre vídeos <code>sent</code></h3>
+<p><strong>Contexto.</strong> &quot;Verificar Novos Vídeos&quot; reabria vídeos <code>sent</code> para <code>draft</code> sempre que <code>youtubePrivacyStatus !== &#39;public&#39;</code>, silenciosamente. Isso clobberava trabalho finalizado e desperdiçava quota da YouTube API (1 chamada <code>getVideoDetails</code> por 50 sent por sync).</p>
+<p><strong>Decisão (commit <code>33a16ca</code> — 2026-05-07).</strong> A regra correta é: <strong><code>sent → draft</code> apenas via clique explícito</strong> no <code>ReopenVideoDialog</code> (POST <code>/api/videos/[videoId]/reopen</code>).</p>
+<ul>
+<li>Removido de <code>lib/sync/sync-videos.ts</code>: fetch em batch para sent + loop &quot;Re-evaluate sent videos&quot; + <code>transition(&#39;sent&#39;, &#39;reopen&#39;)</code> automático</li>
+<li>Removido de <code>SyncResult</code>: campos <code>reopened</code> e <code>reopenedVideos</code></li>
+<li>Removido de <code>sync-result-modal.tsx</code>: exibição de &quot;vídeos reabertos&quot;</li>
+<li>Máquina de estado mantém <code>sent: { reopen: &#39;draft&#39; }</code> intacta — só o gatilho automático foi removido</li>
+<li>O endpoint <code>/api/videos/[videoId]/reopen</code> consulta YouTube live (não depende de sync ter pré-carregado <code>youtubePrivacyStatus</code>)</li>
+</ul>
+<h3>A.4 Cloud Run timeout 1800s</h3>
+<p><strong>Decisão (commit <code>6ddeec8</code> — 2026-05-05).</strong> Cloud Run request timeout aumentado de 300s (default) para 1800s para acomodar fases LLM longas. Combinado com A.1 (async pattern) para escapar do GFE timeout.</p>
 
   </main>
 </body>

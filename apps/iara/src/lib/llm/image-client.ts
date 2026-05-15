@@ -168,6 +168,8 @@ export async function callGenAIImage(
               prompt: { system: '', user: prompt },
               response: `[Image: ${buffer.length} bytes, ${part.inlineData.mimeType || 'image/png'}]`,
               usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+              provider: 'gemini',
+              estimatedCostUsd: 0,
             })
           } catch (logError) {
             log('WARN', 'Failed to save LLM debug log for image', {

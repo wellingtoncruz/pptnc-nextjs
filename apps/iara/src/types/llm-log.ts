@@ -26,6 +26,9 @@ export interface LlmLogEntry {
   createdAt: string | null
   attachment?: { sizeKB: number; estimatedTokens: number }
   usage?: { promptTokens: number; completionTokens: number; totalTokens: number }
+  provider: 'gemini' | 'claude'
+  estimatedCostUsd: number
+  cacheHit?: boolean
 }
 
 /**

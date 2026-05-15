@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { TEXT_MODEL_IDS, IMAGE_MODEL_IDS } from '@/lib/llm/models'
+import { ALL_TEXT_MODEL_IDS, IMAGE_MODEL_IDS } from '@/lib/llm/models'
 
 import { VideoTypeConfigSchema } from './video-type-config'
 
@@ -354,8 +354,20 @@ export const DEFAULT_PERSONAS = {
  * a allowlist, o doc legacy quebrava o GET /api/podcast.
  */
 export const LlmConfigSchema = z.object({
+  /**
+   * Provider de texto. Quando ausente, app default é 'gemini'. Image
+   * generation sempre usa Gemini (Claude não gera imagem) — campo abaixo
+   * mantém-se Gemini-only. Epic 23 / Story 23.4.
+   */
+  provider: z.enum(['gemini', 'claude']).optional().catch(undefined),
+  /**
+   * Modelo de texto. Aceita IDs de Gemini OU Claude (enum unificado).
+   * Validação de consistência provider × textModel fica na camada de
+   * factory (Story 23.5), não no schema — permite trocas independentes
+   * via UI sem deadlock.
+   */
   textModel: z
-    .enum(TEXT_MODEL_IDS as [string, ...string[]])
+    .enum(ALL_TEXT_MODEL_IDS as [string, ...string[]])
     .optional()
     .catch(undefined),
   imageModel: z
@@ -366,6 +378,11 @@ export const LlmConfigSchema = z.object({
     .enum(IMAGE_MODEL_IDS as [string, ...string[]])
     .optional()
     .catch(undefined),
+  /**
+   * Fallback automático quando o provider primário falhar persistentemente.
+   * Atualmente só faz sentido `'gemini'` (fallback do Claude). Epic 23 / Story 23.7.
+   */
+  fallbackProvider: z.enum(['gemini']).optional().catch(undefined),
 })
 
 /**

@@ -165,7 +165,9 @@ ${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') ||
       120000,
       transcriptionFilePath,
       debugContext,
-      podcast?.llmConfig?.textModel
+      podcast?.llmConfig?.textModel,
+      podcast?.llmConfig?.provider,
+      podcast?.llmConfig?.fallbackProvider
     )
 
     if (!data || !Array.isArray(data.shortTitles)) {

@@ -97,8 +97,53 @@ export const AVAILABLE_IMAGE_MODELS: ModelOption[] = [
   },
 ]
 
-/** Text model IDs array for Zod enum validation. */
+/**
+ * Available Claude models (Anthropic API direta) — Epic 23 / Story 23.4.
+ *
+ * Pricing por 1M tokens (USD, 2026-05): Sonnet $3/$15, Opus $15/$75, Haiku $1/$5.
+ * Wellington é Max 5x → potencial cobertura via "créditos programáticos" $100/mês
+ * a partir de 15-jun-2026 (validar empiricamente pós-data).
+ */
+export const AVAILABLE_CLAUDE_MODELS: ModelOption[] = [
+  {
+    id: 'claude-sonnet-4-6',
+    label: 'Claude Sonnet 4.6',
+    description: 'Padrão recomendado — frontier intelligence a $3/$15 por 1M tokens. 1M context.',
+  },
+  {
+    id: 'claude-opus-4-7',
+    label: 'Claude Opus 4.7',
+    description: 'Top de linha pra reasoning complexo. $15/$75 por 1M (5x mais caro que Sonnet).',
+  },
+  {
+    id: 'claude-haiku-4-5-20251001',
+    label: 'Claude Haiku 4.5',
+    description: 'Econômico e rápido — $1/$5 por 1M tokens. Bom pra volumes altos.',
+  },
+]
+
+/** Provider name → model registry. Usado pra filtrar dropdown no Settings. */
+export type LLMProviderId = 'gemini' | 'claude'
+
+export function getTextModelsForProvider(provider: LLMProviderId): ModelOption[] {
+  return provider === 'claude' ? AVAILABLE_CLAUDE_MODELS : AVAILABLE_TEXT_MODELS
+}
+
+/**
+ * Default text model por provider quando produtor não tem `textModel` salvo.
+ */
+export function getDefaultTextModelForProvider(provider: LLMProviderId): string {
+  return provider === 'claude' ? 'claude-sonnet-4-6' : DEFAULT_TEXT_MODEL
+}
+
+/** Text model IDs array (Gemini) for legacy Zod enum validation. */
 export const TEXT_MODEL_IDS = AVAILABLE_TEXT_MODELS.map(m => m.id)
+
+/** Claude model IDs. */
+export const CLAUDE_MODEL_IDS = AVAILABLE_CLAUDE_MODELS.map(m => m.id)
+
+/** All text model IDs across providers (Gemini + Claude) — usado em LlmConfigSchema. */
+export const ALL_TEXT_MODEL_IDS = [...TEXT_MODEL_IDS, ...CLAUDE_MODEL_IDS]
 
 /** Image model IDs array for Zod enum validation. */
 export const IMAGE_MODEL_IDS = AVAILABLE_IMAGE_MODELS.map(m => m.id)

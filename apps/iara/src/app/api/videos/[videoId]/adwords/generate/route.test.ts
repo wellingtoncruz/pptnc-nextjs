@@ -300,6 +300,8 @@ describe('POST /api/videos/[videoId]/adwords/generate', () => {
       60000,
       '/tmp/iara-transcription-adwords-123.txt',
       undefined,
+      undefined,
+      undefined,
       undefined
     )
   })
@@ -371,6 +373,8 @@ describe('POST /api/videos/[videoId]/adwords/generate', () => {
       expect.any(String),
       60000,
       expect.any(String),
+      undefined,
+      undefined,
       undefined,
       undefined
     )

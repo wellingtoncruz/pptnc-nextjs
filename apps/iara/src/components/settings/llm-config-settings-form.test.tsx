@@ -6,6 +6,10 @@ vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
+vi.mock('./cost-estimate-badge', () => ({
+  CostEstimateBadge: () => null,
+}))
+
 import { LlmConfigSettingsForm } from './llm-config-settings-form'
 
 const mockFetch = vi.fn()
@@ -189,7 +193,7 @@ describe('LlmConfigSettingsForm', () => {
   it('shows descriptive text about model selection', () => {
     render(<LlmConfigSettingsForm />)
     expect(
-      screen.getByText(/Selecione os modelos Gemini utilizados/)
+      screen.getByText(/Selecione o provider de LLM e os modelos/)
     ).toBeInTheDocument()
   })
 

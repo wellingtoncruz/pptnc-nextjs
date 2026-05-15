@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia Operacional — Claude Provider — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 23</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-23/epic-23-claude-provider.html">Visão Geral do Épico 23 — Claude (Multi-Provider LLM)</a></li>
+<li><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
+<li><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-23/epic-23-retro-2026-05-15.html">Retrospectiva Épico 23</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 23</nav><h1>Operational Guide — Claude Provider (Epic 23)</h1>
+<p><strong>Última atualização:</strong> 2026-05-15
+<strong>Status:</strong> Em produção (branch <code>feature/epic-23-claude-provider</code>, aguardando merge em <code>main</code>)</p>
+<p>Este guia é o referencial pra produtor/dev que precisa ativar, monitorar ou diagnosticar problemas com o provider Claude no IAra.</p>
+<hr>
+<h2>1. Como ativar Claude</h2>
+<h3>1.1 Pré-requisitos</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Onde</th>
+<th>Obrigatório</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td><code>.env.local</code> (dev) ou Cloud Run env (prod)</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td><code>@anthropic-ai/sdk</code> instalado</td>
+<td><code>apps/iara/package.json</code></td>
+<td>Sim (já no repo)</td>
+</tr>
+<tr>
+<td>Conta Anthropic com créditos</td>
+<td><a href="https://console.anthropic.com">https://console.anthropic.com</a></td>
+<td>Sim</td>
+</tr>
+</tbody></table>
+<h3>1.2 Passo a passo (UI)</h3>
+<ol>
+<li>Login no IAra como admin</li>
+<li>Sidebar → <strong>Configurações</strong></li>
+<li>Aba <strong>LLM</strong> (ou seção &quot;Configuração de LLM&quot;)</li>
+<li>Em <strong>Provider de Texto</strong>, selecionar <strong>Claude (Anthropic) — opt-in, requer ANTHROPIC_API_KEY</strong></li>
+<li><strong>Modelo de Texto</strong> mostra automaticamente os modelos Claude disponíveis. Escolher um:<ul>
+<li><code>claude-sonnet-4-6</code> — recomendado (qualidade × custo equilibrado)</li>
+<li><code>claude-opus-4-7</code> — máxima qualidade, ~5x mais caro</li>
+<li><code>claude-haiku-4-5-20251001</code> — barato, qualidade inferior</li>
+</ul>
+</li>
+<li>Badge de custo estimado aparece imediatamente embaixo do select. Cor:<ul>
+<li>🟢 Verde: &lt;$20/mês (seguro)</li>
+<li>🟡 Amarelo: $20-100/mês (atenção)</li>
+<li>🔴 Vermelho: ≥$100/mês (cuidado)</li>
+</ul>
+</li>
+<li>(Opcional) Marcar <strong>&quot;Usar Gemini automaticamente quando Claude falhar&quot;</strong> se quiser fallback silencioso</li>
+</ol>
+<p>A configuração persiste em <code>podcasts/{podcastId}.llmConfig</code> no Firestore.</p>
+<h3>1.3 Confirmação que Claude está ativo</h3>
+<ul>
+<li>Indicador na sidebar (abaixo do mascote IAra) mostra <code>[logo Anthropic] claude-sonnet-4-6</code> em cinza</li>
+<li>Próxima chamada LLM aparece com <code>provider: &#39;claude&#39;</code> no Cloud Logging</li>
+</ul>
+<hr>
+<h2>2. IAM / Auth</h2>
+<p>Diferente do Gemini (que usa Vertex AI via ADC no GCP), Claude usa <strong>API key direta</strong>:</p>
+<ul>
+<li><strong>Não precisa</strong> IAM permissions no GCP pra Claude</li>
+<li><strong>Precisa</strong> <code>ANTHROPIC_API_KEY</code> válida — gerada em <a href="https://console.anthropic.com/settings/keys">https://console.anthropic.com/settings/keys</a></li>
+<li>Em Cloud Run: setar como secret. Não commitar a key.</li>
+</ul>
+<pre><code class="language-bash">gcloud run services update iara \
+  --update-env-vars ANTHROPIC_API_KEY=$(gcloud secrets versions access latest --secret=anthropic-api-key) \
+  --region us-east1
+</code></pre>
+<hr>
+<h2>3. Monitoramento de custo</h2>
+<h3>3.1 Console Anthropic</h3>
+<p>O canal canônico de truth pra billing:</p>
+<ul>
+<li><a href="https://console.anthropic.com/settings/usage">https://console.anthropic.com/settings/usage</a></li>
+<li>Mostra consumo por API key, por modelo, por dia</li>
+<li>Atualização ~5 minutos de delay</li>
+</ul>
+<h3>3.2 Dentro do IAra (Settings)</h3>
+<p>A badge no Settings calcula estimativa mensal usando:</p>
+<ul>
+<li><strong>Histórico real</strong> (<code>llmLogs</code> últimos 30 dias) quando disponível</li>
+<li><strong>Defaults documentados</strong> (12 episódios + 50 cortes + 30 reels/mês) caso contrário</li>
+</ul>
+<p>Threshold por mês:</p>
+<ul>
+<li>Verde: &lt;$20</li>
+<li>Amarelo: $20-100 (zona PPTNC com Sonnet 4.6)</li>
+<li>Vermelho: ≥$100</li>
+</ul>
+<h3>3.3 Cloud Logging</h3>
+<p>Query pra somar custo do mês corrente:</p>
+<pre><code>jsonPayload.event=&quot;llm.call.complete&quot;
+AND jsonPayload.provider=&quot;claude&quot;
+AND timestamp &gt;= &quot;2026-05-01T00:00:00Z&quot;
+</code></pre>
+<p>Soma o <code>jsonPayload.estimatedCostUsd</code> no console pra obter total.</p>
+<h3>3.4 Alerts recomendados</h3>
+<p><strong>Cloud Billing</strong> (não cobre Anthropic, mas sim Vertex AI):</p>
+<ul>
+<li>Console GCP → Billing → Budgets &amp; alerts</li>
+<li>Threshold $20/mês</li>
+</ul>
+<p><strong>Anthropic</strong> (única forma de alertar billing real do Claude):</p>
+<ul>
+<li>Console Anthropic → Usage → Set monthly budget cap</li>
+<li>Sugestão PPTNC: $50/mês (cobre Sonnet 4.6 com folga)</li>
+</ul>
+<hr>
+<h2>4. Comportamento esperado vs Gemini</h2>
+<table>
+<thead>
+<tr>
+<th>Dimensão</th>
+<th>Gemini 2.5 Flash</th>
+<th>Claude Sonnet 4.6</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Custo / 1M tokens</strong></td>
+<td>$0.075 in / $0.30 out</td>
+<td>$3 in / $15 out</td>
+</tr>
+<tr>
+<td><strong>Latência fase 5 (título)</strong></td>
+<td>~2-5s</td>
+<td>~3-8s</td>
+</tr>
+<tr>
+<td><strong>Latência fase 6 (descrição)</strong></td>
+<td>~8-15s</td>
+<td>~15-30s</td>
+</tr>
+<tr>
+<td><strong>Estilo escrita</strong></td>
+<td>Mais conciso, técnico</td>
+<td>Mais elaborado, prosa fluida</td>
+</tr>
+<tr>
+<td><strong>Aderência a JSON schema</strong></td>
+<td>Excelente</td>
+<td>Excelente (com prompt explícito)</td>
+</tr>
+<tr>
+<td><strong>Hallucination em fatos do transcript</strong></td>
+<td>Moderada</td>
+<td>Menor (em geral)</td>
+</tr>
+<tr>
+<td><strong>Suporte a imagens</strong></td>
+<td>Sim (Newsletter, Thumbnail)</td>
+<td>Não (Newsletter/Thumbnail seguem Gemini)</td>
+</tr>
+</tbody></table>
+<h3>4.1 Quando Claude vale a pena</h3>
+<ul>
+<li>Fases criativas (5, 6, 7, 5B) onde o estilo importa</li>
+<li>Vídeos longos (transcrição &gt; 50K tokens) onde context window grande de Claude (200K) ajuda</li>
+<li>Quando o produtor já tem assinatura Anthropic Max (créditos programáticos a partir de 15-jun-2026)</li>
+</ul>
+<h3>4.2 Quando Gemini é melhor</h3>
+<ul>
+<li>Fases analíticas (1-4) que são determinísticas</li>
+<li>Geração de imagens (Claude não gera)</li>
+<li>Operação em escala onde custo importa (&gt;1000 chamadas/dia)</li>
+<li>Quando a infraestrutura GCP já está montada e não há ANTHROPIC_API_KEY</li>
+</ul>
+<h3>4.3 Como decidir: rodar o A/B bench</h3>
+<pre><code class="language-bash">cd apps/iara
+pnpm exec tsx scripts/llm-ab-bench.ts --episodes vid-1,vid-2 --phases 5,6,7
+</code></pre>
+<p>Custo ~$0.50 por run. Output em <code>apps/iara/scripts/.bench-output/{timestamp}/</code> com <code>summary.md</code> cego (Provider A vs B) e <code>mapping.json</code> separado pra julgamento sem viés.</p>
+<hr>
+<h2>5. Troubleshooting</h2>
+<h3>5.1 RATE_LIMIT (Anthropic 429)</h3>
+<p><strong>Sintoma</strong>: log <code>event: &#39;llm.call.error&#39;</code> com <code>errorCode: &#39;RATE_LIMIT&#39;</code>, provider <code>claude</code>.</p>
+<p><strong>Causa</strong>: Anthropic tier rate limits — Sonnet 4.6 começa em 50 req/min, 40K tokens/min, escalando com gasto histórico.</p>
+<p><strong>Mitigação automática</strong>:</p>
+<ul>
+<li>Retry loop: 30s, 60s, 120s (já em produção)</li>
+<li>Auto-fallback pra Gemini se <code>fallbackProvider: &#39;gemini&#39;</code> configurado no Settings</li>
+</ul>
+<p><strong>Resolver permanentemente</strong>:</p>
+<ul>
+<li>Anthropic console → Settings → Usage → solicitar tier upgrade após mês de uso consistente</li>
+</ul>
+<h3>5.2 CONTEXT_TOO_LARGE</h3>
+<p><strong>Sintoma</strong>: <code>errorCode: &#39;API_ERROR&#39;</code> com mensagem contendo &quot;context window&quot; ou &quot;input too long&quot;.</p>
+<p><strong>Causa</strong>: Transcrição passou de 200K tokens (limite Claude Sonnet 4.6). PPTNC ~3h transcript fica em ~50-70K tokens, então é raro — pode ocorrer com episódios excepcionalmente longos ou múltiplas referências.</p>
+<p><strong>Mitigação</strong>: nada automático. Logs mostram <code>attachment.estimatedTokens</code> pra diagnosticar. Se for um padrão, considerar truncar transcrições &gt; 150K tokens antes de enviar (ainda não implementado).</p>
+<h3>5.3 Fallback acionado</h3>
+<p><strong>Sintoma</strong>: log <code>event: &#39;llm.call.fallback&#39;</code> aparece com <code>primaryProvider: &#39;claude&#39;</code>, <code>fallbackProvider: &#39;gemini&#39;</code>, <code>errorCode: &lt;código&gt;</code>.</p>
+<p><strong>Significado</strong>: Claude exauriu retries e o fallback foi acionado. O resultado retornado vem do Gemini (silenciosamente — sem alerta UI).</p>
+<p><strong>Ação</strong>: ignorar se ocasional. Se recorrente em uma fase específica, investigar:</p>
+<ul>
+<li>Anthropic console pra ver tier limits</li>
+<li><code>errorCode</code> do log pra saber se foi rate limit, network, ou content filter</li>
+</ul>
+<h3>5.4 ANTHROPIC_API_KEY não definida</h3>
+<p><strong>Sintoma</strong>: erro ao tentar gerar com Claude: <code>ANTHROPIC_API_KEY environment variable is required</code>.</p>
+<p><strong>Resolver</strong>: setar a env var. Em dev:</p>
+<pre><code class="language-bash">echo &quot;ANTHROPIC_API_KEY=sk-ant-...&quot; &gt;&gt; apps/iara/.env.local
+</code></pre>
+<p>Em Cloud Run: ver §2.</p>
+<h3>5.5 Modelo não encontrado (404)</h3>
+<p><strong>Sintoma</strong>: <code>Publisher Model... not found</code> ou <code>Model claude-X not available</code>.</p>
+<p><strong>Causa frequente</strong>: ID de modelo desatualizado. A allowlist atual (<code>src/lib/llm/models.ts</code>):</p>
+<ul>
+<li><code>claude-opus-4-7</code></li>
+<li><code>claude-sonnet-4-6</code></li>
+<li><code>claude-haiku-4-5-20251001</code></li>
+</ul>
+<p>Se um modelo novo for anunciado pela Anthropic, atualizar <code>AVAILABLE_CLAUDE_MODELS</code> em <code>models.ts</code> + <code>PRICING_USD_PER_M</code> em <code>anthropic-provider.ts</code> E <code>cost-estimator.ts</code>.</p>
+<h3>5.6 Settings: badge &quot;Custo estimado indisponível&quot;</h3>
+<p><strong>Sintoma</strong>: badge no Settings não aparece com valor.</p>
+<p><strong>Causa</strong>: erro no endpoint <code>/api/podcast/cost-estimate</code> — checar Network do browser e log do server.</p>
+<p><strong>Diagnóstico</strong>: tente acessar diretamente:</p>
+<pre><code>https://localhost:3000/api/podcast/cost-estimate?provider=claude&amp;model=claude-sonnet-4-6
+</code></pre>
+<p>Deve retornar JSON com <code>monthlyUsd</code>, <code>breakdown</code>, <code>threshold</code>.</p>
+<hr>
+<h2>6. Migração de produtores legacy</h2>
+<p>Documentos <code>podcast.llmConfig</code> antigos (pré-Epic 23) não têm campo <code>provider</code>. Eles continuam funcionando — defaults para <code>gemini</code> via <code>.catch(undefined)</code> no schema. Não há migração necessária.</p>
+<p>Para migrar pra Claude:</p>
+<ol>
+<li>Abrir Settings</li>
+<li>Trocar provider via dropdown</li>
+<li>Save automático (não precisa rerun de scripts)</li>
+</ol>
+<hr>
+<h2>7. Operação dia-a-dia</h2>
+<h3>Quando reverter pra Gemini</h3>
+<ul>
+<li>Custo mensal &gt; $50 e qualidade subjetiva não justifica</li>
+<li>Latência &gt; 30s em fases curtas atrapalhando workflow</li>
+<li>Outage Anthropic (raro mas acontece)</li>
+</ul>
+<p><strong>Como</strong>: Settings → Provider de Texto → Gemini. Save automático. Próxima chamada usa Gemini.</p>
+<h3>Quando rodar o A/B bench</h3>
+<ul>
+<li>A cada nova versão major (claude-N+1)</li>
+<li>Quando você suspeita que qualidade caiu</li>
+<li>Mensalmente como sanity check</li>
+</ul>
+<h3>Quando atualizar pricing</h3>
+<p>Anthropic anuncia mudança em <a href="https://docs.anthropic.com/en/api/pricing">https://docs.anthropic.com/en/api/pricing</a>. Atualizar:</p>
+<ul>
+<li><code>apps/iara/src/lib/llm/providers/anthropic-provider.ts</code> → <code>PRICING_USD_PER_M</code></li>
+<li><code>apps/iara/src/lib/llm/cost-estimator.ts</code> → mesma tabela</li>
+<li><code>apps/iara/scripts/llm-ab-bench.ts</code> → mesma tabela</li>
+</ul>
+<hr>
+<h2>8. Referências</h2>
+<ul>
+<li>Doc épico completa: <code>_bmad-output/implementation-artifacts/epic-23-claude-provider.md</code></li>
+<li>Spike inicial: <code>_bmad-output/implementation-artifacts/spike-claude-vertex-results.md</code></li>
+<li>Arquitetura LLM adapter: <code>_bmad-output/implementation-artifacts/architecture-llm-adapter.md</code></li>
+<li>Anthropic docs: <a href="https://docs.anthropic.com/">https://docs.anthropic.com/</a></li>
+<li>SDK: <a href="https://github.com/anthropics/anthropic-sdk-typescript">https://github.com/anthropics/anthropic-sdk-typescript</a></li>
+</ul>
+
+  </main>
+</body>
+</html>
