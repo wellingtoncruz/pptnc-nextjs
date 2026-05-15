@@ -11,6 +11,7 @@ import {
   type ModelOption,
 } from '@/lib/llm/models'
 import type { LlmConfig } from '@/types/podcast'
+import { CostEstimateBadge } from './cost-estimate-badge'
 
 interface LlmConfigSettingsFormProps {
   llmConfig?: LlmConfig
@@ -168,6 +169,9 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
               </option>
             ))}
           </select>
+          {textModel && (
+            <CostEstimateBadge provider={provider} model={textModel} />
+          )}
         </div>
 
         <div className="space-y-2">

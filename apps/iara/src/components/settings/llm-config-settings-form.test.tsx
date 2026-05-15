@@ -6,6 +6,10 @@ vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
+vi.mock('./cost-estimate-badge', () => ({
+  CostEstimateBadge: () => null,
+}))
+
 import { LlmConfigSettingsForm } from './llm-config-settings-form'
 
 const mockFetch = vi.fn()
