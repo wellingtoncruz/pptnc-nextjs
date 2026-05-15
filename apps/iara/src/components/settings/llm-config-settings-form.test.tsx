@@ -189,7 +189,7 @@ describe('LlmConfigSettingsForm', () => {
   it('shows descriptive text about model selection', () => {
     render(<LlmConfigSettingsForm />)
     expect(
-      screen.getByText(/Selecione os modelos Gemini utilizados/)
+      screen.getByText(/Selecione o provider de LLM e os modelos/)
     ).toBeInTheDocument()
   })
 

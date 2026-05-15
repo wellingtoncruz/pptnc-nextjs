@@ -15,8 +15,8 @@ import { createLLMError, extractRateLimitDetails, isRetryableError, LLMError } f
 import { extractVariables, interpolatePrompt, validateVideoForPhase } from './interpolation'
 import { parseJSONFromLLM } from './parse-json'
 import { buildPhasePrompt, getSystemPrompt, getUserPromptTemplate, PHASE_CONFIG } from './prompts'
-import { getGeminiProvider } from './providers/gemini-provider'
-import type { ProviderAttachment } from './providers/types'
+import { getLLMProvider, resolveProviderName } from './providers/factory'
+import type { LLMProvider, ProviderAttachment } from './providers/types'
 import { llmQueue } from './queue'
 import { MAX_PARSE_RETRIES, MAX_RETRYABLE_ATTEMPTS, PHASE_TIMEOUTS, RETRY_DELAY_MS, RETRYABLE_DELAYS } from './types'
 import type {
@@ -151,9 +151,14 @@ export async function callGenAI<T>(
   _timeout: number,
   attachmentPath: string | undefined,
   debugContext?: DebugContext,
-  modelOverride?: string
+  modelOverride?: string,
+  providerOverride?: 'gemini' | 'claude'
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
-  const modelName = modelOverride || VERTEX_AI_MODEL || DEFAULT_MODEL
+  // Resolver provider e default model. Pra Gemini, default é VERTEX_AI_MODEL ou
+  // DEFAULT_MODEL; pra Claude, fica a cargo do AnthropicProvider.defaultModel
+  // (já tratado se modelOverride for undefined).
+  const provider = getLLMProvider(providerOverride ? { llmConfig: { provider: providerOverride } } : undefined)
+  const modelName = modelOverride || (provider.name === 'gemini' ? (VERTEX_AI_MODEL || DEFAULT_MODEL) : provider.defaultModel)
 
   // Build attachment for provider (text/plain transcrição). Provider faz a
   // codificação base64 internamente — não precisa pré-processar aqui.
@@ -180,6 +185,7 @@ export async function callGenAI<T>(
   for (let retryAttempt = 0; retryAttempt < MAX_RETRYABLE_ATTEMPTS; retryAttempt++) {
     try {
       return await _callGenAIInner<T>(
+        provider,
         modelName,
         systemPrompt,
         userPrompt,
@@ -262,6 +268,7 @@ export async function callGenAI<T>(
  * Non-retryable errors (INVALID_RESPONSE, etc.) and API errors propagate as LLMError.
  */
 async function _callGenAIInner<T>(
+  provider: LLMProvider,
   modelName: string,
   systemPrompt: string,
   userPrompt: string,
@@ -269,8 +276,6 @@ async function _callGenAIInner<T>(
   attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined,
   debugContext: DebugContext | undefined
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
-  const provider = getGeminiProvider()
-
   // Parse retry loop - only for PARSE_ERROR. Retryable errors (RATE_LIMIT,
   // TIMEOUT...) propagam pra fora e ficam por conta do outer retry loop
   // em callGenAI.
@@ -493,7 +498,8 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       timeout,
       transcriptionFilePath,
       options?.debugContext,
-      podcast?.llmConfig?.textModel
+      podcast?.llmConfig?.textModel,
+      podcast?.llmConfig?.provider
     )
 
     return {
