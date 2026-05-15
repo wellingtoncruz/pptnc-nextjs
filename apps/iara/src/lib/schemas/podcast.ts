@@ -340,10 +340,32 @@ export const DEFAULT_PERSONAS = {
  * @see Story 18.11 — Parametrização do Modelo LLM
  * @see Epic 22 / Story 22.2-bis — separação Newsletter vs Thumbnail
  */
+/**
+ * **Tolerant on read, strict on write**: `.catch(undefined)` faz com que IDs
+ * stale (modelos renomeados, descontinuados ou IDs salvos com typo antes de
+ * um fix posterior) virem `undefined` em vez de quebrar o parse — a aplicação
+ * cai pra `DEFAULT_*_MODEL` em runtime, e o produtor pode reselecionar no
+ * Settings sem ver erro 500. O PATCH endpoint continua exigindo enum válido
+ * via `PodcastUpdateSchema` (Zod erra normalmente em escrita inválida).
+ *
+ * Caso de regressão original: bug em 2026-05-14 onde modelos Gemini 3.x foram
+ * adicionados com IDs sem sufixo `-preview` (`gemini-3-flash` em vez de
+ * `gemini-3-flash-preview`). Wellington selecionou e salvou; após corrigir
+ * a allowlist, o doc legacy quebrava o GET /api/podcast.
+ */
 export const LlmConfigSchema = z.object({
-  textModel: z.enum(TEXT_MODEL_IDS as [string, ...string[]]).optional(),
-  imageModel: z.enum(IMAGE_MODEL_IDS as [string, ...string[]]).optional(),
-  thumbnailImageModel: z.enum(IMAGE_MODEL_IDS as [string, ...string[]]).optional(),
+  textModel: z
+    .enum(TEXT_MODEL_IDS as [string, ...string[]])
+    .optional()
+    .catch(undefined),
+  imageModel: z
+    .enum(IMAGE_MODEL_IDS as [string, ...string[]])
+    .optional()
+    .catch(undefined),
+  thumbnailImageModel: z
+    .enum(IMAGE_MODEL_IDS as [string, ...string[]])
+    .optional()
+    .catch(undefined),
 })
 
 /**

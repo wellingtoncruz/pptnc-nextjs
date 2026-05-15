@@ -123,13 +123,24 @@ describe('LlmConfigSchema (Story 18.11)', () => {
     expect(result.success).toBe(true)
   })
 
-  it('rejects invalid textModel not in allowlist', () => {
+  it('tolerant read: invalid textModel becomes undefined (2026-05-15 regression)', () => {
+    // Antes: enum estrito → safeParse falhava → GET /api/podcast retornava 500
+    // quando o Firestore tinha ID stale. Agora: `.catch(undefined)` cai pro
+    // default e o produtor pode re-selecionar no Settings sem erro.
     const result = LlmConfigSchema.safeParse({ textModel: 'gpt-4' })
-    expect(result.success).toBe(false)
+    expect(result.success).toBe(true)
+    expect(result.data?.textModel).toBeUndefined()
   })
 
-  it('rejects invalid imageModel not in allowlist', () => {
+  it('tolerant read: invalid imageModel becomes undefined', () => {
     const result = LlmConfigSchema.safeParse({ imageModel: 'dall-e-3' })
-    expect(result.success).toBe(false)
+    expect(result.success).toBe(true)
+    expect(result.data?.imageModel).toBeUndefined()
+  })
+
+  it('tolerant read: invalid thumbnailImageModel becomes undefined', () => {
+    const result = LlmConfigSchema.safeParse({ thumbnailImageModel: 'midjourney-v6' })
+    expect(result.success).toBe(true)
+    expect(result.data?.thumbnailImageModel).toBeUndefined()
   })
 })

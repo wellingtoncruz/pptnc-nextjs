@@ -573,12 +573,31 @@ describe('LlmConfigSchema (Epic 22 / Story 22.2-bis)', () => {
     expect(result.llmConfig?.thumbnailImageModel).toBeUndefined()
   })
 
-  it('rejects thumbnailImageModel that is not in IMAGE_MODEL_IDS allowlist', () => {
+  it('coerces invalid thumbnailImageModel to undefined on read (tolerant parse)', () => {
+    // Regression 2026-05-15: doc legacy com ID stale (`gemini-3-flash` sem
+    // sufixo `-preview` etc.) quebrava GET /api/podcast com 500. Schema agora
+    // usa `.catch(undefined)` no read — fica permissivo, cai pro default.
     const invalid = {
       ...validPodcast,
       llmConfig: { thumbnailImageModel: 'gemini-fictitious-model' },
     }
-    expect(() => PodcastSchema.parse(invalid)).toThrow(ZodError)
+    const result = PodcastSchema.parse(invalid)
+    expect(result.llmConfig?.thumbnailImageModel).toBeUndefined()
+  })
+
+  it('coerces stale textModel and imageModel to undefined (legacy IDs)', () => {
+    const withStale = {
+      ...validPodcast,
+      llmConfig: {
+        textModel: 'gemini-3-flash', // ID legacy salvo antes do fix 2026-05-14
+        imageModel: 'gemini-2.5-flash-image', // válido — mantém
+        thumbnailImageModel: 'gemini-3.1-flash-lite', // ID legacy também
+      },
+    }
+    const result = PodcastSchema.parse(withStale)
+    expect(result.llmConfig?.textModel).toBeUndefined()
+    expect(result.llmConfig?.imageModel).toBe('gemini-2.5-flash-image')
+    expect(result.llmConfig?.thumbnailImageModel).toBeUndefined()
   })
 })
 
