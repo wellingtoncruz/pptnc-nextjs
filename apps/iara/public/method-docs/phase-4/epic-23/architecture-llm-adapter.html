@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2.0 Migração de Vídeos para Subcoleção — IAra Docs</title>
+  <title>Arquitetura — LLM Adapter Pattern — IAra Docs</title>
   <link rel="stylesheet" href="/method-docs/styles.css">
 </head>
 <body>
@@ -49,10 +49,10 @@
 <li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
 </ul>
 </details></li>
-<li><details class="epic-group" open>
+<li><details class="epic-group">
 <summary>Épico 2 — Configuração de Podcast</summary>
 <ul>
-<li class="active"><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
@@ -175,12 +175,12 @@
 <li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
 </ul>
 </details></li>
-<li><details class="epic-group">
+<li><details class="epic-group" open>
 <summary>Épico 23</summary>
 <ul>
 <li><a href="/method-docs/phase-4/epic-23/epic-23-claude-provider.html">Visão Geral do Épico 23 — Claude (Multi-Provider LLM)</a></li>
 <li><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
-<li><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
 <li><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
 <li><a href="/method-docs/phase-4/epic-23/epic-23-retro-2026-05-15.html">Retrospectiva Épico 23</a></li>
 </ul>
@@ -199,291 +199,207 @@
 
   </aside>
   <main class="content">
-    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 2 — Configuração de Podcast</nav><h1>Story 2.0: Migracao de Videos para Subcollection</h1>
-<p>Status: done</p>
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 23</nav><h1>Arquitetura — LLM Provider Adapter</h1>
+<p><strong>Epic:</strong> 23 — Multi-Provider LLM
+<strong>Story de origem:</strong> 23.2 (refactor não-funcional, Gemini-only)
+<strong>Implementado em:</strong> 2026-05-15
+<strong>Provider atual:</strong> GeminiProvider (Vertex AI via <code>@google/genai</code>)
+<strong>Provider planejado:</strong> AnthropicProvider (Story 23.3 — Anthropic API direta via <code>@anthropic-ai/sdk</code>)</p>
 <hr>
-<h2>Story</h2>
-<p>Como um <strong>sistema</strong>,
-Eu quero migrar a collection legada <code>videos</code> para a subcollection <code>podcasts/{podcastId}/videos</code>,
-Para que o modelo de dados esteja alinhado com a arquitetura white-label desde o inicio.</p>
-<hr>
-<h2>Context</h2>
-<h3>Problema</h3>
-<p>O portal PPTNC existente usa uma flat entity <code>videos/{videoId}</code>. A arquitetura do IAra define subcollections <code>podcasts/{podcastId}/videos/{videoId}</code> para suportar white-label.</p>
-<p>Ambos os sistemas (Portal e IAra) operam na mesma base Firestore. Esta migracao prepara a base de desenvolvimento (<code>pptnc-stage</code>) para o padrao correto.</p>
-<h3>Decisao Arquitetural</h3>
-<p>Per architecture-iara.md:</p>
-<pre><code>podcasts/{podcastId}/videos/{videoId}
-├── youtubeId: string
-├── title: string
-├── ...
+<h2>1. Motivação</h2>
+<p>O Epic 23 quer permitir trocar Gemini ↔ Claude (e futuros providers) sem
+reescrever as camadas de orquestração, queue, retry, parse e logging. A
+solução é um adapter pattern com <strong>interface <code>LLMProvider</code></strong> isolando o
+que diverge entre providers concretos.</p>
+<h2>2. Camadas</h2>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│ Route handlers de fase, Newsletter, Phase 5B            │
+└─────────────────────┬───────────────────────────────────┘
+                      │ chamam
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│ callLLMQueued()    (queue: 1 chamada por vez)           │
+│ callLLM()          (orchestra: valida vídeo + prompts)  │
+│ callGenAI()        (retry/backoff + parse JSON + logs)  │
+└─────────────────────┬───────────────────────────────────┘
+                      │ chama
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│ LLMProvider                                             │
+│   generateText(opts) → { text, usage, cost, latency }   │
+│   streamText(opts)   → AsyncIterable&lt;event&gt;             │
+│   estimateTokens(s)  → number (síncrono, sem rede)      │
+└─────────────────────┬───────────────────────────────────┘
+                      │ implementado por
+                      ▼
+┌──────────────────────┴──────────────────────────────────┐
+│ GeminiProvider                  AnthropicProvider       │ (Story 23.3)
+│   @google/genai                   @anthropic-ai/sdk     │
+│   Vertex AI ADC                   API key Bearer        │
+│   stream + responseMimeType       messages.create       │
+│   thinkingConfig                  ext. thinking         │
+└─────────────────────────────────────────────────────────┘
 </code></pre>
-<h3>Impacto</h3>
-<ul>
-<li><strong>Portal PPTNC producao</strong>: Continua lendo de <code>videos/</code> (nao afetado)</li>
-<li><strong>Portal PPTNC stage</strong>: Pode ser atualizado para ler da subcollection apos migracao</li>
-<li><strong>IAra</strong>: Vai criar novos videos ja na subcollection correta (Epic 3)</li>
-</ul>
-<hr>
-<h2>Acceptance Criteria</h2>
-<h3>AC1: Script de migracao criado</h3>
-<p><strong>Given</strong> a collection legada <code>videos</code> no Firestore
-<strong>When</strong> eu executo o script de migracao
-<strong>Then</strong> todos os documentos sao copiados para <code>podcasts/pptnc/videos/{videoId}</code>
-<strong>And</strong> o campo <code>podcastId: &#39;pptnc&#39;</code> e adicionado em cada documento
-<strong>And</strong> os documentos originais NAO sao deletados (soft migration)</p>
-<h3>AC2: Validacao de contagem</h3>
-<p><strong>Given</strong> a migracao executada
-<strong>When</strong> eu verifico as contagens
-<strong>Then</strong> o numero de documentos em <code>podcasts/pptnc/videos</code> e igual ao numero em <code>videos</code>
-<strong>And</strong> um log de validacao e gerado</p>
-<h3>AC3: Preservacao de dados</h3>
-<p><strong>Given</strong> cada documento migrado
-<strong>When</strong> eu comparo com o original
-<strong>Then</strong> todos os campos originais estao preservados
-<strong>And</strong> campos adicionados: <code>podcastId</code>, <code>migratedAt</code>
-<strong>And</strong> campo <code>id</code> do documento e preservado (mesmo videoId)</p>
-<h3>AC4: Idempotencia</h3>
-<p><strong>Given</strong> o script executado multiplas vezes
-<strong>When</strong> um documento ja existe na subcollection
-<strong>Then</strong> o documento NAO e sobrescrito
-<strong>And</strong> um log indica &quot;documento ja migrado&quot;</p>
-<h3>AC5: Relatorio de migracao</h3>
-<p><strong>Given</strong> a migracao completa
-<strong>When</strong> o script finaliza
-<strong>Then</strong> exibe relatorio:</p>
-<ul>
-<li>Total de documentos na origem</li>
-<li>Documentos migrados (novos)</li>
-<li>Documentos ja existentes (skipped)</li>
-<li>Erros (se houver)</li>
-</ul>
-<hr>
-<h2>Tasks / Subtasks</h2>
-<ul>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 1: Criar script de migracao</strong> (AC: 1, 4)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>scripts/migrate-videos-to-subcollection.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.2 Conectar ao Firestore usando Admin SDK</li>
-<li><input checked="" disabled="" type="checkbox"> 1.3 Ler todos os documentos de <code>videos</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.4 Para cada documento, verificar se ja existe em <code>podcasts/pptnc/videos/{id}</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.5 Se nao existe, copiar com campos adicionais (podcastId, migratedAt)</li>
-<li><input checked="" disabled="" type="checkbox"> 1.6 Se existe, skip e logar</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 2: Adicionar campos de migracao</strong> (AC: 3)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 2.1 Adicionar <code>podcastId: &#39;pptnc&#39;</code> em cada documento migrado</li>
-<li><input checked="" disabled="" type="checkbox"> 2.2 Adicionar <code>migratedAt: serverTimestamp()</code> para rastreabilidade</li>
-<li><input checked="" disabled="" type="checkbox"> 2.3 Preservar todos os campos originais</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 3: Implementar validacao</strong> (AC: 2)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 3.1 Contar documentos na origem antes da migracao</li>
-<li><input checked="" disabled="" type="checkbox"> 3.2 Contar documentos no destino apos migracao</li>
-<li><input checked="" disabled="" type="checkbox"> 3.3 Comparar e logar resultado</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 4: Gerar relatorio</strong> (AC: 5)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 4.1 Contabilizar: migrados, skipped, erros</li>
-<li><input checked="" disabled="" type="checkbox"> 4.2 Exibir relatorio formatado no console</li>
-<li><input checked="" disabled="" type="checkbox"> 4.3 Salvar relatorio em arquivo JSON (opcional)</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 5: Documentar e executar</strong> (AC: 1-5)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 5.1 Adicionar script ao package.json: <code>&quot;migrate:videos&quot;: &quot;tsx scripts/migrate-videos-to-subcollection.ts&quot;</code></li>
-<li><input checked="" disabled="" type="checkbox"> 5.2 Documentar no README ou em comments</li>
-<li><input checked="" disabled="" type="checkbox"> 5.3 Executar migracao em pptnc-stage</li>
-<li><input checked="" disabled="" type="checkbox"> 5.4 Validar resultado</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 6: Migrar subcollections</strong> (AC: 3)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 6.1 Criar script de inspecao <code>scripts/inspect-video-subcollections.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 6.2 Descobrir subcollections existentes (encontrado: <code>chunks</code> com 8510 documentos)</li>
-<li><input checked="" disabled="" type="checkbox"> 6.3 Criar script <code>scripts/migrate-video-subcollections.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 6.4 Executar migracao de subcollections</li>
-<li><input checked="" disabled="" type="checkbox"> 6.5 Validar: 8510 chunks migrados com sucesso</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2>Dev Notes</h2>
-<h3>Estrutura do Script</h3>
-<pre><code class="language-typescript">// scripts/migrate-videos-to-subcollection.ts
-import { initializeApp, cert, getApps } from &#39;firebase-admin/app&#39;
-import { getFirestore, FieldValue } from &#39;firebase-admin/firestore&#39;
+<h2>3. Contratos</h2>
+<h3><code>LLMProvider</code> (<code>src/lib/llm/providers/types.ts</code>)</h3>
+<pre><code class="language-ts">export interface LLMProvider {
+  readonly name: &#39;gemini&#39; | &#39;claude&#39;
+  readonly defaultModel: string
 
-const PODCAST_ID = &#39;pptnc&#39;
-const SOURCE_COLLECTION = &#39;videos&#39;
-const TARGET_PATH = `podcasts/${PODCAST_ID}/videos`
-
-async function migrate() {
-  const db = getFirestore()
-
-  // 1. Read all source documents
-  const sourceSnapshot = await db.collection(SOURCE_COLLECTION).get()
-  console.log(`Found ${sourceSnapshot.size} documents in ${SOURCE_COLLECTION}`)
-
-  let migrated = 0
-  let skipped = 0
-  let errors = 0
-
-  for (const doc of sourceSnapshot.docs) {
-    const targetRef = db.collection(TARGET_PATH).doc(doc.id)
-    const targetDoc = await targetRef.get()
-
-    if (targetDoc.exists) {
-      console.log(`SKIP: ${doc.id} already exists`)
-      skipped++
-      continue
-    }
-
-    try {
-      await targetRef.set({
-        ...doc.data(),
-        podcastId: PODCAST_ID,
-        migratedAt: FieldValue.serverTimestamp(),
-      })
-      console.log(`MIGRATED: ${doc.id}`)
-      migrated++
-    } catch (error) {
-      console.error(`ERROR: ${doc.id}`, error)
-      errors++
-    }
+  generateText(opts: GenerateTextOptions): Promise&lt;GenerateTextResult&gt;
+  streamText(opts: StreamTextOptions): AsyncIterable&lt;LLMStreamEvent&gt;
+  estimateTokens(text: string): number
+}
+</code></pre>
+<h3><code>GenerateTextOptions</code></h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Origem</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>systemPrompt</code></td>
+<td><code>string</code></td>
+<td>construído por <code>buildPhasePrompt()</code> na camada acima</td>
+</tr>
+<tr>
+<td><code>userPrompt</code></td>
+<td><code>string</code></td>
+<td>template da fase + dados do vídeo</td>
+</tr>
+<tr>
+<td><code>attachment?</code></td>
+<td><code>{ mimeType, content }</code></td>
+<td>transcrição (text/plain) opcional</td>
+</tr>
+<tr>
+<td><code>model?</code></td>
+<td><code>string</code></td>
+<td>override de <code>podcast.llmConfig.textModel</code></td>
+</tr>
+<tr>
+<td><code>debugContext?</code></td>
+<td><code>DebugContext</code></td>
+<td>metadata pra LLM log</td>
+</tr>
+<tr>
+<td><code>timeoutMs?</code></td>
+<td><code>number</code></td>
+<td>default 120000</td>
+</tr>
+</tbody></table>
+<h3><code>GenerateTextResult</code></h3>
+<pre><code class="language-ts">{
+  text: string                    // bruto, sem parse
+  usage: {
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
   }
-
-  // Report
-  console.log(&#39;\n=== MIGRATION REPORT ===&#39;)
-  console.log(`Source documents: ${sourceSnapshot.size}`)
-  console.log(`Migrated: ${migrated}`)
-  console.log(`Skipped: ${skipped}`)
-  console.log(`Errors: ${errors}`)
-}
-
-migrate()
-</code></pre>
-<h3>Configuracao do Firebase Admin para Scripts</h3>
-<pre><code class="language-typescript">// Usar ADC (Application Default Credentials)
-// Requer: gcloud auth application-default login
-
-import { initializeApp, applicationDefault } from &#39;firebase-admin/app&#39;
-
-if (!getApps().length) {
-  initializeApp({
-    credential: applicationDefault(),
-    projectId: &#39;pptnc-stage&#39;,
-  })
+  estimatedCostUsd: number         // calculado pelo provider via pricing table
+  latencyMs: number                // tempo da chamada (sem retry externo)
+  modelUsed: string                // ID resolvido (após default fallback)
 }
 </code></pre>
-<h3>Campos do Documento Video (Legado)</h3>
-<p>Verificar estrutura atual em <code>videos/{videoId}</code>:</p>
+<h3><code>LLMStreamEvent</code></h3>
+<pre><code class="language-ts">| { type: &#39;delta&#39;; text: string }
+| { type: &#39;done&#39;; usage; estimatedCostUsd; modelUsed }
+| { type: &#39;error&#39;; code; message; retryable }
+</code></pre>
+<h2>4. Responsabilidades por camada</h2>
+<h3>Provider faz</h3>
 <ul>
-<li>youtubeId / id</li>
-<li>title</li>
-<li>description</li>
-<li>thumbnail / thumbnailUrl</li>
-<li>duration</li>
-<li>publishedAt</li>
-<li>status</li>
-<li>outros campos especificos do portal</li>
+<li>Auth (ADC pro Gemini, API key pro Claude)</li>
+<li>Request shape (parts/contents/messages — formato nativo)</li>
+<li>Configs específicas (responseMimeType, thinkingConfig, max_tokens, etc.)</li>
+<li>Stream consumption (Gemini sempre retorna stream)</li>
+<li>Token counting heurístico (<code>chars/4</code> em PT-BR)</li>
+<li>Cost calculation (lookup em pricing table interna)</li>
+<li>Error mapping nativo → <code>LLMError</code> interno</li>
 </ul>
-<h3>Enforcement Rules Aplicaveis</h3>
-<ol>
-<li><strong>Rule #8 (podcastId em queries)</strong>: Adicionar <code>podcastId</code> em cada documento migrado</li>
-<li><strong>Rule #9 (Structured Logging)</strong>: Usar logs estruturados para rastreabilidade</li>
-<li><strong>Rule #4 (No setDoc sem merge)</strong>: Usar <code>set()</code> apenas para novos documentos</li>
-</ol>
-<h3>Seguranca</h3>
+<h3>Provider <strong>NÃO faz</strong></h3>
 <ul>
-<li>Script roda com credenciais de desenvolvedor (ADC)</li>
-<li>Nao deleta documentos originais</li>
-<li>Idempotente - pode ser executado multiplas vezes sem risco</li>
+<li>Retry / backoff (camada <code>callGenAI</code>)</li>
+<li>Parse JSON (<code>parse-json.ts</code> na camada <code>callGenAI</code>)</li>
+<li>Queue (<code>callLLMQueued</code>)</li>
+<li>Prompt building (<code>prompts.ts</code> + <code>interpolation.ts</code>)</li>
+<li>LLM log persistence (camada <code>callGenAI</code>)</li>
+<li>Validation de vídeo (<code>callLLM</code>)</li>
+<li>Image generation (<code>image-client.ts</code> é Gemini-only, fora do adapter)</li>
 </ul>
-<h3>Rollback</h3>
-<p>Se necessario reverter:</p>
-<ol>
-<li>Documentos originais em <code>videos/</code> permanecem intactos</li>
-<li>Deletar documentos em <code>podcasts/pptnc/videos/</code> se necessario</li>
-</ol>
-<hr>
-<h2>References</h2>
+<h2>5. Singleton + reset pattern</h2>
+<p>Cada provider expõe duas funções módulo-level:</p>
+<pre><code class="language-ts">export function getGeminiProvider(): GeminiProvider
+export function resetGeminiProvider(): void
+</code></pre>
 <ul>
-<li>[Source: architecture-iara.md#Data Architecture]</li>
-<li>[Source: architecture-iara.md#White-Label Architecture]</li>
-<li>[Source: retrospective-epic-1-iara.md#Lessons Learned - LL1]</li>
-<li><a href="https://firebase.google.com/docs/firestore/manage-data/add-data">Firebase Admin SDK - Firestore</a></li>
+<li>Singleton lazy — primeira chamada constrói o cliente subjacente; subsequentes reusam.</li>
+<li><code>reset*</code> zera o singleton; usado em <code>beforeEach</code> de testes que precisam
+re-instrumentar mocks de <code>@google/genai</code> ou <code>@anthropic-ai/sdk</code>.</li>
 </ul>
-<hr>
-<h2>Dev Agent Record</h2>
-<h3>Agent Model Used</h3>
-<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
-<h3>Debug Log References</h3>
+<h2>6. Pricing tables</h2>
+<p>Cada provider mantém pricing interno por modelo, em <code>PRICING_USD_PER_M</code>:</p>
+<pre><code class="language-ts">{
+  &#39;gemini-2.5-flash&#39;: { input: 0.075, output: 0.3 },
+  ...
+}
+</code></pre>
+<p>Custos não cobertos (modelo desconhecido) retornam zero — caller pode
+ignorar ou tratar como sinal de configuração faltante. A Story 23.5
+introduz cost estimator dedicado que reusa essas tabelas.</p>
+<h2>7. Compatibilidade preservada</h2>
+<p>Após Story 23.2, <strong>callers existentes não foram tocados</strong>:</p>
 <ul>
-<li>Firebase Admin SDK initialized with ADC (Application Default Credentials)</li>
-<li>Database: pptnc-stage (named database, not default)</li>
-<li>Collection path: videos → podcasts/pptnc/videos</li>
-<li>Structured logging with JSON format for observability</li>
+<li><code>callGenAI()</code> mantém signature pública idêntica</li>
+<li>Newsletter (<code>src/lib/news/...</code>) usa <code>callGenAI</code> — funciona sem mudança</li>
+<li>Phase 5B (<code>/api/wizard/phase/5b/route.ts</code>) usa <code>callGenAI</code> — funciona sem mudança</li>
+<li>Route handlers de fase 1-7 usam <code>callLLMQueued</code> → <code>callLLM</code> → <code>callGenAI</code> — funcionam sem mudança</li>
+<li><code>getAI()</code> ainda exportado de <code>client.ts</code> — usado por <code>image-client.ts</code> e
+<code>embedding/vertex-ai.ts</code> (fora do scope do adapter)</li>
+<li>Mocks de <code>@google/genai</code> em testes existentes continuam interceptando
+(o singleton do provider usa o mesmo <code>GoogleGenAI</code> internamente)</li>
 </ul>
-<h3>Completion Notes List</h3>
-<ol>
-<li><p><strong>Task 1-4</strong>: Script <code>migrate-videos-to-subcollection.ts</code> criado com todas as funcionalidades:</p>
+<h2>8. Adições futuras (próximas stories)</h2>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Mudança no adapter</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>23.3</td>
+<td>Adiciona <code>AnthropicProvider</code> implementando <code>LLMProvider</code>. Reutiliza interface; muda <code>messages.create</code>, error mapping Anthropic-specific, pricing Sonnet/Opus/Haiku.</td>
+</tr>
+<tr>
+<td>23.4</td>
+<td>Schema do podcast ganha <code>llmConfig.provider</code>. UI dropdown Gemini/Claude.</td>
+</tr>
+<tr>
+<td>23.5</td>
+<td>Factory <code>getLLMProvider(podcast)</code> que escolhe provider conforme config. Cost estimator dedicado consumindo pricing tables dos providers.</td>
+</tr>
+<tr>
+<td>23.6</td>
+<td>LLM log schema ganha campo <code>provider</code> + dashboard filtros.</td>
+</tr>
+<tr>
+<td>23.7</td>
+<td>Fallback manual — se Claude falhar 3x, UI oferece fallback explícito pra Gemini.</td>
+</tr>
+<tr>
+<td>23.8</td>
+<td>A/B harness comparando providers no mesmo prompt.</td>
+</tr>
+</tbody></table>
+<h2>9. Onde ler mais</h2>
 <ul>
-<li>Conexao Firebase Admin SDK com named database</li>
-<li>Leitura de todos documentos da colecao <code>videos</code></li>
-<li>Verificacao de existencia no destino (idempotencia)</li>
-<li>Copia com campos adicionais (podcastId, migratedAt)</li>
-<li>Validacao de contagem pos-migracao</li>
-<li>Relatorio formatado no console</li>
-</ul>
-</li>
-<li><p><strong>Task 5</strong>: Migracao de documentos executada com sucesso em pptnc-stage:</p>
-<ul>
-<li>Source documents: 2293</li>
-<li>Migrated (new): 2293</li>
-<li>Skipped (existing): 0</li>
-<li>Errors: 0</li>
-</ul>
-</li>
-<li><p><strong>Fix aplicado</strong>: Corrigido uso de named database (<code>pptnc-stage</code>) em vez de <code>(default)</code> - erro inicial FAILED_PRECONDITION</p>
-</li>
-<li><p><strong>Task 6</strong>: Migracao de subcollections executada com sucesso:</p>
-<ul>
-<li>Subcollection descoberta: <code>chunks</code></li>
-<li>Chunks found: 8510</li>
-<li>Chunks migrated: 8510</li>
-<li>Chunks skipped: 0</li>
-<li>Errors: 0</li>
-<li>Nota: <code>doc.data()</code> no Firestore NAO copia subcollections automaticamente</li>
-</ul>
-</li>
-</ol>
-<h3>File List</h3>
-<p><strong>Arquivos criados:</strong></p>
-<ul>
-<li>scripts/migrate-videos-to-subcollection.ts</li>
-<li>scripts/inspect-video-subcollections.ts</li>
-<li>scripts/migrate-video-subcollections.ts</li>
-</ul>
-<p><strong>Arquivos modificados:</strong></p>
-<ul>
-<li>package.json (adicionado scripts <code>migrate:videos</code>, <code>migrate:video-subcollections</code> e dependencia <code>tsx</code>)</li>
-</ul>
-<hr>
-<h2>Change Log</h2>
-<ul>
-<li>2026-01-25: Story criada como pre-requisito do Epic 2 para alinhamento com arquitetura white-label</li>
-<li>2026-01-25: Implementacao completa - 2293 documentos migrados com sucesso</li>
-<li>2026-01-25: Subcollections migradas - 8510 chunks migrados com sucesso, status: review</li>
+<li><code>_bmad-output/implementation-artifacts/epic-23-claude-provider.md</code> — Epic doc completa com 7 ADRs e risk register</li>
+<li><code>_bmad-output/implementation-artifacts/spike-claude-vertex-results.md</code> — Story 23.1 (Spike) resultado 6/6 PASS</li>
+<li>Código: <code>src/lib/llm/providers/types.ts</code> (interface), <code>gemini-provider.ts</code> (impl), <code>gemini-provider.test.ts</code> (testes do contrato)</li>
 </ul>
 
   </main>

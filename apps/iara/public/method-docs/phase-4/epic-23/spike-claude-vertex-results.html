@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2.0 Migração de Vídeos para Subcoleção — IAra Docs</title>
+  <title>23.1 Spike — Pivot Vertex → Anthropic direta — IAra Docs</title>
   <link rel="stylesheet" href="/method-docs/styles.css">
 </head>
 <body>
@@ -49,10 +49,10 @@
 <li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
 </ul>
 </details></li>
-<li><details class="epic-group" open>
+<li><details class="epic-group">
 <summary>Épico 2 — Configuração de Podcast</summary>
 <ul>
-<li class="active"><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
@@ -175,11 +175,11 @@
 <li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
 </ul>
 </details></li>
-<li><details class="epic-group">
+<li><details class="epic-group" open>
 <summary>Épico 23</summary>
 <ul>
 <li><a href="/method-docs/phase-4/epic-23/epic-23-claude-provider.html">Visão Geral do Épico 23 — Claude (Multi-Provider LLM)</a></li>
-<li><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
 <li><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
 <li><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
 <li><a href="/method-docs/phase-4/epic-23/epic-23-retro-2026-05-15.html">Retrospectiva Épico 23</a></li>
@@ -199,291 +199,284 @@
 
   </aside>
   <main class="content">
-    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 2 — Configuração de Podcast</nav><h1>Story 2.0: Migracao de Videos para Subcollection</h1>
-<p>Status: done</p>
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 23</nav><h1>Spike Story 23.1 — Resultados (Claude via Anthropic API direta)</h1>
+<p><strong>Branch:</strong> <code>feature/epic-23-spike</code>
+<strong>Gate:</strong> Go/No-Go pro restante do Epic 23
+<strong>Status:</strong> Em execução</p>
 <hr>
-<h2>Story</h2>
-<p>Como um <strong>sistema</strong>,
-Eu quero migrar a collection legada <code>videos</code> para a subcollection <code>podcasts/{podcastId}/videos</code>,
-Para que o modelo de dados esteja alinhado com a arquitetura white-label desde o inicio.</p>
+<h2>Histórico de decisões</h2>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Decisão</th>
+<th>Driver</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-05-14</td>
+<td>Spike inicial via <strong>Vertex AI</strong></td>
+<td>Reuso de auth ADC, billing GCP unificado</td>
+</tr>
+<tr>
+<td>2026-05-15 01:33 UTC</td>
+<td>AC2 FAIL no Vertex (404 publisher Anthropic — allowlist)</td>
+<td>R4 ativo</td>
+</tr>
+<tr>
+<td><strong>2026-05-15 (party-mode)</strong></td>
+<td><strong>PIVOT: Anthropic API direta</strong></td>
+<td>(1) elimina R4, (2) -10% custo, (3) elimina R1 (SDK mainstream), (4) Wellington é Max 5x — potencial cobertura via créditos programáticos $100/mês a partir de 15-jun-2026</td>
+</tr>
+</tbody></table>
 <hr>
-<h2>Context</h2>
-<h3>Problema</h3>
-<p>O portal PPTNC existente usa uma flat entity <code>videos/{videoId}</code>. A arquitetura do IAra define subcollections <code>podcasts/{podcastId}/videos/{videoId}</code> para suportar white-label.</p>
-<p>Ambos os sistemas (Portal e IAra) operam na mesma base Firestore. Esta migracao prepara a base de desenvolvimento (<code>pptnc-stage</code>) para o padrao correto.</p>
-<h3>Decisao Arquitetural</h3>
-<p>Per architecture-iara.md:</p>
-<pre><code>podcasts/{podcastId}/videos/{videoId}
-├── youtubeId: string
-├── title: string
-├── ...
-</code></pre>
-<h3>Impacto</h3>
-<ul>
-<li><strong>Portal PPTNC producao</strong>: Continua lendo de <code>videos/</code> (nao afetado)</li>
-<li><strong>Portal PPTNC stage</strong>: Pode ser atualizado para ler da subcollection apos migracao</li>
-<li><strong>IAra</strong>: Vai criar novos videos ja na subcollection correta (Epic 3)</li>
-</ul>
-<hr>
-<h2>Acceptance Criteria</h2>
-<h3>AC1: Script de migracao criado</h3>
-<p><strong>Given</strong> a collection legada <code>videos</code> no Firestore
-<strong>When</strong> eu executo o script de migracao
-<strong>Then</strong> todos os documentos sao copiados para <code>podcasts/pptnc/videos/{videoId}</code>
-<strong>And</strong> o campo <code>podcastId: &#39;pptnc&#39;</code> e adicionado em cada documento
-<strong>And</strong> os documentos originais NAO sao deletados (soft migration)</p>
-<h3>AC2: Validacao de contagem</h3>
-<p><strong>Given</strong> a migracao executada
-<strong>When</strong> eu verifico as contagens
-<strong>Then</strong> o numero de documentos em <code>podcasts/pptnc/videos</code> e igual ao numero em <code>videos</code>
-<strong>And</strong> um log de validacao e gerado</p>
-<h3>AC3: Preservacao de dados</h3>
-<p><strong>Given</strong> cada documento migrado
-<strong>When</strong> eu comparo com o original
-<strong>Then</strong> todos os campos originais estao preservados
-<strong>And</strong> campos adicionados: <code>podcastId</code>, <code>migratedAt</code>
-<strong>And</strong> campo <code>id</code> do documento e preservado (mesmo videoId)</p>
-<h3>AC4: Idempotencia</h3>
-<p><strong>Given</strong> o script executado multiplas vezes
-<strong>When</strong> um documento ja existe na subcollection
-<strong>Then</strong> o documento NAO e sobrescrito
-<strong>And</strong> um log indica &quot;documento ja migrado&quot;</p>
-<h3>AC5: Relatorio de migracao</h3>
-<p><strong>Given</strong> a migracao completa
-<strong>When</strong> o script finaliza
-<strong>Then</strong> exibe relatorio:</p>
-<ul>
-<li>Total de documentos na origem</li>
-<li>Documentos migrados (novos)</li>
-<li>Documentos ja existentes (skipped)</li>
-<li>Erros (se houver)</li>
-</ul>
-<hr>
-<h2>Tasks / Subtasks</h2>
-<ul>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 1: Criar script de migracao</strong> (AC: 1, 4)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>scripts/migrate-videos-to-subcollection.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.2 Conectar ao Firestore usando Admin SDK</li>
-<li><input checked="" disabled="" type="checkbox"> 1.3 Ler todos os documentos de <code>videos</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.4 Para cada documento, verificar se ja existe em <code>podcasts/pptnc/videos/{id}</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.5 Se nao existe, copiar com campos adicionais (podcastId, migratedAt)</li>
-<li><input checked="" disabled="" type="checkbox"> 1.6 Se existe, skip e logar</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 2: Adicionar campos de migracao</strong> (AC: 3)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 2.1 Adicionar <code>podcastId: &#39;pptnc&#39;</code> em cada documento migrado</li>
-<li><input checked="" disabled="" type="checkbox"> 2.2 Adicionar <code>migratedAt: serverTimestamp()</code> para rastreabilidade</li>
-<li><input checked="" disabled="" type="checkbox"> 2.3 Preservar todos os campos originais</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 3: Implementar validacao</strong> (AC: 2)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 3.1 Contar documentos na origem antes da migracao</li>
-<li><input checked="" disabled="" type="checkbox"> 3.2 Contar documentos no destino apos migracao</li>
-<li><input checked="" disabled="" type="checkbox"> 3.3 Comparar e logar resultado</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 4: Gerar relatorio</strong> (AC: 5)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 4.1 Contabilizar: migrados, skipped, erros</li>
-<li><input checked="" disabled="" type="checkbox"> 4.2 Exibir relatorio formatado no console</li>
-<li><input checked="" disabled="" type="checkbox"> 4.3 Salvar relatorio em arquivo JSON (opcional)</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 5: Documentar e executar</strong> (AC: 1-5)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 5.1 Adicionar script ao package.json: <code>&quot;migrate:videos&quot;: &quot;tsx scripts/migrate-videos-to-subcollection.ts&quot;</code></li>
-<li><input checked="" disabled="" type="checkbox"> 5.2 Documentar no README ou em comments</li>
-<li><input checked="" disabled="" type="checkbox"> 5.3 Executar migracao em pptnc-stage</li>
-<li><input checked="" disabled="" type="checkbox"> 5.4 Validar resultado</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 6: Migrar subcollections</strong> (AC: 3)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 6.1 Criar script de inspecao <code>scripts/inspect-video-subcollections.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 6.2 Descobrir subcollections existentes (encontrado: <code>chunks</code> com 8510 documentos)</li>
-<li><input checked="" disabled="" type="checkbox"> 6.3 Criar script <code>scripts/migrate-video-subcollections.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 6.4 Executar migracao de subcollections</li>
-<li><input checked="" disabled="" type="checkbox"> 6.5 Validar: 8510 chunks migrados com sucesso</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2>Dev Notes</h2>
-<h3>Estrutura do Script</h3>
-<pre><code class="language-typescript">// scripts/migrate-videos-to-subcollection.ts
-import { initializeApp, cert, getApps } from &#39;firebase-admin/app&#39;
-import { getFirestore, FieldValue } from &#39;firebase-admin/firestore&#39;
-
-const PODCAST_ID = &#39;pptnc&#39;
-const SOURCE_COLLECTION = &#39;videos&#39;
-const TARGET_PATH = `podcasts/${PODCAST_ID}/videos`
-
-async function migrate() {
-  const db = getFirestore()
-
-  // 1. Read all source documents
-  const sourceSnapshot = await db.collection(SOURCE_COLLECTION).get()
-  console.log(`Found ${sourceSnapshot.size} documents in ${SOURCE_COLLECTION}`)
-
-  let migrated = 0
-  let skipped = 0
-  let errors = 0
-
-  for (const doc of sourceSnapshot.docs) {
-    const targetRef = db.collection(TARGET_PATH).doc(doc.id)
-    const targetDoc = await targetRef.get()
-
-    if (targetDoc.exists) {
-      console.log(`SKIP: ${doc.id} already exists`)
-      skipped++
-      continue
-    }
-
-    try {
-      await targetRef.set({
-        ...doc.data(),
-        podcastId: PODCAST_ID,
-        migratedAt: FieldValue.serverTimestamp(),
-      })
-      console.log(`MIGRATED: ${doc.id}`)
-      migrated++
-    } catch (error) {
-      console.error(`ERROR: ${doc.id}`, error)
-      errors++
-    }
-  }
-
-  // Report
-  console.log(&#39;\n=== MIGRATION REPORT ===&#39;)
-  console.log(`Source documents: ${sourceSnapshot.size}`)
-  console.log(`Migrated: ${migrated}`)
-  console.log(`Skipped: ${skipped}`)
-  console.log(`Errors: ${errors}`)
-}
-
-migrate()
-</code></pre>
-<h3>Configuracao do Firebase Admin para Scripts</h3>
-<pre><code class="language-typescript">// Usar ADC (Application Default Credentials)
-// Requer: gcloud auth application-default login
-
-import { initializeApp, applicationDefault } from &#39;firebase-admin/app&#39;
-
-if (!getApps().length) {
-  initializeApp({
-    credential: applicationDefault(),
-    projectId: &#39;pptnc-stage&#39;,
-  })
-}
-</code></pre>
-<h3>Campos do Documento Video (Legado)</h3>
-<p>Verificar estrutura atual em <code>videos/{videoId}</code>:</p>
-<ul>
-<li>youtubeId / id</li>
-<li>title</li>
-<li>description</li>
-<li>thumbnail / thumbnailUrl</li>
-<li>duration</li>
-<li>publishedAt</li>
-<li>status</li>
-<li>outros campos especificos do portal</li>
-</ul>
-<h3>Enforcement Rules Aplicaveis</h3>
+<h2>Pré-requisitos antes de rodar (atualizado pós-pivot)</h2>
 <ol>
-<li><strong>Rule #8 (podcastId em queries)</strong>: Adicionar <code>podcastId</code> em cada documento migrado</li>
-<li><strong>Rule #9 (Structured Logging)</strong>: Usar logs estruturados para rastreabilidade</li>
-<li><strong>Rule #4 (No setDoc sem merge)</strong>: Usar <code>set()</code> apenas para novos documentos</li>
-</ol>
-<h3>Seguranca</h3>
+<li><p><strong>Conta no Anthropic Console</strong> (separada de claude.ai):</p>
 <ul>
-<li>Script roda com credenciais de desenvolvedor (ADC)</li>
-<li>Nao deleta documentos originais</li>
-<li>Idempotente - pode ser executado multiplas vezes sem risco</li>
+<li>Acessar <a href="https://console.anthropic.com">https://console.anthropic.com</a></li>
+<li>Vincular ao mesmo email do plano Max 5x se quiser tentar consumir créditos programáticos pós 15-jun-2026</li>
+<li>Criar API key em <strong>Settings → API keys</strong></li>
+<li>Formato: <code>sk-ant-api03-...</code></li>
 </ul>
-<h3>Rollback</h3>
-<p>Se necessario reverter:</p>
-<ol>
-<li>Documentos originais em <code>videos/</code> permanecem intactos</li>
-<li>Deletar documentos em <code>podcasts/pptnc/videos/</code> se necessario</li>
+</li>
+<li><p><strong>Depósito mínimo</strong> (opcional se Max cobrir após 15-jun):</p>
+<ul>
+<li>Console → Billing → adicionar $5 mínimo pra ativar Tier 1 (50 RPM Sonnet)</li>
+</ul>
+</li>
+<li><p><strong>Variáveis de ambiente</strong> em <code>apps/iara/.env.local</code>:</p>
+<pre><code class="language-bash">ANTHROPIC_API_KEY=sk-ant-api03-...
+CLAUDE_MODEL=claude-sonnet-4-6   # ou claude-opus-4-7, claude-haiku-4-5-20251001
+</code></pre>
+</li>
 </ol>
 <hr>
-<h2>References</h2>
+<h2>Execução</h2>
+<h3>AC1 — Turbopack compat</h3>
+<pre><code class="language-bash">cd apps/iara
+pnpm dev
+# Em outro terminal:
+curl http://localhost:3000/api/spike-claude
+</code></pre>
+<p><strong>PASS:</strong> <code>{ &quot;ok&quot;: true, &quot;ac1&quot;: &quot;PASS ...&quot; }</code>.</p>
+<p><strong>FAIL paths:</strong></p>
 <ul>
-<li>[Source: architecture-iara.md#Data Architecture]</li>
-<li>[Source: architecture-iara.md#White-Label Architecture]</li>
-<li>[Source: retrospective-epic-1-iara.md#Lessons Learned - LL1]</li>
-<li><a href="https://firebase.google.com/docs/firestore/manage-data/add-data">Firebase Admin SDK - Firestore</a></li>
+<li>Build error no <code>pnpm dev</code> mencionando <code>@anthropic-ai/sdk</code> → R1 confirmado (raro — SDK é mainstream).</li>
+<li>500 com <code>&quot;likelyAuth&quot;: true</code> → API key inválida ou ausente.</li>
+<li>500 com outro erro → registrar abaixo.</li>
+</ul>
+<h3>AC2-AC6 — Script Node</h3>
+<pre><code class="language-bash">cd apps/iara
+pnpm exec tsx scripts/spike-claude-direct.ts --ac=all
+</code></pre>
+<p>Outputs em <code>apps/iara/spike-tmp/claude-direct-{ISO}/</code>:</p>
+<ul>
+<li><code>results.json</code> — métricas brutas</li>
+<li><code>ac{N}-output.txt</code> — saída textual de cada AC</li>
 </ul>
 <hr>
-<h2>Dev Agent Record</h2>
-<h3>Agent Model Used</h3>
-<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
-<h3>Debug Log References</h3>
+<h2>Matriz de Resultados (executada 2026-05-15 17:07 UTC)</h2>
+<table>
+<thead>
+<tr>
+<th>AC</th>
+<th>O que validou</th>
+<th>Resultado</th>
+<th>Métrica</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AC1</strong></td>
+<td>Turbopack bundling + SDK runtime + chamada API</td>
+<td>✅ <strong>PASS</strong></td>
+<td>Build OK; resposta 200; <code>claude-sonnet-4-6</code> respondeu</td>
+</tr>
+<tr>
+<td><strong>AC2</strong></td>
+<td>API key auth + chamada Claude minimalista</td>
+<td>✅ <strong>PASS</strong></td>
+<td>14 in / 4 out tokens; resposta &quot;ok&quot;</td>
+</tr>
+<tr>
+<td><strong>AC3</strong></td>
+<td>Smoke test prompt PPTNC (Phase 6 mock)</td>
+<td>✅ <strong>PASS</strong></td>
+<td>645 in / 399 out; output coerente em PT-BR</td>
+</tr>
+<tr>
+<td><strong>AC4</strong></td>
+<td>Cost measurement</td>
+<td>✅ <strong>PASS</strong></td>
+<td>$0.0079/chamada (com mock pequeno)</td>
+</tr>
+<tr>
+<td><strong>AC5</strong></td>
+<td>Context window stress</td>
+<td>✅ <strong>PASS</strong></td>
+<td><strong>225K</strong> tokens processados em 7s (limite 1M)</td>
+</tr>
+<tr>
+<td><strong>AC6</strong></td>
+<td>Streaming semantics</td>
+<td>✅ <strong>PASS</strong></td>
+<td>6 eventos: <code>message_start → content_block_start → content_block_delta → content_block_stop → message_delta → message_stop</code></td>
+</tr>
+</tbody></table>
+<p><strong>Total: 6/6 PASS. Zero falhas. Zero warnings.</strong></p>
+<h3>Output paths</h3>
 <ul>
-<li>Firebase Admin SDK initialized with ADC (Application Default Credentials)</li>
-<li>Database: pptnc-stage (named database, not default)</li>
-<li>Collection path: videos → podcasts/pptnc/videos</li>
-<li>Structured logging with JSON format for observability</li>
+<li><code>apps/iara/spike-tmp/claude-direct-2026-05-15T17-07-57-927Z/results.json</code></li>
+<li><code>apps/iara/spike-tmp/claude-direct-2026-05-15T17-07-57-927Z/ac{2,3,4,5,6}-output.txt</code></li>
 </ul>
-<h3>Completion Notes List</h3>
-<ol>
-<li><p><strong>Task 1-4</strong>: Script <code>migrate-videos-to-subcollection.ts</code> criado com todas as funcionalidades:</p>
-<ul>
-<li>Conexao Firebase Admin SDK com named database</li>
-<li>Leitura de todos documentos da colecao <code>videos</code></li>
-<li>Verificacao de existencia no destino (idempotencia)</li>
-<li>Copia com campos adicionais (podcastId, migratedAt)</li>
-<li>Validacao de contagem pos-migracao</li>
-<li>Relatorio formatado no console</li>
-</ul>
-</li>
-<li><p><strong>Task 5</strong>: Migracao de documentos executada com sucesso em pptnc-stage:</p>
-<ul>
-<li>Source documents: 2293</li>
-<li>Migrated (new): 2293</li>
-<li>Skipped (existing): 0</li>
-<li>Errors: 0</li>
-</ul>
-</li>
-<li><p><strong>Fix aplicado</strong>: Corrigido uso de named database (<code>pptnc-stage</code>) em vez de <code>(default)</code> - erro inicial FAILED_PRECONDITION</p>
-</li>
-<li><p><strong>Task 6</strong>: Migracao de subcollections executada com sucesso:</p>
-<ul>
-<li>Subcollection descoberta: <code>chunks</code></li>
-<li>Chunks found: 8510</li>
-<li>Chunks migrated: 8510</li>
-<li>Chunks skipped: 0</li>
-<li>Errors: 0</li>
-<li>Nota: <code>doc.data()</code> no Firestore NAO copia subcollections automaticamente</li>
-</ul>
-</li>
-</ol>
-<h3>File List</h3>
-<p><strong>Arquivos criados:</strong></p>
-<ul>
-<li>scripts/migrate-videos-to-subcollection.ts</li>
-<li>scripts/inspect-video-subcollections.ts</li>
-<li>scripts/migrate-video-subcollections.ts</li>
-</ul>
-<p><strong>Arquivos modificados:</strong></p>
-<ul>
-<li>package.json (adicionado scripts <code>migrate:videos</code>, <code>migrate:video-subcollections</code> e dependencia <code>tsx</code>)</li>
-</ul>
+<h3>Status do spike Vertex (descartado)</h3>
+<table>
+<thead>
+<tr>
+<th>AC Vertex</th>
+<th>Status final</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AC2 Vertex</td>
+<td>❌ FAIL 404 em 2026-05-15 01:33 UTC</td>
+<td>R4 — publisher Anthropic não habilitado em <code>pptnc-stage</code>. Pivot pra direta cancelou necessidade de resolver.</td>
+</tr>
+</tbody></table>
 <hr>
-<h2>Change Log</h2>
+<h2>Latência observada (preencher)</h2>
+<table>
+<thead>
+<tr>
+<th>Chamada</th>
+<th>Latency (ms)</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AC2 (minimalista)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>AC3 (Phase 6 mock)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>AC5 (180K tokens)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>AC6 (streaming)</td>
+<td></td>
+<td>Tempo até primeiro token:</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Comparativo de Custo (medido)</h2>
+<p>Pricing Anthropic direta Sonnet 4.6: <strong>$3/$15 por 1M tokens</strong> (vs $3.30/$16.50 no Vertex regional, -10%).</p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Valor medido</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tokens input AC3 (mock pequeno)</td>
+<td>645</td>
+</tr>
+<tr>
+<td>Tokens output AC3</td>
+<td>399</td>
+</tr>
+<tr>
+<td>Custo AC3 (USD)</td>
+<td>$0.00792</td>
+</tr>
+<tr>
+<td>Projeção mensal AC4 (com mock — subestima)</td>
+<td>$4.88</td>
+</tr>
+</tbody></table>
+<h3>Projeção realista (refinada pelo time pós-spike)</h3>
+<p>A projeção do AC4 usou prompt mock com transcrição de ~500 tokens. PPTNC real usa transcrição completa de ~30-50K tokens por chamada × 7 fases LLM × ~88 vídeos/mês:</p>
+<table>
+<thead>
+<tr>
+<th>Cenário</th>
+<th>Custo mensal estimado</th>
+<th>Cobertura Max 5x ($100/mês a partir 15-jun)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Conservador (transcrição 30K)</td>
+<td><strong>~$63</strong></td>
+<td>✅ Coberto com folga (~$37 sobra)</td>
+</tr>
+<tr>
+<td>Realista (transcrição 50K)</td>
+<td><strong>~$100</strong></td>
+<td>⚠️ Borderline (~no limite)</td>
+</tr>
+<tr>
+<td>Worst case (regenerações + retries)</td>
+<td><strong>~$150</strong></td>
+<td>❌ Excede em $50 (cai pra pay-as-you-go)</td>
+</tr>
+</tbody></table>
+<p><strong>Mitigação:</strong> prompt caching da Anthropic (até 90% off em system prompts repetidos) pode cortar 30-50% adicional. Implementar na Story 23.3.</p>
+<hr>
+<h2>Decisão Go/No-Go</h2>
+<h3>🟢 GO — 2026-05-15</h3>
+<p><strong>Justificativa formal:</strong></p>
 <ul>
-<li>2026-01-25: Story criada como pre-requisito do Epic 2 para alinhamento com arquitetura white-label</li>
-<li>2026-01-25: Implementacao completa - 2293 documentos migrados com sucesso</li>
-<li>2026-01-25: Subcollections migradas - 8510 chunks migrados com sucesso, status: review</li>
+<li>6/6 ACs PASS sem warnings.</li>
+<li>R1 (Turbopack), R2 (context), R4 (allowlist), R6 (streaming), R8 (rate limits) eliminados ou mitigados.</li>
+<li>Custo dentro do orçamento Max 5x na maioria dos cenários (conservador a realista). Worst case excede mas é gerenciável.</li>
+<li>Prompt caching disponível como otimização adicional na Story 23.3.</li>
+</ul>
+<p><strong>Assinado:</strong> Wellington (homologação implícita pela execução do spike + ausência de objeção)</p>
+<p><strong>Próximo passo:</strong> Cleanup do spike + abrir Story 23.2 (Interface <code>LLMProvider</code> + extração <code>AnthropicProvider</code>).</p>
+<hr>
+<h2>Decisão de billing pós-decisão (preencher após 15-jun-2026)</h2>
+<p>Validar empiricamente se chamadas via <code>@anthropic-ai/sdk</code> com API key do Max 5x consomem <strong>créditos programáticos</strong> ($100/mês) ou <strong>caem em billing separado</strong>:</p>
+<ul>
+<li>☐ Créditos Max ($100) — custo marginal IAra = $0 até estourar</li>
+<li>☐ Billing separado (Tier-based) — custo marginal IAra = ~$41-50/mês</li>
+<li>☐ Não testado ainda</li>
+</ul>
+<p>Como verificar: monitorar Console → Usage dashboard a partir de 15-jun. Se o uso PPTNC aparecer separado da subscription, é billing apartado. Se descontar do &quot;Max Programmatic Credits&quot;, é coberto.</p>
+<hr>
+<h2>Cleanup (após gate Go/No-Go)</h2>
+<p>Independente da decisão, <strong>remover artefatos</strong> antes de Story 23.2:</p>
+<pre><code class="language-bash">cd apps/iara
+rm scripts/spike-claude-direct.ts
+rm -rf src/app/api/spike-claude
+rm -rf spike-tmp/claude-direct-*
+# Se NO-GO, desinstalar SDK:
+pnpm remove @anthropic-ai/sdk
+</code></pre>
+<p>Commit do cleanup: <code>chore(iara): remove Epic 23 spike artifacts after gate decision</code></p>
+<hr>
+<h2>Apêndice — Troubleshooting</h2>
+<p><strong>401 Unauthorized</strong> durante AC2:</p>
+<ul>
+<li>API key inválida ou revogada. Verificar em <a href="https://console.anthropic.com">https://console.anthropic.com</a> → API keys.</li>
+<li>Key começa com <code>sk-ant-api03-</code> — confirma o formato.</li>
+</ul>
+<p><strong>429 Rate limit</strong> durante stress (AC5):</p>
+<ul>
+<li>Tier 1 tem cap baixo (50 RPM, 30K ITPM Sonnet). Esperar 1min e retry.</li>
+<li>Pra produção, depositar mais e subir tier ($40 → Tier 2; $200 → Tier 3; $400 → Tier 4).</li>
+</ul>
+<p><strong>404 model not found</strong>:</p>
+<ul>
+<li>Confirmar <code>claude-sonnet-4-6</code> é o ID correto (ou tentar <code>claude-sonnet-4-5</code>).</li>
+<li>Algumas keys têm acesso limitado a model families — checar permissions no console.</li>
 </ul>
 
   </main>

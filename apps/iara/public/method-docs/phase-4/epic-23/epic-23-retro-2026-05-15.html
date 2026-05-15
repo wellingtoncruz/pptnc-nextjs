@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retrospectiva Épico 23 — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 23</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-23/epic-23-claude-provider.html">Visão Geral do Épico 23 — Claude (Multi-Provider LLM)</a></li>
+<li><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
+<li><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
+<li><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-23/epic-23-retro-2026-05-15.html">Retrospectiva Épico 23</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 23</nav><h1>Retrospectiva — Epic 23: Multi-Provider LLM (Claude via Anthropic API)</h1>
+<p><strong>Data:</strong> 2026-05-15
+<strong>Epic:</strong> 23 — Adicionar Claude (Anthropic) como provider alternativo ao Gemini, com Settings UI, fallback, telemetria e A/B bench
+<strong>Status:</strong> Completo (todas as 9 stories <code>done</code>, branch <code>feature/epic-23-claude-provider</code> aguardando merge em <code>main</code>)
+<strong>Facilitador:</strong> Bob (Scrum Master)</p>
+<hr>
+<h2>Participantes</h2>
+<ul>
+<li>Wellington (Project Lead / Product Owner / único homologador)</li>
+<li>Bob (Scrum Master) — facilitador</li>
+<li>Claude (Dev) — executor</li>
+</ul>
+<hr>
+<h2>Métricas de Entrega</h2>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stories planejadas</td>
+<td>9 (23.1 → 23.9)</td>
+</tr>
+<tr>
+<td>Stories entregues</td>
+<td>9 (23.7 entregue simplificada — AC1 atendido por construção, AC2 deferido como TD futuro, AC3 implementado)</td>
+</tr>
+<tr>
+<td>Commits na branch (Epic 23)</td>
+<td>9 stories + 4 spike-related = 13</td>
+</tr>
+<tr>
+<td>Suítes de teste</td>
+<td>193 → 195 (+2)</td>
+</tr>
+<tr>
+<td>Testes</td>
+<td>3316 → 3372 (+56), 3 skipped (integration tests com gate)</td>
+</tr>
+<tr>
+<td>Erros TypeScript em produção no push</td>
+<td><strong>0</strong> em todos os commits</td>
+</tr>
+<tr>
+<td>Suítes verde antes de cada commit</td>
+<td><strong>100%</strong></td>
+</tr>
+<tr>
+<td>Builds quebrados no deploy</td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>Production incidents</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Tech debt nova</td>
+<td>TD-8 fechada (Epic 23 era a própria TD-8); TD-9 nova proposta (refactor callGenAI args, ver §6)</td>
+</tr>
+<tr>
+<td>Dependência nova</td>
+<td><code>@anthropic-ai/sdk ^0.96.0</code></td>
+</tr>
+<tr>
+<td>Bugs detectados pelo Wellington em homologação</td>
+<td>1 grande (Claude não tomava efeito porque 9 callers diretos não propagavam o arg <code>provider</code>) + 1 cosmético (path do bench output)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Follow-Through — Retros Epic 16 + Epic 22</h2>
+<p>Os 13 action items combinados eram <strong>PRÉ-REQUISITOS</strong> deste epic. Avaliação honesta:</p>
+<h3>Retro 16 (7 items)</h3>
+<table>
+<thead>
+<tr>
+<th>AI</th>
+<th>Status no Epic 23</th>
+<th>Evidência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. <code>tsc --noEmit</code> antes de QUALQUER push</td>
+<td>✅</td>
+<td>Zero erros TS em prod em todos os commits</td>
+</tr>
+<tr>
+<td>2. <code>npx vitest run</code> antes de push</td>
+<td>✅</td>
+<td>Suíte verde antes de cada commit (3369 ao final)</td>
+</tr>
+<tr>
+<td>3. Checklist de AC real (não só compilação)</td>
+<td>✅</td>
+<td>Wellington homologou ativamente cada story; roteiros entregues</td>
+</tr>
+<tr>
+<td>4. Propagação de padrões entre fases</td>
+<td>⚠️</td>
+<td>Bug do 7º arg em 9 callers (Claude não tomava efeito) — clássico de propagação incompleta entre fases</td>
+</tr>
+<tr>
+<td>5. ACs de experiência do produtor</td>
+<td>✅</td>
+<td>Cada story tem roteiro de homologação end-to-end</td>
+</tr>
+<tr>
+<td>6. Code review inclui dimensão UX</td>
+<td>⚠️</td>
+<td>Bug do 7º arg só apareceu na homologação do Wellington — não foi pego em auto-review</td>
+</tr>
+<tr>
+<td>7. Action items de retro são pré-requisitos</td>
+<td>✅</td>
+<td>Esta retro existe e os items vão pro próximo epic</td>
+</tr>
+</tbody></table>
+<h3>Retro 22 (6 items adicionais)</h3>
+<table>
+<thead>
+<tr>
+<th>AI</th>
+<th>Status no Epic 23</th>
+<th>Evidência</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>8. Validar ambiguidade temporal/ordinal antes de codar</td>
+<td>✅</td>
+<td><code>AskUserQuestion</code> usada várias vezes antes de decisões (escopo 23.7, fases bench, integration tests)</td>
+</tr>
+<tr>
+<td>9. Ler doc oficial ao primeiro erro de config/API</td>
+<td>✅</td>
+<td>Spike pivotou de Vertex pra Anthropic direta após primeiro 404 (R4 allowlist); doc oficial lida antes de tentar de novo</td>
+</tr>
+<tr>
+<td>10. Cache invalidation por padrão em paths atualizáveis</td>
+<td>➖ N/A</td>
+<td>Epic 23 não toca arquivos no Cloud Storage</td>
+</tr>
+<tr>
+<td>11. Sizing explícito antes de codar</td>
+<td>✅</td>
+<td>Story 23.5/23.6/23.7/23.8 quebradas em sub-tasks; nenhum arquivo monolítico &gt;500 LOC criado</td>
+</tr>
+<tr>
+<td>12. Plano de homologação antes de pingar Wellington</td>
+<td>✅</td>
+<td>Cada commit veio com roteiro de homologação na resposta</td>
+</tr>
+<tr>
+<td>13. Action items combinados são blocker</td>
+<td>✅</td>
+<td>Esta retro avaliou os 13</td>
+</tr>
+</tbody></table>
+<p><strong>Compliance: 11/13 cumpridos, 1 parcial (#4 e #6 entrelaçados no mesmo bug), 1 N/A. Comparado ao Epic 22 (12/13), regressão leve causada pelo mesmo bug.</strong></p>
+<hr>
+<h2>O Que Deu Certo</h2>
+<ul>
+<li><strong>Spike pivotou de Vertex AI pra Anthropic API direta</strong> (R4 allowlist eliminada). O spike economizou <del>10% no custo, abriu prompt caching, e desbloqueou cobertura via plano Max do Wellington (</del>$100/mês créditos programáticos a partir de 15-jun-2026). Decisão documentada em <code>spike-claude-vertex-results.md</code>.</li>
+<li><strong>Adapter pattern limpo</strong>. <code>LLMProvider</code> interface + 2 implementações (<code>GeminiProvider</code>, <code>AnthropicProvider</code>) + factory simples. Os 9 callers diretos da app não precisaram mudar lógica de negócio — só passar 1-2 args extras. Doc em <code>architecture-llm-adapter.md</code>.</li>
+<li><strong>Tolerant read no schema</strong> (<code>.catch(undefined)</code> em <code>LlmConfigSchema.provider</code>) preveniu quebra do GET /api/podcast quando IDs de modelo ficaram stale. Mesma técnica usada em <code>LlmLogCreateSchema</code> (defaults <code>gemini</code>/<code>0</code> pra docs legacy).</li>
+<li><strong>Auto-fallback Claude→Gemini simplificou Story 23.7</strong> sem mexer no <code>wizard-orchestrator.tsx</code> (2700 LOC, TD-7 conhecida). AC2 (alert por fase) foi deferido com justificativa explícita; AC1 (retry/backoff) já estava atendido por construção.</li>
+<li><strong>Cost estimator + provider indicator</strong> deram visibilidade visual imediata. Badge no Settings mostra estimativa colorida (verde/amarelo/vermelho); indicador na sidebar mostra qual provider está ativo a todo momento.</li>
+<li><strong>Telemetria estruturada</strong> (Story 23.6): logs <code>event: &#39;llm.call.complete&#39;</code> e <code>&#39;llm.call.error&#39;</code> viabilizam queries Cloud Logging sem grep. Custo agregado no painel de debug logs ajuda auditar gasto sem abrir Anthropic console.</li>
+<li><strong>A/B bench cego</strong> (Story 23.8): Wellington tem ferramenta objetiva pra comparar Claude vs Gemini com transcrições PPTNC reais. Anonimização A/B aleatória reduz viés &quot;Claude é melhor porque eu acho que é&quot;.</li>
+<li><strong><code>AskUserQuestion</code> antes de tradeoffs</strong>. Usada pra decidir escopo simplificado da 23.7 (auto-fallback ao invés de UI por fase), fases do bench (criativas 5/5B/6/7), e integration tests (com gate). Cada decisão preservou ~1 dia de trabalho não-necessário.</li>
+</ul>
+<hr>
+<h2>O Que Deu Errado</h2>
+<h3>1. Bug do 7º arg em 9 callers diretos (Story 23.4 → 23.7)</h3>
+<p><strong>O que aconteceu:</strong> Ao adicionar <code>providerOverride</code> como 7º arg de <code>callGenAI</code>, atualizei <code>callLLM</code> (wizard) mas <strong>esqueci 9 callers diretos</strong> em rotas API. Resultado: Settings salvava <code>provider: &#39;claude&#39;</code>, mas as chamadas continuavam com o default (Gemini), tentando Vertex AI com <code>claude-sonnet-4-6</code> → 404.</p>
+<p>Wellington pegou em homologação. Custou 1 commit extra (<code>76f016d</code>) + atualização de 21 assertions de teste.</p>
+<p><strong>Por que aconteceu:</strong> falha de propagação (AI 4 Retro 16). Quando alterei <code>callLLM</code> assumi que era o único caller. <code>grep callGenAI src/</code> teria mostrado os 9 callers no mesmo PR.</p>
+<p><strong>Mitigação aplicada:</strong> debug log temporário em <code>callGenAI</code> mostrando <code>providerOverride</code> resolvido — Wellington conseguiu validar visualmente que o fix funcionou.</p>
+<p><strong>Lição:</strong> AI nova abaixo (#16).</p>
+<h3>2. Quebra repetida de 21 testes ao adicionar arg posicional</h3>
+<p>Cada vez que adicionei um arg posicional em <code>callGenAI</code> (1x para <code>providerOverride</code>, depois 1x para <code>fallbackProviderOverride</code>), <strong>os mesmos 21 assertions</strong> de <code>toHaveBeenCalledWith</code> quebraram em 7 arquivos de teste. Mecânico, mas atrito repetido.</p>
+<p><strong>Causa raiz:</strong> assinatura de 8 args posicionais é frágil. Ordem dos args importa, defaults misturados, cada adição custa 21 ajustes.</p>
+<p><strong>Mitigação imediata:</strong> <code>replace_all</code> com Edit acelerou.</p>
+<p><strong>Mitigação estrutural:</strong> TD-9 nova (refatorar pra <code>options: object</code>).</p>
+<h3>3. Path relativo no bench script</h3>
+<p><code>scripts/llm-ab-bench.ts</code> usou <code>&#39;apps/iara/scripts/.bench-output&#39;</code> literal como path do <code>outDir</code>. Quando o Wellington rodou do diretório <code>apps/iara/</code>, o script criou <code>apps/iara/apps/iara/scripts/.bench-output/</code> (caminho aninhado errado).</p>
+<p><strong>Causa:</strong> path relativo ao <code>cwd</code> em vez de <code>__dirname</code>.</p>
+<p><strong>Mitigação:</strong> corrigido no commit <code>d36a6ea</code> antes do push. AI nova abaixo (#15).</p>
+<hr>
+<h2>Novos Action Items</h2>
+<p>Adicionam-se aos 13 anteriores. Total cumulativo: <strong>16 AIs</strong>, pré-requisitos pra próximos epics.</p>
+<h3>AI 14 — Refatorar callGenAI pra options object quando passar 8 args</h3>
+<p><strong>Origem:</strong> Epic 23 atingiu 8 args posicionais em <code>callGenAI</code>. Cada adição (1x provider, 1x fallback) custou 21 ajustes em testes + arriscou esquecer callers (AI 14 do bug acima).</p>
+<p><strong>Quando aplicar:</strong> próxima adição de arg em <code>callGenAI</code> (10º arg) é gatilho. Refactor:</p>
+<pre><code class="language-ts">// De:
+callGenAI(systemPrompt, userPrompt, timeout, attachmentPath, debugContext, modelOverride, providerOverride, fallbackProviderOverride)
+
+// Para:
+callGenAI({ systemPrompt, userPrompt, timeout, attachmentPath, debugContext, modelOverride, providerOverride, fallbackProviderOverride })
+</code></pre>
+<p><strong>Custo estimado:</strong> ~4-6h (atualizar 10 callers + 21 testes). Quebra positiva: mocks ficam mais legíveis.</p>
+<p><strong>Quem implementa:</strong> dev no primeiro epic que precisar tocar <code>callGenAI</code> de novo.</p>
+<h3>AI 15 — Scripts CLI sempre via <code>__dirname</code>, nunca path relativo a <code>cwd</code></h3>
+<p><strong>Origem:</strong> bench script criou diretório aninhado quando Wellington rodou de cwd diferente.</p>
+<p><strong>Aplicação:</strong> todo path de output/input em <code>apps/iara/scripts/*.ts</code> deve ser <code>resolve(__dirname, ...)</code>. Path relativo ao monorepo root é proibido.</p>
+<p><strong>Verificação:</strong> code review revisa diff de scripts/ buscando padrão <code>join(&#39;apps/</code>, <code>join(&#39;./apps/</code>, etc.</p>
+<h3>AI 16 — Ao adicionar arg em função compartilhada (callGenAI, callLLM, etc.), grep callers no mesmo commit</h3>
+<p><strong>Origem:</strong> bug do 7º arg em Story 23.4.</p>
+<p><strong>Aplicação:</strong> quando alterar assinatura de função em <code>src/lib/llm/client.ts</code>:</p>
+<pre><code class="language-bash">grep -rn &quot;&lt;function-name&gt;(&quot; src/
+</code></pre>
+<p>Listar TODOS os callers, atualizar <strong>todos no mesmo PR</strong>. Não confiar que &quot;callLLM é o único&quot;. <code>grep</code> é barato.</p>
+<p><strong>Verificação:</strong> code review checa diff buscando se a nova função foi propagada coerentemente.</p>
+<hr>
+<h2>Tech Debt Novas</h2>
+<ul>
+<li><strong>TD-9: callGenAI signature com 8 args posicionais</strong> — frágil, custa 21 ajustes de teste a cada adição. Refactor pra options object documentado em AI 14. Implementar quando 10º arg vier ou no próximo epic LLM (TD-7 wizard refactor é forte candidato pra combinar).</li>
+</ul>
+<hr>
+<h2>Sizing vs Realidade</h2>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Estimativa original</th>
+<th>Real</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>23.1 (Spike)</td>
+<td>2-3 dias</td>
+<td>~1 dia (Anthropic direta foi pivot rápido)</td>
+</tr>
+<tr>
+<td>23.2 (Adapter + GeminiProvider)</td>
+<td>1-2 dias</td>
+<td>~1 dia</td>
+</tr>
+<tr>
+<td>23.3 (AnthropicProvider)</td>
+<td>1-2 dias</td>
+<td>~1 dia</td>
+</tr>
+<tr>
+<td>23.4 (Settings UI + Factory)</td>
+<td>1 dia</td>
+<td>~1 dia (+ 0.5 dia pro bug do 7º arg)</td>
+</tr>
+<tr>
+<td>23.5 (Cost estimator)</td>
+<td>1-2 dias</td>
+<td>~0.5 dia</td>
+</tr>
+<tr>
+<td>23.6 (Telemetria)</td>
+<td>1 dia</td>
+<td>~0.5 dia</td>
+</tr>
+<tr>
+<td>23.7 (Fallback simplificado)</td>
+<td>1 dia</td>
+<td>~0.5 dia (versão simplificada, AC2 deferido)</td>
+</tr>
+<tr>
+<td>23.8 (A/B bench)</td>
+<td>1-2 dias</td>
+<td>~0.5 dia</td>
+</tr>
+<tr>
+<td>23.9 (Doc + retro)</td>
+<td>1 dia</td>
+<td>~0.5 dia</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>10-15 dias</strong></td>
+<td><strong>~6-7 dias</strong> (Wellington ativo na homologação acelerou)</td>
+</tr>
+</tbody></table>
+<p>Estimativa original era pessimista — não considerou que Wellington homologa em tempo real, que <code>AskUserQuestion</code> corta caminhos não-necessários, e que o adapter pattern já estava parcialmente em mente desde a doc do epic.</p>
+<hr>
+<h2>Próximos Epics — Pré-requisitos</h2>
+<p>Antes de iniciar o próximo epic, verificar compliance dos <strong>16 AIs</strong> (Retro 16 + 22 + 23). Meta: ≥ 14/16 cumpridos.</p>
+<p><strong>Candidatos a próximo epic:</strong></p>
+<ul>
+<li><strong>TD-7 (Wizard phase refactor — kebab-case IDs)</strong>: Wellington adiou até Epic 22 estabilizar. Já passou &gt;2 semanas com Epic 22 estável. Quando Wellington decidir incluir TD-9 (callGenAI options refactor) junto, há momentum.</li>
+<li><strong>Epic 24 (?)</strong>: ainda não planejado. Possibilidades:<ul>
+<li>Bench results visualization (UI para abrir summary.md + escolher provider via janela)</li>
+<li>Prompt caching Anthropic (cortar 30-50% custo Claude)</li>
+<li>Multi-podcast (extender pra outros podcasts além do PPTNC)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Encerramento</h2>
+<p>Epic 23 entregue com <strong>9 stories</strong> (todas done), <strong>zero builds quebrados</strong>, <strong>zero incidentes em prod</strong>, e <strong>2 bugs</strong> detectados em homologação (1 grande, 1 cosmético — ambos corrigidos no mesmo ciclo).</p>
+<p>Spike resgatou o epic (pivot Vertex→Anthropic) e entregou cobertura de custo via plano Max do Wellington.</p>
+<p>A/B bench já gerou primeira corrida (<code>scripts/.bench-output/2026-05-15T21-40/</code>) — Wellington avalia cego antes de bater martelo definitivo sobre qual provider produz melhor escrita.</p>
+<p>Branch <code>feature/epic-23-claude-provider</code> pronta pra merge em <code>main</code>. Tag <code>v2.5.14-beta-iara</code> recomendada após merge.</p>
+
+  </main>
+</body>
+</html>

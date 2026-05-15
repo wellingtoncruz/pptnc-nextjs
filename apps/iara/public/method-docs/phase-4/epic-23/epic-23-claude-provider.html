@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visão Geral do Épico 23 — Claude (Multi-Provider LLM) — IAra Docs</title>
+  <link rel="stylesheet" href="/method-docs/styles.css">
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Alternar menu">
+    <span></span><span></span><span></span>
+  </button>
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+<a href="/method-docs/" class="sidebar-home">IAra Docs</a>
+<details class="phase-group">
+<summary>Fase 1 — Análise</summary>
+<ul>
+<li><a href="/method-docs/phase-1/product-brief-iara-2026-01-23.html">Resumo do Produto</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 2 — Planejamento</summary>
+<ul>
+<li><a href="/method-docs/phase-2/prd-iara.html">PRD</a></li>
+<li><a href="/method-docs/phase-2/ux-design-specification-iara.html">UX Design</a></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Fase 3 — Solucionamento</summary>
+<ul>
+<li><a href="/method-docs/phase-3/architecture-iara.html">Arquitetura</a></li>
+<li><a href="/method-docs/phase-3/epics-iara.html">Épicos</a></li>
+</ul>
+</details>
+<details class="phase-group" open>
+<summary>Fase 4 — Implementação</summary>
+<ul>
+<li><details class="epic-group">
+<summary>Épico 1 — Autenticação e Fundação</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-1/1-1-setup-do-projeto-e-estrutura-base.html">1.1 Setup do Projeto e Estrutura Base</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-2-implementacao-da-state-machine-de-videostatus.html">1.2 Máquina de Estados de VideoStatus</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-3-configuracao-authjs-com-google-provider.html">1.3 Configuração Auth.js com Google Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-4-integracao-oauth-youtube-com-escopos-necessarios.html">1.4 Integração OAuth YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-5-armazenamento-de-tokens-no-firestore.html">1.5 Armazenamento de Tokens no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-6-middleware-de-protecao-de-rotas.html">1.6 Middleware de Proteção de Rotas</a></li>
+<li><a href="/method-docs/phase-4/epic-1/1-7-token-refresh-e-gestao-de-sessao-expirada.html">1.7 Renovação de Token e Gestão de Sessão</a></li>
+<li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 2 — Configuração de Podcast</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-4-configuracao-de-prompts-por-tipo-de-video.html">2.4 Configuração de Prompts por Tipo de Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-6-correcoes-schema-podcast-e-autenticacao.html">2.6 Correções de Schema do Podcast e Autenticação</a></li>
+<li><a href="/method-docs/phase-4/epic-2/epic-2-retrospective.html">Retrospectiva Épico 2</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 3 — Detecção de Vídeos</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-3/3-1-schema-e-types-do-video.html">3.1 Schema e Tipos do Vídeo</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-2-integracao-youtube-data-api-para-listar-videos.html">3.2 Integração YouTube Data API</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-3-persistencia-de-videos-no-firestore.html">3.3 Persistência de Vídeos no Firestore</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-4-layout-master-detail-com-lista-de-videos.html">3.4 Layout Master-Detail com Lista de Vídeos</a></li>
+<li><a href="/method-docs/phase-4/epic-3/3-5-componente-videolistitem.html">3.5 Componente VideoListItem</a></li>
+<li><a href="/method-docs/phase-4/epic-3/retrospective-epic-3-iara.html">Retrospectiva Épico 3</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 4 — Wizard de Processamento</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-4/4-0-correcoes-navegacao-e-sync.html">4.0 Correções de Navegação e Sincronização</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-0-inputs-de-contexto-para-processamento.html">4.0b Entradas de Contexto para Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-1-infraestrutura-wizard-e-layout-base.html">4.1 Infraestrutura do Wizard e Layout Base</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2-integracao-llm-base-gemini.html">4.2 Integração LLM Base (Gemini API)</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-2b-refinamento-llm-prompt-spec.html">4.2b Refinamento de Especificação de Prompts LLM</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-3-fase-1-input-inicial-e-critica.html">4.3 Fase 1 — Entrada Inicial e Crítica</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-fase-2-checagem-de-edicao.html">4.4 Fase 2 — Verificação de Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-5-fase-3-analise-risco-conformidade.html">4.5 Fase 3 — Análise de Risco e Conformidade</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-6-fase-4-capitulos.html">4.6 Fase 4 — Capítulos</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-7-fase-5-titulo.html">4.7 Fase 5 — Título</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-8-fase-6-descricao.html">4.8 Fase 6 — Descrição</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-9-fase-7-tags.html">4.9 Fase 7 — Tags</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-10-fase-8-atualizar-youtube.html">4.10 Fase 8 — Atualizar YouTube</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-11-correcao-hover-cards-videos-bloqueados.html">4.11 Correção de Hover Cards de Vídeos Bloqueados</a></li>
+<li><a href="/method-docs/phase-4/epic-4/4-4-code-review.html">Revisão de Código — Épico 4</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 5 — Melhorias do Wizard</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-5/5-1-melhorias-layout-wizard.html">5.1 Melhorias de Layout do Wizard</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-2-correcao-phase8-resumo.html">5.2 Correção da Fase 8 — Resumo</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-3-smart-loading-fases-imutaveis.html">5.3 Carregamento Inteligente de Fases Imutáveis</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-4-auto-retry-parse-error.html">5.4 Retentativa Automática em Erro de Parse</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-5-spike-gemini-file-api.html">5.5 Spike Gemini File API</a></li>
+<li><a href="/method-docs/phase-4/epic-5/5-6-transcricao-on-demand.html">5.6 Transcrição Sob Demanda</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 8 — Suporte a Cortes/Reels</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-8/1-1-infrastructure-cut-reel.html">8.1 Infraestrutura Base para Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-8/1-2-phase-0-parent-selection.html">8.2 Fase 0 — Seleção de Vídeo Pai</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 9 — Gestão de Usuários</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-9/9-1-schema-user-role.html">9.1 Schema e Tipos de Usuário com Papel</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-4-listagem-usuarios.html">9.4 Listagem de Usuários</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-5-acoes-gestao.html">9.5 Ações de Gestão</a></li>
+<li><a href="/method-docs/phase-4/epic-9/9-6-resync-completo.html">9.6 Ressincronização Completa</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 11 — Melhorias v2.1.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-11/story-11-1-linkedin-profile-scraping.html">11.1 Extração de Perfis LinkedIn</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-2-reabrir-episodio.html">11.2 Reabrir Episódio para Edição</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-3-secao-editorial.html">11.3 Seção Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/story-11-4-relatorio-editorial.html">11.4 Relatório Editorial</a></li>
+<li><a href="/method-docs/phase-4/epic-11/epic-11-retro-2026-02-07.html">Retrospectiva Épico 11</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 12 — Notícias</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-12/epic-12-noticias.html">Visão Geral do Épico 12 — Notícias</a></li>
+<li><a href="/method-docs/phase-4/epic-12/story-12-1-secao-noticias.html">12.1 Seção Notícias</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 13 — Hardening v2.2.0</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-13/epic-13-hardening-v3.html">Visão Geral do Épico 13 — Hardening v2.2.0</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-1-spike-poc-google-genai.html">13.1 Spike PoC Google GenAI</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-2-migrar-client-ts.html">13.2 Migrar Client TS</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-3-migrar-phase-5b-route.html">13.3 Migrar Rota da Fase 5B</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-4-atualizar-testes-mocks-sdk.html">13.4 Atualizar Testes e Mocks do SDK</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-6-remover-google-cloud-vertexai.html">13.6 Remover Google Cloud Vertexai</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-7-externalizar-config-tenant-env-vars.html">13.7 Externalizar Configuração do Tenant</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-8-parametrizar-cloudbuild-seed.html">13.8 Parametrizar CloudBuild Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-9-startup-validation-logging-tenant.html">13.9 Validação e Logging na Inicialização</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-10-fix-draft-ready-fase8-cuts-reels.html">13.10 Correção Draft-Ready Fase 8 Cortes/Reels</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-11-refresh-lista-videos-status.html">13.11 Atualização da Lista de Vídeos por Status</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-12-config-nome-host-prompts.html">13.12 Configuração de Nome do Host nos Prompts</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-13-config-secao-features-toggle.html">13.13 Configuração de Seção de Features Toggle</a></li>
+<li><a href="/method-docs/phase-4/epic-13/13-14-guia-onboarding-pt-br.html">13.14 Guia Onboarding PT-BR</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group">
+<summary>Épico 14 — Redes Sociais</summary>
+<ul>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-redes-sociais.html">Visão Geral do Épico 14 — Redes Sociais</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-1-schema-persona-socialmedia.html">14.1 Schema e Persona socialmedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-2-collection-global-social-networks-seed.html">14.2 Collection socialNetworks + Seed</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-3-feature-toggle-social-media.html">14.3 Feature Toggle socialMedia</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-4-config-redes-sociais-habilitacao.html">14.4 Seção Redes Sociais em Configurações</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-5-prompts-por-rede-social.html">14.5 Prompts por Rede Social</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-6-schema-social-posts-api.html">14.6 Schema socialPosts + API</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-7-processamento-llm-sequencial.html">14.7 Processamento LLM Sequencial</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-8-secao-redes-sociais-menu-sidebar.html">14.8 Seção Redes Sociais no Menu</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-9-layout-colunas-processamento.html">14.9 Layout de Colunas + Processamento</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-10-edicao-reprocessamento-clipboard.html">14.10 Edição, Reprocessamento e Clipboard</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-11-seed-script-onboarding.html">14.11 Seed Script + Onboarding</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-12-ajustes-ux-social-view.html">14.12 Ajustes UX Social View</a></li>
+<li><a href="/method-docs/phase-4/epic-14/14-13-variant-social-video-list-panel.html">14.13 Variant Social no VideoListPanel</a></li>
+<li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
+</ul>
+</details></li>
+<li><details class="epic-group" open>
+<summary>Épico 23</summary>
+<ul>
+<li class="active"><a href="/method-docs/phase-4/epic-23/epic-23-claude-provider.html">Visão Geral do Épico 23 — Claude (Multi-Provider LLM)</a></li>
+<li><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
+<li><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
+<li><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
+<li><a href="/method-docs/phase-4/epic-23/epic-23-retro-2026-05-15.html">Retrospectiva Épico 23</a></li>
+</ul>
+</details></li>
+</ul>
+</details>
+<details class="phase-group">
+<summary>Apêndices</summary>
+<ul>
+<li><a href="/method-docs/appendices/epic-13-sdk-migration-analysis.html">Análise de Migração SDK — Épico 13</a></li>
+<li><a href="/method-docs/appendices/multi-tenant-single-deploy-analysis.html">Análise Multi-Tenant com Deploy Único</a></li>
+<li><a href="/method-docs/appendices/llm-prompt-audit.html">Auditoria de Prompts LLM</a></li>
+</ul>
+</details>
+</nav>
+
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 23</nav><h1>Epic 23 — Multi-Provider LLM: Claude (Anthropic) via API direta</h1>
+<p><strong>Status:</strong> Story 23.1 (Spike) ✅ DONE 2026-05-15 — 6/6 PASS — GO formalizado
+<strong>Documentado em:</strong> 2026-05-14 (Vertex), pivotado em 2026-05-15 (direta)
+<strong>Pré-requisito:</strong> Epic 22 estável em produção por ≥ 2 semanas
+<strong>Tamanho estimado pós-pivot:</strong> 11-16 dias dev + 2-3 dias QA (spike já consumido)
+<strong>Risk profile:</strong> MÉDIO — refactor de arquitetura LLM + provider novo. R1, R2, R4, R6, R8 ELIMINADOS pelo spike.</p>
+<blockquote>
+<p><strong>Pivot crítico 2026-05-15:</strong> decisão de usar <strong>Anthropic API direta</strong> (<code>@anthropic-ai/sdk</code>) em vez de Vertex AI. Motivos:</p>
+<ol>
+<li>Vertex bloqueado por R4 (allowlist publisher Anthropic não habilitado em <code>pptnc-stage</code>).</li>
+<li>Direta é -10% mais barata ($3/$15 vs $3.30/$16.50 regional Vertex).</li>
+<li>SDK mainstream Anthropic é Turbopack-safe (R1 validado no spike).</li>
+<li>Wellington é assinante <strong>Max 5x</strong> → potencial cobertura via &quot;créditos programáticos&quot; $100/mês a partir de 15-jun-2026 (validar empiricamente pós-data).</li>
+</ol>
+<p>Toda referência abaixo ao &quot;Vertex&quot; deve ser lida como &quot;Anthropic API direta&quot;. Sizing original 12-17 dias reduz pra 11-16 (sem Story de IAM/allowlist Vertex).</p>
+</blockquote>
+<hr>
+<h2>1. Goal</h2>
+<p>Permitir que o IAra Admin Portal use <strong>Claude (Anthropic) via Vertex AI</strong> como provider alternativo de LLM para geração de <strong>texto</strong> nas fases do wizard, mantendo Gemini como provider padrão e único para geração de imagem (Newsletter, Thumbnail).</p>
+<p><strong>Driver de produto (Wellington, party-mode 2026-05-14):</strong> &quot;Claude tem gerado textos com mais qualidade&quot; — avaliação subjetiva sobre escrita em fases LLM. <strong>Hipótese ainda não validada com conteúdo PPTNC.</strong></p>
+<hr>
+<h2>2. Não-objetivos (Out of Scope)</h2>
+<p>Para manter escopo controlado, <strong>NÃO</strong> entram neste epic:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Razão</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Claude para geração de imagem</td>
+<td>Claude não gera imagem — incompatível por definição</td>
+</tr>
+<tr>
+<td>Outros providers (OpenAI, Mistral, Llama via Vertex Garden)</td>
+<td>Avaliar após Claude. Adapter pattern fica pronto pra eles.</td>
+</tr>
+<tr>
+<td>Migração compulsória de podcasts antigos</td>
+<td>Provider Gemini permanece default; Claude é opt-in por podcast</td>
+</tr>
+<tr>
+<td>Substituir Gemini totalmente</td>
+<td>Fica como fallback automático e provider default</td>
+</tr>
+<tr>
+<td>Otimização de prompts específica pra Claude</td>
+<td>Story 3 fará ajustes mínimos; otimização profunda é epic futuro</td>
+</tr>
+<tr>
+<td>Cache de respostas LLM</td>
+<td>Decisão Wellington 2026-04 (revert do context caching, ver <code>lesson_cache_revert.md</code>)</td>
+</tr>
+<tr>
+<td>Provider por usuário (multi-tenant)</td>
+<td>Provider é por podcast (<code>podcast.llmConfig.provider</code>); single-tenant atual</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. Decisões Técnicas (ADRs)</h2>
+<h3>ADR-23.1 — Adapter Pattern obrigatório</h3>
+<p><strong>Contexto:</strong> O cliente atual (<code>src/lib/llm/client.ts</code>) usa <code>GoogleGenAI</code> diretamente. Suportar Claude exige uma camada de abstração.</p>
+<p><strong>Decisão:</strong> Criar interface <code>LLMProvider</code> com métodos <code>generateText(options)</code> e <code>streamText(options)</code>. Implementações: <code>VertexAIProvider</code> (Gemini, refactor do código atual) e <code>ClaudeProvider</code> (novo, via <code>@anthropic-ai/vertex-sdk</code>).</p>
+<p><strong>Consequências:</strong></p>
+<ul>
+<li>(+) Permite providers futuros sem refactor adicional.</li>
+<li>(+) Mocks de teste ficam padronizados na interface.</li>
+<li>(–) Toda chamada LLM passa por mais um nível de indireção (overhead trivial).</li>
+<li>(–) Adapter força mapping de tipos Anthropic ↔ formato interno (LLMResult, LLMError).</li>
+</ul>
+<h3>ADR-23.2 — Provider escopo é POR PODCAST, não por fase</h3>
+<p><strong>Contexto:</strong> O wizard tem múltiplas fases LLM (1-7). Permitir provider por fase multiplicaria configurações e complicaria diagnóstico.</p>
+<p><strong>Decisão:</strong> <code>podcast.llmConfig.provider: &#39;gemini&#39; | &#39;claude&#39;</code> define o provider único para TODAS as fases LLM de texto. Image generation continua em <code>podcast.llmConfig.imageModel</code> (Gemini, sempre).</p>
+<p><strong>Consequências:</strong></p>
+<ul>
+<li>(+) Configuração simples no Settings (1 dropdown).</li>
+<li>(+) Telemetria/billing claros.</li>
+<li>(–) Sem A/B-test fino por fase. Mitigação: dev pode forçar via env var em diagnóstico (<code>LLM_PROVIDER_OVERRIDE</code>).</li>
+</ul>
+<h3>ADR-23.3 — Default provider continua Gemini</h3>
+<p><strong>Contexto:</strong> Mudar default afeta podcasts existentes silenciosamente — custo 40-50x.</p>
+<p><strong>Decisão:</strong> <code>podcast.llmConfig.provider</code> é opcional, fallback explícito <code>&#39;gemini&#39;</code>. Documento Firestore sem o campo continua usando Gemini. Wellington precisa <strong>explicitamente</strong> trocar para Claude no Settings.</p>
+<p><strong>Consequências:</strong></p>
+<ul>
+<li>(+) Zero migração de dados.</li>
+<li>(+) Zero custo silencioso.</li>
+<li>(–) Toggle requer ação humana — não vai pra Claude por engano nem por engano não vai.</li>
+</ul>
+<h3>ADR-23.4 — Fallback automático em falha persistente</h3>
+<p><strong>Contexto:</strong> Claude pode dar RATE_LIMIT, timeout, ou erro 5xx. Hoje, Gemini com falha persistente quebra o wizard.</p>
+<p><strong>Decisão:</strong> Quando Claude falhar <strong>3 vezes consecutivas</strong> numa mesma sessão de wizard (após retry/backoff exhausting), o <code>ClaudeProvider</code> lança erro e o orchestrator <strong>mostra alerta amber</strong> ao produtor com botão &quot;Tentar com Gemini&quot;. <strong>Não há fallback automático silencioso</strong> — produtor decide.</p>
+<p><strong>Consequências:</strong></p>
+<ul>
+<li>(+) Resiliência sem decisões mágicas.</li>
+<li>(+) Custo não vaza pra Gemini sem o produtor saber.</li>
+<li>(–) UX mais elaborada (Story 7).</li>
+</ul>
+<h3>ADR-23.5 — Pre-flight cost estimate na UI antes de salvar</h3>
+<p><strong>Contexto:</strong> Trocar Gemini → Claude eleva custo de ~$1/mês → ~$40-50/mês no volume PPTNC (estimativa preliminar). Sem visibilidade prévia, surpresa em fatura.</p>
+<p><strong>Decisão:</strong> Settings UI calcula <strong>estimativa de custo mensal</strong> com base em: vídeos produzidos no último mês × tokens médios por fase × pricing do modelo selecionado. Mostra antes do produtor clicar Salvar.</p>
+<p><strong>Consequências:</strong></p>
+<ul>
+<li>(+) Transparência total.</li>
+<li>(+) Wellington pode comparar Sonnet 4.6 vs Haiku 4.5 vs Opus 4.7.</li>
+<li>(–) Implementação adicional (~4-6h, parte da Story 5).</li>
+</ul>
+<h3>ADR-23.6 — Telemetria por provider obrigatória</h3>
+<p><strong>Contexto:</strong> Sem métricas por provider, não dá pra comparar qualidade nem detectar regressão silenciosa.</p>
+<p><strong>Decisão:</strong> Toda chamada LLM grava em <code>llm-logs/{podcastId}/{logId}</code>: provider, model, phase, prompt token count, completion token count, latency ms, error code (se houver), cost estimado. Já existe LLM log; só adicionar campo <code>provider</code>.</p>
+<p><strong>Consequências:</strong></p>
+<ul>
+<li>(+) Comparação Gemini × Claude no mesmo prompt em prod.</li>
+<li>(+) Cost tracking auditável.</li>
+<li>(–) Schema migration leve (LlmLog ganha campo).</li>
+</ul>
+<h3>ADR-23.7 — Spike de viabilidade pré-epic é OBRIGATÓRIO</h3>
+<p><strong>Contexto:</strong> Spike de 2026-02 está desatualizado. Pontos críticos não validados:</p>
+<ol>
+<li><code>@anthropic-ai/vertex-sdk</code> v0.16.0 com <strong>Turbopack</strong> (Next.js 16) — <code>@google-cloud/tasks</code> quebrou no Epic 21, mesmo padrão pode acontecer.</li>
+<li>Autenticação ADC com Vertex AI Claude endpoints.</li>
+<li>Performance real com transcrição PPTNC (50K tokens em episódio de 1h).</li>
+</ol>
+<p><strong>Decisão:</strong> Story 1 do epic é spike isolado de 2-3 dias com <strong>gate go/no-go</strong>. Se Turbopack falhar e REST direta também não funcionar, epic é abortado e documentado como bloqueador.</p>
+<p><strong>Consequências:</strong></p>
+<ul>
+<li>(+) Risco de blocked-at-end-of-epic mitigado.</li>
+<li>(–) 2-3 dias antes do refactor propriamente dito.</li>
+</ul>
+<hr>
+<h2>4. Análise de Risco (Risk Register Exaustivo)</h2>
+<p>Matriz <strong>Probabilidade × Impacto</strong> com mitigação obrigatória para cada item.</p>
+<h3>4.1 Riscos Técnicos</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risco</th>
+<th>Probabilidade</th>
+<th>Impacto</th>
+<th>Mitigação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>R1</strong></td>
+<td><code>@anthropic-ai/vertex-sdk</code> incompatível com Turbopack (Next.js 16)</td>
+<td><strong>Média</strong></td>
+<td>Bloqueia epic</td>
+<td>Story 1 (spike) testa antes. Fallback: REST direta <code>fetch()</code> com <code>@anthropic-ai/sdk</code> Web (mesmo padrão Epic 21 Cloud Tasks). Plano C: pular Claude.</td>
+</tr>
+<tr>
+<td><strong>R2</strong></td>
+<td>Context window 200K do Claude estoura com transcrição PPTNC + system prompt + reference (~70K+ chars em episódio 1h)</td>
+<td><strong>Alta</strong></td>
+<td>Bloqueia episodes longos</td>
+<td>Story 3: pre-flight check de tokens. Truncar transcrição mantendo timestamps marcados como <code>[...trecho omitido...]</code>. Estimar tokens com <code>tiktoken</code> antes do envio.</td>
+</tr>
+<tr>
+<td><strong>R3</strong></td>
+<td>Quality regression: prompts otimizados pra Gemini falham em Claude</td>
+<td><strong>Alta</strong></td>
+<td>UX degradada</td>
+<td>Story 8: A/B harness compara saídas com 3 episódios reais. Ajustes pontuais por provider em <code>src/lib/llm/prompts.ts</code> (versioning <code>[gemini]</code> / <code>[claude]</code> quando divergir).</td>
+</tr>
+<tr>
+<td><strong>R4</strong></td>
+<td>Auth ADC para Anthropic models exige permissão IAM extra (<code>aiplatform.endpoints.predict</code> com Anthropic publisher)</td>
+<td><strong>Média</strong></td>
+<td>Block 5xx</td>
+<td>Story 1: valida com service account de prod. Doc operacional lista IAM permissions necessárias.</td>
+</tr>
+<tr>
+<td><strong>R5</strong></td>
+<td>Token counting Anthropic ≠ Gemini (tokenizers diferentes) → estimativa de custo errada na UI</td>
+<td><strong>Alta</strong></td>
+<td>Surprise na fatura</td>
+<td>Story 5: usar <code>tiktoken</code> (Anthropic compatible) pro estimate Claude; <code>@google/genai</code> count tokens pra Gemini. NUNCA cross-aplicar.</td>
+</tr>
+<tr>
+<td><strong>R6</strong></td>
+<td>Streaming semantics diferentes (Anthropic stream events vs Gemini chunks)</td>
+<td><strong>Alta</strong></td>
+<td>Bug subtle no UI de feedback temporal</td>
+<td>Story 3: mapper de eventos para um shape unificado <code>{ delta, done, usage }</code>. Tests dedicados.</td>
+</tr>
+<tr>
+<td><strong>R7</strong></td>
+<td>Error codes Anthropic não batem com <code>LLMError</code> interno (RATE_LIMIT, TIMEOUT, etc.)</td>
+<td><strong>Média</strong></td>
+<td>Retry inconsistente</td>
+<td>Story 3: error mapping table. Documentado e testado.</td>
+</tr>
+<tr>
+<td><strong>R8</strong></td>
+<td>Quota Anthropic via Vertex tem rate limits separados do Gemini, podem ser apertados em produto novo</td>
+<td><strong>Alta</strong></td>
+<td>RATE_LIMIT frequente</td>
+<td>Story 7: backoff escalonado (30s/60s/120s, mesmo padrão Epic 22). Métrica <code>claude_rate_limits_per_hour</code> com alerta.</td>
+</tr>
+<tr>
+<td><strong>R9</strong></td>
+<td>Regional endpoints custam <strong>10% premium</strong>. Global endpoint pode ter latência maior.</td>
+<td><strong>Média</strong></td>
+<td>Custo ou UX</td>
+<td>Story 1: medir latência em ambos. Decidir trade-off explicitamente.</td>
+</tr>
+<tr>
+<td><strong>R10</strong></td>
+<td>SDK breaking change em versão futura (Anthropic move rápido)</td>
+<td><strong>Média</strong></td>
+<td>Manutenção</td>
+<td>Pin exact version (<code>&quot;@anthropic-ai/vertex-sdk&quot;: &quot;0.16.0&quot;</code> — não <code>^</code>). Renovate/Dependabot manual review.</td>
+</tr>
+<tr>
+<td><strong>R11</strong></td>
+<td>LLM-logs schema atual não tem <code>provider</code> field; migration silenciosa pode quebrar Settings de LLM Debug Mode</td>
+<td><strong>Baixa</strong></td>
+<td>UI quebra</td>
+<td>Schema migration safe: campo opcional default &#39;gemini&#39;.</td>
+</tr>
+<tr>
+<td><strong>R12</strong></td>
+<td>Cloud Run timeout (1800s atual) pode ser insuficiente pra Opus 4.7 em prompts complexos</td>
+<td><strong>Baixa</strong></td>
+<td>Phase fail</td>
+<td>Métrica de latency; configurar timeout específico por provider se precisar.</td>
+</tr>
+<tr>
+<td><strong>R13</strong></td>
+<td>Vision input do Claude (suportado) pode ser tentador, mas image-client.ts é Gemini-only</td>
+<td><strong>Baixa</strong></td>
+<td>Confusão na doc</td>
+<td>Doc clara: Claude NÃO gera imagem. Vision input não vira feature deste epic.</td>
+</tr>
+<tr>
+<td><strong>R14</strong></td>
+<td>Test suite assume <code>GoogleGenAI</code>; ~500 testes mockam direta ou indiretamente</td>
+<td><strong>Alta</strong></td>
+<td>Suite quebra</td>
+<td>Story 2 introduz adapter; mocks migram pra <code>LLMProvider</code>. Refactor em chunks pequenos com verde sempre.</td>
+</tr>
+<tr>
+<td><strong>R15</strong></td>
+<td>Fallback automático pode esconder degradação de Claude</td>
+<td><strong>Baixa</strong></td>
+<td>Wellington não vê problema</td>
+<td>ADR-23.4: fallback é <strong>manual</strong> (botão no alerta), não silencioso.</td>
+</tr>
+</tbody></table>
+<h3>4.2 Riscos de Produto</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risco</th>
+<th>Probabilidade</th>
+<th>Impacto</th>
+<th>Mitigação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>P1</strong></td>
+<td>Hipótese &quot;Claude escreve melhor&quot; não se confirma pra PPTNC</td>
+<td><strong>Média</strong></td>
+<td>Investimento sem retorno</td>
+<td>Story 1 inclui A/B blind comparison com 3 episódios. Go/no-go gate.</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>Custo mensal de Claude vira inviável em volume alto</td>
+<td><strong>Alta</strong></td>
+<td>Operacional</td>
+<td>ADR-23.5: pre-flight cost. Story 6: dashboard de cost com alerta <code>&gt; $X/mês</code>.</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td>Lock-in: Wellington gosta de Claude e quer voltar pra Gemini só pra Newsletter — confusão de configuração</td>
+<td><strong>Baixa</strong></td>
+<td>UX</td>
+<td>ADR-23.2: image continua Gemini sempre. Settings explica claramente.</td>
+</tr>
+<tr>
+<td><strong>P4</strong></td>
+<td>Produtor (outro usuário no futuro) troca provider sem entender o custo</td>
+<td><strong>Média</strong></td>
+<td>Conta exposta</td>
+<td>ADR-23.5 + ADR-23.6 (alertas de custo). Settings só editável por role admin (já é o caso).</td>
+</tr>
+</tbody></table>
+<h3>4.3 Riscos de Processo</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risco</th>
+<th>Probabilidade</th>
+<th>Impacto</th>
+<th>Mitigação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Pr1</strong></td>
+<td>Sizing subestimado (spike de fev/2026 dizia 5-8 dias; epic real é 12-17)</td>
+<td><strong>Média</strong></td>
+<td>Atraso</td>
+<td>Sizing reavaliado em 2026-05; buffer de 30% incluído.</td>
+</tr>
+<tr>
+<td><strong>Pr2</strong></td>
+<td>Compliance dos 13 AIs combinados (Retros 16+22)</td>
+<td><strong>Alta</strong> se ignorado</td>
+<td>Repetir erros antigos</td>
+<td>Bob: verificar ANTES da Story 1.</td>
+</tr>
+<tr>
+<td><strong>Pr3</strong></td>
+<td>Refactor de adapter pattern pode quebrar Newsletter (compartilha <code>client.ts</code>)</td>
+<td><strong>Média</strong></td>
+<td>Regressão</td>
+<td>Story 2: testes da Newsletter rodam após cada refactor step.</td>
+</tr>
+</tbody></table>
+<h3>4.4 Riscos Operacionais</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risco</th>
+<th>Probabilidade</th>
+<th>Impacto</th>
+<th>Mitigação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>O1</strong></td>
+<td>IAM permissions ausentes em prod</td>
+<td><strong>Média</strong></td>
+<td>Deploy quebrado</td>
+<td>Story 4: doc operacional pré-deploy + smoke test em staging.</td>
+</tr>
+<tr>
+<td><strong>O2</strong></td>
+<td>Anthropic muda model IDs (descontinua <code>claude-sonnet-4-6</code>)</td>
+<td><strong>Alta</strong> em 12+ meses</td>
+<td>Quebra</td>
+<td>Pin model + monitorar <a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/deprecations/partner-models">Vertex AI Model Garden retirements</a>.</td>
+</tr>
+<tr>
+<td><strong>O3</strong></td>
+<td>Billing surprise por falta de quota cap</td>
+<td><strong>Média</strong></td>
+<td>$$$</td>
+<td>Cloud Billing budget alert configurado (recomendação operacional, fora do epic).</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. Pricing (Referência 2026-05-14)</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Vertex global (USD/1M tokens)</th>
+<th>Vertex regional/multi-region (+10%)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Claude Opus 4.7</td>
+<td>$15 input / $75 output</td>
+<td>$16.50 / $82.50</td>
+</tr>
+<tr>
+<td>Claude Sonnet 4.6</td>
+<td>$3 input / $15 output</td>
+<td>$3.30 / $16.50</td>
+</tr>
+<tr>
+<td>Claude Haiku 4.5</td>
+<td>~$1 input / $5 output (a confirmar no spike)</td>
+<td>~$1.10 / $5.50</td>
+</tr>
+<tr>
+<td><strong>Gemini 2.5 Flash (default atual)</strong></td>
+<td>~$0.075 input / $0.30 output</td>
+<td>(igual global)</td>
+</tr>
+<tr>
+<td><strong>Gemini 2.5 Pro</strong></td>
+<td>~$1.25 input / $5 output</td>
+<td>(igual global)</td>
+</tr>
+</tbody></table>
+<p><strong>Otimizações disponíveis:</strong></p>
+<ul>
+<li>Prompt caching até 90% (se reusar system prompts entre chamadas — investigar no spike)</li>
+<li>Batch processing 50% off (não aplicável pro wizard em real-time)</li>
+</ul>
+<p><strong>Estimativa preliminar mensal PPTNC</strong> (volume ~22 vídeos/semana × 7 fases LLM × ~5K tokens médios):</p>
+<ul>
+<li>Gemini 2.5 Flash: ~$1-3/mês</li>
+<li>Claude Sonnet 4.6: ~$40-60/mês</li>
+<li>Claude Opus 4.7: ~$200-300/mês</li>
+</ul>
+<p><strong>Refinar no spike (Story 1)</strong> com volume real de tokens medido.</p>
+<hr>
+<h2>6. Stories</h2>
+<h3>Story 23.1 — Spike de Viabilidade (Gate Go/No-Go)</h3>
+<p><strong>Como</strong> dev,
+<strong>Eu quero</strong> validar empiricamente que <code>@anthropic-ai/vertex-sdk</code> funciona com nossa stack (Turbopack, Next.js 16, ADC) antes de pagar o refactor,
+<strong>Para</strong> evitar descobrir bloqueador irrecuperável no meio do epic.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — Compatibilidade Turbopack:</strong></p>
+<ul>
+<li><strong>Given</strong> o ambiente local com <code>pnpm dev</code> (Turbopack)</li>
+<li><strong>When</strong> <code>@anthropic-ai/vertex-sdk</code> v0.16.0 é importado num endpoint API</li>
+<li><strong>Then</strong> o build não quebra e a função executa com sucesso</li>
+<li><strong>And</strong> se quebrar, validar fallback REST direto via <code>fetch()</code> antes de declarar bloqueador</li>
+</ul>
+<p><strong>AC2 — Autenticação ADC:</strong></p>
+<ul>
+<li><strong>Given</strong> o service account de staging com permissões padrão (<code>aiplatform.endpoints.predict</code> + Anthropic publisher access)</li>
+<li><strong>When</strong> uma chamada <code>messages.create()</code> é feita para <code>claude-sonnet-4-6</code></li>
+<li><strong>Then</strong> retorna resposta válida sem <code>PERMISSION_DENIED</code></li>
+<li><strong>And</strong> documentar IAM roles necessários (output do spike)</li>
+</ul>
+<p><strong>AC3 — Smoke test com prompt PPTNC real:</strong></p>
+<ul>
+<li><strong>Given</strong> prompt da Phase 6 (Descrição) + transcrição de 1 episódio real ~30K tokens</li>
+<li><strong>When</strong> roda Gemini 2.5 Flash e Claude Sonnet 4.6 com mesmo prompt</li>
+<li><strong>Then</strong> ambos respondem em &lt;90s</li>
+<li><strong>And</strong> outputs salvos em <code>_bmad-output/implementation-artifacts/spike-claude-vertex-results/</code></li>
+</ul>
+<p><strong>AC4 — Cost measurement:</strong></p>
+<ul>
+<li><strong>Given</strong> smoke tests do AC3</li>
+<li><strong>When</strong> logs de tokens são analisados</li>
+<li><strong>Then</strong> custo por chamada é calculado e documentado em USD</li>
+<li><strong>And</strong> projeção mensal PPTNC é refinada com dado real</li>
+</ul>
+<p><strong>AC5 — Context window stress test:</strong></p>
+<ul>
+<li><strong>Given</strong> transcrição mock de 200K tokens</li>
+<li><strong>When</strong> enviada com prompt mínimo</li>
+<li><strong>Then</strong> documentar o comportamento (sucesso? truncate? erro específico?)</li>
+</ul>
+<p><strong>AC6 — Streaming semantics:</strong></p>
+<ul>
+<li><strong>Given</strong> chamada <code>messages.stream()</code> para Claude</li>
+<li><strong>When</strong> consumida via async iterator</li>
+<li><strong>Then</strong> o shape dos eventos é documentado com exemplo</li>
+<li><strong>And</strong> comparado com chunks do <code>GoogleGenAI</code></li>
+</ul>
+<p><strong>AC7 — Gate de decisão:</strong></p>
+<ul>
+<li><strong>Given</strong> resultados dos ACs 1-6</li>
+<li><strong>When</strong> Wellington revisa o relatório</li>
+<li><strong>Then</strong> decide explicitamente:<ul>
+<li>🟢 <strong>Go</strong>: prosseguir com Stories 23.2-23.9</li>
+<li>🟡 <strong>Go com restrições</strong>: prosseguir com mitigações adicionais (ex.: só Sonnet, não Opus)</li>
+<li>🔴 <strong>No-go</strong>: abortar epic, documentar bloqueador</li>
+</ul>
+</li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>apps/iara/scripts/spike-claude-vertex.ts</code> — script standalone</li>
+<li><code>_bmad-output/implementation-artifacts/spike-claude-vertex-results.md</code> — relatório</li>
+</ul>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Pin <code>@anthropic-ai/vertex-sdk@0.16.0</code> (não usar <code>^</code>)</li>
+<li>Reusar pattern do <code>spike-thumbnail-bench.ts</code> (Epic 22)</li>
+<li><strong>NÃO</strong> mergear nenhum código de produção neste story</li>
+</ul>
+<p><strong>Estimativa:</strong> 2-3 dias</p>
+<hr>
+<h3>Story 23.2 — Interface <code>LLMProvider</code> + Refactor para <code>VertexAIProvider</code></h3>
+<p><strong>Como</strong> dev,
+<strong>Eu quero</strong> extrair o código atual de Gemini para uma classe <code>VertexAIProvider</code> implementando interface <code>LLMProvider</code>,
+<strong>Para</strong> criar a abstração sem mudança comportamental e manter a suíte verde.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — Interface definida:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>src/lib/llm/providers/types.ts</code></li>
+<li><strong>When</strong> criada</li>
+<li><strong>Then</strong> exporta:<pre><code class="language-ts">export interface LLMProvider {
+  readonly name: &#39;gemini&#39; | &#39;claude&#39;
+  generateText(opts: GenerateTextOptions): Promise&lt;LLMResult&gt;
+  streamText(opts: StreamTextOptions): AsyncIterable&lt;StreamEvent&gt;
+  estimateTokens(text: string): Promise&lt;number&gt;
+}
+</code></pre>
+</li>
+<li><strong>And</strong> tipos <code>GenerateTextOptions</code>, <code>StreamTextOptions</code>, <code>StreamEvent</code> são providerneutral</li>
+</ul>
+<p><strong>AC2 — VertexAIProvider extrai client.ts:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>src/lib/llm/client.ts</code> atual</li>
+<li><strong>When</strong> refatorado para <code>src/lib/llm/providers/vertex-ai-provider.ts</code></li>
+<li><strong>Then</strong> implementa <code>LLMProvider</code> com semântica idêntica</li>
+<li><strong>And</strong> <code>callGenAI()</code> (export atual) continua existindo como wrapper que usa o provider — backward compat</li>
+</ul>
+<p><strong>AC3 — Image client intocado:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>src/lib/llm/image-client.ts</code></li>
+<li><strong>When</strong> refactor da Story 23.2 termina</li>
+<li><strong>Then</strong> image-client continua exportando <code>callGenAIImage</code> sem mudança</li>
+<li><strong>And</strong> image generation NÃO passa por LLMProvider (decisão: imagem é Gemini-only, fora da abstração)</li>
+</ul>
+<p><strong>AC4 — Tests inalterados:</strong></p>
+<ul>
+<li><strong>Given</strong> suíte atual (3317 testes)</li>
+<li><strong>When</strong> rodada após o refactor</li>
+<li><strong>Then</strong> <strong>100% verde, zero mudanças em assertions</strong></li>
+<li><strong>And</strong> se algum teste precisar adaptação, é regression — revisitar refactor</li>
+</ul>
+<p><strong>AC5 — Newsletter sem regressão:</strong></p>
+<ul>
+<li><strong>Given</strong> Newsletter workspace funcional</li>
+<li><strong>When</strong> smoke test manual após refactor</li>
+<li><strong>Then</strong> geração de news + imagem funciona idêntica</li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>src/lib/llm/providers/types.ts</code> — <strong>novo</strong></li>
+<li><code>src/lib/llm/providers/vertex-ai-provider.ts</code> — <strong>novo</strong> (extração)</li>
+<li><code>src/lib/llm/client.ts</code> — adaptado para usar provider</li>
+<li><code>src/lib/llm/index.ts</code> — exports atualizados</li>
+</ul>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Refactor incremental: extrair primeiro <code>generateText</code>, depois <code>streamText</code>, manter wrappers backward compatible até confirmar suíte verde</li>
+<li>Sem mudança em API pública até esta story estar verde</li>
+</ul>
+<p><strong>Estimativa:</strong> 1-2 dias</p>
+<hr>
+<h3>Story 23.3 — <code>ClaudeProvider</code> Implementation</h3>
+<p><strong>Como</strong> dev,
+<strong>Eu quero</strong> implementar <code>ClaudeProvider</code> usando <code>@anthropic-ai/vertex-sdk</code>,
+<strong>Para</strong> que o sistema possa rotear chamadas LLM para Claude quando configurado.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — Adapter completo:</strong></p>
+<ul>
+<li><strong>Given</strong> interface <code>LLMProvider</code></li>
+<li><strong>When</strong> <code>src/lib/llm/providers/claude-provider.ts</code> é criado</li>
+<li><strong>Then</strong> implementa todos os métodos da interface</li>
+<li><strong>And</strong> usa <code>AnthropicVertex</code> client do <code>@anthropic-ai/vertex-sdk@0.16.0</code></li>
+</ul>
+<p><strong>AC2 — Error mapping:</strong></p>
+<ul>
+<li><strong>Given</strong> erros do SDK Anthropic (<code>APIError</code>, <code>RateLimitError</code>, etc.)</li>
+<li><strong>When</strong> o adapter executa</li>
+<li><strong>Then</strong> mapeia para <code>LLMError</code> interno com codes <code>RATE_LIMIT | TIMEOUT | API_ERROR | INVALID_RESPONSE | NETWORK_ERROR</code></li>
+<li><strong>And</strong> <code>retryable</code> é setado conforme tipo</li>
+</ul>
+<p><strong>AC3 — Token counting:</strong></p>
+<ul>
+<li><strong>Given</strong> texto de prompt</li>
+<li><strong>When</strong> <code>estimateTokens()</code> é chamado</li>
+<li><strong>Then</strong> usa <code>tiktoken</code> ou contador Anthropic-compatible (decidido no spike)</li>
+<li><strong>And</strong> retorna estimativa em ≤200ms</li>
+</ul>
+<p><strong>AC4 — Streaming uniforme:</strong></p>
+<ul>
+<li><strong>Given</strong> chamada <code>streamText()</code></li>
+<li><strong>When</strong> Claude responde via stream</li>
+<li><strong>Then</strong> eventos são mapeados para <code>StreamEvent</code> (mesmo shape do Vertex)</li>
+<li><strong>And</strong> UI de feedback temporal não precisa saber qual provider está em uso</li>
+</ul>
+<p><strong>AC5 — Context window guard:</strong></p>
+<ul>
+<li><strong>Given</strong> prompt + transcrição com &gt;180K tokens (margem segurança vs limite 200K)</li>
+<li><strong>When</strong> enviado ao Claude</li>
+<li><strong>Then</strong> <code>ClaudeProvider</code> rejeita com <code>LLMError(&#39;CONTEXT_TOO_LARGE&#39;, ...)</code> ANTES de chamar a API</li>
+<li><strong>And</strong> sugere fallback (truncar transcrição ou usar Gemini com 1M context)</li>
+</ul>
+<p><strong>AC6 — Testes unitários:</strong></p>
+<ul>
+<li><strong>Given</strong> mock de <code>AnthropicVertex</code></li>
+<li><strong>When</strong> rodados</li>
+<li><strong>Then</strong> cobrem: sucesso, RATE_LIMIT, TIMEOUT, INVALID_JSON, CONTEXT_TOO_LARGE, stream events, error mapping</li>
+</ul>
+<p><strong>AC7 — Cost reporting no LLMResult:</strong></p>
+<ul>
+<li><strong>Given</strong> chamada completa</li>
+<li><strong>When</strong> retorna <code>LLMResult</code></li>
+<li><strong>Then</strong> inclui <code>usage.estimatedCostUsd</code> calculado pelo provider</li>
+<li><strong>And</strong> custo é logado em <code>llm-logs/{podcastId}/{logId}</code></li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>src/lib/llm/providers/claude-provider.ts</code> — <strong>novo</strong></li>
+<li><code>src/lib/llm/providers/claude-provider.test.ts</code> — <strong>novo</strong></li>
+<li><code>src/lib/llm/providers/claude-prompts.ts</code> — <strong>novo</strong> (variantes mínimas onde Claude divergir de Gemini)</li>
+<li><code>src/lib/llm/errors.ts</code> — adicionar code <code>CONTEXT_TOO_LARGE</code></li>
+</ul>
+<p><strong>Technical Notes:</strong></p>
+<ul>
+<li>Pin exato: <code>&quot;@anthropic-ai/vertex-sdk&quot;: &quot;0.16.0&quot;</code></li>
+<li>Modelos suportados (config): <code>claude-opus-4-7</code>, <code>claude-sonnet-4-6</code>, <code>claude-haiku-4-5-20251001</code></li>
+<li>Modelos descontinuados a <strong>NUNCA</strong> usar: <code>claude-sonnet-4-20250514</code>, <code>claude-opus-4-20250514</code> (retiram 2026-06-15)</li>
+<li>Validar prompt caching no spike — se viável, implementar nesta story</li>
+</ul>
+<p><strong>Estimativa:</strong> 3-4 dias</p>
+<hr>
+<h3>Story 23.4 — Schema + Settings UI Provider Picker</h3>
+<p><strong>Como</strong> produtor,
+<strong>Eu quero</strong> escolher entre Gemini e Claude no Settings,
+<strong>Para</strong> poder testar Claude sem precisar de intervenção do dev.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — Schema:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>LlmConfigSchema</code> em <code>src/lib/schemas/podcast.ts</code></li>
+<li><strong>When</strong> estendido</li>
+<li><strong>Then</strong> ganha <code>provider: z.enum([&#39;gemini&#39;, &#39;claude&#39;]).optional()</code> (default &#39;gemini&#39; no app)</li>
+<li><strong>And</strong> <code>textModel</code> enum aceita Gemini IDs <strong>OU</strong> Claude IDs (<code>claude-opus-4-7</code> | <code>claude-sonnet-4-6</code> | <code>claude-haiku-4-5-20251001</code>)</li>
+<li><strong>And</strong> validação: se <code>provider=&#39;claude&#39;</code>, <code>textModel</code> deve estar na lista Claude; se <code>provider=&#39;gemini&#39;</code>, na lista Gemini</li>
+</ul>
+<p><strong>AC2 — Models registry:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>src/lib/llm/models.ts</code></li>
+<li><strong>When</strong> estendido</li>
+<li><strong>Then</strong> ganha:<ul>
+<li><code>AVAILABLE_CLAUDE_MODELS: ModelOption[]</code> com 3 Claude (Opus 4.7, Sonnet 4.6, Haiku 4.5)</li>
+<li><code>getModelsForProvider(provider)</code> helper</li>
+</ul>
+</li>
+</ul>
+<p><strong>AC3 — Settings UI dropdown:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>llm-config-settings-form.tsx</code></li>
+<li><strong>When</strong> o produtor abre Settings</li>
+<li><strong>Then</strong> vê 2 dropdowns:<ul>
+<li><strong>Provider de Texto:</strong> Gemini (Padrão) | Claude (Anthropic)</li>
+<li><strong>Modelo de Texto:</strong> filtrado pelo provider selecionado</li>
+</ul>
+</li>
+<li><strong>And</strong> ao trocar provider, modelo reseta para o default daquele provider</li>
+</ul>
+<p><strong>AC4 — Imagem segue Gemini:</strong></p>
+<ul>
+<li><strong>Given</strong> dropdown de Image Model (Newsletter)</li>
+<li><strong>When</strong> o provider muda para Claude</li>
+<li><strong>Then</strong> dropdown de image continua mostrando só Gemini models</li>
+<li><strong>And</strong> label adicional: &quot;Claude não gera imagens — imagens sempre por Gemini&quot;</li>
+</ul>
+<p><strong>AC5 — Cost estimate display (parte da Story 23.5):</strong></p>
+<ul>
+<li><strong>Given</strong> seleção atual (provider + model)</li>
+<li><strong>When</strong> o produtor muda</li>
+<li><strong>Then</strong> UI mostra estimativa mensal calculada pela Story 23.5</li>
+<li><strong>And</strong> badge de alerta se custo &gt; $20/mês</li>
+</ul>
+<p><strong>AC6 — A11y:</strong></p>
+<ul>
+<li><strong>Given</strong> dropdowns</li>
+<li><strong>When</strong> navegado via teclado</li>
+<li><strong>Then</strong> focus order é lógico (provider → model)</li>
+<li><strong>And</strong> screen reader anuncia &quot;Modelo filtrado por provider&quot;</li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>src/lib/schemas/podcast.ts</code> — schema</li>
+<li><code>src/lib/llm/models.ts</code> — registry Claude</li>
+<li><code>src/components/settings/llm-config-settings-form.tsx</code> — UI</li>
+<li><code>src/components/settings/llm-config-settings-form.test.tsx</code> — tests</li>
+</ul>
+<p><strong>Estimativa:</strong> 1-2 dias</p>
+<hr>
+<h3>Story 23.5 — Factory + Cost Estimator</h3>
+<p><strong>Como</strong> dev/produtor,
+<strong>Eu quero</strong> uma factory que instancia o provider correto baseado em config e um estimador de custo que ajuda o produtor a decidir,
+<strong>Para</strong> que a aplicação roteie automaticamente e a decisão de troca seja informada.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — Factory:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>podcast.llmConfig</code> (provider + textModel)</li>
+<li><strong>When</strong> o código chama <code>getLLMProvider(podcast)</code></li>
+<li><strong>Then</strong> retorna instância singleton de <code>VertexAIProvider</code> ou <code>ClaudeProvider</code> conforme config</li>
+<li><strong>And</strong> lança erro claro se config inválida</li>
+</ul>
+<p><strong>AC2 — Cost estimator:</strong></p>
+<ul>
+<li><strong>Given</strong> prompts conhecidos das fases 1-7 (tokens médios estatísticos)</li>
+<li><strong>When</strong> o produtor seleciona provider+model no Settings</li>
+<li><strong>Then</strong> UI mostra <code>Estimativa mensal: $X.XX (baseado em últimos N vídeos)</code></li>
+<li><strong>And</strong> breakdown por fase está disponível em tooltip</li>
+</ul>
+<p><strong>AC3 — Stats reais:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>llm-logs</code> dos últimos 30 dias</li>
+<li><strong>When</strong> o cost estimator roda</li>
+<li><strong>Then</strong> usa <strong>token usage real medido</strong> para calcular projeção, não estimativas fixas</li>
+<li><strong>And</strong> fallback: se não há histórico (podcast novo), usa defaults documentados</li>
+</ul>
+<p><strong>AC4 — Alertas visuais:</strong></p>
+<ul>
+<li><strong>Given</strong> estimativa calculada</li>
+<li><strong>When</strong> ultrapassa thresholds:<ul>
+<li>$20/mês → badge amarela</li>
+<li>$100/mês → badge vermelha + confirmação extra</li>
+</ul>
+</li>
+<li><strong>Then</strong> UI sinaliza claramente</li>
+<li><strong>And</strong> confirmação extra pede tipo &quot;Estou ciente do custo&quot;</li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>src/lib/llm/factory.ts</code> — <strong>novo</strong></li>
+<li><code>src/lib/llm/cost-estimator.ts</code> — <strong>novo</strong></li>
+<li><code>src/lib/llm/cost-estimator.test.ts</code> — <strong>novo</strong></li>
+<li><code>src/components/settings/cost-estimate-badge.tsx</code> — <strong>novo</strong></li>
+</ul>
+<p><strong>Estimativa:</strong> 1-2 dias</p>
+<hr>
+<h3>Story 23.6 — Telemetria + Observabilidade</h3>
+<p><strong>Como</strong> dev/operação,
+<strong>Eu quero</strong> métricas por provider em produção,
+<strong>Para</strong> detectar regressão silenciosa e auditar custo.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — LlmLog schema:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>LlmLog</code> em <code>src/lib/schemas/llm-log.ts</code></li>
+<li><strong>When</strong> estendido</li>
+<li><strong>Then</strong> ganha campos: <code>provider: &#39;gemini&#39; | &#39;claude&#39;</code>, <code>model: string</code>, <code>estimatedCostUsd: number</code>, <code>cacheHit?: boolean</code></li>
+<li><strong>And</strong> existing docs sem esses campos são lidos com defaults (<code>provider=&#39;gemini&#39;</code>, <code>cost=0</code>)</li>
+</ul>
+<p><strong>AC2 — Filtros no LLM Debug Mode:</strong></p>
+<ul>
+<li><strong>Given</strong> página <code>/llm-logs</code> com Debug Mode ativo</li>
+<li><strong>When</strong> o produtor abre</li>
+<li><strong>Then</strong> ganha filtros <code>provider</code>, <code>model</code>, <code>phase</code></li>
+<li><strong>And</strong> soma de custo aparece no topo: &quot;Total no período: $X.XX&quot;</li>
+</ul>
+<p><strong>AC3 — Métricas exportadas:</strong></p>
+<ul>
+<li><strong>Given</strong> Cloud Logging</li>
+<li><strong>When</strong> chamada LLM completa</li>
+<li><strong>Then</strong> log structured com <code>severity</code>, <code>provider</code>, <code>model</code>, <code>phase</code>, <code>latencyMs</code>, <code>tokensIn</code>, <code>tokensOut</code>, <code>costUsd</code>, <code>errorCode?</code></li>
+<li><strong>And</strong> queries Cloud Logging viáveis (sem grep)</li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>src/lib/schemas/llm-log.ts</code> — schema</li>
+<li><code>src/app/llm-logs/page.tsx</code> — UI filtros</li>
+<li><code>src/lib/logger.ts</code> — structured log helper se necessário</li>
+</ul>
+<p><strong>Estimativa:</strong> 1 dia</p>
+<hr>
+<h3>Story 23.7 — Fallback Manual + Rate Limit Handling</h3>
+<p><strong>Como</strong> produtor,
+<strong>Eu quero</strong> controlar o que acontece quando Claude falha persistentemente,
+<strong>Para</strong> não ficar travado nem ter custos surpresa com fallback automático.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — Retry/backoff:</strong></p>
+<ul>
+<li><strong>Given</strong> Claude retorna RATE_LIMIT</li>
+<li><strong>When</strong> o provider intercepta</li>
+<li><strong>Then</strong> retry com backoff 30s/60s/120s (mesmo padrão Epic 22)</li>
+<li><strong>And</strong> logs por tentativa</li>
+</ul>
+<p><strong>AC2 — Fallback alert:</strong></p>
+<ul>
+<li><strong>Given</strong> 3 tentativas exaustaram</li>
+<li><strong>When</strong> o wizard recebe o erro</li>
+<li><strong>Then</strong> Phase componente mostra alerta amber: &quot;Claude indisponível agora. Trocar para Gemini neste vídeo?&quot;</li>
+<li><strong>And</strong> dois botões: &quot;Tentar Claude de novo&quot; / &quot;Usar Gemini só agora&quot;</li>
+<li><strong>And</strong> se &quot;Usar Gemini só agora&quot;: força provider via prop temporária (não persiste em config)</li>
+</ul>
+<p><strong>AC3 — Persist preference:</strong></p>
+<ul>
+<li><strong>Given</strong> produtor clica &quot;Sempre usar Gemini quando Claude falhar&quot;</li>
+<li><strong>When</strong> salva</li>
+<li><strong>Then</strong> <code>podcast.llmConfig.fallbackProvider: &#39;gemini&#39; | null</code> é persistido</li>
+<li><strong>And</strong> próximas falhas usam fallback automático com aviso silencioso</li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>src/lib/llm/providers/claude-provider.ts</code> — retry/backoff</li>
+<li><code>src/components/wizard/llm-fallback-alert.tsx</code> — <strong>novo</strong></li>
+<li><code>src/lib/schemas/podcast.ts</code> — adicionar <code>fallbackProvider</code></li>
+</ul>
+<p><strong>Estimativa:</strong> 1 dia</p>
+<hr>
+<h3>Story 23.8 — A/B Test Harness + Integration Tests</h3>
+<p><strong>Como</strong> dev/produtor,
+<strong>Eu quero</strong> rodar o mesmo prompt em ambos providers e comparar lado a lado,
+<strong>Para</strong> validar a hipótese &quot;Claude escreve melhor&quot; com dados PPTNC.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — CLI bench:</strong></p>
+<ul>
+<li><strong>Given</strong> script <code>apps/iara/scripts/llm-ab-bench.ts</code></li>
+<li><strong>When</strong> executado com <code>--episodes=v1,v2,v3 --phase=6</code></li>
+<li><strong>Then</strong> roda Phase 6 em ambos providers com mesma transcrição</li>
+<li><strong>And</strong> salva outputs em <code>apps/iara/scripts/.bench-output/{timestamp}/{provider}-{episode}.json</code></li>
+<li><strong>And</strong> gera <code>summary.md</code> com comparação tokens/latency/cost</li>
+</ul>
+<p><strong>AC2 — Blind comparison UI:</strong></p>
+<ul>
+<li><strong>Given</strong> bench output salvo</li>
+<li><strong>When</strong> Wellington abre <code>summary.md</code></li>
+<li><strong>Then</strong> outputs estão anônimos (Provider A, Provider B) com mapping em arquivo separado</li>
+<li><strong>And</strong> Wellington julga qual é melhor sem viés</li>
+</ul>
+<p><strong>AC3 — Integration tests:</strong></p>
+<ul>
+<li><strong>Given</strong> suíte integration</li>
+<li><strong>When</strong> rodada</li>
+<li><strong>Then</strong> cobre fluxo end-to-end: orquestrador → factory → Claude provider → LLMResult com cost → log</li>
+<li><strong>And</strong> Skip se <code>CLAUDE_INTEGRATION_TESTS=true</code> não setado (evita CI quotando real)</li>
+</ul>
+<p><strong>Arquivos:</strong></p>
+<ul>
+<li><code>apps/iara/scripts/llm-ab-bench.ts</code> — <strong>novo</strong></li>
+<li><code>src/lib/llm/providers/claude-provider.integration.test.ts</code> — <strong>novo</strong></li>
+</ul>
+<p><strong>Estimativa:</strong> 1-2 dias</p>
+<hr>
+<h3>Story 23.9 — Documentação + Retrospectiva</h3>
+<p><strong>Como</strong> time futuro,
+<strong>Eu quero</strong> doc operacional clara sobre como configurar, monitorar e custar Claude,
+<strong>Para</strong> que produtores e devs não tropecem nos mesmos riscos.</p>
+<p><strong>Acceptance Criteria:</strong></p>
+<p><strong>AC1 — Operational guide:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>_bmad-output/implementation-artifacts/operational-claude-provider.md</code></li>
+<li><strong>When</strong> criado</li>
+<li><strong>Then</strong> cobre:<ul>
+<li>Como ativar Claude no Settings</li>
+<li>IAM permissions necessárias</li>
+<li>Cloud Billing alert config (recomendado)</li>
+<li>O que esperar de diff comportamental vs Gemini</li>
+<li>Troubleshooting comum (RATE_LIMIT, CONTEXT_TOO_LARGE, fallback)</li>
+</ul>
+</li>
+</ul>
+<p><strong>AC2 — Method docs site:</strong></p>
+<ul>
+<li><strong>Given</strong> <code>pptnc/apps/iara/public/method-docs/</code></li>
+<li><strong>When</strong> rebuildado</li>
+<li><strong>Then</strong> capítulo novo sobre multi-provider LLM aparece</li>
+</ul>
+<p><strong>AC3 — Retro:</strong></p>
+<ul>
+<li><strong>Given</strong> epic completo</li>
+<li><strong>When</strong> retro escrita</li>
+<li><strong>Then</strong> segue formato Epic 16/22:<ul>
+<li>Métricas</li>
+<li>Compliance dos 13 AIs</li>
+<li>O que deu certo / errado</li>
+<li>Novos AIs (se houver)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Estimativa:</strong> 1 dia</p>
+<hr>
+<h2>7. Dependências entre Stories</h2>
+<pre><code>23.1 (Spike) ──┐
+               │ [GATE: Go/No-Go]
+               ↓
+23.2 (Provider abstraction) ──→ 23.3 (Claude provider) ──→ 23.4 (Schema + UI)
+                                       │                         │
+                                       ↓                         ↓
+                                23.6 (Telemetria)         23.5 (Factory + cost)
+                                       │                         │
+                                       └────────────┬────────────┘
+                                                    ↓
+                                            23.7 (Fallback)
+                                                    │
+                                                    ↓
+                                            23.8 (A/B harness)
+                                                    │
+                                                    ↓
+                                            23.9 (Doc + retro)
+</code></pre>
+<p><strong>Crítico:</strong> Story 23.1 <strong>bloqueia tudo</strong>. Sem go, nenhuma outra começa.</p>
+<hr>
+<h2>8. Estratégia de Testes</h2>
+<h3>Coverage requerido por área</h3>
+<table>
+<thead>
+<tr>
+<th>Área</th>
+<th>Tipo</th>
+<th>Quem cobre</th>
+<th>Onde</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Adapter VertexAI</td>
+<td>unit</td>
+<td>Story 23.2</td>
+<td><code>vertex-ai-provider.test.ts</code></td>
+</tr>
+<tr>
+<td>Adapter Claude</td>
+<td>unit</td>
+<td>Story 23.3</td>
+<td><code>claude-provider.test.ts</code></td>
+</tr>
+<tr>
+<td>Factory + Cost</td>
+<td>unit</td>
+<td>Story 23.5</td>
+<td><code>factory.test.ts</code>, <code>cost-estimator.test.ts</code></td>
+</tr>
+<tr>
+<td>Settings UI</td>
+<td>unit (jsdom)</td>
+<td>Story 23.4</td>
+<td><code>llm-config-settings-form.test.tsx</code></td>
+</tr>
+<tr>
+<td>Fallback flow</td>
+<td>unit + integration</td>
+<td>Story 23.7</td>
+<td><code>llm-fallback-alert.test.tsx</code> + <code>claude-provider.test.ts</code></td>
+</tr>
+<tr>
+<td>End-to-end</td>
+<td>integration</td>
+<td>Story 23.8</td>
+<td><code>*.integration.test.ts</code> (gated env var)</td>
+</tr>
+<tr>
+<td>A/B comparison</td>
+<td>manual + scripted</td>
+<td>Story 23.8</td>
+<td><code>llm-ab-bench.ts</code> output</td>
+</tr>
+</tbody></table>
+<h3>Mocks</h3>
+<ul>
+<li><code>@anthropic-ai/vertex-sdk</code> mockado nos testes unitários (não chamar API real)</li>
+<li><code>GoogleGenAI</code> mock atual preservado</li>
+<li><strong>CI nunca chama API real</strong> — quotas/custo</li>
+</ul>
+<hr>
+<h2>9. Estratégia de Homologação</h2>
+<p>Cada story tem AC explícito + Wellington homologa entrega isolada. <strong>Sequência obrigatória:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Pré-homologação</th>
+<th>Validação Wellington</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>23.1</td>
+<td>Relatório de spike entregue</td>
+<td>Go/No-Go decision documentado</td>
+</tr>
+<tr>
+<td>23.2</td>
+<td>3317 tests verdes + Newsletter manual smoke</td>
+<td>Newsletter intacta</td>
+</tr>
+<tr>
+<td>23.3</td>
+<td>Tests novos verdes</td>
+<td>(sem UI visível ainda)</td>
+</tr>
+<tr>
+<td>23.4</td>
+<td>tsc + tests</td>
+<td>Settings funciona; troca provider; salva</td>
+</tr>
+<tr>
+<td>23.5</td>
+<td>tsc + tests</td>
+<td>Estimativa de custo razoável</td>
+</tr>
+<tr>
+<td>23.6</td>
+<td>tsc + tests</td>
+<td>LLM Debug page filtra por provider</td>
+</tr>
+<tr>
+<td>23.7</td>
+<td>tsc + tests</td>
+<td>Forçar Claude falha → vê alerta + decide</td>
+</tr>
+<tr>
+<td>23.8</td>
+<td>Bench script entrega outputs</td>
+<td>Wellington compara cego e julga</td>
+</tr>
+<tr>
+<td>23.9</td>
+<td>Doc criado</td>
+<td>Doc clara, retro registrada</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>10. Métricas de Sucesso</h2>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Baseline</th>
+<th>Target</th>
+<th>Como medir</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Suite verde</td>
+<td>3317 testes</td>
+<td>3317 + novos (estimar +80-120)</td>
+<td><code>pnpm test:run</code></td>
+</tr>
+<tr>
+<td>Tests TS errors em prod code</td>
+<td>0</td>
+<td>0</td>
+<td><code>tsc --noEmit</code></td>
+</tr>
+<tr>
+<td>Newsletter sem regressão</td>
+<td>funcional</td>
+<td>funcional</td>
+<td>smoke test manual</td>
+</tr>
+<tr>
+<td>Wellington valida &quot;Claude melhor&quot; em ≥2/3 episódios</td>
+<td>?</td>
+<td>≥ 2/3</td>
+<td>A/B bench Story 23.8</td>
+</tr>
+<tr>
+<td>Custo mensal real após 30 dias com Claude</td>
+<td>0</td>
+<td>≤ $50</td>
+<td>Cloud Billing</td>
+</tr>
+<tr>
+<td>Incidentes em prod nas 4 semanas pós-deploy</td>
+<td>0</td>
+<td>0</td>
+<td>Cloud Logging + Wellington</td>
+</tr>
+<tr>
+<td>Builds quebrados no deploy</td>
+<td>0 (recorde Epic 22)</td>
+<td>0</td>
+<td>GitHub Actions</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>11. Plano de Rollback</h2>
+<p>Cada story tem rollback isolado.</p>
+<h3>Rollback emergencial completo (deployed → reverter)</h3>
+<ol>
+<li><strong>Revert da tag em produção</strong> — <code>git revert &lt;commit-tag-23&gt;</code> em main + tag nova <code>vX.Y.Z+1</code></li>
+<li><strong>Firestore docs com <code>provider=&#39;claude&#39;</code></strong> — script de migração reverso (set provider=&#39;gemini&#39; em todos os podcasts)</li>
+<li><strong>Wizard jobs em flight</strong> — TTL natural; não interrompe.</li>
+</ol>
+<h3>Rollback parcial — desligar Claude sem reverter código</h3>
+<ul>
+<li>Feature flag <code>features.claudeProvider: boolean</code> (default <code>true</code> após deploy do epic; pode setar <code>false</code> em emergência)</li>
+<li>Quando flag <code>false</code>: Settings UI esconde dropdown de provider, factory força Gemini</li>
+<li>Implementar no AC1 da Story 23.4</li>
+</ul>
+<hr>
+<h2>12. Compliance com Action Items das Retros</h2>
+<p>13 AIs combinados (Retro 16 + 22) aplicáveis a este epic:</p>
+<table>
+<thead>
+<tr>
+<th>AI</th>
+<th>Aplicação no Epic 23</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. tsc --noEmit antes de push</td>
+<td>Padrão de cada commit</td>
+</tr>
+<tr>
+<td>2. vitest run antes de push</td>
+<td>Suíte verde sempre</td>
+</tr>
+<tr>
+<td>3. Checklist de AC real</td>
+<td>Cada story tem AC granular + Wellington homologa</td>
+</tr>
+<tr>
+<td>4. Propagação de padrões</td>
+<td>Retry/backoff segue padrão Epic 22; logs seguem padrão LlmLog atual</td>
+</tr>
+<tr>
+<td>5. ACs de experiência do produtor</td>
+<td>Stories 23.4, 23.7, 23.8 têm AC UX explícito</td>
+</tr>
+<tr>
+<td>6. Code review inclui UX</td>
+<td>Settings, fallback alert e cost estimate revisados pra fluxo end-to-end</td>
+</tr>
+<tr>
+<td>7. Follow-through retro</td>
+<td>Esta seção</td>
+</tr>
+<tr>
+<td>8. Validar ambiguidade temporal</td>
+<td>&quot;próximo&quot; não usado neste plano</td>
+</tr>
+<tr>
+<td>9. Ler doc oficial ao 1º erro</td>
+<td>Vertex AI / Anthropic SDK docs são source of truth</td>
+</tr>
+<tr>
+<td>10. Cache invalidation por padrão</td>
+<td>Não aplicável (sem assets); LLM logs vs cost cache se for usar prompt caching, validar TTL</td>
+</tr>
+<tr>
+<td>11. Sizing pré-implementação</td>
+<td>Esta doc é o sizing — 12-17 dias declarados upfront</td>
+</tr>
+<tr>
+<td>12. Plano de homologação</td>
+<td>Seção 9</td>
+</tr>
+<tr>
+<td>13. Compliance dos 13 AIs é blocker</td>
+<td>Verificação pré-Story 23.1</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>13. Riscos Residuais (Aceitos)</h2>
+<p>Mesmo com todas as mitigações, alguns riscos permanecem:</p>
+<table>
+<thead>
+<tr>
+<th>Risco residual</th>
+<th>Razão de aceitar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Custo Claude pode subir 2-3x se Anthropic reajustar</td>
+<td>Pricing é decisão externa; mitigação é monitorar e poder voltar pra Gemini rapidamente</td>
+</tr>
+<tr>
+<td>Qualidade de Claude pode regredir em versão futura</td>
+<td>SDK pinado + telemetria + A/B bench periódico</td>
+</tr>
+<tr>
+<td>Volume PPTNC pode crescer e custo Claude virar dor</td>
+<td>Cost alerts + fallback automático configurável (Story 23.7)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>14. Status Atual</h2>
+<ul>
+<li>✅ Pesquisa de modelos atualizada 2026-05-14 + comparativo Vertex × direta em 2026-05-15</li>
+<li>✅ Spike de fev/2026 revisado e atualizado neste doc</li>
+<li>✅ Risk register completo (R1-R15, P1-P4, Pr1-Pr3, O1-O3)</li>
+<li>✅ Stories detalhadas com AC granular</li>
+<li>✅ Plano de rollback definido</li>
+<li>✅ <strong>Story 23.1 (Spike) DONE 2026-05-15</strong> — 6/6 ACs PASS via Anthropic API direta. Gate: 🟢 GO. Ver <code>spike-claude-vertex-results.md</code>.</li>
+<li>⏸️ <strong>Próximo:</strong> cleanup do spike + abrir Story 23.2 (refactor adapter).</li>
+</ul>
+<h3>Riscos eliminados pelo spike (atualização 2026-05-15)</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Status original</th>
+<th>Status pós-spike</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R1 (Turbopack)</td>
+<td>Médio — não validado</td>
+<td>✅ Eliminado — AC1 PASS</td>
+</tr>
+<tr>
+<td>R2 (Context 200K vs transcrições)</td>
+<td>Alto</td>
+<td>✅ Eliminado — 1M context Sonnet 4.6 cobre 225K em 7s</td>
+</tr>
+<tr>
+<td>R4 (allowlist Vertex)</td>
+<td>Alto</td>
+<td>✅ N/A — pivot pra direta</td>
+</tr>
+<tr>
+<td>R6 (streaming semantics)</td>
+<td>Médio</td>
+<td>✅ Mapeado — 6 eventos documentados</td>
+</tr>
+<tr>
+<td>R8 (rate limits opacos)</td>
+<td>Alto Vertex</td>
+<td>✅ Claro — tier system Anthropic</td>
+</tr>
+</tbody></table>
+<p>Riscos residuais (entram nas próximas stories):</p>
+<ul>
+<li>R3 (quality regression): Story 23.8 (A/B harness)</li>
+<li>R5 (token counting): Story 23.3 (<code>estimateTokens</code> no provider)</li>
+<li>R7 (error mapping): Story 23.3</li>
+<li>P2 (custo recorrente): Stories 23.5 (cost estimator) + 23.6 (telemetria) + Max 5x credits validação pós 15-jun</li>
+</ul>
+<h3>Próxima ação concreta</h3>
+<pre><code class="language-bash">cd apps/iara
+# Cleanup do spike:
+rm scripts/spike-claude-direct.ts
+rm -rf src/app/api/spike-claude
+rm -rf spike-tmp/claude-direct-*
+# `@anthropic-ai/sdk@0.96.0` PERMANECE instalado pra Story 23.3.
+# Reverter excludion de /api/spike-claude no proxy.ts.
+</code></pre>
+<p>Commit do cleanup: <code>chore(iara): remove Epic 23 spike artifacts after 6/6 PASS go decision</code>.</p>
+<p>Depois: criar branch <code>feature/epic-23-claude-provider</code> a partir de main, iniciar Story 23.2.</p>
+<hr>
+<h2>Apêndices</h2>
+<h3>A. Referências externas consultadas</h3>
+<ul>
+<li><a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models">Vertex AI Generative AI Models</a> — 2026-05-14</li>
+<li><a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic Claude Models Overview</a></li>
+<li><a href="https://pricepertoken.com/pricing-page/model/anthropic-claude-sonnet-4.6">Claude Sonnet 4.6 Pricing</a></li>
+<li><a href="https://deepwiki.com/anthropics/anthropic-sdk-typescript/5.1-vertex-ai-sdk">Anthropic SDK TypeScript - Vertex AI</a></li>
+<li><a href="https://docs.cloud.google.com/vertex-ai/generative-ai/docs/deprecations/partner-models">Vertex AI Partner Model Deprecations</a></li>
+<li>Spike interno: <code>spike-multi-provider-llm.md</code> (2026-02-23)</li>
+</ul>
+<h3>B. Glossário</h3>
+<ul>
+<li><strong>GA (General Availability):</strong> Modelo com SLA e estabilidade contratual.</li>
+<li><strong>Preview:</strong> Sem SLA, quota agressiva, sujeito a mudança/descontinuação.</li>
+<li><strong>ADC (Application Default Credentials):</strong> Mecanismo do GCP de auth via service account ou user credentials.</li>
+<li><strong>Provider:</strong> Camada do adapter pattern que abstrai o cliente LLM concreto (Gemini, Claude).</li>
+<li><strong>Fallback automático:</strong> Troca de provider sem aviso ao produtor — <strong>explicitamente rejeitado</strong> neste epic (ADR-23.4).</li>
+<li><strong>A/B Blind Comparison:</strong> Wellington julga outputs sem saber qual provider gerou.</li>
+</ul>
+
+  </main>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2.0 Migração de Vídeos para Subcoleção — IAra Docs</title>
+  <title>Guia Operacional — Claude Provider — IAra Docs</title>
   <link rel="stylesheet" href="/method-docs/styles.css">
 </head>
 <body>
@@ -49,10 +49,10 @@
 <li><a href="/method-docs/phase-4/epic-1/retrospective-epic-1-iara.html">Retrospectiva Épico 1</a></li>
 </ul>
 </details></li>
-<li><details class="epic-group" open>
+<li><details class="epic-group">
 <summary>Épico 2 — Configuração de Podcast</summary>
 <ul>
-<li class="active"><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
+<li><a href="/method-docs/phase-4/epic-2/2-0-migracao-videos-para-subcollection.html">2.0 Migração de Vídeos para Subcoleção</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-1-schema-e-types-do-podcast.html">2.1 Schema e Tipos do Podcast</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-2-firestore-collection-e-operacoes-de-podcast.html">2.2 Coleção Firestore e Operações de Podcast</a></li>
 <li><a href="/method-docs/phase-4/epic-2/2-3-tela-de-configuracoes-do-podcast.html">2.3 Tela de Configurações do Podcast</a></li>
@@ -175,13 +175,13 @@
 <li><a href="/method-docs/phase-4/epic-14/epic-14-retro-2026-02-25.html">Retrospectiva Épico 14</a></li>
 </ul>
 </details></li>
-<li><details class="epic-group">
+<li><details class="epic-group" open>
 <summary>Épico 23</summary>
 <ul>
 <li><a href="/method-docs/phase-4/epic-23/epic-23-claude-provider.html">Visão Geral do Épico 23 — Claude (Multi-Provider LLM)</a></li>
 <li><a href="/method-docs/phase-4/epic-23/spike-claude-vertex-results.html">23.1 Spike — Pivot Vertex → Anthropic direta</a></li>
 <li><a href="/method-docs/phase-4/epic-23/architecture-llm-adapter.html">Arquitetura — LLM Adapter Pattern</a></li>
-<li><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
+<li class="active"><a href="/method-docs/phase-4/epic-23/operational-claude-provider.html">Guia Operacional — Claude Provider</a></li>
 <li><a href="/method-docs/phase-4/epic-23/epic-23-retro-2026-05-15.html">Retrospectiva Épico 23</a></li>
 </ul>
 </details></li>
@@ -199,291 +199,265 @@
 
   </aside>
   <main class="content">
-    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 2 — Configuração de Podcast</nav><h1>Story 2.0: Migracao de Videos para Subcollection</h1>
-<p>Status: done</p>
+    <nav class="breadcrumb"><a href="/method-docs/">Início</a> <span class="sep">›</span> <a href="/method-docs/phase-4/">Fase 4 — Implementação</a> <span class="sep">›</span> Épico 23</nav><h1>Operational Guide — Claude Provider (Epic 23)</h1>
+<p><strong>Última atualização:</strong> 2026-05-15
+<strong>Status:</strong> Em produção (branch <code>feature/epic-23-claude-provider</code>, aguardando merge em <code>main</code>)</p>
+<p>Este guia é o referencial pra produtor/dev que precisa ativar, monitorar ou diagnosticar problemas com o provider Claude no IAra.</p>
 <hr>
-<h2>Story</h2>
-<p>Como um <strong>sistema</strong>,
-Eu quero migrar a collection legada <code>videos</code> para a subcollection <code>podcasts/{podcastId}/videos</code>,
-Para que o modelo de dados esteja alinhado com a arquitetura white-label desde o inicio.</p>
-<hr>
-<h2>Context</h2>
-<h3>Problema</h3>
-<p>O portal PPTNC existente usa uma flat entity <code>videos/{videoId}</code>. A arquitetura do IAra define subcollections <code>podcasts/{podcastId}/videos/{videoId}</code> para suportar white-label.</p>
-<p>Ambos os sistemas (Portal e IAra) operam na mesma base Firestore. Esta migracao prepara a base de desenvolvimento (<code>pptnc-stage</code>) para o padrao correto.</p>
-<h3>Decisao Arquitetural</h3>
-<p>Per architecture-iara.md:</p>
-<pre><code>podcasts/{podcastId}/videos/{videoId}
-├── youtubeId: string
-├── title: string
-├── ...
-</code></pre>
-<h3>Impacto</h3>
-<ul>
-<li><strong>Portal PPTNC producao</strong>: Continua lendo de <code>videos/</code> (nao afetado)</li>
-<li><strong>Portal PPTNC stage</strong>: Pode ser atualizado para ler da subcollection apos migracao</li>
-<li><strong>IAra</strong>: Vai criar novos videos ja na subcollection correta (Epic 3)</li>
-</ul>
-<hr>
-<h2>Acceptance Criteria</h2>
-<h3>AC1: Script de migracao criado</h3>
-<p><strong>Given</strong> a collection legada <code>videos</code> no Firestore
-<strong>When</strong> eu executo o script de migracao
-<strong>Then</strong> todos os documentos sao copiados para <code>podcasts/pptnc/videos/{videoId}</code>
-<strong>And</strong> o campo <code>podcastId: &#39;pptnc&#39;</code> e adicionado em cada documento
-<strong>And</strong> os documentos originais NAO sao deletados (soft migration)</p>
-<h3>AC2: Validacao de contagem</h3>
-<p><strong>Given</strong> a migracao executada
-<strong>When</strong> eu verifico as contagens
-<strong>Then</strong> o numero de documentos em <code>podcasts/pptnc/videos</code> e igual ao numero em <code>videos</code>
-<strong>And</strong> um log de validacao e gerado</p>
-<h3>AC3: Preservacao de dados</h3>
-<p><strong>Given</strong> cada documento migrado
-<strong>When</strong> eu comparo com o original
-<strong>Then</strong> todos os campos originais estao preservados
-<strong>And</strong> campos adicionados: <code>podcastId</code>, <code>migratedAt</code>
-<strong>And</strong> campo <code>id</code> do documento e preservado (mesmo videoId)</p>
-<h3>AC4: Idempotencia</h3>
-<p><strong>Given</strong> o script executado multiplas vezes
-<strong>When</strong> um documento ja existe na subcollection
-<strong>Then</strong> o documento NAO e sobrescrito
-<strong>And</strong> um log indica &quot;documento ja migrado&quot;</p>
-<h3>AC5: Relatorio de migracao</h3>
-<p><strong>Given</strong> a migracao completa
-<strong>When</strong> o script finaliza
-<strong>Then</strong> exibe relatorio:</p>
-<ul>
-<li>Total de documentos na origem</li>
-<li>Documentos migrados (novos)</li>
-<li>Documentos ja existentes (skipped)</li>
-<li>Erros (se houver)</li>
-</ul>
-<hr>
-<h2>Tasks / Subtasks</h2>
-<ul>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 1: Criar script de migracao</strong> (AC: 1, 4)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 1.1 Criar <code>scripts/migrate-videos-to-subcollection.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.2 Conectar ao Firestore usando Admin SDK</li>
-<li><input checked="" disabled="" type="checkbox"> 1.3 Ler todos os documentos de <code>videos</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.4 Para cada documento, verificar se ja existe em <code>podcasts/pptnc/videos/{id}</code></li>
-<li><input checked="" disabled="" type="checkbox"> 1.5 Se nao existe, copiar com campos adicionais (podcastId, migratedAt)</li>
-<li><input checked="" disabled="" type="checkbox"> 1.6 Se existe, skip e logar</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 2: Adicionar campos de migracao</strong> (AC: 3)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 2.1 Adicionar <code>podcastId: &#39;pptnc&#39;</code> em cada documento migrado</li>
-<li><input checked="" disabled="" type="checkbox"> 2.2 Adicionar <code>migratedAt: serverTimestamp()</code> para rastreabilidade</li>
-<li><input checked="" disabled="" type="checkbox"> 2.3 Preservar todos os campos originais</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 3: Implementar validacao</strong> (AC: 2)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 3.1 Contar documentos na origem antes da migracao</li>
-<li><input checked="" disabled="" type="checkbox"> 3.2 Contar documentos no destino apos migracao</li>
-<li><input checked="" disabled="" type="checkbox"> 3.3 Comparar e logar resultado</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 4: Gerar relatorio</strong> (AC: 5)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 4.1 Contabilizar: migrados, skipped, erros</li>
-<li><input checked="" disabled="" type="checkbox"> 4.2 Exibir relatorio formatado no console</li>
-<li><input checked="" disabled="" type="checkbox"> 4.3 Salvar relatorio em arquivo JSON (opcional)</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 5: Documentar e executar</strong> (AC: 1-5)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 5.1 Adicionar script ao package.json: <code>&quot;migrate:videos&quot;: &quot;tsx scripts/migrate-videos-to-subcollection.ts&quot;</code></li>
-<li><input checked="" disabled="" type="checkbox"> 5.2 Documentar no README ou em comments</li>
-<li><input checked="" disabled="" type="checkbox"> 5.3 Executar migracao em pptnc-stage</li>
-<li><input checked="" disabled="" type="checkbox"> 5.4 Validar resultado</li>
-</ul>
-</li>
-<li><p><input checked="" disabled="" type="checkbox"> 
-<strong>Task 6: Migrar subcollections</strong> (AC: 3)</p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 6.1 Criar script de inspecao <code>scripts/inspect-video-subcollections.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 6.2 Descobrir subcollections existentes (encontrado: <code>chunks</code> com 8510 documentos)</li>
-<li><input checked="" disabled="" type="checkbox"> 6.3 Criar script <code>scripts/migrate-video-subcollections.ts</code></li>
-<li><input checked="" disabled="" type="checkbox"> 6.4 Executar migracao de subcollections</li>
-<li><input checked="" disabled="" type="checkbox"> 6.5 Validar: 8510 chunks migrados com sucesso</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2>Dev Notes</h2>
-<h3>Estrutura do Script</h3>
-<pre><code class="language-typescript">// scripts/migrate-videos-to-subcollection.ts
-import { initializeApp, cert, getApps } from &#39;firebase-admin/app&#39;
-import { getFirestore, FieldValue } from &#39;firebase-admin/firestore&#39;
-
-const PODCAST_ID = &#39;pptnc&#39;
-const SOURCE_COLLECTION = &#39;videos&#39;
-const TARGET_PATH = `podcasts/${PODCAST_ID}/videos`
-
-async function migrate() {
-  const db = getFirestore()
-
-  // 1. Read all source documents
-  const sourceSnapshot = await db.collection(SOURCE_COLLECTION).get()
-  console.log(`Found ${sourceSnapshot.size} documents in ${SOURCE_COLLECTION}`)
-
-  let migrated = 0
-  let skipped = 0
-  let errors = 0
-
-  for (const doc of sourceSnapshot.docs) {
-    const targetRef = db.collection(TARGET_PATH).doc(doc.id)
-    const targetDoc = await targetRef.get()
-
-    if (targetDoc.exists) {
-      console.log(`SKIP: ${doc.id} already exists`)
-      skipped++
-      continue
-    }
-
-    try {
-      await targetRef.set({
-        ...doc.data(),
-        podcastId: PODCAST_ID,
-        migratedAt: FieldValue.serverTimestamp(),
-      })
-      console.log(`MIGRATED: ${doc.id}`)
-      migrated++
-    } catch (error) {
-      console.error(`ERROR: ${doc.id}`, error)
-      errors++
-    }
-  }
-
-  // Report
-  console.log(&#39;\n=== MIGRATION REPORT ===&#39;)
-  console.log(`Source documents: ${sourceSnapshot.size}`)
-  console.log(`Migrated: ${migrated}`)
-  console.log(`Skipped: ${skipped}`)
-  console.log(`Errors: ${errors}`)
-}
-
-migrate()
-</code></pre>
-<h3>Configuracao do Firebase Admin para Scripts</h3>
-<pre><code class="language-typescript">// Usar ADC (Application Default Credentials)
-// Requer: gcloud auth application-default login
-
-import { initializeApp, applicationDefault } from &#39;firebase-admin/app&#39;
-
-if (!getApps().length) {
-  initializeApp({
-    credential: applicationDefault(),
-    projectId: &#39;pptnc-stage&#39;,
-  })
-}
-</code></pre>
-<h3>Campos do Documento Video (Legado)</h3>
-<p>Verificar estrutura atual em <code>videos/{videoId}</code>:</p>
-<ul>
-<li>youtubeId / id</li>
-<li>title</li>
-<li>description</li>
-<li>thumbnail / thumbnailUrl</li>
-<li>duration</li>
-<li>publishedAt</li>
-<li>status</li>
-<li>outros campos especificos do portal</li>
-</ul>
-<h3>Enforcement Rules Aplicaveis</h3>
+<h2>1. Como ativar Claude</h2>
+<h3>1.1 Pré-requisitos</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Onde</th>
+<th>Obrigatório</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td><code>.env.local</code> (dev) ou Cloud Run env (prod)</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td><code>@anthropic-ai/sdk</code> instalado</td>
+<td><code>apps/iara/package.json</code></td>
+<td>Sim (já no repo)</td>
+</tr>
+<tr>
+<td>Conta Anthropic com créditos</td>
+<td><a href="https://console.anthropic.com">https://console.anthropic.com</a></td>
+<td>Sim</td>
+</tr>
+</tbody></table>
+<h3>1.2 Passo a passo (UI)</h3>
 <ol>
-<li><strong>Rule #8 (podcastId em queries)</strong>: Adicionar <code>podcastId</code> em cada documento migrado</li>
-<li><strong>Rule #9 (Structured Logging)</strong>: Usar logs estruturados para rastreabilidade</li>
-<li><strong>Rule #4 (No setDoc sem merge)</strong>: Usar <code>set()</code> apenas para novos documentos</li>
-</ol>
-<h3>Seguranca</h3>
-<ul>
-<li>Script roda com credenciais de desenvolvedor (ADC)</li>
-<li>Nao deleta documentos originais</li>
-<li>Idempotente - pode ser executado multiplas vezes sem risco</li>
+<li>Login no IAra como admin</li>
+<li>Sidebar → <strong>Configurações</strong></li>
+<li>Aba <strong>LLM</strong> (ou seção &quot;Configuração de LLM&quot;)</li>
+<li>Em <strong>Provider de Texto</strong>, selecionar <strong>Claude (Anthropic) — opt-in, requer ANTHROPIC_API_KEY</strong></li>
+<li><strong>Modelo de Texto</strong> mostra automaticamente os modelos Claude disponíveis. Escolher um:<ul>
+<li><code>claude-sonnet-4-6</code> — recomendado (qualidade × custo equilibrado)</li>
+<li><code>claude-opus-4-7</code> — máxima qualidade, ~5x mais caro</li>
+<li><code>claude-haiku-4-5-20251001</code> — barato, qualidade inferior</li>
 </ul>
-<h3>Rollback</h3>
-<p>Se necessario reverter:</p>
+</li>
+<li>Badge de custo estimado aparece imediatamente embaixo do select. Cor:<ul>
+<li>🟢 Verde: &lt;$20/mês (seguro)</li>
+<li>🟡 Amarelo: $20-100/mês (atenção)</li>
+<li>🔴 Vermelho: ≥$100/mês (cuidado)</li>
+</ul>
+</li>
+<li>(Opcional) Marcar <strong>&quot;Usar Gemini automaticamente quando Claude falhar&quot;</strong> se quiser fallback silencioso</li>
+</ol>
+<p>A configuração persiste em <code>podcasts/{podcastId}.llmConfig</code> no Firestore.</p>
+<h3>1.3 Confirmação que Claude está ativo</h3>
+<ul>
+<li>Indicador na sidebar (abaixo do mascote IAra) mostra <code>[logo Anthropic] claude-sonnet-4-6</code> em cinza</li>
+<li>Próxima chamada LLM aparece com <code>provider: &#39;claude&#39;</code> no Cloud Logging</li>
+</ul>
+<hr>
+<h2>2. IAM / Auth</h2>
+<p>Diferente do Gemini (que usa Vertex AI via ADC no GCP), Claude usa <strong>API key direta</strong>:</p>
+<ul>
+<li><strong>Não precisa</strong> IAM permissions no GCP pra Claude</li>
+<li><strong>Precisa</strong> <code>ANTHROPIC_API_KEY</code> válida — gerada em <a href="https://console.anthropic.com/settings/keys">https://console.anthropic.com/settings/keys</a></li>
+<li>Em Cloud Run: setar como secret. Não commitar a key.</li>
+</ul>
+<pre><code class="language-bash">gcloud run services update iara \
+  --update-env-vars ANTHROPIC_API_KEY=$(gcloud secrets versions access latest --secret=anthropic-api-key) \
+  --region us-east1
+</code></pre>
+<hr>
+<h2>3. Monitoramento de custo</h2>
+<h3>3.1 Console Anthropic</h3>
+<p>O canal canônico de truth pra billing:</p>
+<ul>
+<li><a href="https://console.anthropic.com/settings/usage">https://console.anthropic.com/settings/usage</a></li>
+<li>Mostra consumo por API key, por modelo, por dia</li>
+<li>Atualização ~5 minutos de delay</li>
+</ul>
+<h3>3.2 Dentro do IAra (Settings)</h3>
+<p>A badge no Settings calcula estimativa mensal usando:</p>
+<ul>
+<li><strong>Histórico real</strong> (<code>llmLogs</code> últimos 30 dias) quando disponível</li>
+<li><strong>Defaults documentados</strong> (12 episódios + 50 cortes + 30 reels/mês) caso contrário</li>
+</ul>
+<p>Threshold por mês:</p>
+<ul>
+<li>Verde: &lt;$20</li>
+<li>Amarelo: $20-100 (zona PPTNC com Sonnet 4.6)</li>
+<li>Vermelho: ≥$100</li>
+</ul>
+<h3>3.3 Cloud Logging</h3>
+<p>Query pra somar custo do mês corrente:</p>
+<pre><code>jsonPayload.event=&quot;llm.call.complete&quot;
+AND jsonPayload.provider=&quot;claude&quot;
+AND timestamp &gt;= &quot;2026-05-01T00:00:00Z&quot;
+</code></pre>
+<p>Soma o <code>jsonPayload.estimatedCostUsd</code> no console pra obter total.</p>
+<h3>3.4 Alerts recomendados</h3>
+<p><strong>Cloud Billing</strong> (não cobre Anthropic, mas sim Vertex AI):</p>
+<ul>
+<li>Console GCP → Billing → Budgets &amp; alerts</li>
+<li>Threshold $20/mês</li>
+</ul>
+<p><strong>Anthropic</strong> (única forma de alertar billing real do Claude):</p>
+<ul>
+<li>Console Anthropic → Usage → Set monthly budget cap</li>
+<li>Sugestão PPTNC: $50/mês (cobre Sonnet 4.6 com folga)</li>
+</ul>
+<hr>
+<h2>4. Comportamento esperado vs Gemini</h2>
+<table>
+<thead>
+<tr>
+<th>Dimensão</th>
+<th>Gemini 2.5 Flash</th>
+<th>Claude Sonnet 4.6</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Custo / 1M tokens</strong></td>
+<td>$0.075 in / $0.30 out</td>
+<td>$3 in / $15 out</td>
+</tr>
+<tr>
+<td><strong>Latência fase 5 (título)</strong></td>
+<td>~2-5s</td>
+<td>~3-8s</td>
+</tr>
+<tr>
+<td><strong>Latência fase 6 (descrição)</strong></td>
+<td>~8-15s</td>
+<td>~15-30s</td>
+</tr>
+<tr>
+<td><strong>Estilo escrita</strong></td>
+<td>Mais conciso, técnico</td>
+<td>Mais elaborado, prosa fluida</td>
+</tr>
+<tr>
+<td><strong>Aderência a JSON schema</strong></td>
+<td>Excelente</td>
+<td>Excelente (com prompt explícito)</td>
+</tr>
+<tr>
+<td><strong>Hallucination em fatos do transcript</strong></td>
+<td>Moderada</td>
+<td>Menor (em geral)</td>
+</tr>
+<tr>
+<td><strong>Suporte a imagens</strong></td>
+<td>Sim (Newsletter, Thumbnail)</td>
+<td>Não (Newsletter/Thumbnail seguem Gemini)</td>
+</tr>
+</tbody></table>
+<h3>4.1 Quando Claude vale a pena</h3>
+<ul>
+<li>Fases criativas (5, 6, 7, 5B) onde o estilo importa</li>
+<li>Vídeos longos (transcrição &gt; 50K tokens) onde context window grande de Claude (200K) ajuda</li>
+<li>Quando o produtor já tem assinatura Anthropic Max (créditos programáticos a partir de 15-jun-2026)</li>
+</ul>
+<h3>4.2 Quando Gemini é melhor</h3>
+<ul>
+<li>Fases analíticas (1-4) que são determinísticas</li>
+<li>Geração de imagens (Claude não gera)</li>
+<li>Operação em escala onde custo importa (&gt;1000 chamadas/dia)</li>
+<li>Quando a infraestrutura GCP já está montada e não há ANTHROPIC_API_KEY</li>
+</ul>
+<h3>4.3 Como decidir: rodar o A/B bench</h3>
+<pre><code class="language-bash">cd apps/iara
+pnpm exec tsx scripts/llm-ab-bench.ts --episodes vid-1,vid-2 --phases 5,6,7
+</code></pre>
+<p>Custo ~$0.50 por run. Output em <code>apps/iara/scripts/.bench-output/{timestamp}/</code> com <code>summary.md</code> cego (Provider A vs B) e <code>mapping.json</code> separado pra julgamento sem viés.</p>
+<hr>
+<h2>5. Troubleshooting</h2>
+<h3>5.1 RATE_LIMIT (Anthropic 429)</h3>
+<p><strong>Sintoma</strong>: log <code>event: &#39;llm.call.error&#39;</code> com <code>errorCode: &#39;RATE_LIMIT&#39;</code>, provider <code>claude</code>.</p>
+<p><strong>Causa</strong>: Anthropic tier rate limits — Sonnet 4.6 começa em 50 req/min, 40K tokens/min, escalando com gasto histórico.</p>
+<p><strong>Mitigação automática</strong>:</p>
+<ul>
+<li>Retry loop: 30s, 60s, 120s (já em produção)</li>
+<li>Auto-fallback pra Gemini se <code>fallbackProvider: &#39;gemini&#39;</code> configurado no Settings</li>
+</ul>
+<p><strong>Resolver permanentemente</strong>:</p>
+<ul>
+<li>Anthropic console → Settings → Usage → solicitar tier upgrade após mês de uso consistente</li>
+</ul>
+<h3>5.2 CONTEXT_TOO_LARGE</h3>
+<p><strong>Sintoma</strong>: <code>errorCode: &#39;API_ERROR&#39;</code> com mensagem contendo &quot;context window&quot; ou &quot;input too long&quot;.</p>
+<p><strong>Causa</strong>: Transcrição passou de 200K tokens (limite Claude Sonnet 4.6). PPTNC ~3h transcript fica em ~50-70K tokens, então é raro — pode ocorrer com episódios excepcionalmente longos ou múltiplas referências.</p>
+<p><strong>Mitigação</strong>: nada automático. Logs mostram <code>attachment.estimatedTokens</code> pra diagnosticar. Se for um padrão, considerar truncar transcrições &gt; 150K tokens antes de enviar (ainda não implementado).</p>
+<h3>5.3 Fallback acionado</h3>
+<p><strong>Sintoma</strong>: log <code>event: &#39;llm.call.fallback&#39;</code> aparece com <code>primaryProvider: &#39;claude&#39;</code>, <code>fallbackProvider: &#39;gemini&#39;</code>, <code>errorCode: &lt;código&gt;</code>.</p>
+<p><strong>Significado</strong>: Claude exauriu retries e o fallback foi acionado. O resultado retornado vem do Gemini (silenciosamente — sem alerta UI).</p>
+<p><strong>Ação</strong>: ignorar se ocasional. Se recorrente em uma fase específica, investigar:</p>
+<ul>
+<li>Anthropic console pra ver tier limits</li>
+<li><code>errorCode</code> do log pra saber se foi rate limit, network, ou content filter</li>
+</ul>
+<h3>5.4 ANTHROPIC_API_KEY não definida</h3>
+<p><strong>Sintoma</strong>: erro ao tentar gerar com Claude: <code>ANTHROPIC_API_KEY environment variable is required</code>.</p>
+<p><strong>Resolver</strong>: setar a env var. Em dev:</p>
+<pre><code class="language-bash">echo &quot;ANTHROPIC_API_KEY=sk-ant-...&quot; &gt;&gt; apps/iara/.env.local
+</code></pre>
+<p>Em Cloud Run: ver §2.</p>
+<h3>5.5 Modelo não encontrado (404)</h3>
+<p><strong>Sintoma</strong>: <code>Publisher Model... not found</code> ou <code>Model claude-X not available</code>.</p>
+<p><strong>Causa frequente</strong>: ID de modelo desatualizado. A allowlist atual (<code>src/lib/llm/models.ts</code>):</p>
+<ul>
+<li><code>claude-opus-4-7</code></li>
+<li><code>claude-sonnet-4-6</code></li>
+<li><code>claude-haiku-4-5-20251001</code></li>
+</ul>
+<p>Se um modelo novo for anunciado pela Anthropic, atualizar <code>AVAILABLE_CLAUDE_MODELS</code> em <code>models.ts</code> + <code>PRICING_USD_PER_M</code> em <code>anthropic-provider.ts</code> E <code>cost-estimator.ts</code>.</p>
+<h3>5.6 Settings: badge &quot;Custo estimado indisponível&quot;</h3>
+<p><strong>Sintoma</strong>: badge no Settings não aparece com valor.</p>
+<p><strong>Causa</strong>: erro no endpoint <code>/api/podcast/cost-estimate</code> — checar Network do browser e log do server.</p>
+<p><strong>Diagnóstico</strong>: tente acessar diretamente:</p>
+<pre><code>https://localhost:3000/api/podcast/cost-estimate?provider=claude&amp;model=claude-sonnet-4-6
+</code></pre>
+<p>Deve retornar JSON com <code>monthlyUsd</code>, <code>breakdown</code>, <code>threshold</code>.</p>
+<hr>
+<h2>6. Migração de produtores legacy</h2>
+<p>Documentos <code>podcast.llmConfig</code> antigos (pré-Epic 23) não têm campo <code>provider</code>. Eles continuam funcionando — defaults para <code>gemini</code> via <code>.catch(undefined)</code> no schema. Não há migração necessária.</p>
+<p>Para migrar pra Claude:</p>
 <ol>
-<li>Documentos originais em <code>videos/</code> permanecem intactos</li>
-<li>Deletar documentos em <code>podcasts/pptnc/videos/</code> se necessario</li>
+<li>Abrir Settings</li>
+<li>Trocar provider via dropdown</li>
+<li>Save automático (não precisa rerun de scripts)</li>
 </ol>
 <hr>
-<h2>References</h2>
+<h2>7. Operação dia-a-dia</h2>
+<h3>Quando reverter pra Gemini</h3>
 <ul>
-<li>[Source: architecture-iara.md#Data Architecture]</li>
-<li>[Source: architecture-iara.md#White-Label Architecture]</li>
-<li>[Source: retrospective-epic-1-iara.md#Lessons Learned - LL1]</li>
-<li><a href="https://firebase.google.com/docs/firestore/manage-data/add-data">Firebase Admin SDK - Firestore</a></li>
+<li>Custo mensal &gt; $50 e qualidade subjetiva não justifica</li>
+<li>Latência &gt; 30s em fases curtas atrapalhando workflow</li>
+<li>Outage Anthropic (raro mas acontece)</li>
+</ul>
+<p><strong>Como</strong>: Settings → Provider de Texto → Gemini. Save automático. Próxima chamada usa Gemini.</p>
+<h3>Quando rodar o A/B bench</h3>
+<ul>
+<li>A cada nova versão major (claude-N+1)</li>
+<li>Quando você suspeita que qualidade caiu</li>
+<li>Mensalmente como sanity check</li>
+</ul>
+<h3>Quando atualizar pricing</h3>
+<p>Anthropic anuncia mudança em <a href="https://docs.anthropic.com/en/api/pricing">https://docs.anthropic.com/en/api/pricing</a>. Atualizar:</p>
+<ul>
+<li><code>apps/iara/src/lib/llm/providers/anthropic-provider.ts</code> → <code>PRICING_USD_PER_M</code></li>
+<li><code>apps/iara/src/lib/llm/cost-estimator.ts</code> → mesma tabela</li>
+<li><code>apps/iara/scripts/llm-ab-bench.ts</code> → mesma tabela</li>
 </ul>
 <hr>
-<h2>Dev Agent Record</h2>
-<h3>Agent Model Used</h3>
-<p>Claude Opus 4.5 (claude-opus-4-5-20251101)</p>
-<h3>Debug Log References</h3>
+<h2>8. Referências</h2>
 <ul>
-<li>Firebase Admin SDK initialized with ADC (Application Default Credentials)</li>
-<li>Database: pptnc-stage (named database, not default)</li>
-<li>Collection path: videos → podcasts/pptnc/videos</li>
-<li>Structured logging with JSON format for observability</li>
-</ul>
-<h3>Completion Notes List</h3>
-<ol>
-<li><p><strong>Task 1-4</strong>: Script <code>migrate-videos-to-subcollection.ts</code> criado com todas as funcionalidades:</p>
-<ul>
-<li>Conexao Firebase Admin SDK com named database</li>
-<li>Leitura de todos documentos da colecao <code>videos</code></li>
-<li>Verificacao de existencia no destino (idempotencia)</li>
-<li>Copia com campos adicionais (podcastId, migratedAt)</li>
-<li>Validacao de contagem pos-migracao</li>
-<li>Relatorio formatado no console</li>
-</ul>
-</li>
-<li><p><strong>Task 5</strong>: Migracao de documentos executada com sucesso em pptnc-stage:</p>
-<ul>
-<li>Source documents: 2293</li>
-<li>Migrated (new): 2293</li>
-<li>Skipped (existing): 0</li>
-<li>Errors: 0</li>
-</ul>
-</li>
-<li><p><strong>Fix aplicado</strong>: Corrigido uso de named database (<code>pptnc-stage</code>) em vez de <code>(default)</code> - erro inicial FAILED_PRECONDITION</p>
-</li>
-<li><p><strong>Task 6</strong>: Migracao de subcollections executada com sucesso:</p>
-<ul>
-<li>Subcollection descoberta: <code>chunks</code></li>
-<li>Chunks found: 8510</li>
-<li>Chunks migrated: 8510</li>
-<li>Chunks skipped: 0</li>
-<li>Errors: 0</li>
-<li>Nota: <code>doc.data()</code> no Firestore NAO copia subcollections automaticamente</li>
-</ul>
-</li>
-</ol>
-<h3>File List</h3>
-<p><strong>Arquivos criados:</strong></p>
-<ul>
-<li>scripts/migrate-videos-to-subcollection.ts</li>
-<li>scripts/inspect-video-subcollections.ts</li>
-<li>scripts/migrate-video-subcollections.ts</li>
-</ul>
-<p><strong>Arquivos modificados:</strong></p>
-<ul>
-<li>package.json (adicionado scripts <code>migrate:videos</code>, <code>migrate:video-subcollections</code> e dependencia <code>tsx</code>)</li>
-</ul>
-<hr>
-<h2>Change Log</h2>
-<ul>
-<li>2026-01-25: Story criada como pre-requisito do Epic 2 para alinhamento com arquitetura white-label</li>
-<li>2026-01-25: Implementacao completa - 2293 documentos migrados com sucesso</li>
-<li>2026-01-25: Subcollections migradas - 8510 chunks migrados com sucesso, status: review</li>
+<li>Doc épico completa: <code>_bmad-output/implementation-artifacts/epic-23-claude-provider.md</code></li>
+<li>Spike inicial: <code>_bmad-output/implementation-artifacts/spike-claude-vertex-results.md</code></li>
+<li>Arquitetura LLM adapter: <code>_bmad-output/implementation-artifacts/architecture-llm-adapter.md</code></li>
+<li>Anthropic docs: <a href="https://docs.anthropic.com/">https://docs.anthropic.com/</a></li>
+<li>SDK: <a href="https://github.com/anthropics/anthropic-sdk-typescript">https://github.com/anthropics/anthropic-sdk-typescript</a></li>
 </ul>
 
   </main>
