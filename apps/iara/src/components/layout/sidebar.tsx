@@ -12,6 +12,8 @@ import { APP_VERSION } from '@/lib/version'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useCurrentUser } from '@/hooks/use-current-user'
+import { ProviderIndicator } from '@/components/layout/provider-indicator'
+import type { LLMProviderId } from '@/lib/llm/models'
 
 const STORAGE_KEY = 'sidebar-collapsed'
 
@@ -25,17 +27,23 @@ interface PodcastFeatures {
   llmDebugMode?: boolean
 }
 
+interface SidebarLlmConfig {
+  provider?: LLMProviderId
+  textModel?: string
+}
+
 interface SidebarProps {
   userName?: string
   features?: PodcastFeatures
   enabledSocialNetworks?: string[]
+  llmConfig?: SidebarLlmConfig
 }
 
 /**
  * Collapsible sidebar with navigation links.
  * Collapsed state is persisted to localStorage.
  */
-export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarProps) {
+export function Sidebar({ userName, features, enabledSocialNetworks, llmConfig }: SidebarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -212,6 +220,14 @@ export function Sidebar({ userName, features, enabledSocialNetworks }: SidebarPr
             />
           </Link>
         </div>
+
+        {llmConfig?.textModel && (
+          <ProviderIndicator
+            provider={llmConfig.provider ?? (llmConfig.textModel.startsWith('claude-') ? 'claude' : 'gemini')}
+            model={llmConfig.textModel}
+            isCollapsed={isCollapsed}
+          />
+        )}
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col gap-1 p-2">

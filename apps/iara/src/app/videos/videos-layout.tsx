@@ -43,6 +43,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode, thumbnailGeneration)
   const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean; thumbnailGeneration?: boolean }>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
+  const [llmConfig, setLlmConfig] = useState<{ provider?: 'gemini' | 'claude'; textModel?: string }>()
   // Refetch on every view change so that toggling a feature flag inside
   // Settings and navigating back to the videos/editorial/news view picks up
   // the new value immediately (the layout component does not unmount when
@@ -54,6 +55,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       .then(d => {
         if (d?.data?.features) setPodcastFeatures(d.data.features)
         if (d?.data?.enabledSocialNetworks) setEnabledSocialNetworks(d.data.enabledSocialNetworks)
+        if (d?.data?.llmConfig) setLlmConfig({ provider: d.data.llmConfig.provider, textModel: d.data.llmConfig.textModel })
       })
       .catch(() => { /* features default to enabled on error */ })
   }, [currentView])
@@ -189,7 +191,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
         </div>
         <div className="flex-1">
           <SettingsPanel />
@@ -208,7 +210,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
         </div>
         <div className="flex-1 overflow-hidden">
           <EditorialPanel />
@@ -227,7 +229,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
         </div>
         <div className="flex-1 overflow-hidden">
           <NewsPanel />
@@ -247,7 +249,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       <LLMProcessingProvider>
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
           </div>
           <div className="flex-1 overflow-hidden">
             <SocialLayout enabledSocialNetworks={enabledSocialNetworks} />
@@ -268,7 +270,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       <LLMProcessingProvider>
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
           </div>
           <div className="flex-1 overflow-hidden">
             <AdwordsLayout />
@@ -287,7 +289,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       <LLMProcessingProvider>
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
           </div>
           <div className="flex-1 overflow-hidden">
             <NewsletterLayout />
@@ -305,7 +307,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
         </div>
         <div className="flex-1 overflow-hidden">
           <ScheduledPostsPanel />
@@ -325,7 +327,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -340,7 +342,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
         </div>
         <div className="flex-1 overflow-hidden">
           <DebugLogsLayout />
@@ -357,7 +359,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -372,7 +374,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
-            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+            <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -384,7 +386,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
     return (
       <div className="flex h-screen">
         <div className="shrink-0">
-          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />
+          <Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />
         </div>
         <div className="flex-1">
           <UserListPanel />
@@ -410,7 +412,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         error={syncError}
       />
       <MasterDetailLayout
-        sidebar={<Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} />}
+        sidebar={<Sidebar userName={userName} features={podcastFeatures} enabledSocialNetworks={enabledSocialNetworks} llmConfig={llmConfig} />}
         list={
           <div ref={listPanelRef} className="h-full">
             <VideoListPanel
