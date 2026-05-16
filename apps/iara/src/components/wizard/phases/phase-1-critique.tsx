@@ -213,7 +213,7 @@ export function Phase1Critique({
   }, [video.id, onContextChange])
 
   // Auto-save context fields
-  const { saveStatus, error: saveError } = useAutoSave(
+  const { saveStatus, error: saveError, save } = useAutoSave(
     formValues,
     saveContext,
     1500
@@ -246,14 +246,25 @@ export function Phase1Critique({
 
   const canAdvance = hasCritique && hasTheme && hasCompleteGuest && !isAdvancing && !isScraping
 
-  const handleAdvance = () => {
-    if (canAdvance && critique) {
-      setIsAdvancing(true)
-      // Use combined action to avoid stale state issues
-      // This marks phase 1 as completed AND navigates to phase 2 in one dispatch
-      wizard.completePhaseAndAdvance(1, critique)
-      log('INFO', 'Advancing from Phase 1 to Phase 2', { videoId: video.id })
+  const handleAdvance = async () => {
+    if (!canAdvance || !critique) return
+
+    setIsAdvancing(true)
+
+    // Flush the auto-save before transitioning so debounced changes
+    // (Spotify URL, theme, guests) are persisted before navigation.
+    // `rethrow: true` makes save() surface failures so we can block the advance.
+    try {
+      await save({ rethrow: true })
+    } catch {
+      // save() already sets saveStatus='error' and saveError — banner exibe.
+      // Não avançamos sem persistência confirmada.
+      setIsAdvancing(false)
+      return
     }
+
+    wizard.completePhaseAndAdvance(1, critique)
+    log('INFO', 'Advancing from Phase 1 to Phase 2', { videoId: video.id })
   }
 
   return (

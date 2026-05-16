@@ -455,7 +455,7 @@ describe('Phase1Critique', () => {
       expect(button).toBeEnabled()
     })
 
-    it('calls completePhaseAndAdvance when button is clicked', () => {
+    it('calls completePhaseAndAdvance when button is clicked', async () => {
       const wizard = createMockWizard()
 
       render(
@@ -465,8 +465,86 @@ describe('Phase1Critique', () => {
       const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
       fireEvent.click(button)
 
-      // Should complete phase 1 and advance to phase 2 in one action
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+      // handleAdvance is now async (awaits useAutoSave.save() to flush pending
+      // changes — Story 24.1). With a pristine form, save() is a no-op so the
+      // dispatch lands on the next tick.
+      await waitFor(() => {
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+      })
+    })
+
+    it('flushes auto-save (PUT context) before advancing — race fix for fast clicks', async () => {
+      // Story 24.1: handleAdvance must `await save()` so debounced changes
+      // (Spotify URL, theme, guests) are persisted before navigation.
+      const wizard = createMockWizard()
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: {} }),
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      // Change theme to mark the form dirty (so save() actually executes performSave)
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
+      fireEvent.change(themeInput, { target: { value: 'Tema atualizado de última hora' } })
+
+      // Click "Avançar" immediately (within debounce window — no waitFor)
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      fireEvent.click(button)
+
+      // The flushed save must hit the PUT endpoint with the new theme value
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          `/api/videos/${mockVideo.id}/context`,
+          expect.objectContaining({ method: 'PUT' }),
+        )
+      })
+
+      // And completePhaseAndAdvance must have been called AFTER the fetch
+      await waitFor(() => {
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+      })
+
+      const fetchCallOrders = mockFetch.mock.invocationCallOrder
+      const advanceCallOrders = (wizard.completePhaseAndAdvance as ReturnType<typeof vi.fn>).mock.invocationCallOrder
+      expect(fetchCallOrders[0]).toBeLessThan(advanceCallOrders[0])
+    })
+
+    it('does not advance when the flushed save fails', async () => {
+      // Story 24.1 AC5: backend error on PUT context must block transition.
+      const wizard = createMockWizard()
+
+      // Mark form dirty so save() actually attempts a fetch.
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: { message: 'Erro do servidor' } }),
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
+      fireEvent.change(themeInput, { target: { value: 'Tema que vai falhar no save' } })
+
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      fireEvent.click(button)
+
+      // Wait for the failing PUT to actually be attempted
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          `/api/videos/${mockVideo.id}/context`,
+          expect.objectContaining({ method: 'PUT' }),
+        )
+      })
+
+      // Give the catch branch a tick to run, then assert no transition
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(wizard.completePhaseAndAdvance).not.toHaveBeenCalled()
     })
   })
 })

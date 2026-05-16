@@ -6,10 +6,20 @@ import { log } from '@/lib/logger'
 
 type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error'
 
+interface SaveOptions {
+  /**
+   * When `true`, re-throws save failures so the caller can react (e.g., block
+   * navigation in flush-before-navigate). Defaults to `false` for backward
+   * compatibility — consumers calling `save()` in onBlur/onChange handlers
+   * without `await` won't trigger unhandled rejections.
+   */
+  rethrow?: boolean
+}
+
 interface UseAutoSaveReturn {
   saveStatus: SaveStatus
   error: Error | null
-  save: () => Promise<void>
+  save: (options?: SaveOptions) => Promise<void>
   /** Update the internal "last saved value" without triggering a save. Use when syncing from server. */
   resetValue: (value: unknown) => void
 }
@@ -49,7 +59,7 @@ export function useAutoSave<T>(
   const isSavingRef = useRef(false)
 
   const performSave = useCallback(
-    async (valueToSave: T) => {
+    async (valueToSave: T, options: { rethrow?: boolean } = {}) => {
       // Skip if value hasn't changed from last saved value
       // Use JSON.stringify for deep comparison of objects
       const currentJson = JSON.stringify(valueToSave)
@@ -82,11 +92,17 @@ export function useAutoSave<T>(
         }
       } catch (err) {
         isSavingRef.current = false
+        const saveError = err instanceof Error ? err : new Error(String(err))
         if (isMountedRef.current) {
-          const saveError = err instanceof Error ? err : new Error(String(err))
           setError(saveError)
           setSaveStatus('error')
           log('ERROR', 'Auto-save failed', { error: saveError.message })
+        }
+        // For explicit flush callers (flush-before-navigate pattern), re-throw
+        // so they can block navigation. The debounced auto-save path keeps the
+        // original swallow behavior (state already reflects the error).
+        if (options.rethrow) {
+          throw saveError
         }
       }
     },
@@ -138,12 +154,15 @@ export function useAutoSave<T>(
     }
   }, [])
 
-  // Force immediate save (awaitable for flush-before-navigate pattern)
-  const save = useCallback(async () => {
+  // Force immediate save (awaitable for flush-before-navigate pattern).
+  // Pass `{ rethrow: true }` to surface failures to the caller (e.g., to block
+  // navigation). Without it, behaves like the debounced path: state reflects the
+  // error (saveStatus='error', saveError set) but the Promise resolves OK.
+  const save = useCallback(async (options?: SaveOptions) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
-    await performSave(value)
+    await performSave(value, { rethrow: options?.rethrow ?? false })
   }, [value, performSave])
 
   const resetValue = useCallback((newValue: unknown) => {
