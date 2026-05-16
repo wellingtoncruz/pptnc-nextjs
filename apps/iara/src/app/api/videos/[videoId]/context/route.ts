@@ -147,9 +147,14 @@ export async function PUT(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      log('WARN', 'Invalid context data', { videoId, error })
+      // Surface the first refine/url message so the producer sees what to fix
+      // (e.g., Spotify URL malformed). Story 24.6.
+      const firstIssue = error.issues[0]
+      const message = firstIssue?.message || 'Dados de contexto inválidos'
+      const field = firstIssue?.path.join('.') || undefined
+      log('WARN', 'Invalid context data', { videoId, field, message })
       return NextResponse.json(
-        { error: { code: 'VALIDATION_ERROR', message: 'Dados de contexto inválidos' } },
+        { error: { code: 'VALIDATION_ERROR', message, field } },
         { status: 400 }
       )
     }

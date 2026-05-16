@@ -304,7 +304,10 @@ export function Phase1Critique({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">Contexto do Episódio</CardTitle>
-              <SaveStatusIndicator status={saveStatus} />
+              <SaveStatusIndicator
+                status={saveStatus}
+                busyLabel={isScraping ? 'Enriquecendo dados do LinkedIn...' : undefined}
+              />
             </div>
             <CardDescription>
               Preencha as informações do episódio. As alterações são salvas automaticamente.
