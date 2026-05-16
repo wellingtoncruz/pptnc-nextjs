@@ -118,6 +118,56 @@ export async function upsertGuest(
 }
 
 /**
+ * Resolves the current GCS avatar path for a guestKey.
+ *
+ * `guestKey` matches the prefix used by the scrape route when uploading
+ * (either `linkedin_num_id` or `md5(linkedinUrl)`). Returns the most recent
+ * `avatarGcsPath` among guest docs whose path starts with
+ * `guest-avatars/{podcastId}/{guestKey}-`.
+ *
+ * Returns `null` if no doc has a matching avatar (covers legacy guests with
+ * only `photoPath` and guests that never had an avatar).
+ *
+ * @see Story 24.2 (Cloud Storage avatars)
+ */
+export async function getGuestAvatarPathByKey(
+  podcastId: string,
+  guestKey: string
+): Promise<string | null> {
+  const guestsRef = getGuestsCollection(podcastId)
+  const prefix = `guest-avatars/${podcastId}/${guestKey}-`
+
+  try {
+    // Firestore doesn't support prefix queries cheaply, but the guests collection
+    // is small (≤ low hundreds of docs). Filter in memory after a single get.
+    const snapshot = await guestsRef.get()
+    if (snapshot.empty) return null
+
+    let bestPath: string | null = null
+    let bestStamp = -Infinity
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data() as { avatarGcsPath?: string }
+      const path = data.avatarGcsPath
+      if (!path || !path.startsWith(prefix)) continue
+
+      // Extract timestamp suffix (last segment before extension)
+      const tail = path.slice(prefix.length)
+      const tsStr = tail.split('.')[0]
+      const ts = Number(tsStr)
+      if (Number.isFinite(ts) && ts > bestStamp) {
+        bestStamp = ts
+        bestPath = path
+      }
+    }
+
+    return bestPath
+  } catch (error) {
+    log('ERROR', 'Failed to resolve guest avatar path', { podcastId, guestKey, error })
+    throw error
+  }
+}
+
+/**
  * Lists all guests for a podcast.
  *
  * @param podcastId - The podcast document ID (enforcement rule #8)

@@ -6,51 +6,75 @@
  * Called fire-and-forget after saving episode context.
  * Scrapes LinkedIn profiles for all guests with a linkedin URL,
  * stores enriched data in the guests subcollection,
- * downloads avatar images to disk, and updates the video's
- * guests[i].photo field.
+ * uploads avatar images to Cloud Storage (Story 24.2),
+ * and updates the video's `guests[i].photo` field with a proxy URL.
  *
  * @see architecture-iara.md#API Design
+ * @see Epic 24 (Story 24.2)
  */
 
 import { createHash } from 'crypto'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { auth } from '@/lib/auth'
 import { scrapeLinkedInProfile } from '@/lib/brightdata'
+import { uploadGuestAvatar, CloudStorageError } from '@/lib/firebase/cloud-storage'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { upsertGuest } from '@/lib/firebase/guests-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import { log } from '@/lib/logger'
 import { GuestScrapeRequestSchema } from '@/lib/schemas/guest'
 
-export const runtime = 'nodejs' // REQUIRED for firebase-admin + fs
+export const runtime = 'nodejs' // REQUIRED for firebase-admin
 
 const AVATAR_DOWNLOAD_TIMEOUT_MS = 15_000
+const PLACEHOLDER_SIZE_THRESHOLD = 1000
+/** Max concurrent guest scrapes — cap matches the max number of guests in an episode. */
+const SCRAPE_CONCURRENCY_CAP = 3
+
+/** Derives a stable, filesystem-safe key for the guest avatar in GCS. */
+function deriveGuestKey(linkedinUrl: string, linkedinNumId?: string | number): string {
+  if (linkedinNumId !== undefined && linkedinNumId !== null && String(linkedinNumId).length > 0) {
+    const sanitized = String(linkedinNumId).replace(/[^a-zA-Z0-9_-]/g, '')
+    if (sanitized.length > 0) return sanitized
+  }
+  return createHash('md5').update(linkedinUrl).digest('hex')
+}
+
+/** Detects the MIME type from the first bytes of an image buffer. */
+function detectAvatarMime(buffer: Buffer): string | null {
+  if (buffer.length < 4) return null
+  if (buffer[0] === 0xff && buffer[1] === 0xd8) return 'image/jpeg'
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return 'image/png'
+  // WebP: starts with "RIFF" then "WEBP" at byte 8
+  if (
+    buffer[0] === 0x52 &&
+    buffer[1] === 0x49 &&
+    buffer[2] === 0x46 &&
+    buffer[3] === 0x46 &&
+    buffer[8] === 0x57 &&
+    buffer[9] === 0x45 &&
+    buffer[10] === 0x42 &&
+    buffer[11] === 0x50
+  ) {
+    return 'image/webp'
+  }
+  return null
+}
 
 /**
- * Downloads an avatar image and saves it to public/guests/{hash}.jpg.
- *
- * @param avatarUrl - The remote avatar URL to download
- * @param linkedinUrl - The LinkedIn URL (used to generate the hash filename)
- * @returns The relative path (/guests/{hash}.jpg) or null on failure
+ * Downloads a remote avatar and uploads it to Cloud Storage.
+ * Returns the GCS path + proxy URL, or null on failure.
  */
-async function downloadAndSaveAvatar(
+async function ingestAvatar(
   avatarUrl: string,
-  linkedinUrl: string
-): Promise<string | null> {
+  guestKey: string
+): Promise<{ gcsPath: string; proxyUrl: string } | null> {
   try {
-    const hash = createHash('md5').update(linkedinUrl).digest('hex')
-    const filename = `${hash}.jpg`
-    const dirPath = path.join(process.cwd(), 'public', 'guests')
-    const filePath = path.join(dirPath, filename)
-
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), AVATAR_DOWNLOAD_TIMEOUT_MS)
-
     const response = await fetch(avatarUrl, { signal: controller.signal })
     clearTimeout(timeoutId)
 
@@ -61,30 +85,100 @@ async function downloadAndSaveAvatar(
 
     const buffer = Buffer.from(await response.arrayBuffer())
 
-    // Skip placeholder images (too small to be a real avatar)
-    if (buffer.length < 1000) {
-      log('WARN', 'Avatar image too small, likely placeholder', { avatarUrl, size: buffer.length })
+    if (buffer.length < PLACEHOLDER_SIZE_THRESHOLD) {
+      log('WARN', 'Avatar image too small, likely placeholder', {
+        avatarUrl,
+        size: buffer.length,
+      })
       return null
     }
 
-    await mkdir(dirPath, { recursive: true })
-    await writeFile(filePath, buffer)
+    const mimeType = detectAvatarMime(buffer) ?? 'image/jpeg'
+    const { filePath } = await uploadGuestAvatar(guestKey, buffer, mimeType)
 
-    const relativePath = `/guests/${filename}`
-    log('INFO', 'Avatar saved to disk', { linkedinUrl, relativePath, size: buffer.length })
-    return relativePath
+    return {
+      gcsPath: filePath,
+      proxyUrl: `/api/guests/${guestKey}/avatar`,
+    }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      log('ERROR', 'Avatar download timed out', { avatarUrl, linkedinUrl, timeoutMs: AVATAR_DOWNLOAD_TIMEOUT_MS })
+      log('ERROR', 'Avatar download timed out', {
+        avatarUrl,
+        guestKey,
+        timeoutMs: AVATAR_DOWNLOAD_TIMEOUT_MS,
+      })
       return null
     }
-
-    log('ERROR', 'Failed to save avatar', {
+    if (error instanceof CloudStorageError) {
+      log('ERROR', 'Avatar Cloud Storage upload failed', {
+        avatarUrl,
+        guestKey,
+        code: error.code,
+      })
+      return null
+    }
+    log('ERROR', 'Failed to ingest avatar', {
       avatarUrl,
-      linkedinUrl,
+      guestKey,
       error: error instanceof Error ? error.message : 'Unknown error',
     })
     return null
+  }
+}
+
+interface ScrapeOutcome {
+  index: number
+  linkedinUrl: string
+  status: 'success' | 'error'
+  proxyUrl?: string
+}
+
+/**
+ * Scrapes a single guest. Returns a structured outcome so the caller can
+ * fold all of them into the response after `Promise.allSettled`.
+ */
+async function scrapeSingleGuest(
+  guestIndex: number,
+  guestLinkedinUrl: string
+): Promise<ScrapeOutcome> {
+  log('INFO', 'Scraping guest LinkedIn profile', {
+    guestIndex,
+    linkedinUrl: guestLinkedinUrl,
+  })
+
+  const profile = await scrapeLinkedInProfile(guestLinkedinUrl)
+
+  if (!profile) {
+    return { index: guestIndex, linkedinUrl: guestLinkedinUrl, status: 'error' }
+  }
+
+  const guestKey = deriveGuestKey(guestLinkedinUrl, profile.linkedin_num_id)
+
+  let avatar: Awaited<ReturnType<typeof ingestAvatar>> = null
+  if (profile.avatar) {
+    avatar = await ingestAvatar(profile.avatar, guestKey)
+  }
+
+  await upsertGuest(PODCAST_ID, {
+    url: guestLinkedinUrl,
+    name: profile.name,
+    avatar: profile.avatar,
+    position: profile.position,
+    currentCompanyName: profile.current_company_name,
+    about: profile.about,
+    city: profile.city,
+    countryCode: profile.country_code,
+    linkedinId: profile.linkedin_id,
+    linkedinNumId: profile.linkedin_num_id,
+    ...(avatar?.gcsPath && { avatarGcsPath: avatar.gcsPath }),
+    raw: profile._raw ?? (profile as unknown as Record<string, unknown>),
+  })
+
+  return {
+    index: guestIndex,
+    linkedinUrl: guestLinkedinUrl,
+    status: 'success',
+    proxyUrl: avatar?.proxyUrl,
   }
 }
 
@@ -109,7 +203,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     log('INFO', 'Guest scrape started', { videoId, filterUrls: linkedinUrls?.length })
 
-    // Fetch the video
     const video = await getVideoAdmin(PODCAST_ID, videoId)
     if (!video) {
       return NextResponse.json(
@@ -118,15 +211,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Only process episodes (AC5)
     if (video.videoType !== 'episode') {
-      log('INFO', 'Skipping scrape for non-episode video', { videoId, videoType: video.videoType })
+      log('INFO', 'Skipping scrape for non-episode video', {
+        videoId,
+        videoType: video.videoType,
+      })
       return NextResponse.json({
         data: { videoId, scrapedCount: 0, errorCount: 0 },
       })
     }
 
-    // Filter guests: if linkedinUrls provided, only scrape those specific URLs
     const guests = video.guests ?? []
     const guestsWithLinkedin = linkedinUrls
       ? guests.filter((g) => g.linkedin && linkedinUrls.includes(g.linkedin))
@@ -139,71 +233,62 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })
     }
 
+    // Index map ensures we apply outcomes back to the right position
+    // even after parallel `allSettled`.
+    const tasks: Array<{ index: number; linkedinUrl: string }> = []
+    guests.forEach((guest, index) => {
+      if (guest.linkedin && guestsWithLinkedin.some((g) => g.linkedin === guest.linkedin)) {
+        tasks.push({ index, linkedinUrl: guest.linkedin })
+      }
+    })
+
+    // Run in parallel — cap matches the max number of guests in an episode.
+    // No external rate-limit library needed; BrightData itself queues.
+    const runners = tasks.slice(0, SCRAPE_CONCURRENCY_CAP).map((task) =>
+      scrapeSingleGuest(task.index, task.linkedinUrl)
+    )
+    const settled = await Promise.allSettled(runners)
+
     let scrapedCount = 0
     let errorCount = 0
-    let guestsUpdated = false
-    // Clone guests array for photo updates
+    const failedUrls: string[] = []
     const updatedGuests = guests.map((g) => ({ ...g }))
+    let guestsUpdated = false
 
-    // Build a Set of URLs to scrape for O(1) lookup in the loop
-    const urlsToScrape = new Set(guestsWithLinkedin.map((g) => g.linkedin))
-
-    for (let i = 0; i < updatedGuests.length; i++) {
-      const guest = updatedGuests[i]
-      if (!guest.linkedin || !urlsToScrape.has(guest.linkedin)) continue
-
-      log('INFO', 'Scraping guest LinkedIn profile', {
-        videoId,
-        guestIndex: i,
-        linkedinUrl: guest.linkedin,
-      })
-
-      const profile = await scrapeLinkedInProfile(guest.linkedin)
-
-      if (!profile) {
-        errorCount++
-        continue
-      }
-
-      // Download avatar first (if available) so we can include photoPath in upsert
-      let photoPath: string | null = null
-      if (profile.avatar) {
-        photoPath = await downloadAndSaveAvatar(profile.avatar, guest.linkedin)
-        if (photoPath) {
-          updatedGuests[i] = { ...updatedGuests[i], photo: photoPath }
-          guestsUpdated = true
+    for (const result of settled) {
+      if (result.status === 'fulfilled') {
+        const outcome = result.value
+        if (outcome.status === 'success') {
+          scrapedCount++
+          if (outcome.proxyUrl) {
+            updatedGuests[outcome.index] = {
+              ...updatedGuests[outcome.index],
+              photo: outcome.proxyUrl,
+            }
+            guestsUpdated = true
+          }
+        } else {
+          errorCount++
+          failedUrls.push(outcome.linkedinUrl)
         }
+      } else {
+        errorCount++
+        log('ERROR', 'Guest scrape task rejected', {
+          videoId,
+          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+        })
       }
-
-      // Upsert in guests subcollection (includes photoPath if avatar was downloaded)
-      await upsertGuest(PODCAST_ID, {
-        url: guest.linkedin,
-        name: profile.name,
-        avatar: profile.avatar,
-        position: profile.position,
-        currentCompanyName: profile.current_company_name,
-        about: profile.about,
-        city: profile.city,
-        countryCode: profile.country_code,
-        linkedinId: profile.linkedin_id,
-        linkedinNumId: profile.linkedin_num_id,
-        ...(photoPath && { photoPath }),
-        raw: profile._raw ?? (profile as unknown as Record<string, unknown>),
-      })
-
-      scrapedCount++
     }
 
-    // Update video's guests array if any photos were added
     if (guestsUpdated) {
       await updateVideoAdmin(PODCAST_ID, videoId, { guests: updatedGuests })
-      log('INFO', 'Video guests updated with photos', { videoId })
+      log('INFO', 'Video guests updated with avatar URLs', { videoId })
     }
 
     log('INFO', 'Guest scrape completed', { videoId, scrapedCount, errorCount })
 
     return NextResponse.json({
-      data: { videoId, scrapedCount, errorCount },
+      data: { videoId, scrapedCount, errorCount, failedUrls },
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

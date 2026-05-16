@@ -46,7 +46,10 @@ export const GuestDocSchema = z.object({
   linkedinId: z.string().optional(),
   /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedinNumId} for API mentions */
   linkedinNumId: z.union([z.string(), z.number()]).optional(),
+  /** Legacy: relative path served from public/guests filesystem (Cloud Run efêmero — Story 24.2 retira). */
   photoPath: z.string().optional(),
+  /** GCS path under guest-avatars/. Served via /api/guests/[guestKey]/avatar proxy. (Story 24.2) */
+  avatarGcsPath: z.string().optional(),
   raw: z.record(z.string(), z.unknown()),
   scrapedAt: TimestampSchema,
   createdAt: TimestampSchema,
@@ -69,7 +72,10 @@ export const GuestDocCreateSchema = z.object({
   linkedinId: z.string().optional(),
   /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedinNumId} for API mentions */
   linkedinNumId: z.union([z.string(), z.number()]).optional(),
+  /** Legacy: relative path served from public/guests filesystem (Cloud Run efêmero — Story 24.2 retira). */
   photoPath: z.string().optional(),
+  /** GCS path under guest-avatars/. Served via /api/guests/[guestKey]/avatar proxy. (Story 24.2) */
+  avatarGcsPath: z.string().optional(),
   raw: z.record(z.string(), z.unknown()),
 })
 

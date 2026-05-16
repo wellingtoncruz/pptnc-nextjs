@@ -2,7 +2,9 @@
  * Unit tests for POST /api/guests/scrape route handler.
  *
  * Tests LinkedIn guest profile scraping flow including:
- * auth, validation, scrape, upsert, avatar download, video update.
+ * auth, validation, scrape, upsert, avatar upload to Cloud Storage, video update.
+ *
+ * Story 24.2 — Avatar now goes to Cloud Storage, not filesystem.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -25,6 +27,15 @@ vi.mock('@/lib/firebase/guests-admin', () => ({
   upsertGuest: vi.fn(),
 }))
 
+vi.mock('@/lib/firebase/cloud-storage', () => ({
+  uploadGuestAvatar: vi.fn(),
+  CloudStorageError: class CloudStorageError extends Error {
+    constructor(message: string, public readonly code: string) {
+      super(message)
+    }
+  },
+}))
+
 vi.mock('@/lib/brightdata', () => ({
   scrapeLinkedInProfile: vi.fn(),
 }))
@@ -33,42 +44,18 @@ vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
 }))
 
-// Mock fs/promises for avatar download
-vi.mock(import('fs/promises'), async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    default: { ...actual, writeFile: vi.fn(), mkdir: vi.fn() },
-    writeFile: vi.fn(),
-    mkdir: vi.fn(),
-  }
-})
-
-// Mock crypto for MD5 hash
-vi.mock(import('crypto'), async (importOriginal) => {
-  const actual = await importOriginal()
-  const mockCreateHash = vi.fn(() => ({
-    update: vi.fn(() => ({
-      digest: vi.fn(() => 'abc123hash'),
-    })),
-  }))
-  return {
-    ...actual,
-    default: { ...actual, createHash: mockCreateHash },
-    createHash: mockCreateHash,
-  }
-})
-
 import { POST } from './route'
 import { auth } from '@/lib/auth'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import { upsertGuest } from '@/lib/firebase/guests-admin'
+import { uploadGuestAvatar } from '@/lib/firebase/cloud-storage'
 import { scrapeLinkedInProfile } from '@/lib/brightdata'
 
 const mockAuth = vi.mocked(auth)
 const mockGetVideoAdmin = vi.mocked(getVideoAdmin)
 const mockUpdateVideoAdmin = vi.mocked(updateVideoAdmin)
 const mockUpsertGuest = vi.mocked(upsertGuest)
+const mockUploadGuestAvatar = vi.mocked(uploadGuestAvatar)
 const mockScrapeLinkedInProfile = vi.mocked(scrapeLinkedInProfile)
 
 // Helper to create a mock POST request
@@ -78,6 +65,14 @@ function createRequest(body: Record<string, unknown>): Request {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
+
+/** Builds a buffer that detectAvatarMime will classify as image/jpeg. */
+function jpegBuffer(size: number): ArrayBuffer {
+  const buf = new Uint8Array(size)
+  buf[0] = 0xff
+  buf[1] = 0xd8
+  return buf.buffer
 }
 
 // Mock video with guests
@@ -110,16 +105,21 @@ const mockBrightDataProfile = {
   city: 'London',
   country_code: 'GB',
   linkedin_id: 'richardbranson',
+  linkedin_num_id: '12345678',
 }
 
 describe('POST /api/guests/scrape', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Default: authenticated session
     mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
 
-    // Mock global fetch for avatar download
     vi.stubGlobal('fetch', vi.fn())
+
+    // Default: GCS upload returns a predictable path
+    mockUploadGuestAvatar.mockResolvedValue({
+      filePath: 'guest-avatars/test-podcast/12345678-1716000000000.jpg',
+      mimeType: 'image/jpeg',
+    })
   })
 
   describe('Authentication', () => {
@@ -181,7 +181,6 @@ describe('POST /api/guests/scrape', () => {
       const json = await response.json()
       expect(json.data.scrapedCount).toBe(0)
     })
-
   })
 
   describe('Guests without LinkedIn', () => {
@@ -228,15 +227,14 @@ describe('POST /api/guests/scrape', () => {
   })
 
   describe('Successful scraping', () => {
-    it('scrapes and upserts guest profile', async () => {
+    it('scrapes and upserts guest profile (small avatar buffer below threshold)', async () => {
       mockGetVideoAdmin.mockResolvedValue(mockEpisodeVideo as never)
       mockScrapeLinkedInProfile.mockResolvedValue(mockBrightDataProfile)
       mockUpsertGuest.mockResolvedValue('guest-doc-id')
-      // Mock avatar fetch: return small buffer (below threshold, no photo saved)
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(500)),
-      } as any)
+        arrayBuffer: vi.fn().mockResolvedValue(jpegBuffer(500)),
+      } as never)
 
       const response = await POST(createRequest({ videoId: 'video-123' }))
 
@@ -246,6 +244,8 @@ describe('POST /api/guests/scrape', () => {
       expect(json.data.errorCount).toBe(0)
       expect(mockScrapeLinkedInProfile).toHaveBeenCalledTimes(2)
       expect(mockUpsertGuest).toHaveBeenCalledTimes(2)
+      // Below threshold means no GCS upload
+      expect(mockUploadGuestAvatar).not.toHaveBeenCalled()
     })
 
     it('upserts guest with correct mapped fields', async () => {
@@ -258,7 +258,7 @@ describe('POST /api/guests/scrape', () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 404,
-      } as any)
+      } as never)
 
       await POST(createRequest({ videoId: 'video-123' }))
 
@@ -277,7 +277,7 @@ describe('POST /api/guests/scrape', () => {
       )
     })
 
-    it('updates video guests array with photo path when avatar downloaded', async () => {
+    it('uploads avatar to Cloud Storage and updates video with proxy URL', async () => {
       mockGetVideoAdmin.mockResolvedValue({
         ...mockEpisodeVideo,
         guests: [mockEpisodeVideo.guests[0]],
@@ -285,44 +285,44 @@ describe('POST /api/guests/scrape', () => {
       mockScrapeLinkedInProfile.mockResolvedValue(mockBrightDataProfile)
       mockUpsertGuest.mockResolvedValue('guest-doc-id')
       mockUpdateVideoAdmin.mockResolvedValue(undefined)
-
-      // Mock avatar fetch: return large enough buffer
-      const largeBuffer = new ArrayBuffer(5000)
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        arrayBuffer: vi.fn().mockResolvedValue(largeBuffer),
-      } as any)
+        arrayBuffer: vi.fn().mockResolvedValue(jpegBuffer(5000)),
+      } as never)
 
       await POST(createRequest({ videoId: 'video-123' }))
 
-      // Verify video guests array updated with photo
+      expect(mockUploadGuestAvatar).toHaveBeenCalledWith(
+        '12345678',
+        expect.any(Buffer),
+        'image/jpeg'
+      )
+
       expect(mockUpdateVideoAdmin).toHaveBeenCalledWith(
         'test-podcast',
         'video-123',
         expect.objectContaining({
           guests: expect.arrayContaining([
             expect.objectContaining({
-              photo: '/guests/abc123hash.jpg',
+              photo: '/api/guests/12345678/avatar',
             }),
           ]),
         })
       )
 
-      // Verify guest subcollection also receives photoPath
       expect(mockUpsertGuest).toHaveBeenCalledWith(
         'test-podcast',
         expect.objectContaining({
-          photoPath: '/guests/abc123hash.jpg',
+          avatarGcsPath: 'guest-avatars/test-podcast/12345678-1716000000000.jpg',
         })
       )
     })
 
-    it('does not update video when no avatars were downloaded', async () => {
+    it('does not update video when no avatars were uploaded', async () => {
       mockGetVideoAdmin.mockResolvedValue({
         ...mockEpisodeVideo,
         guests: [mockEpisodeVideo.guests[0]],
       } as never)
-      // Profile without avatar
       mockScrapeLinkedInProfile.mockResolvedValue({
         ...mockBrightDataProfile,
         avatar: undefined,
@@ -331,15 +331,14 @@ describe('POST /api/guests/scrape', () => {
 
       await POST(createRequest({ videoId: 'video-123' }))
 
-      // updateVideoAdmin should NOT be called since no photos were added
       expect(mockUpdateVideoAdmin).not.toHaveBeenCalled()
+      expect(mockUploadGuestAvatar).not.toHaveBeenCalled()
     })
   })
 
   describe('Error handling', () => {
     it('counts errors when scrape fails for some guests', async () => {
       mockGetVideoAdmin.mockResolvedValue(mockEpisodeVideo as never)
-      // First guest: success, second guest: failure
       mockScrapeLinkedInProfile
         .mockResolvedValueOnce(mockBrightDataProfile)
         .mockResolvedValueOnce(null)
@@ -347,7 +346,7 @@ describe('POST /api/guests/scrape', () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 404,
-      } as any)
+      } as never)
 
       const response = await POST(createRequest({ videoId: 'video-123' }))
 
@@ -355,6 +354,7 @@ describe('POST /api/guests/scrape', () => {
       const json = await response.json()
       expect(json.data.scrapedCount).toBe(1)
       expect(json.data.errorCount).toBe(1)
+      expect(json.data.failedUrls).toContain('https://www.linkedin.com/in/janedoe')
     })
 
     it('returns 500 on unexpected error', async () => {
@@ -367,26 +367,23 @@ describe('POST /api/guests/scrape', () => {
       expect(json.error.code).toBe('INTERNAL_ERROR')
     })
 
-    it('still upserts guest without photoPath when avatar download fails', async () => {
+    it('still upserts guest without avatarGcsPath when avatar download fails', async () => {
       mockGetVideoAdmin.mockResolvedValue({
         ...mockEpisodeVideo,
         guests: [mockEpisodeVideo.guests[0]],
       } as never)
       mockScrapeLinkedInProfile.mockResolvedValue(mockBrightDataProfile)
       mockUpsertGuest.mockResolvedValue('guest-doc-id')
-
-      // Avatar download fails
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 404,
-      } as any)
+      } as never)
 
       await POST(createRequest({ videoId: 'video-123' }))
 
-      // upsertGuest called without photoPath
       expect(mockUpsertGuest).toHaveBeenCalledWith(
         'test-podcast',
-        expect.not.objectContaining({ photoPath: expect.anything() })
+        expect.not.objectContaining({ avatarGcsPath: expect.anything() })
       )
     })
 
@@ -398,14 +395,12 @@ describe('POST /api/guests/scrape', () => {
       mockScrapeLinkedInProfile.mockResolvedValue(mockBrightDataProfile)
       mockUpsertGuest.mockResolvedValue('guest-doc-id')
 
-      // Avatar download throws AbortError (timeout)
       const abortError = new Error('The operation was aborted')
       abortError.name = 'AbortError'
       vi.mocked(fetch).mockRejectedValue(abortError)
 
       const response = await POST(createRequest({ videoId: 'video-123' }))
 
-      // Should succeed overall — avatar timeout doesn't block scrape
       expect(response.status).toBe(200)
       const json = await response.json()
       expect(json.data.scrapedCount).toBe(1)
@@ -431,22 +426,19 @@ describe('POST /api/guests/scrape', () => {
       mockUpsertGuest.mockResolvedValue('guest-doc-id')
       mockUpdateVideoAdmin.mockResolvedValue(undefined)
 
-      const largeBuffer = new ArrayBuffer(5000)
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        arrayBuffer: vi.fn().mockResolvedValue(largeBuffer),
-      } as any)
+        arrayBuffer: vi.fn().mockResolvedValue(jpegBuffer(5000)),
+      } as never)
 
       await POST(createRequest({ videoId: 'video-123' }))
 
-      // Verify that name, role, company are preserved
       const updateCall = mockUpdateVideoAdmin.mock.calls[0]
       const updatedGuests = updateCall[2].guests
       expect(updatedGuests[0].name).toBe('Custom Name')
       expect(updatedGuests[0].role).toBe('Custom Role')
       expect(updatedGuests[0].company).toBe('Custom Company')
-      // Only photo should be added
-      expect(updatedGuests[0].photo).toBe('/guests/abc123hash.jpg')
+      expect(updatedGuests[0].photo).toBe('/api/guests/12345678/avatar')
     })
   })
 })
