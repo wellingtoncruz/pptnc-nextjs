@@ -318,7 +318,7 @@ describe('POST /api/guests/scrape', () => {
       )
     })
 
-    it('does not update video when no avatars were uploaded', async () => {
+    it('does not update video.guests when no avatars were uploaded (but ledger appends)', async () => {
       mockGetVideoAdmin.mockResolvedValue({
         ...mockEpisodeVideo,
         guests: [mockEpisodeVideo.guests[0]],
@@ -331,8 +331,12 @@ describe('POST /api/guests/scrape', () => {
 
       await POST(createRequest({ videoId: 'video-123' }))
 
-      expect(mockUpdateVideoAdmin).not.toHaveBeenCalled()
       expect(mockUploadGuestAvatar).not.toHaveBeenCalled()
+      // updateVideoAdmin still called — to append to guestsScrapedAt ledger (Story 24.3).
+      expect(mockUpdateVideoAdmin).toHaveBeenCalledTimes(1)
+      const payload = mockUpdateVideoAdmin.mock.calls[0][2]
+      expect(payload).not.toHaveProperty('guests')
+      expect(payload.guestsScrapedAt).toHaveLength(1)
     })
   })
 
@@ -405,7 +409,84 @@ describe('POST /api/guests/scrape', () => {
       const json = await response.json()
       expect(json.data.scrapedCount).toBe(1)
       expect(mockUpsertGuest).toHaveBeenCalled()
-      expect(mockUpdateVideoAdmin).not.toHaveBeenCalled()
+      // Ledger append still happens (Story 24.3); only guests array is absent.
+      const payload = mockUpdateVideoAdmin.mock.calls[0]?.[2]
+      expect(payload).not.toHaveProperty('guests')
+      expect(payload?.guestsScrapedAt).toHaveLength(1)
+    })
+
+    it('skips URLs already present in guestsScrapedAt (Story 24.3 dedup hit)', async () => {
+      mockGetVideoAdmin.mockResolvedValue({
+        ...mockEpisodeVideo,
+        guestsScrapedAt: [
+          { url: 'https://www.linkedin.com/in/richardbranson', scrapedAt: new Date() },
+        ],
+      } as never)
+      mockScrapeLinkedInProfile.mockResolvedValue(mockBrightDataProfile)
+      mockUpsertGuest.mockResolvedValue('guest-doc-id')
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 404,
+      } as never)
+
+      const response = await POST(createRequest({ videoId: 'video-123' }))
+
+      expect(response.status).toBe(200)
+      const json = await response.json()
+      expect(json.data.skippedCount).toBe(1)
+      expect(json.data.skippedUrls).toContain('https://www.linkedin.com/in/richardbranson')
+      // Only the OTHER guest should hit BrightData
+      expect(mockScrapeLinkedInProfile).toHaveBeenCalledTimes(1)
+      expect(mockScrapeLinkedInProfile).toHaveBeenCalledWith(
+        'https://www.linkedin.com/in/janedoe'
+      )
+    })
+
+    it('appends new URL to guestsScrapedAt ledger after successful scrape', async () => {
+      mockGetVideoAdmin.mockResolvedValue({
+        ...mockEpisodeVideo,
+        guests: [mockEpisodeVideo.guests[0]],
+        guestsScrapedAt: [],
+      } as never)
+      mockScrapeLinkedInProfile.mockResolvedValue(mockBrightDataProfile)
+      mockUpsertGuest.mockResolvedValue('guest-doc-id')
+      mockUpdateVideoAdmin.mockResolvedValue(undefined)
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 404,
+      } as never)
+
+      await POST(createRequest({ videoId: 'video-123' }))
+
+      const updatePayload = mockUpdateVideoAdmin.mock.calls[0][2]
+      expect(updatePayload.guestsScrapedAt).toHaveLength(1)
+      expect(updatePayload.guestsScrapedAt[0].url).toBe(
+        'https://www.linkedin.com/in/richardbranson'
+      )
+    })
+
+    it('does not skip dedup across videos — same URL in different videos rescrapes', async () => {
+      // Video has no entry for the URL — must rescrape even if it was scraped elsewhere
+      mockGetVideoAdmin.mockResolvedValue({
+        ...mockEpisodeVideo,
+        guests: [mockEpisodeVideo.guests[0]],
+        guestsScrapedAt: [
+          { url: 'https://www.linkedin.com/in/someoneelse', scrapedAt: new Date() },
+        ],
+      } as never)
+      mockScrapeLinkedInProfile.mockResolvedValue(mockBrightDataProfile)
+      mockUpsertGuest.mockResolvedValue('guest-doc-id')
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 404,
+      } as never)
+
+      const response = await POST(createRequest({ videoId: 'video-123' }))
+      const json = await response.json()
+
+      expect(json.data.scrapedCount).toBe(1)
+      expect(json.data.skippedCount).toBe(0)
+      expect(mockScrapeLinkedInProfile).toHaveBeenCalled()
     })
 
     it('does not overwrite existing guest name/role/company on video', async () => {

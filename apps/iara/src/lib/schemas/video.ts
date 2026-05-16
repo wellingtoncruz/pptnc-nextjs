@@ -270,6 +270,17 @@ export const VideoSchema = z.object({
   transcriptionSRT: z.string().optional(),
   transcriptionTXT: z.string().optional(),
   guests: z.array(GuestDisplaySchema).optional(), // Lenient for legacy data with null role/linkedin
+  /**
+   * Per-video dedup ledger for LinkedIn scraping (Story 24.3).
+   * One entry per URL successfully scraped for THIS video; entries are never expired.
+   * The route consults this before paying BrightData; rescrape between distinct
+   * videos is OK (Wellington 2026-05-16). Array form (not map) because Firestore
+   * map keys can't contain `/`, common in LinkedIn URLs.
+   */
+  guestsScrapedAt: z.array(z.object({
+    url: z.string(),
+    scrapedAt: TimestampSchema,
+  })).optional(),
   topics: z.array(z.string()).optional(),
   spotifyUrl: z.string().optional(),
 

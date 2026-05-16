@@ -15,6 +15,7 @@
 
 import { createHash } from 'crypto'
 
+import { Timestamp } from 'firebase-admin/firestore'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -229,18 +230,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (guestsWithLinkedin.length === 0) {
       log('INFO', 'No guests with LinkedIn URLs, skipping', { videoId })
       return NextResponse.json({
-        data: { videoId, scrapedCount: 0, errorCount: 0 },
+        data: { videoId, scrapedCount: 0, errorCount: 0, skippedCount: 0 },
       })
     }
 
-    // Index map ensures we apply outcomes back to the right position
-    // even after parallel `allSettled`.
+    // Dedup ledger (Story 24.3): URLs already scraped for THIS video are skipped.
+    // Rescrape between videos is allowed — the ledger is per-video.
+    const alreadyScrapedUrls = new Set(
+      (video.guestsScrapedAt ?? []).map((entry) => entry.url)
+    )
+
+    // Index map ensures outcomes apply back to the right position after parallel allSettled.
     const tasks: Array<{ index: number; linkedinUrl: string }> = []
+    const skippedUrls: string[] = []
     guests.forEach((guest, index) => {
-      if (guest.linkedin && guestsWithLinkedin.some((g) => g.linkedin === guest.linkedin)) {
-        tasks.push({ index, linkedinUrl: guest.linkedin })
+      if (!guest.linkedin) return
+      if (!guestsWithLinkedin.some((g) => g.linkedin === guest.linkedin)) return
+      if (alreadyScrapedUrls.has(guest.linkedin)) {
+        skippedUrls.push(guest.linkedin)
+        return
       }
+      tasks.push({ index, linkedinUrl: guest.linkedin })
     })
+
+    if (skippedUrls.length > 0) {
+      log('INFO', 'Guest scrape dedup hit', { videoId, skippedCount: skippedUrls.length })
+    }
 
     // Run in parallel — cap matches the max number of guests in an episode.
     // No external rate-limit library needed; BrightData itself queues.
@@ -252,6 +267,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let scrapedCount = 0
     let errorCount = 0
     const failedUrls: string[] = []
+    const newLedgerEntries: Array<{ url: string; scrapedAt: Timestamp }> = []
     const updatedGuests = guests.map((g) => ({ ...g }))
     let guestsUpdated = false
 
@@ -260,6 +276,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const outcome = result.value
         if (outcome.status === 'success') {
           scrapedCount++
+          newLedgerEntries.push({ url: outcome.linkedinUrl, scrapedAt: Timestamp.now() })
           if (outcome.proxyUrl) {
             updatedGuests[outcome.index] = {
               ...updatedGuests[outcome.index],
@@ -280,15 +297,37 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    if (guestsUpdated) {
-      await updateVideoAdmin(PODCAST_ID, videoId, { guests: updatedGuests })
-      log('INFO', 'Video guests updated with avatar URLs', { videoId })
+    // Persist combined update: guests array (if photos changed) + ledger append (if any success).
+    const updatePayload: Record<string, unknown> = {}
+    if (guestsUpdated) updatePayload.guests = updatedGuests
+    if (newLedgerEntries.length > 0) {
+      updatePayload.guestsScrapedAt = [...(video.guestsScrapedAt ?? []), ...newLedgerEntries]
+    }
+    if (Object.keys(updatePayload).length > 0) {
+      await updateVideoAdmin(PODCAST_ID, videoId, updatePayload)
+      log('INFO', 'Video updated after scrape', {
+        videoId,
+        guestsUpdated,
+        ledgerAdded: newLedgerEntries.length,
+      })
     }
 
-    log('INFO', 'Guest scrape completed', { videoId, scrapedCount, errorCount })
+    log('INFO', 'Guest scrape completed', {
+      videoId,
+      scrapedCount,
+      errorCount,
+      skippedCount: skippedUrls.length,
+    })
 
     return NextResponse.json({
-      data: { videoId, scrapedCount, errorCount, failedUrls },
+      data: {
+        videoId,
+        scrapedCount,
+        errorCount,
+        skippedCount: skippedUrls.length,
+        failedUrls,
+        skippedUrls,
+      },
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
