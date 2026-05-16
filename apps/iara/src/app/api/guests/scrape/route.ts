@@ -218,12 +218,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     if (video.videoType !== 'episode') {
-      log('INFO', 'Skipping scrape for non-episode video', {
+      // Story 24.5 — Cuts/reels VIEW dinâmica do parentEpisode. Sem chamada paga.
+      if (video.parentEpisodeId) {
+        log('INFO', 'Cut/reel inherits guests from parent episode (no scrape)', {
+          videoId,
+          videoType: video.videoType,
+          parentEpisodeId: video.parentEpisodeId,
+        })
+        return NextResponse.json({
+          data: {
+            videoId,
+            scrapedCount: 0,
+            errorCount: 0,
+            inheritedFrom: video.parentEpisodeId,
+          },
+        })
+      }
+      log('WARN', 'Cut/reel has no parentEpisodeId — cannot inherit guests', {
         videoId,
         videoType: video.videoType,
       })
       return NextResponse.json({
-        data: { videoId, scrapedCount: 0, errorCount: 0 },
+        data: { videoId, scrapedCount: 0, errorCount: 0, warning: 'NO_PARENT' },
       })
     }
 

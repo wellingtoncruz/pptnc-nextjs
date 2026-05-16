@@ -222,6 +222,37 @@ export async function getVideosForDisplayAdmin(
 
     const videos: Array<VideoSummary & { _publishedAt: Date }> = []
 
+    // Story 24.5 — Batch-load parent episodes for cuts/reels with parentEpisodeId,
+    // to resolve their `guests` view dynamically without N+1 reads.
+    const parentEpisodeIds = new Set<string>()
+    for (const docSnap of snapshot.docs) {
+      const raw = docSnap.data() as { videoType?: string; parentEpisodeId?: string }
+      if (raw.videoType && raw.videoType !== 'episode' && raw.parentEpisodeId) {
+        parentEpisodeIds.add(raw.parentEpisodeId)
+      }
+    }
+
+    const parentGuestsById = new Map<string, unknown>()
+    if (parentEpisodeIds.size > 0) {
+      const refs = Array.from(parentEpisodeIds).map((id) =>
+        db.collection('podcasts').doc(podcastId).collection('videos').doc(id)
+      )
+      try {
+        const parentSnaps = await db.getAll(...refs)
+        for (const snap of parentSnaps) {
+          if (snap.exists) {
+            const data = snap.data() as { guests?: unknown }
+            if (data?.guests) parentGuestsById.set(snap.id, data.guests)
+          }
+        }
+      } catch (parentErr) {
+        log('WARN', 'Batch load of parent episodes failed; falling back to cut-owned guests', {
+          podcastId,
+          error: parentErr instanceof Error ? parentErr.message : 'Unknown error',
+        })
+      }
+    }
+
     for (const docSnap of snapshot.docs) {
       const rawData = docSnap.data()
       const docVideoType = rawData.videoType ?? 'cut'
@@ -233,6 +264,15 @@ export async function getVideosForDisplayAdmin(
 
       // Parse publishedAt using helper for consistent handling
       const publishedAtDate = parsePublishedAt(rawData.publishedAt)
+
+      // Story 24.5 — Resolve guests view for cuts/reels with parentEpisodeId.
+      let resolvedGuests = rawData.guests
+      if (docVideoType !== 'episode' && rawData.parentEpisodeId) {
+        const parentGuests = parentGuestsById.get(rawData.parentEpisodeId)
+        if (parentGuests) {
+          resolvedGuests = parentGuests
+        }
+      }
 
       // Create summary with default values for missing fields
       const summary = {
@@ -246,8 +286,10 @@ export async function getVideosForDisplayAdmin(
         transcriptionTXT: rawData.transcriptionTXT,
         // Context fields (flat, not nested)
         theme: rawData.theme,
-        guests: rawData.guests,
+        guests: resolvedGuests,
         spotifyUrl: rawData.spotifyUrl,
+        // Story 24.5 — parentEpisodeId now reaches the frontend (fix partial of TD-6).
+        parentEpisodeId: rawData.parentEpisodeId,
         // AI-generated fields - needed for wizard phase detection
         critique: rawData.critique,
         editingIssues: rawData.editingIssues,
@@ -374,7 +416,43 @@ export async function getVideoAdmin(
     }
 
     const data = { id: docSnap.id, ...docSnap.data() }
-    return VideoSchema.parse(data)
+    const video = VideoSchema.parse(data)
+
+    // Story 24.5 — VIEW dinâmica: cuts/reels com parentEpisodeId herdam
+    // `guests` do episódio pai em runtime. Sem cópia, sem drift.
+    if (video.videoType && video.videoType !== 'episode' && video.parentEpisodeId) {
+      try {
+        const parentRef = db
+          .collection('podcasts')
+          .doc(podcastId)
+          .collection('videos')
+          .doc(video.parentEpisodeId)
+        const parentSnap = await parentRef.get()
+        if (parentSnap.exists) {
+          const parentData = parentSnap.data() as { guests?: Video['guests'] } | undefined
+          const parentGuests = parentData?.guests
+          if (parentGuests && parentGuests.length > 0) {
+            return { ...video, guests: parentGuests }
+          }
+        } else {
+          log('WARN', 'Parent episode not found when resolving guests view', {
+            podcastId,
+            videoId,
+            parentEpisodeId: video.parentEpisodeId,
+          })
+        }
+      } catch (parentError) {
+        // Don't fail the whole read if parent lookup fails — return cut as-is.
+        log('WARN', 'Parent episode lookup failed; serving cut guests as-is', {
+          podcastId,
+          videoId,
+          parentEpisodeId: video.parentEpisodeId,
+          error: parentError instanceof Error ? parentError.message : 'Unknown error',
+        })
+      }
+    }
+
+    return video
   } catch (error) {
     if (error instanceof ZodError) {
       log('ERROR', 'Video data validation failed (admin)', { podcastId, videoId, issues: error.issues })

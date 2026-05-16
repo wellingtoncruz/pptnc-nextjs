@@ -179,8 +179,8 @@ describe('POST /api/guests/scrape', () => {
     })
   })
 
-  describe('Video type filtering (AC5)', () => {
-    it('skips scraping for cut videos', async () => {
+  describe('Video type filtering & cut/reel inheritance (Story 24.5)', () => {
+    it('cut without parentEpisodeId returns warning NO_PARENT', async () => {
       mockGetVideoAdmin.mockResolvedValue({ id: 'v1', videoType: 'cut' } as never)
 
       const response = await POST(createRequest({ videoId: 'v1' }))
@@ -188,17 +188,36 @@ describe('POST /api/guests/scrape', () => {
       expect(response.status).toBe(200)
       const json = await response.json()
       expect(json.data.scrapedCount).toBe(0)
+      expect(json.data.warning).toBe('NO_PARENT')
       expect(mockScrapeLinkedInProfile).not.toHaveBeenCalled()
     })
 
-    it('skips scraping for reel videos', async () => {
+    it('reel without parentEpisodeId returns warning NO_PARENT', async () => {
       mockGetVideoAdmin.mockResolvedValue({ id: 'v1', videoType: 'reel' } as never)
 
       const response = await POST(createRequest({ videoId: 'v1' }))
 
       expect(response.status).toBe(200)
       const json = await response.json()
+      expect(json.data.warning).toBe('NO_PARENT')
+    })
+
+    it('cut with parentEpisodeId returns inheritedFrom (no BrightData call)', async () => {
+      mockGetVideoAdmin.mockResolvedValue({
+        id: 'cut-1',
+        videoType: 'cut',
+        parentEpisodeId: 'ep-99',
+      } as never)
+
+      const response = await POST(createRequest({ videoId: 'cut-1' }))
+
+      expect(response.status).toBe(200)
+      const json = await response.json()
       expect(json.data.scrapedCount).toBe(0)
+      expect(json.data.inheritedFrom).toBe('ep-99')
+      expect(mockScrapeLinkedInProfile).not.toHaveBeenCalled()
+      expect(mockUpsertGuest).not.toHaveBeenCalled()
+      expect(mockUpdateVideoAdmin).not.toHaveBeenCalled()
     })
   })
 
