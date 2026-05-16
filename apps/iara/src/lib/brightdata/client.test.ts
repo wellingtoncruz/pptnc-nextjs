@@ -241,16 +241,15 @@ describe('scrapeLinkedInProfile', () => {
   })
 
   describe('API key and auth', () => {
-    it('returns null when API key is not configured', async () => {
+    it('throws BrightDataConfigError(MISSING_API_KEY) when key is not configured (Story 24.4)', async () => {
       delete process.env.BRIGHTDATA_API_KEY
 
-      const result = await runWithTimerAdvance(linkedinUrl)
-
-      expect(result).toBeNull()
+      // No fake-timer dance needed — the throw is synchronous, before any polling.
+      await expect(scrapeLinkedInProfile(linkedinUrl)).rejects.toThrow('BRIGHTDATA_API_KEY')
       expect(vi.mocked(fetch)).not.toHaveBeenCalled()
       expect(vi.mocked(log)).toHaveBeenCalledWith(
         'ERROR',
-        'BRIGHTDATA_API_KEY not configured, skipping scrape',
+        'BRIGHTDATA_API_KEY not configured',
         expect.any(Object)
       )
     })
@@ -277,21 +276,25 @@ describe('scrapeLinkedInProfile', () => {
   })
 
   describe('HTTP errors', () => {
-    it('returns null on HTTP 401 (unauthorized)', async () => {
+    it('throws BrightDataConfigError(UNAUTHORIZED) on HTTP 401 (Story 24.4)', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: false,
         status: 401,
         statusText: 'Unauthorized',
       } as any)
 
-      const result = await runWithTimerAdvance(linkedinUrl)
+      // First fetch resolves immediately to the 401 — no polling timers fire.
+      await expect(scrapeLinkedInProfile(linkedinUrl)).rejects.toThrow(/401/)
+    })
 
-      expect(result).toBeNull()
-      expect(vi.mocked(log)).toHaveBeenCalledWith(
-        'ERROR',
-        'BrightData API error',
-        expect.objectContaining({ status: 401 })
-      )
+    it('throws BrightDataConfigError(FORBIDDEN) on HTTP 403 (Story 24.4)', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+      } as any)
+
+      await expect(scrapeLinkedInProfile(linkedinUrl)).rejects.toThrow(/403/)
     })
 
     it('returns null on HTTP 429 (rate limit)', async () => {

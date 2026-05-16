@@ -17,6 +17,23 @@ import { LinkedInGuestSchema } from '@/lib/schemas/guest'
 import { log } from '@/lib/logger'
 import type { LinkedInGuestProfile } from '@/types/guest'
 
+/**
+ * Distinguishes configuration failures (missing key, 401, 403) from operational
+ * ones (timeouts, 5xx, snapshot failed). The route uses this to decide between
+ * HTTP 503 (config — banner sticky) and HTTP 200 + errorCount (operational — toast).
+ *
+ * @see Story 24.4
+ */
+export class BrightDataConfigError extends Error {
+  constructor(
+    message: string,
+    public readonly code: 'MISSING_API_KEY' | 'UNAUTHORIZED' | 'FORBIDDEN'
+  ) {
+    super(message)
+    this.name = 'BrightDataConfigError'
+  }
+}
+
 const BRIGHTDATA_SCRAPE_ENDPOINT =
   'https://api.brightdata.com/datasets/v3/scrape?dataset_id=gd_l1viktl72bvl7bjuj0&notify=false&include_errors=true'
 
@@ -166,8 +183,11 @@ export async function scrapeLinkedInProfile(
   const apiKey = process.env.BRIGHTDATA_API_KEY
 
   if (!apiKey) {
-    log('ERROR', 'BRIGHTDATA_API_KEY not configured, skipping scrape', { linkedinUrl })
-    return null
+    log('ERROR', 'BRIGHTDATA_API_KEY not configured', { linkedinUrl })
+    throw new BrightDataConfigError(
+      'BRIGHTDATA_API_KEY is not configured on the server',
+      'MISSING_API_KEY'
+    )
   }
 
   log('INFO', 'Starting LinkedIn profile scrape', { linkedinUrl })
@@ -214,7 +234,17 @@ export async function scrapeLinkedInProfile(
       return parseProfileData(data, linkedinUrl)
     }
 
-    // Other HTTP errors (401, 429, 5xx, etc.)
+    // Authorization failures bubble up as a config error so the route can return 503.
+    if (response.status === 401) {
+      log('ERROR', 'BrightData auth failed (401)', { linkedinUrl })
+      throw new BrightDataConfigError('BrightData rejected the API key (401)', 'UNAUTHORIZED')
+    }
+    if (response.status === 403) {
+      log('ERROR', 'BrightData forbidden (403)', { linkedinUrl })
+      throw new BrightDataConfigError('BrightData denied access (403)', 'FORBIDDEN')
+    }
+
+    // Other HTTP errors (429, 5xx, etc.) → operational, return null.
     log('ERROR', 'BrightData API error', {
       linkedinUrl,
       status: response.status,
@@ -222,6 +252,9 @@ export async function scrapeLinkedInProfile(
     })
     return null
   } catch (error) {
+    // Config errors propagate to the route.
+    if (error instanceof BrightDataConfigError) throw error
+
     if (error instanceof Error && error.name === 'AbortError') {
       log('ERROR', 'BrightData request timed out', { linkedinUrl, timeoutMs: TOTAL_TIMEOUT_MS })
       return null

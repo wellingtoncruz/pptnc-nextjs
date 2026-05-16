@@ -147,6 +147,17 @@ export function Phase1Critique({
 
   // Track scraping state to block advancement while LinkedIn profiles are being fetched
   const [isScraping, setIsScraping] = useState(false)
+  /**
+   * Sticky banner shown when /api/guests/scrape returns 503 (CONFIG_ERROR).
+   * Indicates BrightData is unreachable — usually missing/invalid API key.
+   * Producer keeps the URL but fills name/role/company manually. (Story 24.4)
+   */
+  const [scrapeConfigError, setScrapeConfigError] = useState<string | null>(null)
+  /**
+   * Toast-like notice when /api/guests/scrape returns 200 with failedUrls.
+   * Cleared on next successful scrape. (Story 24.4)
+   */
+  const [scrapeFailedUrls, setScrapeFailedUrls] = useState<string[]>([])
 
   /**
    * Save context to API.
@@ -194,11 +205,29 @@ export function Phase1Critique({
 
       setIsScraping(true)
       try {
-        await fetch('/api/guests/scrape', {
+        const scrapeResponse = await fetch('/api/guests/scrape', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ videoId: video.id, linkedinUrls: newUrls }),
         })
+
+        // Story 24.4: CONFIG_ERROR → sticky banner. Operational errors → toast list.
+        if (scrapeResponse.status === 503) {
+          const payload = await scrapeResponse.json().catch(() => ({}))
+          setScrapeConfigError(
+            payload?.error?.message ||
+              'Serviço de enriquecimento indisponível. Preencha manualmente.'
+          )
+        } else if (scrapeResponse.ok) {
+          const payload = await scrapeResponse.json().catch(() => ({}))
+          const failed: string[] = payload?.data?.failedUrls ?? []
+          if (failed.length > 0) {
+            setScrapeFailedUrls(failed)
+          } else {
+            setScrapeConfigError(null)
+            setScrapeFailedUrls([])
+          }
+        }
       } catch {
         // Scraping failure doesn't block the producer — they continue with manual data
       } finally {
@@ -285,6 +314,36 @@ export function Phase1Critique({
             {/* Save error */}
             {saveError && (
               <p className="text-xs text-destructive">{saveError.message}</p>
+            )}
+
+            {/* Scrape CONFIG error — sticky banner (Story 24.4) */}
+            {scrapeConfigError && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
+                <strong className="font-medium">Enriquecimento indisponível:</strong>{' '}
+                {scrapeConfigError}
+              </div>
+            )}
+
+            {/* Scrape operational failures — list of URLs (Story 24.4) */}
+            {scrapeFailedUrls.length > 0 && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs"
+              >
+                <p className="font-medium mb-1">
+                  Não foi possível enriquecer {scrapeFailedUrls.length} URL(s) do LinkedIn:
+                </p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  {scrapeFailedUrls.map((url) => (
+                    <li key={url} className="break-all">{url}</li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {/* Theme */}

@@ -36,8 +36,27 @@ vi.mock('@/lib/firebase/cloud-storage', () => ({
   },
 }))
 
+// vi.hoisted ensures the shared class survives the hoisting of vi.mock.
+const { FakeBrightDataConfigError } = vi.hoisted(() => {
+  class FakeBrightDataConfigError extends Error {
+    public readonly code: string
+    constructor(message: string, code: string) {
+      super(message)
+      this.name = 'BrightDataConfigError'
+      this.code = code
+    }
+  }
+  return { FakeBrightDataConfigError }
+})
+
 vi.mock('@/lib/brightdata', () => ({
   scrapeLinkedInProfile: vi.fn(),
+  BrightDataConfigError: FakeBrightDataConfigError,
+}))
+
+vi.mock('@/lib/brightdata/client', () => ({
+  scrapeLinkedInProfile: vi.fn(),
+  BrightDataConfigError: FakeBrightDataConfigError,
 }))
 
 vi.mock('@/lib/logger', () => ({
@@ -413,6 +432,44 @@ describe('POST /api/guests/scrape', () => {
       const payload = mockUpdateVideoAdmin.mock.calls[0]?.[2]
       expect(payload).not.toHaveProperty('guests')
       expect(payload?.guestsScrapedAt).toHaveLength(1)
+    })
+
+    it('returns HTTP 503 with CONFIG_ERROR when scrape throws BrightDataConfigError (Story 24.4)', async () => {
+      mockGetVideoAdmin.mockResolvedValue({
+        ...mockEpisodeVideo,
+        guests: [mockEpisodeVideo.guests[0]],
+      } as never)
+      mockScrapeLinkedInProfile.mockRejectedValue(
+        new FakeBrightDataConfigError('chave ausente', 'MISSING_API_KEY')
+      )
+
+      const response = await POST(createRequest({ videoId: 'video-123' }))
+
+      expect(response.status).toBe(503)
+      const json = await response.json()
+      expect(json.error.code).toBe('CONFIG_ERROR')
+      expect(json.error.providerCode).toBe('MISSING_API_KEY')
+      // The Firestore write must NOT happen — nothing was actually persisted.
+      expect(mockUpdateVideoAdmin).not.toHaveBeenCalled()
+    })
+
+    it('returns HTTP 200 + errorCount when failures are operational, not config (Story 24.4)', async () => {
+      mockGetVideoAdmin.mockResolvedValue(mockEpisodeVideo as never)
+      mockScrapeLinkedInProfile
+        .mockResolvedValueOnce(mockBrightDataProfile)
+        .mockResolvedValueOnce(null) // operational failure
+      mockUpsertGuest.mockResolvedValue('guest-doc-id')
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 404,
+      } as never)
+
+      const response = await POST(createRequest({ videoId: 'video-123' }))
+
+      expect(response.status).toBe(200)
+      const json = await response.json()
+      expect(json.data.scrapedCount).toBe(1)
+      expect(json.data.errorCount).toBe(1)
     })
 
     it('skips URLs already present in guestsScrapedAt (Story 24.3 dedup hit)', async () => {

@@ -21,6 +21,7 @@ import { z } from 'zod'
 
 import { auth } from '@/lib/auth'
 import { scrapeLinkedInProfile } from '@/lib/brightdata'
+import { BrightDataConfigError } from '@/lib/brightdata/client'
 import { uploadGuestAvatar, CloudStorageError } from '@/lib/firebase/cloud-storage'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { upsertGuest } from '@/lib/firebase/guests-admin'
@@ -137,6 +138,10 @@ interface ScrapeOutcome {
 /**
  * Scrapes a single guest. Returns a structured outcome so the caller can
  * fold all of them into the response after `Promise.allSettled`.
+ *
+ * `BrightDataConfigError` is intentionally NOT caught here so it can propagate
+ * through `Promise.allSettled` (rejected) and be detected at the route level —
+ * a config error must surface as HTTP 503, not be counted as one of N errors.
  */
 async function scrapeSingleGuest(
   guestIndex: number,
@@ -270,6 +275,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const newLedgerEntries: Array<{ url: string; scrapedAt: Timestamp }> = []
     const updatedGuests = guests.map((g) => ({ ...g }))
     let guestsUpdated = false
+    let configErrorCode: 'MISSING_API_KEY' | 'UNAUTHORIZED' | 'FORBIDDEN' | null = null
 
     for (const result of settled) {
       if (result.status === 'fulfilled') {
@@ -289,12 +295,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           failedUrls.push(outcome.linkedinUrl)
         }
       } else {
+        // Config errors short-circuit the response — every parallel task
+        // would have hit the same misconfiguration, so we surface a 503.
+        if (result.reason instanceof BrightDataConfigError) {
+          configErrorCode = result.reason.code
+          continue
+        }
         errorCount++
         log('ERROR', 'Guest scrape task rejected', {
           videoId,
           error: result.reason instanceof Error ? result.reason.message : String(result.reason),
         })
       }
+    }
+
+    if (configErrorCode) {
+      log('ERROR', 'Guest scrape blocked by provider config error', {
+        videoId,
+        code: configErrorCode,
+      })
+      return NextResponse.json(
+        {
+          error: {
+            code: 'CONFIG_ERROR',
+            message: 'Serviço de enriquecimento indisponível. Preencha manualmente.',
+            providerCode: configErrorCode,
+          },
+        },
+        { status: 503 }
+      )
     }
 
     // Persist combined update: guests array (if photos changed) + ledger append (if any success).
