@@ -166,14 +166,16 @@ export function Phase1Critique({
    * - 'enriched' — scrape concluído com sucesso e campos preenchidos; tudo habilitado pra correção
    * - 'manual' — scrape falhou ou retornou vazio; tudo habilitado pra preenchimento manual
    *
-   * Keys: 'cohost' pra co-host; `guests.0`, `guests.1`, etc. pra convidados.
+   * Keys MUST match the react-hook-form field paths exactly: 'coHost' (camelCase,
+   * not 'cohost') and `guests.0`, `guests.1`, etc. Mismatch causes setValue to
+   * write to a non-existent field — verified 2026-05-17 with luisrudi.
    * Initial state derives from existing data: se já tem name preenchido, considera 'enriched'.
    */
   type EnrichmentStatus = 'awaiting' | 'scraping' | 'enriched' | 'manual'
   const initialEnrichmentState = useMemo<Record<string, EnrichmentStatus>>(() => {
     const state: Record<string, EnrichmentStatus> = {}
     const coHostHasName = Boolean(existingCoHost?.name?.trim())
-    state.cohost = coHostHasName ? 'enriched' : 'awaiting'
+    state.coHost = coHostHasName ? 'enriched' : 'awaiting'
     ;(existingGuests as Guest[]).forEach((g, i) => {
       state[`guests.${i}`] = g?.name?.trim() ? 'enriched' : 'awaiting'
     })
@@ -188,10 +190,12 @@ export function Phase1Critique({
     setEnrichmentStatus((prev) => (prev[key] === status ? prev : { ...prev, [key]: status }))
   }, [])
 
-  /** Returns the form key (`cohost` or `guests.N`) for a given LinkedIn URL. */
+  /** Returns the form key (`coHost` or `guests.N`) for a given LinkedIn URL.
+   *  CASE MATTERS — must match the field path registered by react-hook-form
+   *  (PersonForm uses `prefix="coHost"`, NOT 'cohost'). */
   const findKeyByLinkedinUrl = useCallback(
     (url: string, formData: EpisodeContextFormData): string | null => {
-      if (formData.hasCoHost && formData.coHost?.linkedin?.trim() === url) return 'cohost'
+      if (formData.hasCoHost && formData.coHost?.linkedin?.trim() === url) return 'coHost'
       const idx = formData.guests.findIndex((g) => g.linkedin?.trim() === url)
       return idx >= 0 ? `guests.${idx}` : null
     },
@@ -277,12 +281,6 @@ export function Phase1Critique({
           const scraped: Array<{ linkedinUrl: string; name: string | null; role: string | null; company: string | null }> =
             payload?.data?.scrapedGuests ?? []
 
-          // eslint-disable-next-line no-console
-          console.log('[Story 24.7 DEBUG] scrape response payload.data:', payload?.data)
-          // eslint-disable-next-line no-console
-          console.log('[Story 24.7 DEBUG] formData.guests at time of response:',
-            formData.guests.map((g, i) => ({ i, linkedin: g.linkedin, name: g.name, role: g.role, company: g.company })))
-
           if (failed.length > 0) {
             setScrapeFailedUrls(failed)
           } else {
@@ -293,25 +291,10 @@ export function Phase1Critique({
           // Story 24.7 — preencher campos para os que vieram com sucesso.
           for (const sg of scraped) {
             const key = findKeyByLinkedinUrl(sg.linkedinUrl, formData)
-            // eslint-disable-next-line no-console
-            console.log('[Story 24.7 DEBUG] match:', sg.linkedinUrl, '→ key:', key,
-              { sgName: sg.name, sgRole: sg.role, sgCompany: sg.company })
             if (!key) continue
-            if (sg.name) {
-              // eslint-disable-next-line no-console
-              console.log('[Story 24.7 DEBUG] setValue', `${key}.name`, '=', sg.name)
-              setValue(`${key}.name` as 'coHost.name', sg.name, { shouldDirty: true, shouldTouch: true })
-            }
-            if (sg.role) {
-              // eslint-disable-next-line no-console
-              console.log('[Story 24.7 DEBUG] setValue', `${key}.role`, '=', sg.role)
-              setValue(`${key}.role` as 'coHost.role', sg.role, { shouldDirty: true, shouldTouch: true })
-            }
-            if (sg.company) {
-              // eslint-disable-next-line no-console
-              console.log('[Story 24.7 DEBUG] setValue', `${key}.company`, '=', sg.company)
-              setValue(`${key}.company` as 'coHost.company', sg.company, { shouldDirty: true, shouldTouch: true })
-            }
+            if (sg.name) setValue(`${key}.name` as 'coHost.name', sg.name, { shouldDirty: true, shouldTouch: true })
+            if (sg.role) setValue(`${key}.role` as 'coHost.role', sg.role, { shouldDirty: true, shouldTouch: true })
+            if (sg.company) setValue(`${key}.company` as 'coHost.company', sg.company, { shouldDirty: true, shouldTouch: true })
             setEnrichmentFor(key, 'enriched')
           }
 
@@ -479,8 +462,8 @@ export function Phase1Critique({
                       label="Dados do Co-host"
                       required={false}
                       nonLinkedinFieldsLocked={
-                        enrichmentStatus.cohost === 'awaiting' ||
-                        enrichmentStatus.cohost === 'scraping'
+                        enrichmentStatus.coHost === 'awaiting' ||
+                        enrichmentStatus.coHost === 'scraping'
                       }
                     />
                   </div>
