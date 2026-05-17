@@ -115,9 +115,13 @@ export function PersonForm({
               className="size-9 rounded-full object-cover border border-border bg-muted"
             />
           ) : (
-            // No avatar yet — show manual uploader when caller wired the
-            // callback AND we have a LinkedIn URL to associate the upload with.
-            onAvatarUploaded && linkedinValue?.trim() && (
+            // No avatar yet — show manual uploader ONLY after the scrape
+            // round has finished (status === 'enriched' or 'manual', i.e.
+            // nonLinkedinFieldsLocked is false). Avoids the button flashing
+            // while BrightData is still working and a photo might arrive.
+            onAvatarUploaded &&
+            !nonLinkedinFieldsLocked &&
+            linkedinValue?.trim() && (
               <GuestAvatarUploader
                 linkedinUrl={linkedinValue.trim()}
                 onUploaded={onAvatarUploaded}

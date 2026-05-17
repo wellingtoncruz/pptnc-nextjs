@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import { Loader2, Upload } from 'lucide-react'
+import { Clipboard, Loader2, Upload } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -19,8 +19,13 @@ interface GuestAvatarUploaderProps {
 
 /**
  * Inline avatar uploader shown in PersonForm when the scrape didn't return a
- * photo (Story 24.7 polish). Accepts file picker, drag-and-drop and clipboard
- * paste — no crop step, the avatar is used as-is.
+ * photo (Story 24.7 polish). Three input paths:
+ *
+ *  - file picker (button "Adicionar foto")
+ *  - drag-and-drop onto the area
+ *  - clipboard paste via the explicit "Colar" button (uses
+ *    `navigator.clipboard.read()`, which requires a user gesture and a
+ *    permission grant — see Story 22.3f for the same pattern)
  *
  * Posts to `/api/guests/avatar/upload` which stores under the same
  * `guest-avatars/{podcastId}/{guestKey}-{ts}.ext` convention as the scrape
@@ -35,8 +40,7 @@ export function GuestAvatarUploader({ linkedinUrl, onUploaded, className }: Gues
   const submitFile = useCallback(
     async (file: File) => {
       setError(null)
-      if (!ACCEPTED_MIME.has(file.type) && file.type !== '') {
-        // Empty type happens with clipboard paste; backend tolerates it.
+      if (file.type && !ACCEPTED_MIME.has(file.type)) {
         setError('Formato inválido. Use PNG, JPEG ou WebP.')
         return
       }
@@ -82,21 +86,43 @@ export function GuestAvatarUploader({ linkedinUrl, onUploaded, className }: Gues
     [submitFile]
   )
 
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent) => {
-      for (const item of Array.from(e.clipboardData.items)) {
-        if (item.type.startsWith('image/')) {
-          const file = item.getAsFile()
-          if (file) {
-            e.preventDefault()
-            submitFile(file)
-            return
-          }
-        }
+  /**
+   * Explicit clipboard read — uses the async Clipboard API which requires a
+   * user gesture. Same pattern as Story 22.3f (guest-photo-uploader). The
+   * previous version used `onPaste` on a div, which only fires when the
+   * element is focused — invisible to the producer.
+   */
+  const handlePasteClick = useCallback(async () => {
+    setError(null)
+    try {
+      const clipboard = (navigator as Navigator).clipboard as Clipboard | undefined
+      if (!clipboard || typeof clipboard.read !== 'function') {
+        setError(
+          'Seu navegador não suporta colar da área de transferência. Use o seletor de arquivo ou arraste.'
+        )
+        return
       }
-    },
-    [submitFile]
-  )
+      const items = await clipboard.read()
+      for (const item of items) {
+        const imageType = item.types.find(
+          (t) => t.startsWith('image/') && ACCEPTED_MIME.has(t)
+        )
+        if (!imageType) continue
+        const blob = await item.getType(imageType)
+        const ext = imageType.split('/')[1] ?? 'png'
+        const file = new File([blob], `colado.${ext}`, { type: imageType })
+        submitFile(file)
+        return
+      }
+      setError('Nenhuma imagem encontrada na área de transferência.')
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message.includes('denied')
+          ? 'Permissão negada. Permita o acesso à área de transferência.'
+          : 'Não foi possível ler a área de transferência.'
+      )
+    }
+  }, [submitFile])
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -112,7 +138,6 @@ export function GuestAvatarUploader({ linkedinUrl, onUploaded, className }: Gues
   return (
     <div
       className={cn('inline-flex flex-col gap-1', className)}
-      onPaste={handlePaste}
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
     >
@@ -124,25 +149,39 @@ export function GuestAvatarUploader({ linkedinUrl, onUploaded, className }: Gues
         onChange={handleFileChange}
         aria-label="Selecionar foto do convidado"
       />
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={uploading}
-        onClick={() => fileInputRef.current?.click()}
-        className="h-9 px-2 text-xs"
-        title="Clique pra selecionar, ou cole/arraste uma imagem"
-      >
-        {uploading ? (
-          <>
-            <Loader2 className="size-3 mr-1 animate-spin" /> Enviando...
-          </>
-        ) : (
-          <>
-            <Upload className="size-3 mr-1" /> Adicionar foto
-          </>
-        )}
-      </Button>
+      <div className="inline-flex items-center gap-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          className="h-9 px-2 text-xs"
+          title="Selecionar arquivo ou arrastar uma imagem"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="size-3 mr-1 animate-spin" /> Enviando...
+            </>
+          ) : (
+            <>
+              <Upload className="size-3 mr-1" /> Adicionar foto
+            </>
+          )}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={uploading}
+          onClick={handlePasteClick}
+          className="h-9 px-2 text-xs"
+          title="Colar imagem da área de transferência"
+          aria-label="Colar imagem da área de transferência"
+        >
+          <Clipboard className="size-3" />
+        </Button>
+      </div>
       {error && (
         <span role="alert" className="text-xs text-destructive">
           {error}
