@@ -277,6 +277,12 @@ export function Phase1Critique({
           const scraped: Array<{ linkedinUrl: string; name: string | null; role: string | null; company: string | null }> =
             payload?.data?.scrapedGuests ?? []
 
+          // eslint-disable-next-line no-console
+          console.log('[Story 24.7 DEBUG] scrape response payload.data:', payload?.data)
+          // eslint-disable-next-line no-console
+          console.log('[Story 24.7 DEBUG] formData.guests at time of response:',
+            formData.guests.map((g, i) => ({ i, linkedin: g.linkedin, name: g.name, role: g.role, company: g.company })))
+
           if (failed.length > 0) {
             setScrapeFailedUrls(failed)
           } else {
@@ -287,10 +293,25 @@ export function Phase1Critique({
           // Story 24.7 — preencher campos para os que vieram com sucesso.
           for (const sg of scraped) {
             const key = findKeyByLinkedinUrl(sg.linkedinUrl, formData)
+            // eslint-disable-next-line no-console
+            console.log('[Story 24.7 DEBUG] match:', sg.linkedinUrl, '→ key:', key,
+              { sgName: sg.name, sgRole: sg.role, sgCompany: sg.company })
             if (!key) continue
-            if (sg.name) setValue(`${key}.name` as 'coHost.name', sg.name, { shouldDirty: true })
-            if (sg.role) setValue(`${key}.role` as 'coHost.role', sg.role, { shouldDirty: true })
-            if (sg.company) setValue(`${key}.company` as 'coHost.company', sg.company, { shouldDirty: true })
+            if (sg.name) {
+              // eslint-disable-next-line no-console
+              console.log('[Story 24.7 DEBUG] setValue', `${key}.name`, '=', sg.name)
+              setValue(`${key}.name` as 'coHost.name', sg.name, { shouldDirty: true, shouldTouch: true })
+            }
+            if (sg.role) {
+              // eslint-disable-next-line no-console
+              console.log('[Story 24.7 DEBUG] setValue', `${key}.role`, '=', sg.role)
+              setValue(`${key}.role` as 'coHost.role', sg.role, { shouldDirty: true, shouldTouch: true })
+            }
+            if (sg.company) {
+              // eslint-disable-next-line no-console
+              console.log('[Story 24.7 DEBUG] setValue', `${key}.company`, '=', sg.company)
+              setValue(`${key}.company` as 'coHost.company', sg.company, { shouldDirty: true, shouldTouch: true })
+            }
             setEnrichmentFor(key, 'enriched')
           }
 
