@@ -216,7 +216,9 @@ export function Phase1Critique({
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        theme: formData.theme,
+        // Empty values become undefined so the backend doesn't see "''" and trip
+        // .min(1) refinements during incremental typing. Backend tolerates both.
+        theme: formData.theme?.trim() ? formData.theme : undefined,
         guests,
         spotifyUrl: formData.spotifyUrl || '',
       }),
