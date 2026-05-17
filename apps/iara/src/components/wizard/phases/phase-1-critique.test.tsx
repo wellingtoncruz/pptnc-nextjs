@@ -612,6 +612,83 @@ describe('Phase1Critique', () => {
       expect(companyInput).not.toBeDisabled()
     })
 
+    it('unlocks and fills CO-HOST fields (camelCase path coHost.*, regression guard)', async () => {
+      // 2026-05-17 — verified bug in production: findKeyByLinkedinUrl returned
+      // 'cohost' (lowercase) but react-hook-form registers as 'coHost'. setValue
+      // silently no-op'd. Guard so the case mismatch never returns.
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/cohost-new',
+                  name: 'Co-Host Resolvido',
+                  role: 'Diretor',
+                  company: 'Coorp',
+                },
+              ],
+            },
+          }),
+        })
+
+      // Render with a video that already has a co-host (only LinkedIn URL,
+      // empty name/role/company) — so the accordion opens, the LinkedIn field
+      // is reachable, and changing it triggers the auto-save + scrape.
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{
+            ...mockVideoNoContext,
+            guests: [
+              {
+                name: '',
+                role: '',
+                company: '',
+                linkedin: 'https://www.linkedin.com/in/cohost-existing',
+              },
+            ],
+          }}
+          critique={null}
+        />
+      )
+
+      // Fill a theme so the save fires, then change the co-host LinkedIn URL
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      // First LinkedIn input belongs to co-host (it's the first PersonForm
+      // in the JSX, inside the open accordion).
+      const linkedinInputs = screen.getAllByLabelText(/linkedin/i) as HTMLInputElement[]
+      fireEvent.change(linkedinInputs[0], {
+        target: { value: 'https://www.linkedin.com/in/cohost-new' },
+      })
+
+      // The co-host Name input is the first Nome input on the page.
+      // After the scrape resolves, RHF must apply setValue on `coHost.name`
+      // (camelCase). If the key were lowercase, this assertion would fail.
+      await waitFor(() => {
+        const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+        expect(nameInput.value).toBe('Co-Host Resolvido')
+      }, { timeout: 5000 })
+
+      const roleInput = screen.getAllByLabelText(/cargo/i)[0] as HTMLInputElement
+      const companyInput = screen.getAllByLabelText(/empresa/i)[0] as HTMLInputElement
+      expect(roleInput.value).toBe('Diretor')
+      expect(companyInput.value).toBe('Coorp')
+    })
+
     it('opens fields empty for manual entry when scrape returns failedUrls', async () => {
       const wizard = createMockWizard()
 
