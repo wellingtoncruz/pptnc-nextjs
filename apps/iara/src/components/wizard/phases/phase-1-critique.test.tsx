@@ -749,6 +749,61 @@ describe('Phase1Critique', () => {
       expect(helperTexts.length).toBe(1)
     })
 
+    it('renders the manual avatar uploader button when scrape returned no photo', async () => {
+      // Story 24.7 polish — when scrape comes back without photoUrl, producer
+      // must have an explicit fallback to attach a photo (file/paste/drag).
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/sem-foto',
+                  name: 'Pessoa Sem Foto',
+                  role: 'Eng',
+                  company: 'X',
+                  photoUrl: null, // no avatar returned
+                },
+              ],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/sem-foto' },
+      })
+
+      // After scrape: name filled but no avatar — uploader button should be visible
+      await waitFor(() => {
+        const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+        expect(nameInput.value).toBe('Pessoa Sem Foto')
+      }, { timeout: 5000 })
+
+      expect(screen.getByRole('button', { name: /adicionar foto/i })).toBeInTheDocument()
+    })
+
     it('opens fields empty for manual entry when scrape returns failedUrls', async () => {
       const wizard = createMockWizard()
 

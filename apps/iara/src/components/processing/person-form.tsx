@@ -1,7 +1,9 @@
 'use client'
 
 import type { UseFormReturn } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 
+import { GuestAvatarUploader } from '@/components/processing/guest-avatar-uploader'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -39,6 +41,12 @@ interface PersonFormProps {
    * (Story 24.7 polish)
    */
   missingFields?: ReadonlySet<'name' | 'role' | 'company'>
+  /**
+   * Fires when the producer uploads an avatar manually (file picker, drag-drop
+   * or clipboard paste). Receives the proxy URL — caller persists it in the
+   * same `enrichmentAvatars` map used by the scrape flow. (Story 24.7 polish)
+   */
+  onAvatarUploaded?: (proxyUrl: string) => void
 }
 
 /**
@@ -57,8 +65,12 @@ export function PersonForm({
   nonLinkedinFieldsLocked = false,
   avatarUrl,
   missingFields,
+  onAvatarUploaded,
 }: PersonFormProps) {
-  const { register, formState: { errors } } = form
+  const { register, formState: { errors }, control } = form
+  // Live LinkedIn value so the uploader only appears when there's a URL to
+  // associate the manual avatar with on the backend.
+  const linkedinValue = useWatch({ control, name: `${prefix}.linkedin` }) as string | undefined
 
   // Name/role/company stay locked until scrape fills them OR producer flips
   // the locked state from the parent (Story 24.7). LinkedIn is always editable
@@ -94,7 +106,7 @@ export function PersonForm({
     <div className="space-y-3 rounded-lg border border-border p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {avatarUrl && (
+          {avatarUrl ? (
             <img
               src={avatarUrl}
               alt={`Foto de ${label}`}
@@ -102,6 +114,15 @@ export function PersonForm({
               height={36}
               className="size-9 rounded-full object-cover border border-border bg-muted"
             />
+          ) : (
+            // No avatar yet — show manual uploader when caller wired the
+            // callback AND we have a LinkedIn URL to associate the upload with.
+            onAvatarUploaded && linkedinValue?.trim() && (
+              <GuestAvatarUploader
+                linkedinUrl={linkedinValue.trim()}
+                onUploaded={onAvatarUploaded}
+              />
+            )
           )}
           <h4 className="font-medium text-sm">{label}</h4>
         </div>

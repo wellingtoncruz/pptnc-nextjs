@@ -516,6 +516,9 @@ export function Phase1Critique({
                       }
                       avatarUrl={enrichmentAvatars.coHost}
                       missingFields={enrichmentMissing.coHost}
+                      onAvatarUploaded={(url) =>
+                        setEnrichmentAvatars((prev) => ({ ...prev, coHost: url }))
+                      }
                     />
                   </div>
                 </AccordionContent>
@@ -564,6 +567,9 @@ export function Phase1Critique({
                       nonLinkedinFieldsLocked={status === 'awaiting' || status === 'scraping'}
                       avatarUrl={enrichmentAvatars[key]}
                       missingFields={enrichmentMissing[key]}
+                      onAvatarUploaded={(url) =>
+                        setEnrichmentAvatars((prev) => ({ ...prev, [key]: url }))
+                      }
                     />
                   )
                 })}
