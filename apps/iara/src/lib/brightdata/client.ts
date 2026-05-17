@@ -303,8 +303,20 @@ function parseProfileData(
     return null
   }
 
+  // Story 24.7 — Derive a single normalized `position` so Phase 1 can auto-fill
+  // the Cargo field. BrightData surfaces the title in several places depending
+  // on the profile shape: top-level `position`, `current_company.title` /
+  // `.position`, or `experience[0].title`. First non-empty wins.
+  const derivedPosition =
+    parsed.data.position?.trim() ||
+    parsed.data.current_company?.title?.trim() ||
+    parsed.data.current_company?.position?.trim() ||
+    parsed.data.experience?.[0]?.title?.trim() ||
+    parsed.data.experience?.[0]?.position?.trim() ||
+    undefined
+
   // Attach the full raw response for storage (not just the parsed fields)
-  const result = { ...parsed.data, _raw: rawItem }
+  const result = { ...parsed.data, position: derivedPosition, _raw: rawItem }
 
   log('INFO', 'LinkedIn profile scraped successfully', {
     linkedinUrl,

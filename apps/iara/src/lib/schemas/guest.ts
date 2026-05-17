@@ -16,8 +16,35 @@ export const LinkedInGuestSchema = z.object({
   name: z.string().optional(),
   url: z.string().url().optional(),
   avatar: z.string().url().optional(),
+  /**
+   * `position` is the title we use to populate "Cargo" in Phase 1. The
+   * BrightData payload may surface it as a flat string OR nested inside
+   * `current_company.title` / `experience[0].title` — `parseProfileData`
+   * derives a single normalized value before returning.
+   */
   position: z.string().optional(),
   current_company_name: z.string().optional(),
+  /** Optional nested object some BrightData payloads include alongside current_company_name. */
+  current_company: z
+    .object({
+      title: z.string().optional(),
+      position: z.string().optional(),
+      name: z.string().optional(),
+    })
+    .passthrough()
+    .optional(),
+  /** Optional experience array — first entry is the current/most recent role. */
+  experience: z
+    .array(
+      z
+        .object({
+          title: z.string().optional(),
+          position: z.string().optional(),
+          company: z.string().optional(),
+        })
+        .passthrough()
+    )
+    .optional(),
   about: z.string().optional(),
   city: z.string().optional(),
   country_code: z.string().optional(),
