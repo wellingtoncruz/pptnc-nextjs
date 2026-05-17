@@ -259,35 +259,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const guests = video.guests ?? []
-    const guestsWithLinkedin = linkedinUrls
-      ? guests.filter((g) => g.linkedin && linkedinUrls.includes(g.linkedin))
-      : guests.filter((g) => g.linkedin)
 
-    if (guestsWithLinkedin.length === 0) {
-      log('INFO', 'No guests with LinkedIn URLs, skipping', { videoId })
+    // Story 24.7 — Client may send URLs BEFORE the guest is complete on
+    // video.guests (during the scrape-driven unlock flow the producer only
+    // typed the LinkedIn URL). Trust `linkedinUrls` as the source of truth
+    // when it is provided; fall back to video.guests-derived URLs otherwise.
+    const urlsToScrape: string[] =
+      linkedinUrls && linkedinUrls.length > 0
+        ? linkedinUrls
+        : (guests.map((g) => g.linkedin).filter(Boolean) as string[])
+
+    if (urlsToScrape.length === 0) {
+      log('INFO', 'No LinkedIn URLs to scrape, skipping', { videoId })
       return NextResponse.json({
         data: { videoId, scrapedCount: 0, errorCount: 0, skippedCount: 0 },
       })
     }
 
+    // Index map so we can patch video.guests[i].photo after a successful scrape.
+    // Guests that aren't yet on video.guests get index -1 — their photo update
+    // is no-op (the subcollection still gets upserted; client can later fetch).
+    const guestIndexByUrl = new Map<string, number>()
+    guests.forEach((g, i) => {
+      if (g.linkedin) guestIndexByUrl.set(g.linkedin, i)
+    })
+
     // Dedup ledger (Story 24.3): URLs already scraped for THIS video are skipped.
-    // Rescrape between videos is allowed — the ledger is per-video.
     const alreadyScrapedUrls = new Set(
       (video.guestsScrapedAt ?? []).map((entry) => entry.url)
     )
 
-    // Index map ensures outcomes apply back to the right position after parallel allSettled.
     const tasks: Array<{ index: number; linkedinUrl: string }> = []
     const skippedUrls: string[] = []
-    guests.forEach((guest, index) => {
-      if (!guest.linkedin) return
-      if (!guestsWithLinkedin.some((g) => g.linkedin === guest.linkedin)) return
-      if (alreadyScrapedUrls.has(guest.linkedin)) {
-        skippedUrls.push(guest.linkedin)
-        return
+    for (const url of urlsToScrape) {
+      if (alreadyScrapedUrls.has(url)) {
+        skippedUrls.push(url)
+        continue
       }
-      tasks.push({ index, linkedinUrl: guest.linkedin })
-    })
+      tasks.push({ index: guestIndexByUrl.get(url) ?? -1, linkedinUrl: url })
+    }
 
     if (skippedUrls.length > 0) {
       log('INFO', 'Guest scrape dedup hit', { videoId, skippedCount: skippedUrls.length })
@@ -321,7 +331,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         if (outcome.status === 'success') {
           scrapedCount++
           newLedgerEntries.push({ url: outcome.linkedinUrl, scrapedAt: Timestamp.now() })
-          if (outcome.proxyUrl) {
+          // Only patch video.guests[i].photo when the URL is already on the
+          // video — Story 24.7 flow scrapes URLs before they're persisted.
+          if (outcome.proxyUrl && outcome.index >= 0) {
             updatedGuests[outcome.index] = {
               ...updatedGuests[outcome.index],
               photo: outcome.proxyUrl,
