@@ -190,6 +190,27 @@ export function Phase1Critique({
     setEnrichmentStatus((prev) => (prev[key] === status ? prev : { ...prev, [key]: status }))
   }, [])
 
+  /** Avatar URL per person key (Story 24.7 polish): set after a successful scrape. */
+  const [enrichmentAvatars, setEnrichmentAvatars] = useState<Record<string, string>>({})
+
+  /** Names of fields that came back empty after scrape and need manual input (Story 24.7 polish). */
+  type MissingField = 'name' | 'role' | 'company'
+  const [enrichmentMissing, setEnrichmentMissing] =
+    useState<Record<string, ReadonlySet<MissingField>>>({})
+
+  const markMissingFor = useCallback((key: string, fields: ReadonlySet<MissingField>) => {
+    setEnrichmentMissing((prev) => ({ ...prev, [key]: fields }))
+  }, [])
+
+  const clearMissingFor = useCallback((key: string) => {
+    setEnrichmentMissing((prev) => {
+      if (!prev[key]) return prev
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }, [])
+
   /** Returns the form key (`coHost` or `guests.N`) for a given LinkedIn URL.
    *  CASE MATTERS — must match the field path registered by react-hook-form
    *  (PersonForm uses `prefix="coHost"`, NOT 'cohost'). */
@@ -270,16 +291,24 @@ export function Phase1Critique({
             payload?.error?.message ||
               'Serviço de enriquecimento indisponível. Preencha manualmente.'
           )
-          // Story 24.7 — todos os newUrls vão pra 'manual' (campos abrem vazios).
+          // Story 24.7 — todos os newUrls vão pra 'manual' (campos abrem vazios + highlight).
           for (const url of newUrls) {
             const key = findKeyByLinkedinUrl(url, formData)
-            if (key) setEnrichmentFor(key, 'manual')
+            if (key) {
+              setEnrichmentFor(key, 'manual')
+              markMissingFor(key, new Set<MissingField>(['name', 'role', 'company']))
+            }
           }
         } else if (scrapeResponse.ok) {
           const payload = await scrapeResponse.json().catch(() => ({}))
           const failed: string[] = payload?.data?.failedUrls ?? []
-          const scraped: Array<{ linkedinUrl: string; name: string | null; role: string | null; company: string | null }> =
-            payload?.data?.scrapedGuests ?? []
+          const scraped: Array<{
+            linkedinUrl: string
+            name: string | null
+            role: string | null
+            company: string | null
+            photoUrl?: string | null
+          }> = payload?.data?.scrapedGuests ?? []
 
           if (failed.length > 0) {
             setScrapeFailedUrls(failed)
@@ -296,20 +325,40 @@ export function Phase1Critique({
             if (sg.role) setValue(`${key}.role` as 'coHost.role', sg.role, { shouldDirty: true, shouldTouch: true })
             if (sg.company) setValue(`${key}.company` as 'coHost.company', sg.company, { shouldDirty: true, shouldTouch: true })
             setEnrichmentFor(key, 'enriched')
+
+            // Avatar inline (Story 24.7 polish).
+            if (sg.photoUrl) {
+              setEnrichmentAvatars((prev) => ({ ...prev, [key]: sg.photoUrl as string }))
+            }
+
+            // Highlight the fields BrightData didn't provide so the producer
+            // knows what still needs manual input.
+            const missing = new Set<MissingField>()
+            if (!sg.name?.trim()) missing.add('name')
+            if (!sg.role?.trim()) missing.add('role')
+            if (!sg.company?.trim()) missing.add('company')
+            if (missing.size > 0) markMissingFor(key, missing)
+            else clearMissingFor(key)
           }
 
-          // Story 24.7 — URLs em failedUrls abrem em branco pra manual.
+          // For URLs that operationally failed (in failed[]), open all 3 manual.
           for (const url of failed) {
             const key = findKeyByLinkedinUrl(url, formData)
-            if (key) setEnrichmentFor(key, 'manual')
+            if (key) {
+              setEnrichmentFor(key, 'manual')
+              markMissingFor(key, new Set<MissingField>(['name', 'role', 'company']))
+            }
           }
         }
       } catch {
         // Scraping failure doesn't block the producer — they continue with manual data
-        // Story 24.7 — em exceção, abrir campos para preenchimento manual.
+        // Story 24.7 — em exceção, abrir campos para preenchimento manual + highlight.
         for (const url of newUrls) {
           const key = findKeyByLinkedinUrl(url, formData)
-          if (key) setEnrichmentFor(key, 'manual')
+          if (key) {
+            setEnrichmentFor(key, 'manual')
+            markMissingFor(key, new Set<MissingField>(['name', 'role', 'company']))
+          }
         }
       } finally {
         setIsScraping(false)
@@ -465,6 +514,8 @@ export function Phase1Critique({
                         enrichmentStatus.coHost === 'awaiting' ||
                         enrichmentStatus.coHost === 'scraping'
                       }
+                      avatarUrl={enrichmentAvatars.coHost}
+                      missingFields={enrichmentMissing.coHost}
                     />
                   </div>
                 </AccordionContent>
@@ -511,6 +562,8 @@ export function Phase1Critique({
                       showRemove={guestFields.length > 1}
                       onRemove={() => handleRemoveGuest(index)}
                       nonLinkedinFieldsLocked={status === 'awaiting' || status === 'scraping'}
+                      avatarUrl={enrichmentAvatars[key]}
+                      missingFields={enrichmentMissing[key]}
                     />
                   )
                 })}

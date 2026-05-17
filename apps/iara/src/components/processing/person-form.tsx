@@ -27,6 +27,18 @@ interface PersonFormProps {
    * legacy fully-editable behavior. (Story 24.7)
    */
   nonLinkedinFieldsLocked?: boolean
+  /**
+   * Avatar URL displayed discreetly beside the header (Story 24.7 polish).
+   * When set, renders a 36x36 rounded thumbnail. Typically points to the
+   * `/api/guests/[key]/avatar` proxy populated after scrape.
+   */
+  avatarUrl?: string | null
+  /**
+   * Names of fields that came back empty from the scrape and need manual
+   * entry — name/role/company. Renders amber border + helper text on each.
+   * (Story 24.7 polish)
+   */
+  missingFields?: ReadonlySet<'name' | 'role' | 'company'>
 }
 
 /**
@@ -43,6 +55,8 @@ export function PersonForm({
   onRemove,
   disabled = false,
   nonLinkedinFieldsLocked = false,
+  avatarUrl,
+  missingFields,
 }: PersonFormProps) {
   const { register, formState: { errors } } = form
 
@@ -51,6 +65,14 @@ export function PersonForm({
   // unless `disabled` (global) is set, since it's the input that triggers scrape.
   const nonLinkedinDisabled = disabled || nonLinkedinFieldsLocked
   const linkedinDisabled = disabled
+
+  // Highlight (amber) is suppressed while fields are locked to avoid drawing
+  // attention before scrape resolves — only relevant after enrichment lands.
+  const isMissing = (field: 'name' | 'role' | 'company'): boolean =>
+    !nonLinkedinFieldsLocked && Boolean(missingFields?.has(field))
+
+  const fieldHighlightClass = (field: 'name' | 'role' | 'company'): string =>
+    isMissing(field) ? 'border-amber-500/60 focus-visible:ring-amber-500/40' : ''
 
   // Helper to get nested error
   const getError = (field: string): string | undefined => {
@@ -71,7 +93,18 @@ export function PersonForm({
   return (
     <div className="space-y-3 rounded-lg border border-border p-4">
       <div className="flex items-center justify-between">
-        <h4 className="font-medium text-sm">{label}</h4>
+        <div className="flex items-center gap-3">
+          {avatarUrl && (
+            <img
+              src={avatarUrl}
+              alt={`Foto de ${label}`}
+              width={36}
+              height={36}
+              className="size-9 rounded-full object-cover border border-border bg-muted"
+            />
+          )}
+          <h4 className="font-medium text-sm">{label}</h4>
+        </div>
         {showRemove && onRemove && (
           <button
             type="button"
@@ -92,11 +125,15 @@ export function PersonForm({
           <Input
             id={`${prefix}.name`}
             placeholder="Nome completo"
-            disabled={nonLinkedinDisabled}
             {...register(`${prefix}.name`)}
+            disabled={nonLinkedinDisabled}
+            className={fieldHighlightClass('name')}
           />
           {nameError && (
             <p className="text-xs text-destructive">{nameError}</p>
+          )}
+          {isMissing('name') && !nameError && (
+            <p className="text-xs text-amber-500">Preencha manualmente</p>
           )}
         </div>
 
@@ -107,11 +144,15 @@ export function PersonForm({
           <Input
             id={`${prefix}.role`}
             placeholder="Ex: CEO, CTO, Fundador"
-            disabled={nonLinkedinDisabled}
             {...register(`${prefix}.role`)}
+            disabled={nonLinkedinDisabled}
+            className={fieldHighlightClass('role')}
           />
           {roleError && (
             <p className="text-xs text-destructive">{roleError}</p>
+          )}
+          {isMissing('role') && !roleError && (
+            <p className="text-xs text-amber-500">Preencha manualmente</p>
           )}
         </div>
 
@@ -122,11 +163,15 @@ export function PersonForm({
           <Input
             id={`${prefix}.company`}
             placeholder="Nome da empresa"
-            disabled={nonLinkedinDisabled}
             {...register(`${prefix}.company`)}
+            disabled={nonLinkedinDisabled}
+            className={fieldHighlightClass('company')}
           />
           {companyError && (
             <p className="text-xs text-destructive">{companyError}</p>
+          )}
+          {isMissing('company') && !companyError && (
+            <p className="text-xs text-amber-500">Preencha manualmente</p>
           )}
         </div>
 

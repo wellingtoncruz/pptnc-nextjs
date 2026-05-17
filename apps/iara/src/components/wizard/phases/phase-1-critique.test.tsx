@@ -689,6 +689,66 @@ describe('Phase1Critique', () => {
       expect(companyInput.value).toBe('Coorp')
     })
 
+    it('renders avatar inline and highlights missing fields when scrape is partial', async () => {
+      // Story 24.7 polish — when BrightData omits some fields (e.g., role)
+      // and returns a photoUrl, the UI should:
+      //   1) render the avatar thumbnail beside the person header
+      //   2) highlight the missing fields with amber + "Preencha manualmente"
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/parcial',
+                  name: 'Pessoa Parcial',
+                  role: null, // missing
+                  company: 'AcmeCo',
+                  photoUrl: '/api/guests/12345678/avatar',
+                },
+              ],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/parcial' },
+      })
+
+      // Avatar appears after scrape resolves
+      await waitFor(() => {
+        const avatar = screen.getByAltText(/Foto de Convidado 1/i) as HTMLImageElement
+        expect(avatar).toBeInTheDocument()
+        expect(avatar.src).toContain('/api/guests/12345678/avatar')
+      }, { timeout: 5000 })
+
+      // Helper text "Preencha manualmente" appears only for the missing field (role)
+      const helperTexts = screen.getAllByText(/Preencha manualmente/i)
+      expect(helperTexts.length).toBe(1)
+    })
+
     it('opens fields empty for manual entry when scrape returns failedUrls', async () => {
       const wizard = createMockWizard()
 

@@ -317,12 +317,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const updatedGuests = guests.map((g) => ({ ...g }))
     let guestsUpdated = false
     let configErrorCode: 'MISSING_API_KEY' | 'UNAUTHORIZED' | 'FORBIDDEN' | null = null
-    // Story 24.7 — Echo enrichment so Phase 1 can auto-fill name/role/company.
+    // Story 24.7 — Echo enrichment so Phase 1 can auto-fill name/role/company
+    // and display the avatar inline. `photoUrl` points to the avatar proxy
+    // route (Story 24.2); `null` means BrightData didn't return an avatar.
     const scrapedGuests: Array<{
       linkedinUrl: string
       name: string | null
       role: string | null
       company: string | null
+      photoUrl: string | null
     }> = []
 
     for (const result of settled) {
@@ -346,6 +349,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               name: outcome.enrichment.name,
               role: outcome.enrichment.role,
               company: outcome.enrichment.company,
+              photoUrl: outcome.proxyUrl ?? null,
             })
           }
         } else {
