@@ -19,8 +19,14 @@ interface PersonFormProps {
   showRemove?: boolean
   /** Callback when remove is clicked */
   onRemove?: () => void
-  /** Whether fields are disabled */
+  /** Whether ALL fields are disabled (overrides nonLinkedinFieldsLocked). */
   disabled?: boolean
+  /**
+   * When true, only the LinkedIn field is editable; name/role/company are
+   * locked until scraping fills them. The default `false` preserves the
+   * legacy fully-editable behavior. (Story 24.7)
+   */
+  nonLinkedinFieldsLocked?: boolean
 }
 
 /**
@@ -36,8 +42,15 @@ export function PersonForm({
   showRemove = false,
   onRemove,
   disabled = false,
+  nonLinkedinFieldsLocked = false,
 }: PersonFormProps) {
   const { register, formState: { errors } } = form
+
+  // Name/role/company stay locked until scrape fills them OR producer flips
+  // the locked state from the parent (Story 24.7). LinkedIn is always editable
+  // unless `disabled` (global) is set, since it's the input that triggers scrape.
+  const nonLinkedinDisabled = disabled || nonLinkedinFieldsLocked
+  const linkedinDisabled = disabled
 
   // Helper to get nested error
   const getError = (field: string): string | undefined => {
@@ -79,7 +92,7 @@ export function PersonForm({
           <Input
             id={`${prefix}.name`}
             placeholder="Nome completo"
-            disabled={disabled}
+            disabled={nonLinkedinDisabled}
             {...register(`${prefix}.name`)}
           />
           {nameError && (
@@ -94,7 +107,7 @@ export function PersonForm({
           <Input
             id={`${prefix}.role`}
             placeholder="Ex: CEO, CTO, Fundador"
-            disabled={disabled}
+            disabled={nonLinkedinDisabled}
             {...register(`${prefix}.role`)}
           />
           {roleError && (
@@ -109,7 +122,7 @@ export function PersonForm({
           <Input
             id={`${prefix}.company`}
             placeholder="Nome da empresa"
-            disabled={disabled}
+            disabled={nonLinkedinDisabled}
             {...register(`${prefix}.company`)}
           />
           {companyError && (
@@ -125,7 +138,7 @@ export function PersonForm({
             id={`${prefix}.linkedin`}
             placeholder="https://linkedin.com/in/..."
             type="url"
-            disabled={disabled}
+            disabled={linkedinDisabled}
             {...register(`${prefix}.linkedin`)}
           />
           {linkedinError && (

@@ -513,6 +513,156 @@ describe('Phase1Critique', () => {
       expect(fetchCallOrders[0]).toBeLessThan(advanceCallOrders[0])
     })
 
+  })
+
+  describe('Scrape-driven field unlock (Story 24.7)', () => {
+    it('locks name/role/company for a new guest, but keeps LinkedIn editable', () => {
+      const wizard = createMockWizard()
+
+      // Video without any existing guest data
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      // Guest 1 is rendered by default (form initializes with 1 empty guest)
+      const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+      const roleInput = screen.getAllByLabelText(/cargo/i)[0] as HTMLInputElement
+      const companyInput = screen.getAllByLabelText(/empresa/i)[0] as HTMLInputElement
+      const linkedinInput = screen.getAllByLabelText(/linkedin/i)[0] as HTMLInputElement
+
+      expect(nameInput).toBeDisabled()
+      expect(roleInput).toBeDisabled()
+      expect(companyInput).toBeDisabled()
+      expect(linkedinInput).not.toBeDisabled()
+    })
+
+    it('treats existing guest with name as enriched (fields enabled on mount)', () => {
+      const wizard = createMockWizard()
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
+      )
+
+      const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+      expect(nameInput).not.toBeDisabled()
+      expect(nameInput.value).toBe('João Silva')
+    })
+
+    it('unlocks and fills name/role/company after successful scrape (auto-fill from response)', async () => {
+      const wizard = createMockWizard()
+
+      // First fetch: PUT context (200), second fetch: POST scrape (200 with scrapedGuests)
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/foo',
+                  name: 'Foo Bar',
+                  role: 'Founder at AcmeCo',
+                  company: 'AcmeCo',
+                },
+              ],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      // Fill required fields plus the LinkedIn URL to trigger scrape
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/foo' },
+      })
+
+      // Wait for auto-save + scrape response
+      await waitFor(() => {
+        const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+        expect(nameInput.value).toBe('Foo Bar')
+        expect(nameInput).not.toBeDisabled()
+      }, { timeout: 5000 })
+
+      const roleInput = screen.getAllByLabelText(/cargo/i)[0] as HTMLInputElement
+      const companyInput = screen.getAllByLabelText(/empresa/i)[0] as HTMLInputElement
+      expect(roleInput.value).toBe('Founder at AcmeCo')
+      expect(companyInput.value).toBe('AcmeCo')
+      expect(roleInput).not.toBeDisabled()
+      expect(companyInput).not.toBeDisabled()
+    })
+
+    it('opens fields empty for manual entry when scrape returns failedUrls', async () => {
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 0,
+              errorCount: 1,
+              failedUrls: ['https://www.linkedin.com/in/notfound'],
+              scrapedGuests: [],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/notfound' },
+      })
+
+      // Wait for the failed-URLs banner — it's only rendered once the scrape promise resolves.
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Não foi possível enriquecer 1 URL/i)
+        ).toBeInTheDocument()
+      }, { timeout: 5000 })
+
+      // Manual fields are now editable but empty
+      const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+      expect(nameInput).not.toBeDisabled()
+      expect(nameInput.value).toBe('')
+    })
+  })
+
+  describe('Advancement criteria and button (continued)', () => {
     it('does not advance when the flushed save fails', async () => {
       // Story 24.1 AC5: backend error on PUT context must block transition.
       const wizard = createMockWizard()

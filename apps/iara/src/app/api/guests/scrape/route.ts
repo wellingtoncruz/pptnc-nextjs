@@ -133,6 +133,16 @@ interface ScrapeOutcome {
   linkedinUrl: string
   status: 'success' | 'error'
   proxyUrl?: string
+  /**
+   * Scrape result echoed back so the Phase 1 UI can auto-fill the disabled
+   * name/role/company fields (Story 24.7). `null` means BrightData responded
+   * without a value for that field; the UI unlocks the field empty.
+   */
+  enrichment?: {
+    name: string | null
+    role: string | null
+    company: string | null
+  }
 }
 
 /**
@@ -185,6 +195,11 @@ async function scrapeSingleGuest(
     linkedinUrl: guestLinkedinUrl,
     status: 'success',
     proxyUrl: avatar?.proxyUrl,
+    enrichment: {
+      name: profile.name ?? null,
+      role: profile.position ?? null,
+      company: profile.current_company_name ?? null,
+    },
   }
 }
 
@@ -292,6 +307,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const updatedGuests = guests.map((g) => ({ ...g }))
     let guestsUpdated = false
     let configErrorCode: 'MISSING_API_KEY' | 'UNAUTHORIZED' | 'FORBIDDEN' | null = null
+    // Story 24.7 — Echo enrichment so Phase 1 can auto-fill name/role/company.
+    const scrapedGuests: Array<{
+      linkedinUrl: string
+      name: string | null
+      role: string | null
+      company: string | null
+    }> = []
 
     for (const result of settled) {
       if (result.status === 'fulfilled') {
@@ -305,6 +327,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               photo: outcome.proxyUrl,
             }
             guestsUpdated = true
+          }
+          if (outcome.enrichment) {
+            scrapedGuests.push({
+              linkedinUrl: outcome.linkedinUrl,
+              name: outcome.enrichment.name,
+              role: outcome.enrichment.role,
+              company: outcome.enrichment.company,
+            })
           }
         } else {
           errorCount++
@@ -372,6 +402,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         skippedCount: skippedUrls.length,
         failedUrls,
         skippedUrls,
+        scrapedGuests,
       },
     })
   } catch (error) {
