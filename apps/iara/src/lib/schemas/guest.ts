@@ -24,27 +24,35 @@ export const LinkedInGuestSchema = z.object({
    */
   position: z.string().optional(),
   current_company_name: z.string().optional(),
-  /** Optional nested object some BrightData payloads include alongside current_company_name. */
+  /**
+   * Optional nested object alongside current_company_name. BrightData may omit
+   * the field entirely OR send `null` (e.g., when the profile has no current
+   * company) — `.nullish()` accepts both undefined and null without bouncing.
+   */
   current_company: z
     .object({
-      title: z.string().optional(),
-      position: z.string().optional(),
-      name: z.string().optional(),
+      title: z.string().nullish(),
+      position: z.string().nullish(),
+      name: z.string().nullish(),
     })
     .passthrough()
-    .optional(),
-  /** Optional experience array — first entry is the current/most recent role. */
+    .nullish(),
+  /**
+   * Optional experience array. BrightData sends `experience: null` for some
+   * profiles (verified 2026-05-17 with luisrudi). `.nullish()` lets the parse
+   * pass through; downstream derivation already uses optional chaining.
+   */
   experience: z
     .array(
       z
         .object({
-          title: z.string().optional(),
-          position: z.string().optional(),
-          company: z.string().optional(),
+          title: z.string().nullish(),
+          position: z.string().nullish(),
+          company: z.string().nullish(),
         })
         .passthrough()
     )
-    .optional(),
+    .nullish(),
   about: z.string().optional(),
   city: z.string().optional(),
   country_code: z.string().optional(),

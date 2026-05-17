@@ -306,13 +306,17 @@ function parseProfileData(
   // Story 24.7 — Derive a single normalized `position` so Phase 1 can auto-fill
   // the Cargo field. BrightData surfaces the title in several places depending
   // on the profile shape: top-level `position`, `current_company.title` /
-  // `.position`, or `experience[0].title`. First non-empty wins.
+  // `.position`, or `experience[0].title`. First non-empty wins. Each access
+  // tolerates null (current_company / experience may be null per BrightData)
+  // before reading `.title` etc., so the chain is `??`-safe.
+  const cc = parsed.data.current_company ?? undefined
+  const exp0 = parsed.data.experience?.[0] ?? undefined
   const derivedPosition =
     parsed.data.position?.trim() ||
-    parsed.data.current_company?.title?.trim() ||
-    parsed.data.current_company?.position?.trim() ||
-    parsed.data.experience?.[0]?.title?.trim() ||
-    parsed.data.experience?.[0]?.position?.trim() ||
+    cc?.title?.trim() ||
+    cc?.position?.trim() ||
+    exp0?.title?.trim() ||
+    exp0?.position?.trim() ||
     undefined
 
   // Attach the full raw response for storage (not just the parsed fields)
