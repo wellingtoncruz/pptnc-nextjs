@@ -104,6 +104,43 @@ Please review these issues.`
       const result = parseJSONFromLLM(text)
       expect(result).toEqual({ name: 'test' })
     })
+
+    it('parses JSON wrapper even when the body contains nested code blocks (hotfix newsletter-parse-fence)', () => {
+      // Regression for the 2026-05-18 incident: newsletter phase 4 generated
+      // a JSON whose `report` string contained ``` fenced code blocks. The
+      // lazy regex match stopped at the first nested ``` and produced
+      // invalid JSON. Stripping the outer fence handles this transparently.
+      const innerReport = [
+        '# Cabeçalho',
+        '',
+        'Conteúdo qualquer.',
+        '',
+        '```typescript',
+        'const x = 1',
+        '```',
+        '',
+        'Mais conteúdo.',
+        '',
+        '```bash',
+        'pnpm install',
+        '```',
+      ].join('\\n')
+
+      const text = '```json\n{"report": "' + innerReport + '"}\n```'
+      const result = parseJSONFromLLM<{ report: string }>(text)
+      expect(result).not.toBeNull()
+      expect(result?.report).toContain('# Cabeçalho')
+      expect(result?.report).toContain('pnpm install')
+    })
+
+    it('handles fenced JSON with hashtags, emojis and escaped newlines like the 2026-05-18 newsletter payload', () => {
+      // Shape mirroring the real production payload.
+      const payload =
+        '```json\n{\n  "report": "# 🤖 IA na Operação de TI\\n\\nTexto.",\n  "hashtags": "#InteligênciaArtificial #PPTNãoCompila"\n}\n```'
+      const result = parseJSONFromLLM<{ report: string; hashtags: string }>(payload)
+      expect(result).not.toBeNull()
+      expect(result?.hashtags).toContain('#PPTNãoCompila')
+    })
   })
 
   describe('JSON extraction from text', () => {

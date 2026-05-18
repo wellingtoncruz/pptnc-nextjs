@@ -350,10 +350,17 @@ async function _callGenAIInner<T>(
         const dumpPath = path.join(os.tmpdir(), `iara-parse-error-attempt${attempt}-${Date.now()}.txt`)
         await fs.writeFile(dumpPath, text, 'utf-8')
 
+        // Cloud Logging has a 256 KB structured-payload cap. LLM responses
+        // for newsletters / social posts can hit ~12 KB — well within budget.
+        // Past responses needed /tmp dumps (ephemeral on Cloud Run, gone after
+        // a container restart). Embedding the full text avoids that loss.
+        const FULL_PAYLOAD_LIMIT = 200_000
         log('WARN', `PARSE_ERROR on attempt ${attempt}/${MAX_PARSE_RETRIES}`, {
           rawResponseLength: text.length,
           rawResponsePreview: text.substring(0, 300),
           rawResponseEnd: text.length > 300 ? text.substring(text.length - 200) : undefined,
+          rawResponseFull: text.length <= FULL_PAYLOAD_LIMIT ? text : undefined,
+          rawResponseTruncated: text.length > FULL_PAYLOAD_LIMIT,
           dumpPath,
         })
 
