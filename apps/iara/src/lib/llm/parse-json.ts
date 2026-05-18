@@ -38,7 +38,28 @@ export function parseJSONFromLLM<T>(text: string): T | null {
     }
   }
 
-  // Strategy 3: Extract from markdown code block
+  // Strategy 3a: STRIP the outer markdown fence rather than matching its
+  // contents. Lazy match (`[\s\S]*?`) breaks the moment the JSON body itself
+  // contains a fenced code block (LLMs love to nest one inside `report` for
+  // newsletters/social posts). Stripping the very first and very last fence
+  // sidesteps the issue and survives any number of internal backticks.
+  const trimmed = text.trim()
+  if (trimmed.startsWith('```')) {
+    const stripped = trimmed
+      .replace(/^```(?:json)?\s*\n?/, '')
+      .replace(/\n?\s*```\s*$/, '')
+      .trim()
+    if (stripped !== trimmed) {
+      try {
+        return JSON.parse(stripped) as T
+      } catch {
+        // Continue to next strategy
+      }
+    }
+  }
+
+  // Strategy 3b: Legacy fence-matched extraction (kept for backward compat
+  // with responses that have content before/after the fence).
   const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
   if (codeBlockMatch) {
     try {
