@@ -26,11 +26,14 @@ import { log } from '@/lib/logger'
  * Either episode context (theme + guests) or cut/reel context (parentEpisodeId).
  */
 const ContextUpdateSchema = z.object({
-  theme: z.string().min(1).optional(),
+  // Accept '' as "not filled yet" — auto-save fires while the producer is still
+  // typing; rejecting empty strings would surface a 400 every keystroke. The
+  // empty value is normalized to undefined below before persisting.
+  theme: z.string().min(1, 'Tema é obrigatório').optional().or(z.literal('')),
   guests: z.array(GuestSchema).optional(),
-  parentEpisodeId: z.string().min(1).optional(),
+  parentEpisodeId: z.string().min(1).optional().or(z.literal('')),
   spotifyUrl: z.string()
-    .url()
+    .url('URL inválida')
     .refine(
       (url) => url.startsWith('https://open.spotify.com/') || url.startsWith('https://spti.fi/'),
       'URL deve ser do Spotify (open.spotify.com ou spti.fi)'
@@ -129,8 +132,14 @@ export async function PUT(
       )
     }
 
-    // Update video with flat context fields
-    await updateVideoAdmin(PODCAST_ID, videoId, contextData)
+    // Normalize empty-string sentinels to undefined so we don't persist '' as
+    // a meaningful theme/parent. The schema accepts '' for incremental typing
+    // (see ContextUpdateSchema comment) but Firestore should see undefined.
+    const persistable: Record<string, unknown> = { ...contextData }
+    if (persistable.theme === '') delete persistable.theme
+    if (persistable.parentEpisodeId === '') delete persistable.parentEpisodeId
+
+    await updateVideoAdmin(PODCAST_ID, videoId, persistable)
 
     log('INFO', 'Video context updated', {
       videoId,
@@ -147,9 +156,14 @@ export async function PUT(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      log('WARN', 'Invalid context data', { videoId, error })
+      // Surface the first refine/url message so the producer sees what to fix
+      // (e.g., Spotify URL malformed). Story 24.6.
+      const firstIssue = error.issues[0]
+      const message = firstIssue?.message || 'Dados de contexto inválidos'
+      const field = firstIssue?.path.join('.') || undefined
+      log('WARN', 'Invalid context data', { videoId, field, message })
       return NextResponse.json(
-        { error: { code: 'VALIDATION_ERROR', message: 'Dados de contexto inválidos' } },
+        { error: { code: 'VALIDATION_ERROR', message, field } },
         { status: 400 }
       )
     }

@@ -455,7 +455,7 @@ describe('Phase1Critique', () => {
       expect(button).toBeEnabled()
     })
 
-    it('calls completePhaseAndAdvance when button is clicked', () => {
+    it('calls completePhaseAndAdvance when button is clicked', async () => {
       const wizard = createMockWizard()
 
       render(
@@ -465,8 +465,428 @@ describe('Phase1Critique', () => {
       const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
       fireEvent.click(button)
 
-      // Should complete phase 1 and advance to phase 2 in one action
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+      // handleAdvance is now async (awaits useAutoSave.save() to flush pending
+      // changes — Story 24.1). With a pristine form, save() is a no-op so the
+      // dispatch lands on the next tick.
+      await waitFor(() => {
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+      })
+    })
+
+    it('flushes auto-save (PUT context) before advancing — race fix for fast clicks', async () => {
+      // Story 24.1: handleAdvance must `await save()` so debounced changes
+      // (Spotify URL, theme, guests) are persisted before navigation.
+      const wizard = createMockWizard()
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: {} }),
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      // Change theme to mark the form dirty (so save() actually executes performSave)
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
+      fireEvent.change(themeInput, { target: { value: 'Tema atualizado de última hora' } })
+
+      // Click "Avançar" immediately (within debounce window — no waitFor)
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      fireEvent.click(button)
+
+      // The flushed save must hit the PUT endpoint with the new theme value
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          `/api/videos/${mockVideo.id}/context`,
+          expect.objectContaining({ method: 'PUT' }),
+        )
+      })
+
+      // And completePhaseAndAdvance must have been called AFTER the fetch
+      await waitFor(() => {
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+      })
+
+      const fetchCallOrders = mockFetch.mock.invocationCallOrder
+      const advanceCallOrders = (wizard.completePhaseAndAdvance as ReturnType<typeof vi.fn>).mock.invocationCallOrder
+      expect(fetchCallOrders[0]).toBeLessThan(advanceCallOrders[0])
+    })
+
+  })
+
+  describe('Scrape-driven field unlock (Story 24.7)', () => {
+    it('locks name/role/company for a new guest, but keeps LinkedIn editable', () => {
+      const wizard = createMockWizard()
+
+      // Video without any existing guest data
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      // Guest 1 is rendered by default (form initializes with 1 empty guest)
+      const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+      const roleInput = screen.getAllByLabelText(/cargo/i)[0] as HTMLInputElement
+      const companyInput = screen.getAllByLabelText(/empresa/i)[0] as HTMLInputElement
+      const linkedinInput = screen.getAllByLabelText(/linkedin/i)[0] as HTMLInputElement
+
+      expect(nameInput).toBeDisabled()
+      expect(roleInput).toBeDisabled()
+      expect(companyInput).toBeDisabled()
+      expect(linkedinInput).not.toBeDisabled()
+    })
+
+    it('treats existing guest with name as enriched (fields enabled on mount)', () => {
+      const wizard = createMockWizard()
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
+      )
+
+      const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+      expect(nameInput).not.toBeDisabled()
+      expect(nameInput.value).toBe('João Silva')
+    })
+
+    it('unlocks and fills name/role/company after successful scrape (auto-fill from response)', async () => {
+      const wizard = createMockWizard()
+
+      // First fetch: PUT context (200), second fetch: POST scrape (200 with scrapedGuests)
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/foo',
+                  name: 'Foo Bar',
+                  role: 'Founder at AcmeCo',
+                  company: 'AcmeCo',
+                },
+              ],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      // Fill required fields plus the LinkedIn URL to trigger scrape
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/foo' },
+      })
+
+      // Wait for auto-save + scrape response
+      await waitFor(() => {
+        const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+        expect(nameInput.value).toBe('Foo Bar')
+        expect(nameInput).not.toBeDisabled()
+      }, { timeout: 5000 })
+
+      const roleInput = screen.getAllByLabelText(/cargo/i)[0] as HTMLInputElement
+      const companyInput = screen.getAllByLabelText(/empresa/i)[0] as HTMLInputElement
+      expect(roleInput.value).toBe('Founder at AcmeCo')
+      expect(companyInput.value).toBe('AcmeCo')
+      expect(roleInput).not.toBeDisabled()
+      expect(companyInput).not.toBeDisabled()
+    })
+
+    it('unlocks and fills CO-HOST fields (camelCase path coHost.*, regression guard)', async () => {
+      // 2026-05-17 — verified bug in production: findKeyByLinkedinUrl returned
+      // 'cohost' (lowercase) but react-hook-form registers as 'coHost'. setValue
+      // silently no-op'd. Guard so the case mismatch never returns.
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/cohost-new',
+                  name: 'Co-Host Resolvido',
+                  role: 'Diretor',
+                  company: 'Coorp',
+                },
+              ],
+            },
+          }),
+        })
+
+      // Render with a video that already has a co-host (only LinkedIn URL,
+      // empty name/role/company) — so the accordion opens, the LinkedIn field
+      // is reachable, and changing it triggers the auto-save + scrape.
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{
+            ...mockVideoNoContext,
+            guests: [
+              {
+                name: '',
+                role: '',
+                company: '',
+                linkedin: 'https://www.linkedin.com/in/cohost-existing',
+              },
+            ],
+          }}
+          critique={null}
+        />
+      )
+
+      // Fill a theme so the save fires, then change the co-host LinkedIn URL
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      // First LinkedIn input belongs to co-host (it's the first PersonForm
+      // in the JSX, inside the open accordion).
+      const linkedinInputs = screen.getAllByLabelText(/linkedin/i) as HTMLInputElement[]
+      fireEvent.change(linkedinInputs[0], {
+        target: { value: 'https://www.linkedin.com/in/cohost-new' },
+      })
+
+      // The co-host Name input is the first Nome input on the page.
+      // After the scrape resolves, RHF must apply setValue on `coHost.name`
+      // (camelCase). If the key were lowercase, this assertion would fail.
+      await waitFor(() => {
+        const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+        expect(nameInput.value).toBe('Co-Host Resolvido')
+      }, { timeout: 5000 })
+
+      const roleInput = screen.getAllByLabelText(/cargo/i)[0] as HTMLInputElement
+      const companyInput = screen.getAllByLabelText(/empresa/i)[0] as HTMLInputElement
+      expect(roleInput.value).toBe('Diretor')
+      expect(companyInput.value).toBe('Coorp')
+    })
+
+    it('renders avatar inline and highlights missing fields when scrape is partial', async () => {
+      // Story 24.7 polish — when BrightData omits some fields (e.g., role)
+      // and returns a photoUrl, the UI should:
+      //   1) render the avatar thumbnail beside the person header
+      //   2) highlight the missing fields with amber + "Preencha manualmente"
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/parcial',
+                  name: 'Pessoa Parcial',
+                  role: null, // missing
+                  company: 'AcmeCo',
+                  photoUrl: '/api/guests/12345678/avatar',
+                },
+              ],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/parcial' },
+      })
+
+      // Avatar appears after scrape resolves
+      await waitFor(() => {
+        const avatar = screen.getByAltText(/Foto de Convidado 1/i) as HTMLImageElement
+        expect(avatar).toBeInTheDocument()
+        expect(avatar.src).toContain('/api/guests/12345678/avatar')
+      }, { timeout: 5000 })
+
+      // Helper text "Preencha manualmente" appears only for the missing field (role)
+      const helperTexts = screen.getAllByText(/Preencha manualmente/i)
+      expect(helperTexts.length).toBe(1)
+    })
+
+    it('renders the manual avatar uploader button when scrape returned no photo', async () => {
+      // Story 24.7 polish — when scrape comes back without photoUrl, producer
+      // must have an explicit fallback to attach a photo (file/paste/drag).
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 1,
+              errorCount: 0,
+              failedUrls: [],
+              scrapedGuests: [
+                {
+                  linkedinUrl: 'https://www.linkedin.com/in/sem-foto',
+                  name: 'Pessoa Sem Foto',
+                  role: 'Eng',
+                  company: 'X',
+                  photoUrl: null, // no avatar returned
+                },
+              ],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/sem-foto' },
+      })
+
+      // After scrape: name filled but no avatar — uploader button should be visible
+      await waitFor(() => {
+        const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+        expect(nameInput.value).toBe('Pessoa Sem Foto')
+      }, { timeout: 5000 })
+
+      expect(screen.getByRole('button', { name: /adicionar foto/i })).toBeInTheDocument()
+    })
+
+    it('opens fields empty for manual entry when scrape returns failedUrls', async () => {
+      const wizard = createMockWizard()
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: {} }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: {
+              videoId: 'test-video-456',
+              scrapedCount: 0,
+              errorCount: 1,
+              failedUrls: ['https://www.linkedin.com/in/notfound'],
+              scrapedGuests: [],
+            },
+          }),
+        })
+
+      render(
+        <Phase1Critique
+          wizard={wizard}
+          video={{ ...mockVideoNoContext, guests: [] }}
+          critique={null}
+        />
+      )
+
+      fireEvent.change(screen.getByLabelText(/tema do episódio/i), {
+        target: { value: 'tema qualquer' },
+      })
+      fireEvent.change(screen.getAllByLabelText(/linkedin/i)[0], {
+        target: { value: 'https://www.linkedin.com/in/notfound' },
+      })
+
+      // Wait for the failed-URLs banner — it's only rendered once the scrape promise resolves.
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Não foi possível enriquecer 1 URL/i)
+        ).toBeInTheDocument()
+      }, { timeout: 5000 })
+
+      // Manual fields are now editable but empty
+      const nameInput = screen.getAllByLabelText(/nome/i)[0] as HTMLInputElement
+      expect(nameInput).not.toBeDisabled()
+      expect(nameInput.value).toBe('')
+    })
+  })
+
+  describe('Advancement criteria and button (continued)', () => {
+    it('does not advance when the flushed save fails', async () => {
+      // Story 24.1 AC5: backend error on PUT context must block transition.
+      const wizard = createMockWizard()
+
+      // Mark form dirty so save() actually attempts a fetch.
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: { message: 'Erro do servidor' } }),
+      })
+
+      render(
+        <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
+      )
+
+      const themeInput = screen.getByLabelText(/tema do episódio/i)
+      fireEvent.change(themeInput, { target: { value: 'Tema que vai falhar no save' } })
+
+      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      fireEvent.click(button)
+
+      // Wait for the failing PUT to actually be attempted
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith(
+          `/api/videos/${mockVideo.id}/context`,
+          expect.objectContaining({ method: 'PUT' }),
+        )
+      })
+
+      // Give the catch branch a tick to run, then assert no transition
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(wizard.completePhaseAndAdvance).not.toHaveBeenCalled()
     })
   })
 })

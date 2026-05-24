@@ -147,6 +147,81 @@ export function Phase1Critique({
 
   // Track scraping state to block advancement while LinkedIn profiles are being fetched
   const [isScraping, setIsScraping] = useState(false)
+  /**
+   * Sticky banner shown when /api/guests/scrape returns 503 (CONFIG_ERROR).
+   * Indicates BrightData is unreachable — usually missing/invalid API key.
+   * Producer keeps the URL but fills name/role/company manually. (Story 24.4)
+   */
+  const [scrapeConfigError, setScrapeConfigError] = useState<string | null>(null)
+  /**
+   * Toast-like notice when /api/guests/scrape returns 200 with failedUrls.
+   * Cleared on next successful scrape. (Story 24.4)
+   */
+  const [scrapeFailedUrls, setScrapeFailedUrls] = useState<string[]>([])
+
+  /**
+   * Per-person enrichment status (Story 24.7):
+   * - 'awaiting' — sem dados scraped ainda; name/role/company desabilitados, LinkedIn habilitado
+   * - 'scraping' — scrape em andamento; tudo desabilitado, label "Buscando..."
+   * - 'enriched' — scrape concluído com sucesso e campos preenchidos; tudo habilitado pra correção
+   * - 'manual' — scrape falhou ou retornou vazio; tudo habilitado pra preenchimento manual
+   *
+   * Keys MUST match the react-hook-form field paths exactly: 'coHost' (camelCase,
+   * not 'cohost') and `guests.0`, `guests.1`, etc. Mismatch causes setValue to
+   * write to a non-existent field — verified 2026-05-17 with luisrudi.
+   * Initial state derives from existing data: se já tem name preenchido, considera 'enriched'.
+   */
+  type EnrichmentStatus = 'awaiting' | 'scraping' | 'enriched' | 'manual'
+  const initialEnrichmentState = useMemo<Record<string, EnrichmentStatus>>(() => {
+    const state: Record<string, EnrichmentStatus> = {}
+    const coHostHasName = Boolean(existingCoHost?.name?.trim())
+    state.coHost = coHostHasName ? 'enriched' : 'awaiting'
+    ;(existingGuests as Guest[]).forEach((g, i) => {
+      state[`guests.${i}`] = g?.name?.trim() ? 'enriched' : 'awaiting'
+    })
+    return state
+  // existingCoHost / existingGuests are stable per-mount (built from `video`), no need to re-derive.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const [enrichmentStatus, setEnrichmentStatus] =
+    useState<Record<string, EnrichmentStatus>>(initialEnrichmentState)
+
+  const setEnrichmentFor = useCallback((key: string, status: EnrichmentStatus) => {
+    setEnrichmentStatus((prev) => (prev[key] === status ? prev : { ...prev, [key]: status }))
+  }, [])
+
+  /** Avatar URL per person key (Story 24.7 polish): set after a successful scrape. */
+  const [enrichmentAvatars, setEnrichmentAvatars] = useState<Record<string, string>>({})
+
+  /** Names of fields that came back empty after scrape and need manual input (Story 24.7 polish). */
+  type MissingField = 'name' | 'role' | 'company'
+  const [enrichmentMissing, setEnrichmentMissing] =
+    useState<Record<string, ReadonlySet<MissingField>>>({})
+
+  const markMissingFor = useCallback((key: string, fields: ReadonlySet<MissingField>) => {
+    setEnrichmentMissing((prev) => ({ ...prev, [key]: fields }))
+  }, [])
+
+  const clearMissingFor = useCallback((key: string) => {
+    setEnrichmentMissing((prev) => {
+      if (!prev[key]) return prev
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }, [])
+
+  /** Returns the form key (`coHost` or `guests.N`) for a given LinkedIn URL.
+   *  CASE MATTERS — must match the field path registered by react-hook-form
+   *  (PersonForm uses `prefix="coHost"`, NOT 'cohost'). */
+  const findKeyByLinkedinUrl = useCallback(
+    (url: string, formData: EpisodeContextFormData): string | null => {
+      if (formData.hasCoHost && formData.coHost?.linkedin?.trim() === url) return 'coHost'
+      const idx = formData.guests.findIndex((g) => g.linkedin?.trim() === url)
+      return idx >= 0 ? `guests.${idx}` : null
+    },
+    []
+  )
 
   /**
    * Save context to API.
@@ -166,7 +241,9 @@ export function Phase1Critique({
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        theme: formData.theme,
+        // Empty values become undefined so the backend doesn't see "''" and trip
+        // .min(1) refinements during incremental typing. Backend tolerates both.
+        theme: formData.theme?.trim() ? formData.theme : undefined,
         guests,
         spotifyUrl: formData.spotifyUrl || '',
       }),
@@ -192,15 +269,97 @@ export function Phase1Critique({
       // Mark as scraped before firing to prevent duplicates from rapid saves
       newUrls.forEach(url => scrapedLinkedInUrlsRef.current.add(url))
 
+      // Story 24.7 — Mark each guest with a new URL as 'scraping' so fields stay locked
+      // while BrightData fills them in.
+      for (const url of newUrls) {
+        const key = findKeyByLinkedinUrl(url, formData)
+        if (key) setEnrichmentFor(key, 'scraping')
+      }
+
       setIsScraping(true)
       try {
-        await fetch('/api/guests/scrape', {
+        const scrapeResponse = await fetch('/api/guests/scrape', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ videoId: video.id, linkedinUrls: newUrls }),
         })
+
+        // Story 24.4: CONFIG_ERROR → sticky banner. Operational errors → toast list.
+        if (scrapeResponse.status === 503) {
+          const payload = await scrapeResponse.json().catch(() => ({}))
+          setScrapeConfigError(
+            payload?.error?.message ||
+              'Serviço de enriquecimento indisponível. Preencha manualmente.'
+          )
+          // Story 24.7 — todos os newUrls vão pra 'manual' (campos abrem vazios + highlight).
+          for (const url of newUrls) {
+            const key = findKeyByLinkedinUrl(url, formData)
+            if (key) {
+              setEnrichmentFor(key, 'manual')
+              markMissingFor(key, new Set<MissingField>(['name', 'role', 'company']))
+            }
+          }
+        } else if (scrapeResponse.ok) {
+          const payload = await scrapeResponse.json().catch(() => ({}))
+          const failed: string[] = payload?.data?.failedUrls ?? []
+          const scraped: Array<{
+            linkedinUrl: string
+            name: string | null
+            role: string | null
+            company: string | null
+            photoUrl?: string | null
+          }> = payload?.data?.scrapedGuests ?? []
+
+          if (failed.length > 0) {
+            setScrapeFailedUrls(failed)
+          } else {
+            setScrapeConfigError(null)
+            setScrapeFailedUrls([])
+          }
+
+          // Story 24.7 — preencher campos para os que vieram com sucesso.
+          for (const sg of scraped) {
+            const key = findKeyByLinkedinUrl(sg.linkedinUrl, formData)
+            if (!key) continue
+            if (sg.name) setValue(`${key}.name` as 'coHost.name', sg.name, { shouldDirty: true, shouldTouch: true })
+            if (sg.role) setValue(`${key}.role` as 'coHost.role', sg.role, { shouldDirty: true, shouldTouch: true })
+            if (sg.company) setValue(`${key}.company` as 'coHost.company', sg.company, { shouldDirty: true, shouldTouch: true })
+            setEnrichmentFor(key, 'enriched')
+
+            // Avatar inline (Story 24.7 polish).
+            if (sg.photoUrl) {
+              setEnrichmentAvatars((prev) => ({ ...prev, [key]: sg.photoUrl as string }))
+            }
+
+            // Highlight the fields BrightData didn't provide so the producer
+            // knows what still needs manual input.
+            const missing = new Set<MissingField>()
+            if (!sg.name?.trim()) missing.add('name')
+            if (!sg.role?.trim()) missing.add('role')
+            if (!sg.company?.trim()) missing.add('company')
+            if (missing.size > 0) markMissingFor(key, missing)
+            else clearMissingFor(key)
+          }
+
+          // For URLs that operationally failed (in failed[]), open all 3 manual.
+          for (const url of failed) {
+            const key = findKeyByLinkedinUrl(url, formData)
+            if (key) {
+              setEnrichmentFor(key, 'manual')
+              markMissingFor(key, new Set<MissingField>(['name', 'role', 'company']))
+            }
+          }
+        }
       } catch {
         // Scraping failure doesn't block the producer — they continue with manual data
+        // Story 24.7 — em exceção, abrir campos para preenchimento manual + highlight.
+        for (const url of newUrls) {
+          const key = findKeyByLinkedinUrl(url, formData)
+          if (key) {
+            setEnrichmentFor(key, 'manual')
+            markMissingFor(key, new Set<MissingField>(['name', 'role', 'company']))
+          }
+        }
       } finally {
         setIsScraping(false)
       }
@@ -213,7 +372,7 @@ export function Phase1Critique({
   }, [video.id, onContextChange])
 
   // Auto-save context fields
-  const { saveStatus, error: saveError } = useAutoSave(
+  const { saveStatus, error: saveError, save } = useAutoSave(
     formValues,
     saveContext,
     1500
@@ -246,14 +405,25 @@ export function Phase1Critique({
 
   const canAdvance = hasCritique && hasTheme && hasCompleteGuest && !isAdvancing && !isScraping
 
-  const handleAdvance = () => {
-    if (canAdvance && critique) {
-      setIsAdvancing(true)
-      // Use combined action to avoid stale state issues
-      // This marks phase 1 as completed AND navigates to phase 2 in one dispatch
-      wizard.completePhaseAndAdvance(1, critique)
-      log('INFO', 'Advancing from Phase 1 to Phase 2', { videoId: video.id })
+  const handleAdvance = async () => {
+    if (!canAdvance || !critique) return
+
+    setIsAdvancing(true)
+
+    // Flush the auto-save before transitioning so debounced changes
+    // (Spotify URL, theme, guests) are persisted before navigation.
+    // `rethrow: true` makes save() surface failures so we can block the advance.
+    try {
+      await save({ rethrow: true })
+    } catch {
+      // save() already sets saveStatus='error' and saveError — banner exibe.
+      // Não avançamos sem persistência confirmada.
+      setIsAdvancing(false)
+      return
     }
+
+    wizard.completePhaseAndAdvance(1, critique)
+    log('INFO', 'Advancing from Phase 1 to Phase 2', { videoId: video.id })
   }
 
   return (
@@ -264,7 +434,10 @@ export function Phase1Critique({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">Contexto do Episódio</CardTitle>
-              <SaveStatusIndicator status={saveStatus} />
+              <SaveStatusIndicator
+                status={saveStatus}
+                busyLabel={isScraping ? 'Enriquecendo dados do LinkedIn...' : undefined}
+              />
             </div>
             <CardDescription>
               Preencha as informações do episódio. As alterações são salvas automaticamente.
@@ -274,6 +447,36 @@ export function Phase1Critique({
             {/* Save error */}
             {saveError && (
               <p className="text-xs text-destructive">{saveError.message}</p>
+            )}
+
+            {/* Scrape CONFIG error — sticky banner (Story 24.4) */}
+            {scrapeConfigError && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
+                <strong className="font-medium">Enriquecimento indisponível:</strong>{' '}
+                {scrapeConfigError}
+              </div>
+            )}
+
+            {/* Scrape operational failures — list of URLs (Story 24.4) */}
+            {scrapeFailedUrls.length > 0 && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs"
+              >
+                <p className="font-medium mb-1">
+                  Não foi possível enriquecer {scrapeFailedUrls.length} URL(s) do LinkedIn:
+                </p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  {scrapeFailedUrls.map((url) => (
+                    <li key={url} className="break-all">{url}</li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {/* Theme */}
@@ -307,6 +510,15 @@ export function Phase1Critique({
                       prefix="coHost"
                       label="Dados do Co-host"
                       required={false}
+                      nonLinkedinFieldsLocked={
+                        enrichmentStatus.coHost === 'awaiting' ||
+                        enrichmentStatus.coHost === 'scraping'
+                      }
+                      avatarUrl={enrichmentAvatars.coHost}
+                      missingFields={enrichmentMissing.coHost}
+                      onAvatarUploaded={(url) =>
+                        setEnrichmentAvatars((prev) => ({ ...prev, coHost: url }))
+                      }
                     />
                   </div>
                 </AccordionContent>
@@ -340,17 +552,27 @@ export function Phase1Critique({
               )}
 
               <div className="space-y-3">
-                {guestFields.map((field, index) => (
-                  <PersonForm
-                    key={field.id}
-                    form={form}
-                    prefix={`guests.${index}`}
-                    label={`Convidado ${index + 1}`}
-                    required={true}
-                    showRemove={guestFields.length > 1}
-                    onRemove={() => handleRemoveGuest(index)}
-                  />
-                ))}
+                {guestFields.map((field, index) => {
+                  const key = `guests.${index}`
+                  const status = enrichmentStatus[key] ?? 'awaiting'
+                  return (
+                    <PersonForm
+                      key={field.id}
+                      form={form}
+                      prefix={key}
+                      label={`Convidado ${index + 1}`}
+                      required={true}
+                      showRemove={guestFields.length > 1}
+                      onRemove={() => handleRemoveGuest(index)}
+                      nonLinkedinFieldsLocked={status === 'awaiting' || status === 'scraping'}
+                      avatarUrl={enrichmentAvatars[key]}
+                      missingFields={enrichmentMissing[key]}
+                      onAvatarUploaded={(url) =>
+                        setEnrichmentAvatars((prev) => ({ ...prev, [key]: url }))
+                      }
+                    />
+                  )
+                })}
               </div>
             </div>
             {/* Spotify URL (optional, episodes only) */}

@@ -1,1 +1,1 @@
-export { scrapeLinkedInProfile } from './client'
+export { scrapeLinkedInProfile, BrightDataConfigError } from './client'

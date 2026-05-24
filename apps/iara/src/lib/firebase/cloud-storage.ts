@@ -267,6 +267,102 @@ export async function deleteNewsletterImage(filePath: string): Promise<void> {
 }
 
 // ==========================================================================
+// Epic 24 — Guest avatars (Story 24.2)
+//
+// Guest avatars are downloaded from LinkedIn (via BrightData scraping) and
+// stored under `guest-avatars/{PODCAST_ID}/{guestKey}-{timestamp}.{ext}`.
+// The timestamp prevents cache stale when a guest's avatar changes upstream
+// (mesma motivação do AC10 da Retro 22 — Cloud Run filesystem efêmero).
+// Served to clients via authenticated proxy route — bucket não é público.
+// ==========================================================================
+
+const SAFE_GUEST_KEY = /^[a-zA-Z0-9_-]+$/
+
+/**
+ * Uploads a guest avatar to Cloud Storage.
+ *
+ * @param guestKey - Stable identifier (linkedin_num_id when available, MD5 of URL otherwise).
+ * @param imageBuffer - The avatar bytes.
+ * @param mimeType - One of MIME_TO_EXT keys.
+ * @returns The GCS file path (e.g., "guest-avatars/pptnc/12345678-1716000000000.jpg").
+ */
+export async function uploadGuestAvatar(
+  guestKey: string,
+  imageBuffer: Buffer,
+  mimeType: string
+): Promise<{ filePath: string; mimeType: string }> {
+  if (!SAFE_GUEST_KEY.test(guestKey)) {
+    throw new CloudStorageError('Invalid guest key for avatar path', 'UPLOAD_FAILED')
+  }
+  const ext = MIME_TO_EXT[mimeType]
+  if (!ext) {
+    throw new CloudStorageError('Unsupported MIME type for guest avatar', 'UPLOAD_FAILED')
+  }
+  if (imageBuffer.length === 0) {
+    throw new CloudStorageError('Empty buffer for guest avatar', 'UPLOAD_FAILED')
+  }
+
+  const filePath = `guest-avatars/${PODCAST_ID}/${guestKey}-${Date.now()}.${ext}`
+
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    await file.save(imageBuffer, {
+      contentType: mimeType,
+      resumable: false,
+    })
+
+    log('INFO', 'Guest avatar uploaded', {
+      podcastId: PODCAST_ID,
+      guestKey,
+      filePath,
+      size: imageBuffer.length,
+      mimeType,
+    })
+
+    return { filePath, mimeType }
+  } catch (error) {
+    if (error instanceof CloudStorageError) throw error
+    log('ERROR', 'Guest avatar upload failed', {
+      podcastId: PODCAST_ID,
+      guestKey,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to upload guest avatar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'UPLOAD_FAILED'
+    )
+  }
+}
+
+/**
+ * Downloads a guest avatar from Cloud Storage. Path-validated to the guest-avatars prefix.
+ */
+export async function downloadGuestAvatar(filePath: string): Promise<Buffer> {
+  if (!filePath.startsWith('guest-avatars/') || filePath.includes('..')) {
+    throw new CloudStorageError('Invalid path for guest avatar download', 'DOWNLOAD_FAILED')
+  }
+  try {
+    const bucket = getBucket()
+    const file = bucket.file(filePath)
+    const [contents] = await file.download()
+    log('INFO', 'Guest avatar downloaded', { podcastId: PODCAST_ID, filePath })
+    return contents
+  } catch (error) {
+    log('ERROR', 'Guest avatar download failed', {
+      podcastId: PODCAST_ID,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to download guest avatar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DOWNLOAD_FAILED'
+    )
+  }
+}
+
+// ==========================================================================
 // Epic 22 — Thumbnail config images (Base, Referência)
 // ==========================================================================
 

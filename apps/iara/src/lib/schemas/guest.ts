@@ -16,8 +16,43 @@ export const LinkedInGuestSchema = z.object({
   name: z.string().optional(),
   url: z.string().url().optional(),
   avatar: z.string().url().optional(),
+  /**
+   * `position` is the title we use to populate "Cargo" in Phase 1. The
+   * BrightData payload may surface it as a flat string OR nested inside
+   * `current_company.title` / `experience[0].title` — `parseProfileData`
+   * derives a single normalized value before returning.
+   */
   position: z.string().optional(),
   current_company_name: z.string().optional(),
+  /**
+   * Optional nested object alongside current_company_name. BrightData may omit
+   * the field entirely OR send `null` (e.g., when the profile has no current
+   * company) — `.nullish()` accepts both undefined and null without bouncing.
+   */
+  current_company: z
+    .object({
+      title: z.string().nullish(),
+      position: z.string().nullish(),
+      name: z.string().nullish(),
+    })
+    .passthrough()
+    .nullish(),
+  /**
+   * Optional experience array. BrightData sends `experience: null` for some
+   * profiles (verified 2026-05-17 with luisrudi). `.nullish()` lets the parse
+   * pass through; downstream derivation already uses optional chaining.
+   */
+  experience: z
+    .array(
+      z
+        .object({
+          title: z.string().nullish(),
+          position: z.string().nullish(),
+          company: z.string().nullish(),
+        })
+        .passthrough()
+    )
+    .nullish(),
   about: z.string().optional(),
   city: z.string().optional(),
   country_code: z.string().optional(),
@@ -46,7 +81,10 @@ export const GuestDocSchema = z.object({
   linkedinId: z.string().optional(),
   /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedinNumId} for API mentions */
   linkedinNumId: z.union([z.string(), z.number()]).optional(),
+  /** Legacy: relative path served from public/guests filesystem (Cloud Run efêmero — Story 24.2 retira). */
   photoPath: z.string().optional(),
+  /** GCS path under guest-avatars/. Served via /api/guests/[guestKey]/avatar proxy. (Story 24.2) */
+  avatarGcsPath: z.string().optional(),
   raw: z.record(z.string(), z.unknown()),
   scrapedAt: TimestampSchema,
   createdAt: TimestampSchema,
@@ -69,7 +107,10 @@ export const GuestDocCreateSchema = z.object({
   linkedinId: z.string().optional(),
   /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedinNumId} for API mentions */
   linkedinNumId: z.union([z.string(), z.number()]).optional(),
+  /** Legacy: relative path served from public/guests filesystem (Cloud Run efêmero — Story 24.2 retira). */
   photoPath: z.string().optional(),
+  /** GCS path under guest-avatars/. Served via /api/guests/[guestKey]/avatar proxy. (Story 24.2) */
+  avatarGcsPath: z.string().optional(),
   raw: z.record(z.string(), z.unknown()),
 })
 

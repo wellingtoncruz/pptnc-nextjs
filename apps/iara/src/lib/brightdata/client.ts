@@ -17,6 +17,23 @@ import { LinkedInGuestSchema } from '@/lib/schemas/guest'
 import { log } from '@/lib/logger'
 import type { LinkedInGuestProfile } from '@/types/guest'
 
+/**
+ * Distinguishes configuration failures (missing key, 401, 403) from operational
+ * ones (timeouts, 5xx, snapshot failed). The route uses this to decide between
+ * HTTP 503 (config — banner sticky) and HTTP 200 + errorCount (operational — toast).
+ *
+ * @see Story 24.4
+ */
+export class BrightDataConfigError extends Error {
+  constructor(
+    message: string,
+    public readonly code: 'MISSING_API_KEY' | 'UNAUTHORIZED' | 'FORBIDDEN'
+  ) {
+    super(message)
+    this.name = 'BrightDataConfigError'
+  }
+}
+
 const BRIGHTDATA_SCRAPE_ENDPOINT =
   'https://api.brightdata.com/datasets/v3/scrape?dataset_id=gd_l1viktl72bvl7bjuj0&notify=false&include_errors=true'
 
@@ -166,8 +183,11 @@ export async function scrapeLinkedInProfile(
   const apiKey = process.env.BRIGHTDATA_API_KEY
 
   if (!apiKey) {
-    log('ERROR', 'BRIGHTDATA_API_KEY not configured, skipping scrape', { linkedinUrl })
-    return null
+    log('ERROR', 'BRIGHTDATA_API_KEY not configured', { linkedinUrl })
+    throw new BrightDataConfigError(
+      'BRIGHTDATA_API_KEY is not configured on the server',
+      'MISSING_API_KEY'
+    )
   }
 
   log('INFO', 'Starting LinkedIn profile scrape', { linkedinUrl })
@@ -214,7 +234,17 @@ export async function scrapeLinkedInProfile(
       return parseProfileData(data, linkedinUrl)
     }
 
-    // Other HTTP errors (401, 429, 5xx, etc.)
+    // Authorization failures bubble up as a config error so the route can return 503.
+    if (response.status === 401) {
+      log('ERROR', 'BrightData auth failed (401)', { linkedinUrl })
+      throw new BrightDataConfigError('BrightData rejected the API key (401)', 'UNAUTHORIZED')
+    }
+    if (response.status === 403) {
+      log('ERROR', 'BrightData forbidden (403)', { linkedinUrl })
+      throw new BrightDataConfigError('BrightData denied access (403)', 'FORBIDDEN')
+    }
+
+    // Other HTTP errors (429, 5xx, etc.) → operational, return null.
     log('ERROR', 'BrightData API error', {
       linkedinUrl,
       status: response.status,
@@ -222,6 +252,9 @@ export async function scrapeLinkedInProfile(
     })
     return null
   } catch (error) {
+    // Config errors propagate to the route.
+    if (error instanceof BrightDataConfigError) throw error
+
     if (error instanceof Error && error.name === 'AbortError') {
       log('ERROR', 'BrightData request timed out', { linkedinUrl, timeoutMs: TOTAL_TIMEOUT_MS })
       return null
@@ -270,8 +303,24 @@ function parseProfileData(
     return null
   }
 
+  // Story 24.7 — Derive a single normalized `position` so Phase 1 can auto-fill
+  // the Cargo field. BrightData surfaces the title in several places depending
+  // on the profile shape: top-level `position`, `current_company.title` /
+  // `.position`, or `experience[0].title`. First non-empty wins. Each access
+  // tolerates null (current_company / experience may be null per BrightData)
+  // before reading `.title` etc., so the chain is `??`-safe.
+  const cc = parsed.data.current_company ?? undefined
+  const exp0 = parsed.data.experience?.[0] ?? undefined
+  const derivedPosition =
+    parsed.data.position?.trim() ||
+    cc?.title?.trim() ||
+    cc?.position?.trim() ||
+    exp0?.title?.trim() ||
+    exp0?.position?.trim() ||
+    undefined
+
   // Attach the full raw response for storage (not just the parsed fields)
-  const result = { ...parsed.data, _raw: rawItem }
+  const result = { ...parsed.data, position: derivedPosition, _raw: rawItem }
 
   log('INFO', 'LinkedIn profile scraped successfully', {
     linkedinUrl,

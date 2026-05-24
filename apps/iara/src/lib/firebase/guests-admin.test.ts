@@ -68,6 +68,7 @@ import {
   getGuestByLinkedInUrl,
   upsertGuest,
   getGuestsByPodcast,
+  getGuestAvatarPathByKey,
 } from './guests-admin'
 
 describe('guests-admin', () => {
@@ -255,6 +256,62 @@ describe('guests-admin', () => {
       mockDb._guestsCollectionRef.get.mockRejectedValueOnce(new Error('Firestore error'))
 
       await expect(getGuestsByPodcast(podcastId)).rejects.toThrow('Firestore error')
+    })
+  })
+
+  describe('getGuestAvatarPathByKey (Story 24.2)', () => {
+    it('returns the most recent avatar path for the matching key', async () => {
+      const mockSnapshot = {
+        empty: false,
+        docs: [
+          {
+            id: 'g1',
+            data: () => ({
+              avatarGcsPath: 'guest-avatars/pptnc/abc123-1000.jpg',
+            }),
+          },
+          {
+            id: 'g2',
+            data: () => ({
+              avatarGcsPath: 'guest-avatars/pptnc/abc123-2000.jpg',
+            }),
+          },
+          {
+            id: 'g3',
+            data: () => ({
+              avatarGcsPath: 'guest-avatars/pptnc/other-3000.jpg',
+            }),
+          },
+        ],
+      }
+      mockDb._guestsCollectionRef.get.mockResolvedValueOnce(mockSnapshot)
+
+      const result = await getGuestAvatarPathByKey(podcastId, 'abc123')
+
+      expect(result).toBe('guest-avatars/pptnc/abc123-2000.jpg')
+    })
+
+    it('returns null when no guest has a matching avatar path', async () => {
+      const mockSnapshot = {
+        empty: false,
+        docs: [
+          { id: 'g1', data: () => ({ avatarGcsPath: 'guest-avatars/pptnc/other-100.jpg' }) },
+          { id: 'g2', data: () => ({}) },
+        ],
+      }
+      mockDb._guestsCollectionRef.get.mockResolvedValueOnce(mockSnapshot)
+
+      const result = await getGuestAvatarPathByKey(podcastId, 'abc123')
+
+      expect(result).toBeNull()
+    })
+
+    it('returns null when collection is empty', async () => {
+      mockDb._guestsCollectionRef.get.mockResolvedValueOnce({ empty: true, docs: [] })
+
+      const result = await getGuestAvatarPathByKey(podcastId, 'abc123')
+
+      expect(result).toBeNull()
     })
   })
 })
