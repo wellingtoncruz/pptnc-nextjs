@@ -20,22 +20,22 @@ describe('ReopenVideoDialog', () => {
     vi.clearAllMocks()
   })
 
-  it('renders dialog with title and description', () => {
+  it('renders dialog with title and editorial-only description', () => {
     render(<ReopenVideoDialog {...defaultProps} />)
 
     expect(screen.getByText('Deseja reabrir esse vídeo para edição dos metadados?')).toBeInTheDocument()
-    expect(screen.getByText(/Privado/)).toBeInTheDocument()
-    expect(screen.getByText(/Não listado/)).toBeInTheDocument()
+    expect(screen.getByText(/Rascunho/)).toBeInTheDocument()
+    expect(screen.getByText(/não altera o vídeo no YouTube/)).toBeInTheDocument()
   })
 
   it('renders cancel and confirm buttons', () => {
     render(<ReopenVideoDialog {...defaultProps} />)
 
     expect(screen.getByText('Cancelar')).toBeInTheDocument()
-    expect(screen.getByText('Verificar e Reabrir')).toBeInTheDocument()
+    expect(screen.getByText('Reabrir')).toBeInTheDocument()
   })
 
-  it('calls API on confirm and shows loading state', async () => {
+  it('calls API on confirm', async () => {
     const user = userEvent.setup()
     mockFetch.mockResolvedValue({
       ok: true,
@@ -44,7 +44,7 @@ describe('ReopenVideoDialog', () => {
 
     render(<ReopenVideoDialog {...defaultProps} />)
 
-    await user.click(screen.getByText('Verificar e Reabrir'))
+    await user.click(screen.getByText('Reabrir'))
 
     expect(mockFetch).toHaveBeenCalledWith('/api/videos/test-video-id/reopen', {
       method: 'POST',
@@ -60,7 +60,7 @@ describe('ReopenVideoDialog', () => {
 
     render(<ReopenVideoDialog {...defaultProps} />)
 
-    await user.click(screen.getByText('Verificar e Reabrir'))
+    await user.click(screen.getByText('Reabrir'))
 
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledWith('test-video-id')
@@ -68,50 +68,29 @@ describe('ReopenVideoDialog', () => {
     })
   })
 
-  it('shows error message when video is not eligible', async () => {
-    const user = userEvent.setup()
-    mockFetch.mockResolvedValue({
-      ok: false,
-      json: () => Promise.resolve({
-        error: {
-          code: 'VIDEO_NOT_ELIGIBLE',
-          message: 'Video not eligible',
-        },
-      }),
-    })
-
-    render(<ReopenVideoDialog {...defaultProps} />)
-
-    await user.click(screen.getByText('Verificar e Reabrir'))
-
-    await waitFor(() => {
-      expect(screen.getByText(/status adequado/)).toBeInTheDocument()
-    })
-
-    // Dialog should remain open
-    expect(defaultProps.onOpenChange).not.toHaveBeenCalledWith(false)
-    expect(defaultProps.onSuccess).not.toHaveBeenCalled()
-  })
-
-  it('shows generic error message on API failure', async () => {
+  it('shows the error message returned by the API on failure', async () => {
     const user = userEvent.setup()
     mockFetch.mockResolvedValue({
       ok: false,
       json: () => Promise.resolve({
         error: {
           code: 'INTERNAL_ERROR',
-          message: 'Erro interno ao verificar video no YouTube.',
+          message: 'Erro interno ao reabrir o video.',
         },
       }),
     })
 
     render(<ReopenVideoDialog {...defaultProps} />)
 
-    await user.click(screen.getByText('Verificar e Reabrir'))
+    await user.click(screen.getByText('Reabrir'))
 
     await waitFor(() => {
-      expect(screen.getByText('Erro interno ao verificar video no YouTube.')).toBeInTheDocument()
+      expect(screen.getByText('Erro interno ao reabrir o video.')).toBeInTheDocument()
     })
+
+    // Dialog should remain open
+    expect(defaultProps.onOpenChange).not.toHaveBeenCalledWith(false)
+    expect(defaultProps.onSuccess).not.toHaveBeenCalled()
   })
 
   it('shows error message on network failure', async () => {
@@ -120,10 +99,10 @@ describe('ReopenVideoDialog', () => {
 
     render(<ReopenVideoDialog {...defaultProps} />)
 
-    await user.click(screen.getByText('Verificar e Reabrir'))
+    await user.click(screen.getByText('Reabrir'))
 
     await waitFor(() => {
-      expect(screen.getByText(/Erro ao verificar/)).toBeInTheDocument()
+      expect(screen.getByText(/Erro ao reabrir/)).toBeInTheDocument()
     })
   })
 
@@ -138,17 +117,17 @@ describe('ReopenVideoDialog', () => {
     mockFetch.mockResolvedValue({
       ok: false,
       json: () => Promise.resolve({
-        error: { code: 'VIDEO_NOT_ELIGIBLE', message: 'Not eligible' },
+        error: { code: 'INTERNAL_ERROR', message: 'Erro interno ao reabrir o video.' },
       }),
     })
 
     const { rerender } = render(<ReopenVideoDialog {...defaultProps} />)
 
     // Trigger error
-    await user.click(screen.getByText('Verificar e Reabrir'))
+    await user.click(screen.getByText('Reabrir'))
 
     await waitFor(() => {
-      expect(screen.getByText(/status adequado/)).toBeInTheDocument()
+      expect(screen.getByText('Erro interno ao reabrir o video.')).toBeInTheDocument()
     })
 
     // Close and reopen - onOpenChange(false) should reset state
@@ -156,6 +135,6 @@ describe('ReopenVideoDialog', () => {
     rerender(<ReopenVideoDialog {...defaultProps} open={true} />)
 
     // Error should be cleared (component resets on open change)
-    expect(screen.queryByText(/status adequado/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Erro interno ao reabrir o video.')).not.toBeInTheDocument()
   })
 })
