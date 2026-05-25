@@ -25,10 +25,11 @@ interface ReopenVideoDialogProps {
 /**
  * AlertDialog for reopening a sent video for editing.
  *
- * Verifies the video's YouTube privacy status before reopening.
- * Shows inline error if the video is public or scheduled.
+ * Reopening is editorial-only (ADR-25.4) — no YouTube status check. Any sent
+ * video can be reopened to draft at the producer's discretion.
  *
  * @see Story 11-2 - Reabrir Episódio para Edição
+ * @see Story 25.11 - Reabertura desacoplada do YouTube
  */
 export function ReopenVideoDialog({
   videoId,
@@ -61,15 +62,7 @@ export function ReopenVideoDialog({
       const json = await response.json()
 
       if (!response.ok) {
-        if (json.error?.code === 'VIDEO_NOT_ELIGIBLE') {
-          setError(
-            'O vídeo não está com o status adequado no YouTube. Não é possível reabrir. Altere o vídeo para Não Listado.'
-          )
-        } else {
-          setError(
-            json.error?.message || 'Erro ao verificar status do vídeo no YouTube. Tente novamente.'
-          )
-        }
+        setError(json.error?.message || 'Erro ao reabrir o vídeo. Tente novamente.')
         return
       }
 
@@ -77,7 +70,7 @@ export function ReopenVideoDialog({
       onOpenChange(false)
       onSuccess(videoId)
     } catch {
-      setError('Erro ao verificar status do vídeo no YouTube. Tente novamente.')
+      setError('Erro ao reabrir o vídeo. Tente novamente.')
     } finally {
       setIsLoading(false)
     }
@@ -100,9 +93,8 @@ export function ReopenVideoDialog({
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                Para o vídeo ser reaberto, é necessário que ele esteja como{' '}
-                <strong>Privado</strong>, <strong>Rascunho</strong> ou{' '}
-                <strong>Não listado</strong> no YouTube.
+                O vídeo voltará para o status <strong>Rascunho</strong> e poderá ser editado
+                novamente. Isso não altera o vídeo no YouTube.
               </p>
             </div>
           </AlertDialogDescription>
@@ -120,10 +112,10 @@ export function ReopenVideoDialog({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Verificando...
+                Reabrindo...
               </>
             ) : (
-              'Verificar e Reabrir'
+              'Reabrir'
             )}
           </Button>
         </AlertDialogFooter>

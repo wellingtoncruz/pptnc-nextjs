@@ -26,17 +26,14 @@ export function SocialLayout({ enabledSocialNetworks = [] }: SocialLayoutProps) 
     typeFilter, setTypeFilter, statusFilter, setStatusFilter,
   } = useVideos({ statusFilter: 'all' })
 
-  // Sort: sent-first (most recent), then others (most recent)
-  // Filter: exclude episodes from social view
-  const videos = useMemo(() => {
-    const filtered = rawVideos.filter(v => v.videoType !== 'episode')
-    return filtered.sort((a, b) => {
-      const aIsSent = a.status === 'sent' ? 0 : 1
-      const bIsSent = b.status === 'sent' ? 0 : 1
-      if (aIsSent !== bIsSent) return aIsSent - bIsSent
-      return 0 // preserve API order (already recent-first)
-    })
-  }, [rawVideos])
+  // Filter: exclude episodes from social view.
+  // Order: preserve the API order (publishedAt desc, recent-first). Sent videos
+  // are visually highlighted by VideoListPanel, so no need to float them to the
+  // top — that buried recent ready/draft videos behind older sent ones (Story 25.12).
+  const videos = useMemo(
+    () => rawVideos.filter(v => v.videoType !== 'episode'),
+    [rawVideos]
+  )
 
   // Fetch social networks catalog once
   const [allNetworks, setAllNetworks] = useState<SocialNetwork[]>([])
