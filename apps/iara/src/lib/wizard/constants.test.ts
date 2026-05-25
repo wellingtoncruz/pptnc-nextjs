@@ -11,7 +11,13 @@ import {
   isPhaseValidForVideoType,
   PHASE_METADATA,
   PHASES_BY_VIDEO_TYPE,
+  PHASE_IDS_BY_VIDEO_TYPE,
+  PHASE_ID_METADATA,
+  getPhaseIdsForVideoType,
+  getPhaseIdsForVideoTypeWithFeatures,
+  isPhaseIdValidForVideoType,
 } from './constants'
+import { toPhaseId } from './phase-id-map'
 import type { ExtendedWizardPhase, VideoTypeForWizard, WizardPhase } from './types'
 
 describe('PHASES_BY_VIDEO_TYPE', () => {
@@ -218,5 +224,83 @@ describe('getPhasesForVideoTypeWithFeatures (Epic 22)', () => {
     getPhasesForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })
     expect(PHASES_BY_VIDEO_TYPE.episode).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
     expect(PHASES_BY_VIDEO_TYPE.cut).toEqual([0, 5, '5B', 6, 7, 8])
+  })
+})
+
+// ============================================================================
+// TD-7 (Story 25.2) — Semantic phase-ID layer
+// ============================================================================
+
+describe('semantic phase-ID layer (TD-7)', () => {
+  const videoTypes: VideoTypeForWizard[] = ['episode', 'cut', 'reel']
+
+  describe('PHASE_IDS_BY_VIDEO_TYPE', () => {
+    it('episode maps to the kebab equivalent of phases 1-8', () => {
+      expect(PHASE_IDS_BY_VIDEO_TYPE.episode).toEqual([
+        'critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish',
+      ])
+    })
+
+    it('cut maps to parent → title → short-title → description → tags → publish', () => {
+      expect(PHASE_IDS_BY_VIDEO_TYPE.cut).toEqual([
+        'parent', 'title', 'short-title', 'description', 'tags', 'publish',
+      ])
+    })
+
+    it('reel maps to parent → title → description → tags → publish', () => {
+      expect(PHASE_IDS_BY_VIDEO_TYPE.reel).toEqual([
+        'parent', 'title', 'description', 'tags', 'publish',
+      ])
+    })
+
+    it.each(videoTypes)('stays consistent with the legacy PHASES_BY_VIDEO_TYPE for %s', (vt) => {
+      expect(PHASE_IDS_BY_VIDEO_TYPE[vt]).toEqual(PHASES_BY_VIDEO_TYPE[vt].map(toPhaseId))
+    })
+  })
+
+  describe('getPhaseIdsForVideoType', () => {
+    it.each(videoTypes)('mirrors getPhasesForVideoType for %s', (vt) => {
+      expect(getPhaseIdsForVideoType(vt)).toEqual(getPhasesForVideoType(vt).map(toPhaseId))
+    })
+  })
+
+  describe('isPhaseIdValidForVideoType', () => {
+    it('accepts a valid phase id for the type', () => {
+      expect(isPhaseIdValidForVideoType('short-title', 'cut')).toBe(true)
+      expect(isPhaseIdValidForVideoType('title', 'reel')).toBe(true)
+    })
+
+    it('rejects a phase id not in the type flow', () => {
+      expect(isPhaseIdValidForVideoType('short-title', 'reel')).toBe(false)
+      expect(isPhaseIdValidForVideoType('critique', 'cut')).toBe(false)
+    })
+  })
+
+  describe('getPhaseIdsForVideoTypeWithFeatures', () => {
+    it('inserts thumbnail before publish for cut when enabled', () => {
+      expect(getPhaseIdsForVideoTypeWithFeatures('cut', { thumbnailGeneration: true })).toEqual([
+        'parent', 'title', 'short-title', 'description', 'tags', 'thumbnail', 'publish',
+      ])
+    })
+
+    it('does not insert thumbnail for reel', () => {
+      expect(getPhaseIdsForVideoTypeWithFeatures('reel', { thumbnailGeneration: true })).toEqual([
+        'parent', 'title', 'description', 'tags', 'publish',
+      ])
+    })
+  })
+
+  describe('PHASE_ID_METADATA', () => {
+    it('derives label/type from the legacy metadata', () => {
+      expect(PHASE_ID_METADATA.title.label).toBe('Título')
+      expect(PHASE_ID_METADATA['short-title'].label).toBe('Título Curto')
+      expect(PHASE_ID_METADATA.thumbnail.label).toBe('Thumbnail')
+      expect(PHASE_ID_METADATA.parent.label).toBe('Vídeo Pai')
+      expect(PHASE_ID_METADATA.publish.type).toBe('final')
+    })
+
+    it('covers all 11 phase ids', () => {
+      expect(Object.keys(PHASE_ID_METADATA)).toHaveLength(11)
+    })
   })
 })

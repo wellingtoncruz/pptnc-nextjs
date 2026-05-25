@@ -2,6 +2,12 @@
  * Constants and metadata for the wizard phases.
  */
 
+import {
+  WIZARD_PHASE_IDS,
+  toLegacyPhase,
+  toPhaseId,
+  type WizardPhaseId,
+} from './phase-id-map'
 import type { ExtendedWizardPhase, PhaseMetadata, VideoTypeForWizard, WizardPhase } from './types'
 
 /**
@@ -196,3 +202,47 @@ export function getPhasesForVideoTypeWithFeatures(
   if (publishIndex < 0) return base
   return [...base.slice(0, publishIndex), 'THUMB', ...base.slice(publishIndex)]
 }
+
+// ============================================================================
+// TD-7 (Epic 25) — Semantic phase-ID layer
+// ============================================================================
+// Kebab-case vocabulary for the wizard phases, derived from the legacy numeric
+// structures via the bidirectional mapper (phase-id-map.ts). Story 25.2 adds
+// this layer; stories 25.3-25.5 migrate consumers onto it; 25.7 removes the
+// legacy numeric exports once nothing references them.
+//
+// Deriving from the legacy structures (instead of redefining) guarantees the
+// two representations cannot drift while both exist.
+
+/** Phase IDs available for each video type (kebab equivalent of PHASES_BY_VIDEO_TYPE). */
+export const PHASE_IDS_BY_VIDEO_TYPE: Record<VideoTypeForWizard, WizardPhaseId[]> = {
+  episode: PHASES_BY_VIDEO_TYPE.episode.map(toPhaseId),
+  cut: PHASES_BY_VIDEO_TYPE.cut.map(toPhaseId),
+  reel: PHASES_BY_VIDEO_TYPE.reel.map(toPhaseId),
+}
+
+/** Returns the valid phase IDs for a given video type (kebab equivalent). */
+export function getPhaseIdsForVideoType(videoType: VideoTypeForWizard): WizardPhaseId[] {
+  return getPhasesForVideoType(videoType).map(toPhaseId)
+}
+
+/** Checks if a phase ID is valid for a given video type (kebab equivalent). */
+export function isPhaseIdValidForVideoType(
+  phaseId: WizardPhaseId,
+  videoType: VideoTypeForWizard
+): boolean {
+  return isPhaseValidForVideoType(toLegacyPhase(phaseId), videoType)
+}
+
+/** Phase IDs for a video type with the thumbnail phase inserted when enabled (kebab equivalent). */
+export function getPhaseIdsForVideoTypeWithFeatures(
+  videoType: VideoTypeForWizard,
+  features?: { thumbnailGeneration?: boolean }
+): WizardPhaseId[] {
+  return getPhasesForVideoTypeWithFeatures(videoType, features).map(toPhaseId)
+}
+
+/** Phase metadata keyed by semantic ID (derived from EXTENDED_PHASE_METADATA). */
+export const PHASE_ID_METADATA: Record<WizardPhaseId, PhaseMetadata> = Object.fromEntries(
+  WIZARD_PHASE_IDS.map((id) => [id, EXTENDED_PHASE_METADATA[toLegacyPhase(id)]])
+) as Record<WizardPhaseId, PhaseMetadata>
