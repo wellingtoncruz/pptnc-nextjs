@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useLLMProcessing } from '@/contexts'
 import { useWizard } from '@/hooks/use-wizard'
 import { log } from '@/lib/logger'
+import { phaseIdOrder, type WizardPhaseId } from '@/lib/wizard'
 import { runAsyncPhase } from '@/lib/wizard/run-async-phase'
 import { buildCompleteYouTubeDescription } from '@/lib/youtube'
 import type { Video, Guest } from '@/types/video'
@@ -408,68 +409,69 @@ export function WizardOrchestrator({
 
     initialNavigationRef.current = video.id
 
-    // Check if phases 2, 3, and 4 have data but need review (using fresh videoData)
-    const phase2CompletedInWizard = wizard.state.phases[2].status === 'completed'
+    // Check if edit-check, risk, and chapters have data but need review (using fresh videoData).
+    // reviewedPhases is numeric in Firestore (serialization boundary) — kept as numbers.
+    const phase2CompletedInWizard = wizard.state.phases['edit-check'].status === 'completed'
     const phase2IsReviewed = (videoData.reviewedPhases?.includes(2) ?? false) || phase2CompletedInWizard
     const phase2HasData = videoData.editingIssues !== undefined
     const phase2NeedsReview = phase2HasData && !phase2IsReviewed
 
-    const phase3CompletedInWizard = wizard.state.phases[3].status === 'completed'
+    const phase3CompletedInWizard = wizard.state.phases['risk'].status === 'completed'
     const phase3IsReviewed = (videoData.reviewedPhases?.includes(3) ?? false) || phase3CompletedInWizard
     const phase3HasData = videoData.riskAndCompliance !== undefined
     const phase3NeedsReview = phase3HasData && !phase3IsReviewed
 
-    const phase4CompletedInWizard = wizard.state.phases[4].status === 'completed'
+    const phase4CompletedInWizard = wizard.state.phases['chapters'].status === 'completed'
     const phase4IsReviewed = (videoData.reviewedPhases?.includes(4) ?? false) || phase4CompletedInWizard
     const phase4HasData = videoData.chapters !== undefined && videoData.chapters.length > 0
     const phase4NeedsReview = phase4HasData && !phase4IsReviewed
 
-    // If phase 2 needs review and we're past it, go back to phase 2
-    if (phase2NeedsReview && wizard.currentPhase > 2) {
+    // If edit-check needs review and we're past it, go back to it
+    if (phase2NeedsReview && phaseIdOrder(wizard.currentPhase) > phaseIdOrder('edit-check')) {
       log('INFO', 'Auto-navigating to Phase 2 for review confirmation', {
         videoId: video.id,
         currentPhase: wizard.currentPhase,
       })
       setPhase2FromCache(true)
-      wizard.setPhaseStatus(2, 'needs_review')
-      wizard.goToPhase(2)
+      wizard.setPhaseStatus('edit-check', 'needs_review')
+      wizard.goToPhase('edit-check')
       return
     }
 
-    // If phase 3 needs review and we're past it, go back to phase 3
-    if (phase3NeedsReview && wizard.currentPhase > 3) {
+    // If risk needs review and we're past it, go back to it
+    if (phase3NeedsReview && phaseIdOrder(wizard.currentPhase) > phaseIdOrder('risk')) {
       log('INFO', 'Auto-navigating to Phase 3 for review confirmation', {
         videoId: video.id,
         currentPhase: wizard.currentPhase,
       })
       setPhase3FromCache(true)
-      wizard.setPhaseStatus(3, 'needs_review')
-      wizard.goToPhase(3)
+      wizard.setPhaseStatus('risk', 'needs_review')
+      wizard.goToPhase('risk')
       return
     }
 
-    // If phase 4 needs review and we're past it, go back to phase 4
-    if (phase4NeedsReview && wizard.currentPhase > 4) {
+    // If chapters needs review and we're past it, go back to it
+    if (phase4NeedsReview && phaseIdOrder(wizard.currentPhase) > phaseIdOrder('chapters')) {
       log('INFO', 'Auto-navigating to Phase 4 for review confirmation', {
         videoId: video.id,
         currentPhase: wizard.currentPhase,
       })
       setPhase4FromCache(true)
-      wizard.setPhaseStatus(4, 'needs_review')
-      wizard.goToPhase(4)
+      wizard.setPhaseStatus('chapters', 'needs_review')
+      wizard.goToPhase('chapters')
       return
     }
 
     // Mark phases as needs_review even if we're not past them yet
     // This ensures the breadcrumb shows the correct status
     if (phase2NeedsReview) {
-      wizard.setPhaseStatus(2, 'needs_review')
+      wizard.setPhaseStatus('edit-check', 'needs_review')
     }
     if (phase3NeedsReview) {
-      wizard.setPhaseStatus(3, 'needs_review')
+      wizard.setPhaseStatus('risk', 'needs_review')
     }
     if (phase4NeedsReview) {
-      wizard.setPhaseStatus(4, 'needs_review')
+      wizard.setPhaseStatus('chapters', 'needs_review')
     }
   }, [video.id, videoDataReadyFor, videoData, wizard])
 
@@ -527,7 +529,7 @@ export function WizardOrchestrator({
         suggestions: [],
       }
       setCritiqueResult(existingCritique)
-      wizard.addAlert(1, 'Crítica do Especialista', videoData.critique, 'success')
+      wizard.addAlert('critique', 'Crítica do Especialista', videoData.critique, 'success')
     }
 
     // Phase 2: Editing Issues (using fresh videoData)
@@ -538,7 +540,7 @@ export function WizardOrchestrator({
       }
       setEditCheckResult(existingEditCheck)
       wizard.addAlert(
-        2,
+        'edit-check',
         'Checagem de Edição',
         videoData.editingIssues.length > 0
           ? `${videoData.editingIssues.length} ponto(s) de atenção identificado(s)`
@@ -559,7 +561,7 @@ export function WizardOrchestrator({
       }
       setComplianceResult(existingCompliance)
       wizard.addAlert(
-        3,
+        'risk',
         'Riscos e Conformidade',
         videoData.riskAndCompliance.length > 0
           ? `${videoData.riskAndCompliance.length} risco(s) identificado(s)`
@@ -580,7 +582,7 @@ export function WizardOrchestrator({
       const chaptersText = existingChapters.chapters
         .map(c => `${c.timestamp} ${c.title}`)
         .join('\n')
-      wizard.addAlert(4, 'Capítulos', chaptersText, 'success')
+      wizard.addAlert('chapters', 'Capítulos', chaptersText, 'success')
     }
 
     // Phase 5: Titles (using fresh videoData)
@@ -589,7 +591,7 @@ export function WizardOrchestrator({
         titles: videoData.suggestedTitles,
       }
       setTitlesResult(existingTitles)
-      wizard.addAlert(5, 'Títulos', `${videoData.suggestedTitles.length} sugestão(ões) de título`, 'success')
+      wizard.addAlert('title', 'Títulos', `${videoData.suggestedTitles.length} sugestão(ões) de título`, 'success')
     }
 
     // Phase 5B: Short Titles (using fresh videoData) - cut only
@@ -598,7 +600,7 @@ export function WizardOrchestrator({
         shortTitles: videoData.suggestedShortTitles,
       }
       setShortTitlesResult(existingShortTitles)
-      wizard.addAlert(5, 'Títulos Curtos', `${videoData.suggestedShortTitles.length} sugestão(ões) de título curto`, 'success')
+      wizard.addAlert('title', 'Títulos Curtos', `${videoData.suggestedShortTitles.length} sugestão(ões) de título curto`, 'success')
     }
 
     // Phase 6: Description (using fresh videoData)
@@ -611,7 +613,7 @@ export function WizardOrchestrator({
       const preview = videoData.description.length > 100
         ? videoData.description.substring(0, 100) + '...'
         : videoData.description
-      wizard.addAlert(6, 'Descrição', preview, 'success')
+      wizard.addAlert('description', 'Descrição', preview, 'success')
     }
 
     // Phase 7: Tags (using fresh videoData)
@@ -620,7 +622,7 @@ export function WizardOrchestrator({
         tags: videoData.tags,
       }
       setTagsResult(existingTags)
-      wizard.addAlert(7, 'Tags', `${videoData.tags.length} tag(s): ${videoData.tags.slice(0, 5).join(', ')}${videoData.tags.length > 5 ? '...' : ''}`, 'success')
+      wizard.addAlert('tags', 'Tags', `${videoData.tags.length} tag(s): ${videoData.tags.slice(0, 5).join(', ')}${videoData.tags.length > 5 ? '...' : ''}`, 'success')
     }
   }, [video.id, videoDataReadyFor, videoData, wizard])
 
@@ -644,7 +646,7 @@ export function WizardOrchestrator({
     if (videoDataReadyFor !== video.id) return
 
     // First phase: episode starts at 1, cut/reel start at 0
-    const firstPhase = video.videoType === 'episode' ? 1 : 0
+    const firstPhase: WizardPhaseId = video.videoType === 'episode' ? 'critique' : 'parent'
 
     // If wizard has advanced past the first phase, data was saved → server did AUTO-DRAFT
     if (wizard.currentPhase === firstPhase) return
@@ -671,7 +673,7 @@ export function WizardOrchestrator({
    */
   useEffect(() => {
     // Only run when on Phase 8
-    if (wizard.currentPhase !== 8) {
+    if (wizard.currentPhase !== 'publish') {
       return
     }
 
@@ -741,8 +743,8 @@ export function WizardOrchestrator({
   const processPhase1Critique = useCallback(async () => {
     log('INFO', 'Processing Phase 1 critique', { videoId: video.id })
 
-    const spinnerId = wizard.addSpinner(1, 'Estou assistindo o episódio para te dar uma opinião sincera...')
-    wizard.setPhaseLoading(1)
+    const spinnerId = wizard.addSpinner('critique', 'Estou assistindo o episódio para te dar uma opinião sincera...')
+    wizard.setPhaseLoading('critique')
 
     try {
       const phase1Data = await runAsyncPhase<Phase1Response>({
@@ -760,8 +762,8 @@ export function WizardOrchestrator({
       // Don't call setPhaseData here - it would mark phase as completed
       // Phase 1 should only be completed when user clicks "Avançar" with all criteria met
       // (theme + guests + critique) per processamento_video.md
-      wizard.setPhaseStatus(1, 'pending')
-      wizard.addAlert(1, 'Crítica do Especialista', phase1Data.critique, 'success')
+      wizard.setPhaseStatus('critique', 'pending')
+      wizard.addAlert('critique', 'Crítica do Especialista', phase1Data.critique, 'success')
       setCritiqueResult(phase1Data)
 
       log('INFO', 'Phase 1 critique completed', { videoId: video.id })
@@ -772,8 +774,8 @@ export function WizardOrchestrator({
       }
       wizard.removeSpinner(spinnerId)
       const message = error instanceof Error ? error.message : 'Erro ao processar crítica'
-      wizard.setPhaseError(1, message)
-      wizard.addAlert(1, 'Erro', message, 'error')
+      wizard.setPhaseError('critique', message)
+      wizard.addAlert('critique', 'Erro', message, 'error')
       log('ERROR', 'Phase 1 critique failed', { videoId: video.id, error: message })
     }
   }, [video.id, wizard])
@@ -828,7 +830,7 @@ export function WizardOrchestrator({
 
     // Only auto-process Phase 1 if we're actually on Phase 1
     // If user is on a later phase (e.g., restored from localStorage), don't auto-trigger LLM
-    if (wizard.currentPhase !== 1) {
+    if (wizard.currentPhase !== 'critique') {
       log('INFO', 'Skipping Phase 1 auto-processing - not on Phase 1', {
         videoId: video.id,
         currentPhase: wizard.currentPhase
@@ -851,8 +853,8 @@ export function WizardOrchestrator({
 
     setEditCheckError(null)
 
-    const spinnerId = wizard.addSpinner(2, 'Verificando se existem falhas de edição perceptíveis...')
-    wizard.setPhaseLoading(2)
+    const spinnerId = wizard.addSpinner('edit-check', 'Verificando se existem falhas de edição perceptíveis...')
+    wizard.setPhaseLoading('edit-check')
 
     try {
       const phase2Data = await runAsyncPhase<Phase2Response>({
@@ -867,10 +869,10 @@ export function WizardOrchestrator({
       }
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(2, 'needs_review')
+      wizard.setPhaseStatus('edit-check', 'needs_review')
       setPhase2FromCache(true)
       wizard.addAlert(
-        2,
+        'edit-check',
         'Checagem de Edição',
         'Verifique acima se existem trechos que você deveria verificar. Obs: Nada substitui a revisão humana, ok?',
         'success'
@@ -888,8 +890,8 @@ export function WizardOrchestrator({
       }
       const message = error instanceof Error ? error.message : 'Erro ao verificar edição'
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseError(2, message)
-      wizard.addAlert(2, 'Erro', message, 'error')
+      wizard.setPhaseError('edit-check', message)
+      wizard.addAlert('edit-check', 'Erro', message, 'error')
       setEditCheckError(message)
       log('ERROR', 'Phase 2 edit check failed', { videoId: video.id, error: message })
     }
@@ -918,7 +920,7 @@ export function WizardOrchestrator({
     }
 
     // Only process when on phase 2
-    if (wizard.currentPhase !== 2) {
+    if (wizard.currentPhase !== 'edit-check') {
       return
     }
 
@@ -947,7 +949,7 @@ export function WizardOrchestrator({
       const needsReview = !isReviewed
       setPhase2FromCache(needsReview)
       if (needsReview) {
-        wizard.setPhaseStatus(2, 'needs_review')
+        wizard.setPhaseStatus('edit-check', 'needs_review')
       }
 
       // State and alert already handled by cached data effect
@@ -970,8 +972,8 @@ export function WizardOrchestrator({
     // Clear previous error state on retry
     setComplianceError(null)
 
-    const spinnerId = wizard.addSpinner(3, 'Verificando se existem pontos polêmicos ou riscos de conformidade...')
-    wizard.setPhaseLoading(3)
+    const spinnerId = wizard.addSpinner('risk', 'Verificando se existem pontos polêmicos ou riscos de conformidade...')
+    wizard.setPhaseLoading('risk')
 
     try {
       const phase3Data = await runAsyncPhase<Phase3Response>({
@@ -986,10 +988,10 @@ export function WizardOrchestrator({
       }
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(3, 'needs_review')
+      wizard.setPhaseStatus('risk', 'needs_review')
       setPhase3FromCache(true)
       wizard.addAlert(
-        3,
+        'risk',
         'Riscos e Conformidade',
         'Verifique acima se existem trechos que você deveria verificar.',
         'success'
@@ -1008,8 +1010,8 @@ export function WizardOrchestrator({
       }
       const message = error instanceof Error ? error.message : 'Erro ao verificar compliance'
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseError(3, message)
-      wizard.addAlert(3, 'Erro', message, 'error')
+      wizard.setPhaseError('risk', message)
+      wizard.addAlert('risk', 'Erro', message, 'error')
       setComplianceError(message)
       log('ERROR', 'Phase 3 compliance check failed', { videoId: video.id, error: message })
     }
@@ -1038,7 +1040,7 @@ export function WizardOrchestrator({
     }
 
     // Only process when on phase 3
-    if (wizard.currentPhase !== 3) {
+    if (wizard.currentPhase !== 'risk') {
       return
     }
 
@@ -1067,7 +1069,7 @@ export function WizardOrchestrator({
       const needsReview = !isReviewed
       setPhase3FromCache(needsReview)
       if (needsReview) {
-        wizard.setPhaseStatus(3, 'needs_review')
+        wizard.setPhaseStatus('risk', 'needs_review')
       }
 
       // State and alert already handled by cached data effect
@@ -1090,8 +1092,8 @@ export function WizardOrchestrator({
     // Clear previous error state on retry
     setChaptersError(null)
 
-    const spinnerId = wizard.addSpinner(4, 'Fazendo a separação de capítulos...')
-    wizard.setPhaseLoading(4)
+    const spinnerId = wizard.addSpinner('chapters', 'Fazendo a separação de capítulos...')
+    wizard.setPhaseLoading('chapters')
 
     try {
       const phase4Data = await runAsyncPhase<Phase4Response>({
@@ -1106,13 +1108,13 @@ export function WizardOrchestrator({
       }
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(4, 'needs_review')
+      wizard.setPhaseStatus('chapters', 'needs_review')
       setPhase4FromCache(true)
 
       const chaptersText = phase4Data.chapters
         .map(c => `${c.timestamp} ${c.title}`)
         .join('\n')
-      wizard.addAlert(4, 'Capítulos', chaptersText, 'success')
+      wizard.addAlert('chapters', 'Capítulos', chaptersText, 'success')
       setChaptersResult(phase4Data)
 
       // Update videoData with chapters (persisted by API route)
@@ -1129,8 +1131,8 @@ export function WizardOrchestrator({
       }
       const message = error instanceof Error ? error.message : 'Erro ao gerar capítulos'
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseError(4, message)
-      wizard.addAlert(4, 'Erro', message, 'error')
+      wizard.setPhaseError('chapters', message)
+      wizard.addAlert('chapters', 'Erro', message, 'error')
       setChaptersError(message)
       log('ERROR', 'Phase 4 chapters generation failed', { videoId: video.id, error: message })
     }
@@ -1162,7 +1164,7 @@ export function WizardOrchestrator({
     }
 
     // Only process when on phase 4
-    if (wizard.currentPhase !== 4) {
+    if (wizard.currentPhase !== 'chapters') {
       return
     }
 
@@ -1191,7 +1193,7 @@ export function WizardOrchestrator({
       const needsReview = !isReviewed
       setPhase4FromCache(needsReview)
       if (needsReview) {
-        wizard.setPhaseStatus(4, 'needs_review')
+        wizard.setPhaseStatus('chapters', 'needs_review')
       }
 
       // State and alert already handled by cached data effect
@@ -1215,8 +1217,8 @@ export function WizardOrchestrator({
     // Clear previous error state on retry
     setTitlesError(null)
 
-    const spinnerId = wizard.addSpinner(5, 'Pensando em boas sugestoes de titulo...')
-    wizard.setPhaseLoading(5)
+    const spinnerId = wizard.addSpinner('title', 'Pensando em boas sugestoes de titulo...')
+    wizard.setPhaseLoading('title')
 
     try {
       const phase5Data = await runAsyncPhase<Phase5Response>({
@@ -1232,9 +1234,9 @@ export function WizardOrchestrator({
       }
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(5, 'pending')
+      wizard.setPhaseStatus('title', 'pending')
       wizard.addAlert(
-        5,
+        'title',
         'Titulos',
         'Escolha o melhor titulo para o video, ou me de uma dica para eu poder ajudar melhor.',
         'success'
@@ -1252,8 +1254,8 @@ export function WizardOrchestrator({
       }
       const message = error instanceof Error ? error.message : 'Erro ao gerar titulos'
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseError(5, message)
-      wizard.addAlert(5, 'Erro', message, 'error')
+      wizard.setPhaseError('title', message)
+      wizard.addAlert('title', 'Erro', message, 'error')
       setTitlesError(message)
       log('ERROR', 'Phase 5 title suggestions failed', { videoId: video.id, error: message })
     }
@@ -1282,7 +1284,7 @@ export function WizardOrchestrator({
     }
 
     // Only process when on phase 5
-    if (wizard.currentPhase !== 5) {
+    if (wizard.currentPhase !== 'title') {
       return
     }
 
@@ -1342,7 +1344,7 @@ export function WizardOrchestrator({
     setVideoData(prev => ({ ...prev, title }))
 
     // Mark phase 5 as completed when title is selected
-    wizard.setPhaseStatus(5, 'completed')
+    wizard.setPhaseStatus('title', 'completed')
 
     // SEO interdependency: If title changed, invalidate description and tags
     if (titleChanged) {
@@ -1359,7 +1361,7 @@ export function WizardOrchestrator({
       setVideoData(prev => ({ ...prev, description: undefined, tags: undefined }))
 
       // Invalidate phases 6, 7, 8 in wizard state
-      wizard.invalidateFromPhase(5)
+      wizard.invalidateFromPhase('title')
     }
 
     try {
@@ -1379,7 +1381,7 @@ export function WizardOrchestrator({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao salvar titulo'
       log('ERROR', 'Failed to persist title', { videoId: video.id, error: message })
-      wizard.addAlert(5, 'Erro', message, 'error')
+      wizard.addAlert('title', 'Erro', message, 'error')
       // Revert optimistic update on error
       setVideoData(prev => ({ ...prev, title: previousTitle }))
     }
@@ -1401,7 +1403,7 @@ export function WizardOrchestrator({
       setTitlesResult(null)
 
       // Mark subsequent phases for revalidation (invalidates 6, 7, 8)
-      wizard.invalidateFromPhase(5)
+      wizard.invalidateFromPhase('title')
 
       // Clear description and tags results (SEO interdependency)
       setDescriptionResult(null)
@@ -1435,7 +1437,7 @@ export function WizardOrchestrator({
     // Clear previous error state on retry
     setShortTitlesError(null)
 
-    const spinnerId = wizard.addSpinner(5, 'Gerando sugestoes de titulo curto para thumbnail...')
+    const spinnerId = wizard.addSpinner('title', 'Gerando sugestoes de titulo curto para thumbnail...')
 
     try {
       const phase5BData = await runAsyncPhase<Phase5BResponse>({
@@ -1451,9 +1453,9 @@ export function WizardOrchestrator({
       }
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(5, 'completed')
+      wizard.setPhaseStatus('title', 'completed')
       wizard.addAlert(
-        5,
+        'title',
         'Titulos Curtos',
         'Escolha o melhor titulo curto para a thumbnail.',
         'success'
@@ -1471,8 +1473,8 @@ export function WizardOrchestrator({
       }
       const message = error instanceof Error ? error.message : 'Erro ao gerar titulos curtos'
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(5, 'completed')
-      wizard.addAlert(5, 'Erro', message, 'error')
+      wizard.setPhaseStatus('title', 'completed')
+      wizard.addAlert('title', 'Erro', message, 'error')
       setShortTitlesError(message)
       log('ERROR', 'Phase 5B short titles failed', { videoId: video.id, error: message })
     }
@@ -1557,7 +1559,7 @@ export function WizardOrchestrator({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao salvar titulo curto'
       log('ERROR', 'Failed to persist short title', { videoId: video.id, error: message })
-      wizard.addAlert(5, 'Erro', message, 'error')
+      wizard.addAlert('title', 'Erro', message, 'error')
       // Revert optimistic update on error
       setVideoData(prev => ({ ...prev, shortTitle: undefined }))
     }
@@ -1599,8 +1601,8 @@ export function WizardOrchestrator({
     // Clear previous error state on retry
     setDescriptionError(null)
 
-    const spinnerId = wizard.addSpinner(6, 'Calculando uma descricao otimizada para voce...')
-    wizard.setPhaseLoading(6)
+    const spinnerId = wizard.addSpinner('description', 'Calculando uma descricao otimizada para voce...')
+    wizard.setPhaseLoading('description')
 
     try {
       const phase6Data = await runAsyncPhase<Phase6Response>({
@@ -1616,9 +1618,9 @@ export function WizardOrchestrator({
       }
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(6, 'completed')
+      wizard.setPhaseStatus('description', 'completed')
       wizard.addAlert(
-        6,
+        'description',
         'Descricao',
         'Confira a descricao e faca os ajustes se necessario:',
         'success'
@@ -1638,8 +1640,8 @@ export function WizardOrchestrator({
       }
       const message = error instanceof Error ? error.message : 'Erro ao gerar descricao'
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseError(6, message)
-      wizard.addAlert(6, 'Erro', message, 'error')
+      wizard.setPhaseError('description', message)
+      wizard.addAlert('description', 'Erro', message, 'error')
       setDescriptionError(message)
       log('ERROR', 'Phase 6 description generation failed', { videoId: video.id, error: message })
     }
@@ -1668,7 +1670,7 @@ export function WizardOrchestrator({
     }
 
     // Only process when on phase 6
-    if (wizard.currentPhase !== 6) {
+    if (wizard.currentPhase !== 'description') {
       return
     }
 
@@ -1750,14 +1752,14 @@ export function WizardOrchestrator({
         setVideoData(prev => ({ ...prev, tags: undefined }))
 
         // Invalidate phases 7, 8 in wizard state
-        wizard.invalidateFromPhase(6)
+        wizard.invalidateFromPhase('description')
       }
 
       log('INFO', 'Description persisted successfully', { videoId: video.id })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao salvar descricao'
       log('ERROR', 'Failed to persist description', { videoId: video.id, error: message })
-      wizard.addAlert(6, 'Erro', message, 'error')
+      wizard.addAlert('description', 'Erro', message, 'error')
     }
   }, [video.id, descriptionResult?.description, wizard])
 
@@ -1777,7 +1779,7 @@ export function WizardOrchestrator({
       setDescriptionResult(null)
 
       // Mark subsequent phases for revalidation (invalidates 7, 8)
-      wizard.invalidateFromPhase(6)
+      wizard.invalidateFromPhase('description')
 
       // Clear tags result (SEO interdependency)
       setTagsResult(null)
@@ -1809,8 +1811,8 @@ export function WizardOrchestrator({
     // Clear previous error state on retry
     setTagsError(null)
 
-    const spinnerId = wizard.addSpinner(7, 'Pensando nas melhores tags para o video...')
-    wizard.setPhaseLoading(7)
+    const spinnerId = wizard.addSpinner('tags', 'Pensando nas melhores tags para o video...')
+    wizard.setPhaseLoading('tags')
 
     try {
       const phase7Data = await runAsyncPhase<Phase7Response>({
@@ -1826,9 +1828,9 @@ export function WizardOrchestrator({
       }
 
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseStatus(7, 'completed')
+      wizard.setPhaseStatus('tags', 'completed')
       wizard.addAlert(
-        7,
+        'tags',
         'Tags',
         'Adicione e remova tags conforme necessario.',
         'success'
@@ -1848,8 +1850,8 @@ export function WizardOrchestrator({
       }
       const message = error instanceof Error ? error.message : 'Erro ao gerar tags'
       wizard.removeSpinner(spinnerId)
-      wizard.setPhaseError(7, message)
-      wizard.addAlert(7, 'Erro', message, 'error')
+      wizard.setPhaseError('tags', message)
+      wizard.addAlert('tags', 'Erro', message, 'error')
       setTagsError(message)
       log('ERROR', 'Phase 7 tags generation failed', { videoId: video.id, error: message })
     }
@@ -1878,7 +1880,7 @@ export function WizardOrchestrator({
     }
 
     // Only process when on phase 7
-    if (wizard.currentPhase !== 7) {
+    if (wizard.currentPhase !== 'tags') {
       return
     }
 
@@ -2127,7 +2129,7 @@ export function WizardOrchestrator({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao salvar tags'
       log('ERROR', 'Failed to persist tags', { videoId: video.id, error: message })
-      wizard.addAlert(7, 'Erro', message, 'error')
+      wizard.addAlert('tags', 'Erro', message, 'error')
     }
   }, [video.id, wizard])
 
@@ -2148,7 +2150,7 @@ export function WizardOrchestrator({
 
       // No subsequent phases to mark (Phase 7 is the last LLM phase)
       // But invalidate phase 8 so it requires re-send
-      wizard.invalidateFromPhase(7)
+      wizard.invalidateFromPhase('tags')
 
       // Set processing ref to prevent auto-processing effect from triggering
       phase7ProcessingRef.current = video.id
@@ -2194,7 +2196,7 @@ export function WizardOrchestrator({
       const phaseNames = unreviewedPhases.map(p => p === 2 ? 'Checagem de Edição' : 'Riscos e Conformidade')
       const message = `Antes de publicar, você precisa revisar: ${phaseNames.join(' e ')}`
       setPhase8Error(message)
-      wizard.addAlert(8, 'Revisão Pendente', message, 'warning')
+      wizard.addAlert('publish', 'Revisão Pendente', message, 'warning')
       log('WARN', 'Cannot send to YouTube - phases need review', { videoId: video.id, unreviewedPhases })
       return
     }
@@ -2202,13 +2204,13 @@ export function WizardOrchestrator({
     // VALIDATION: Check required fields
     if (!videoData.title?.trim()) {
       setPhase8Error('O título do vídeo é obrigatório')
-      wizard.addAlert(8, 'Dados Incompletos', 'O título do vídeo é obrigatório', 'warning')
+      wizard.addAlert('publish', 'Dados Incompletos', 'O título do vídeo é obrigatório', 'warning')
       return
     }
 
     setIsSending(true)
 
-    const spinnerId = wizard.addSpinner(8, 'Enviando metadados para o YouTube...')
+    const spinnerId = wizard.addSpinner('publish', 'Enviando metadados para o YouTube...')
 
     try {
       // Fetch podcast settings to get youtubeFooter and podcast name
@@ -2318,7 +2320,7 @@ export function WizardOrchestrator({
       setIsSending(false)
       setIsSent(true)
       wizard.addAlert(
-        8,
+        'publish',
         'Publicado!',
         'Os metadados foram atualizados no YouTube com sucesso.',
         'success'
@@ -2337,7 +2339,7 @@ export function WizardOrchestrator({
       setIsSending(false)
       const message = error instanceof Error ? error.message : 'Erro ao enviar para o YouTube'
       setPhase8Error(message)
-      wizard.addAlert(8, 'Erro', message, 'error')
+      wizard.addAlert('publish', 'Erro', message, 'error')
       log('ERROR', 'Failed to send video to YouTube', { videoId: video.id, error: message })
     }
   }, [video.id, video.editingIssues, video.riskAndCompliance, videoData, wizard, onVideoStatusChange])
@@ -2355,6 +2357,10 @@ export function WizardOrchestrator({
    * Persists the phase to reviewedPhases array in Firestore.
    */
   const handleConfirmReview = useCallback(async (phase: 2 | 3 | 4) => {
+    // phase stays numeric here — reviewedPhases is numeric in Firestore (boundary).
+    // Map to the semantic ID for the wizard state calls.
+    const reviewPhaseIds = { 2: 'edit-check', 3: 'risk', 4: 'chapters' } as const
+    const reviewPhaseId = reviewPhaseIds[phase]
     log('INFO', 'Confirming review for phase', { videoId: video.id, phase })
     setIsConfirmingReview(true)
 
@@ -2390,13 +2396,13 @@ export function WizardOrchestrator({
       } else {
         setPhase4FromCache(false)
       }
-      wizard.setPhaseStatus(phase, 'completed')
+      wizard.setPhaseStatus(reviewPhaseId, 'completed')
 
       log('INFO', 'Review confirmed', { videoId: video.id, phase })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao confirmar revisao'
       log('ERROR', 'Failed to confirm review', { videoId: video.id, phase, error: message })
-      wizard.addAlert(phase, 'Erro', message, 'error')
+      wizard.addAlert(reviewPhaseId, 'Erro', message, 'error')
     } finally {
       setIsConfirmingReview(false)
     }
@@ -2436,10 +2442,8 @@ export function WizardOrchestrator({
   )
 
   const interactivePanel = useMemo(() => {
-    // Phase 0 is only for cut and reel videos
-    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
-    // but can be 0 at runtime for cut/reel videos
-    if ((wizard.currentPhase as number) === 0 && (video.videoType === 'cut' || video.videoType === 'reel')) {
+    // Parent phase is only for cut and reel videos
+    if (wizard.currentPhase === 'parent' && (video.videoType === 'cut' || video.videoType === 'reel')) {
       return (
         <Phase0ParentSelection
           wizard={wizard}
@@ -2487,14 +2491,14 @@ export function WizardOrchestrator({
             // Atualizamos o videoData local pra que Phase 8 leia o URL correto sem
             // depender de um novo fetch — o storage Firestore já está coerente.
             setVideoData((prev) => ({ ...prev, storageThumbnailUrl: payload.newStorageUrl }))
-            wizard.completePhaseAndAdvance('THUMB', {}, features)
+            wizard.completePhaseAndAdvance('thumbnail', {}, features)
           }}
         />
       )
     }
 
     switch (wizard.currentPhase) {
-      case 1:
+      case 'critique':
         return (
           <Phase1Critique
             wizard={wizard}
@@ -2503,7 +2507,7 @@ export function WizardOrchestrator({
             onContextChange={handleContextChange}
           />
         )
-      case 2:
+      case 'edit-check':
         return (
           <Phase2EditCheck
             wizard={wizard}
@@ -2521,7 +2525,7 @@ export function WizardOrchestrator({
             isConfirmingReview={isConfirmingReview}
           />
         )
-      case 3:
+      case 'risk':
         return (
           <Phase3Compliance
             wizard={wizard}
@@ -2539,7 +2543,7 @@ export function WizardOrchestrator({
             isConfirmingReview={isConfirmingReview}
           />
         )
-      case 4:
+      case 'chapters':
         return (
           <Phase4Chapters
             wizard={wizard}
@@ -2558,7 +2562,7 @@ export function WizardOrchestrator({
             onChapterChange={handleChapterChange}
           />
         )
-      case 5:
+      case 'title':
         return (
           <Phase5Title
             wizard={wizard}
@@ -2575,7 +2579,7 @@ export function WizardOrchestrator({
             onSuggestedTitleEdit={handleSuggestedTitleEdit}
           />
         )
-      case 6:
+      case 'description':
         return (
           <Phase6Description
             wizard={wizard}
@@ -2591,7 +2595,7 @@ export function WizardOrchestrator({
             onDescriptionChange={handleDescriptionChange}
           />
         )
-      case 7:
+      case 'tags':
         return (
           <Phase7Tags
             wizard={wizard}
@@ -2608,7 +2612,7 @@ export function WizardOrchestrator({
             features={features}
           />
         )
-      case 8:
+      case 'publish':
         return (
           <Phase8Publish
             video={videoData}

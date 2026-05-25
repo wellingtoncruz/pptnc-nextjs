@@ -34,24 +34,24 @@ function createMockWizard(overrides?: Partial<UseWizardReturn>): UseWizardReturn
     state: {
       videoId: 'test-video',
       videoType: 'reel',
-      currentPhase: 1,
+      currentPhase: 'critique',
       phases: {
-        1: { status: 'pending', data: null, error: null },
-        2: { status: 'pending', data: null, error: null },
-        3: { status: 'pending', data: null, error: null },
-        4: { status: 'pending', data: null, error: null },
-        5: { status: 'pending', data: null, error: null },
-        6: { status: 'pending', data: null, error: null },
-        7: { status: 'pending', data: null, error: null },
-        8: { status: 'pending', data: null, error: null },
+        critique: { status: 'pending', data: null, error: null },
+        'edit-check': { status: 'pending', data: null, error: null },
+        risk: { status: 'pending', data: null, error: null },
+        chapters: { status: 'pending', data: null, error: null },
+        title: { status: 'pending', data: null, error: null },
+        description: { status: 'pending', data: null, error: null },
+        tags: { status: 'pending', data: null, error: null },
+        publish: { status: 'pending', data: null, error: null },
       },
     },
-    currentPhase: 1,
+    currentPhase: 'critique',
     currentPhaseData: { status: 'pending', data: null, error: null },
-    currentPhaseMetadata: { phase: 1, label: 'Crítica', type: 'immutable', spinnerText: '', alertTitle: '' },
+    currentPhaseMetadata: { phase: 'critique', label: 'Crítica', type: 'immutable', spinnerText: '', alertTitle: '' },
     progress: 0,
     isComplete: false,
-    firstIncompletePhase: 1,
+    firstIncompletePhase: 'critique',
     goToPhase: vi.fn(),
     goToNextPhase: vi.fn(),
     canNavigateToPhase: vi.fn().mockReturnValue(true),
@@ -524,7 +524,7 @@ describe('Phase0ParentSelection', () => {
 
       await waitFor(() => {
         // Phase 0 uses completePhaseAndAdvance to advance to phase 5
-        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(0, { parentEpisodeId: 'ep-1' })
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('parent', { parentEpisodeId: 'ep-1' })
       })
     })
 

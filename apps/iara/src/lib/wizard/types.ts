@@ -14,9 +14,17 @@
 
 import { z } from 'zod'
 
+import type { TrackedPhaseId, WizardPhaseId } from './phase-id-map'
+
 /**
  * Zod schema for validating wizard phase numbers.
  * Phases 1-7 have LLM calls, phase 8 is YouTube API only.
+ *
+ * LEGACY (TD-7): numeric phases survive only at the serialization boundaries
+ * (LLM prompt config keyed by phase number, the /api/wizard/phase/[phase] URL
+ * param, Firestore reviewedPhases, wizard-job schema). The wizard state/logic
+ * now uses semantic `WizardPhaseId` (see phase-id-map.ts); the mapper bridges
+ * to/from these legacy numbers at the boundaries.
  */
 export const WizardPhaseSchema = z.union([
   z.literal(1),
@@ -30,23 +38,15 @@ export const WizardPhaseSchema = z.union([
 ])
 
 /**
- * The 8 phases of the wizard.
+ * The 8 numeric phases — LEGACY, kept only for the serialization boundaries
+ * above. In-memory wizard state uses {@link WizardPhaseId} instead.
  */
 export type WizardPhase = z.infer<typeof WizardPhaseSchema>
 
 /**
- * Extended wizard phase that includes phase 0 (parent selection), 5B (short title)
- * and 'THUMB' (thumbnail generation — Epic 22).
- *
- * - Phase 0: Parent video selection (cut/reel only) - NUMBER type
- * - Phase 5B: Short title selection (cut only) - STRING type to differentiate from phase 5
- * - Phase 'THUMB': Thumbnail generation between Tags (7) and Publicar (8). Epic 22.
- *   Gated by `podcast.features.thumbnailGeneration`. Applies to episode and cut only.
- *
- * Note: Phase 0 is numeric for consistency with other phases.
- * Phase '5B' is a string because it's a sub-phase of 5 and needs to be distinguishable.
- * Phase 'THUMB' is a string because it doesn't fit the linear numeric flow
- * (sits between 7 and 8 conditionally).
+ * Extended numeric/string phase — LEGACY. Kept only as the domain of the
+ * bidirectional mapper (phase-id-map.ts). Do not use in new wizard state/logic;
+ * use {@link WizardPhaseId} / {@link TrackedPhaseId}.
  */
 export type ExtendedWizardPhase = 0 | WizardPhase | '5B' | 'THUMB'
 
@@ -86,8 +86,10 @@ export interface PhaseState<T = unknown> {
 export interface WizardState {
   videoId: string
   videoType: VideoTypeForWizard
-  currentPhase: WizardPhase
-  phases: Record<WizardPhase, PhaseState>
+  /** Current phase — any semantic phase ID (incl. extended: parent/short-title/thumbnail). */
+  currentPhase: WizardPhaseId
+  /** Per-phase state for the tracked phases (the former numeric 1-8). */
+  phases: Record<TrackedPhaseId, PhaseState>
 }
 
 /**
@@ -105,7 +107,7 @@ export type AlertSeverity = 'info' | 'success' | 'warning' | 'error'
  */
 export interface ConsoleMessage {
   id: string
-  phase: WizardPhase
+  phase: WizardPhaseId
   type: ConsoleMessageType
   timestamp: Date
   // For spinner
@@ -124,7 +126,7 @@ export interface ConsoleMessage {
  * WizardPhase for compatibility with existing code.
  */
 export interface PhaseMetadata {
-  phase: WizardPhase | 0 // Extended to support phase 0
+  phase: WizardPhaseId
   label: string
   type: PhaseType
   spinnerText: string
@@ -136,14 +138,14 @@ export interface PhaseMetadata {
  * Used for syncing localStorage state with Firestore data.
  */
 export interface PhaseDataFields {
-  1: 'critique'
-  2: 'editingIssues'
-  3: 'riskAndCompliance'
-  4: 'chapters'
-  5: 'title'
-  6: 'description'
-  7: 'tags'
-  8: 'status' // Phase 8 checks if status === 'sent'
+  critique: 'critique'
+  'edit-check': 'editingIssues'
+  risk: 'riskAndCompliance'
+  chapters: 'chapters'
+  title: 'title'
+  description: 'description'
+  tags: 'tags'
+  publish: 'status' // Publish phase checks if status === 'sent'
 }
 
 /**
@@ -171,14 +173,14 @@ export interface VideoDataForSync {
  * Actions for the wizard reducer.
  */
 export type WizardAction =
-  | { type: 'SET_PHASE'; phase: WizardPhase }
-  | { type: 'SET_PHASE_STATUS'; phase: WizardPhase; status: PhaseStatus }
-  | { type: 'SET_PHASE_DATA'; phase: WizardPhase; data: unknown }
-  | { type: 'SET_PHASE_ERROR'; phase: WizardPhase; error: string }
-  | { type: 'INVALIDATE_FROM_PHASE'; phase: WizardPhase }
+  | { type: 'SET_PHASE'; phase: TrackedPhaseId }
+  | { type: 'SET_PHASE_STATUS'; phase: TrackedPhaseId; status: PhaseStatus }
+  | { type: 'SET_PHASE_DATA'; phase: TrackedPhaseId; data: unknown }
+  | { type: 'SET_PHASE_ERROR'; phase: TrackedPhaseId; error: string }
+  | { type: 'INVALIDATE_FROM_PHASE'; phase: TrackedPhaseId }
   | {
       type: 'COMPLETE_PHASE_AND_ADVANCE'
-      phase: ExtendedWizardPhase
+      phase: WizardPhaseId
       data: unknown
       /**
        * Optional podcast features (Epic 22). When `thumbnailGeneration` is on,

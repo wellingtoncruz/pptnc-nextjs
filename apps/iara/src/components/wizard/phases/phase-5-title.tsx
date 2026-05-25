@@ -173,7 +173,7 @@ export function Phase5Title({
   const handleAdvanceClick = () => {
     if (!canAdvance) return
     setIsAdvancing(true)
-    wizard.completePhaseAndAdvance(5, { selectedTitle })
+    wizard.completePhaseAndAdvance('title', { selectedTitle })
   }
 
   const handleRevalidateClick = () => {
@@ -336,7 +336,7 @@ export function Phase5Title({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseNameForType(5, video.videoType)}
+                Avançar para {getNextPhaseNameForType('title', video.videoType)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

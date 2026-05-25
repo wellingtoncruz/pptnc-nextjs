@@ -87,6 +87,50 @@ export const WIZARD_PHASE_IDS: readonly WizardPhaseId[] = [
   'publish',
 ]
 
+/**
+ * The "tracked" phase IDs — the ones with a slot in `WizardState.phases`
+ * (the former numeric phases 1-8). The "extended" phases (`parent`,
+ * `short-title`, `thumbnail`) are NOT tracked in the state record; their
+ * completion is derived from video data (parentEpisodeId / shortTitle /
+ * storageThumbnailUrl).
+ */
+export type TrackedPhaseId =
+  | 'critique'
+  | 'edit-check'
+  | 'risk'
+  | 'chapters'
+  | 'title'
+  | 'description'
+  | 'tags'
+  | 'publish'
+
+/** Tracked phase IDs in canonical order (replaces the numeric WIZARD_PHASES). */
+export const TRACKED_PHASE_IDS: readonly TrackedPhaseId[] = [
+  'critique',
+  'edit-check',
+  'risk',
+  'chapters',
+  'title',
+  'description',
+  'tags',
+  'publish',
+]
+
+const TRACKED_SET: ReadonlySet<string> = new Set(TRACKED_PHASE_IDS)
+
+/** Type guard: whether a phase ID has a slot in WizardState.phases. */
+export function isTrackedPhaseId(id: WizardPhaseId): id is TrackedPhaseId {
+  return TRACKED_SET.has(id)
+}
+
+/**
+ * Canonical order index of a phase ID (0-based over WIZARD_PHASE_IDS).
+ * Replaces numeric comparisons like `phase > x` / `phase <= 4`.
+ */
+export function phaseIdOrder(id: WizardPhaseId): number {
+  return WIZARD_PHASE_IDS.indexOf(id)
+}
+
 /** Maps a legacy numeric/string phase to its semantic ID. */
 export function toPhaseId(legacy: ExtendedWizardPhase): WizardPhaseId {
   return LEGACY_TO_ID[legacy]

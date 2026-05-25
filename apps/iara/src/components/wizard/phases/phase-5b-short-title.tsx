@@ -177,7 +177,7 @@ export function Phase5BShortTitle({
     // Use completePhaseAndAdvance to properly mark phase 5B as complete and navigate.
     // Note: Phase 5B completion is tracked via video.shortTitle in Firestore,
     // not in the wizard phases record (which only has phases 1-8).
-    wizard.completePhaseAndAdvance('5B', { shortTitle: selectedShortTitle })
+    wizard.completePhaseAndAdvance('short-title', { shortTitle: selectedShortTitle })
   }
 
   const handleRevalidateClick = () => {

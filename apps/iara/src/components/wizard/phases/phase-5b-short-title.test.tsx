@@ -19,24 +19,24 @@ function createMockWizard(overrides?: Partial<UseWizardReturn>): UseWizardReturn
     state: {
       videoId: 'test-video',
       videoType: 'cut',
-      currentPhase: 5,
+      currentPhase: 'title',
       phases: {
-        1: { status: 'completed', data: null, error: null },
-        2: { status: 'completed', data: null, error: null },
-        3: { status: 'completed', data: null, error: null },
-        4: { status: 'completed', data: null, error: null },
-        5: { status: 'pending', data: null, error: null },
-        6: { status: 'pending', data: null, error: null },
-        7: { status: 'pending', data: null, error: null },
-        8: { status: 'pending', data: null, error: null },
+        critique: { status: 'completed', data: null, error: null },
+        'edit-check': { status: 'completed', data: null, error: null },
+        risk: { status: 'completed', data: null, error: null },
+        chapters: { status: 'completed', data: null, error: null },
+        title: { status: 'pending', data: null, error: null },
+        description: { status: 'pending', data: null, error: null },
+        tags: { status: 'pending', data: null, error: null },
+        publish: { status: 'pending', data: null, error: null },
       },
     },
-    currentPhase: 5,
+    currentPhase: 'title',
     currentPhaseData: { status: 'pending', data: null, error: null },
-    currentPhaseMetadata: { phase: 5, label: 'Título Curto', type: 'reprocessable', spinnerText: '', alertTitle: '' },
+    currentPhaseMetadata: { phase: 'short-title', label: 'Título Curto', type: 'reprocessable', spinnerText: '', alertTitle: '' },
     progress: 50,
     isComplete: false,
-    firstIncompletePhase: 5,
+    firstIncompletePhase: 'title',
     goToPhase: vi.fn(),
     goToNextPhase: vi.fn(),
     canNavigateToPhase: vi.fn().mockReturnValue(true),
@@ -307,7 +307,7 @@ describe('Phase5BShortTitle', () => {
 
       // Phase 5B calls completePhaseAndAdvance to mark phase as complete and navigate
       // The selected short title is passed as data
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('5B', { shortTitle: 'SEGREDO REVELADO' })
+      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('short-title', { shortTitle: 'SEGREDO REVELADO' })
     })
   })
 

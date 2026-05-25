@@ -26,19 +26,22 @@ const mockVideo: Video = {
 }
 
 // Create mock wizard state
-function createMockWizardState(currentPhase: number = 1): WizardState {
+function createMockWizardState(
+  currentPhase: WizardState['currentPhase'] = 'critique'
+): WizardState {
   return {
     videoId: 'test-video-123',
-    currentPhase: currentPhase as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8,
+    videoType: 'episode',
+    currentPhase,
     phases: {
-      1: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      2: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      3: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      4: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      5: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      6: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      7: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      8: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      critique: { status: 'pending', data: null, error: null },
+      'edit-check': { status: 'pending', data: null, error: null },
+      risk: { status: 'pending', data: null, error: null },
+      chapters: { status: 'pending', data: null, error: null },
+      title: { status: 'pending', data: null, error: null },
+      description: { status: 'pending', data: null, error: null },
+      tags: { status: 'pending', data: null, error: null },
+      publish: { status: 'pending', data: null, error: null },
     },
   }
 }
@@ -47,16 +50,16 @@ function createMockWizardState(currentPhase: number = 1): WizardState {
 function createMockWizard(overrides: Partial<UseWizardReturn> = {}): UseWizardReturn {
   return {
     state: createMockWizardState(),
-    currentPhase: 1,
+    currentPhase: 'critique',
     phases: {
-      1: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      2: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      3: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      4: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      5: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      6: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      7: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      8: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      critique: { status: 'pending', data: null, error: null },
+      'edit-check': { status: 'pending', data: null, error: null },
+      risk: { status: 'pending', data: null, error: null },
+      chapters: { status: 'pending', data: null, error: null },
+      title: { status: 'pending', data: null, error: null },
+      description: { status: 'pending', data: null, error: null },
+      tags: { status: 'pending', data: null, error: null },
+      publish: { status: 'pending', data: null, error: null },
     },
     consoleMessages: [],
     setPhaseStatus: vi.fn(),
@@ -169,7 +172,7 @@ describe('WizardLayout Integration Tests', () => {
       const consoleMessages = [
         {
           id: 'alert-1',
-          phase: 1 as const,
+          phase: 'critique' as const,
           type: 'alert' as const,
           timestamp: new Date(),
           alertTitle: 'Crítica concluída',
@@ -193,7 +196,7 @@ describe('WizardLayout Integration Tests', () => {
       const consoleMessages = [
         {
           id: 'spinner-1',
-          phase: 2 as const,
+          phase: 'edit-check' as const,
           type: 'spinner' as const,
           timestamp: new Date(),
           spinnerText: 'Analisando edição do vídeo...',
@@ -215,7 +218,7 @@ describe('WizardLayout Integration Tests', () => {
       const consoleMessages = [
         {
           id: 'alert-1',
-          phase: 1 as const,
+          phase: 'critique' as const,
           type: 'alert' as const,
           timestamp: new Date(),
           alertTitle: 'Alerta com texto',

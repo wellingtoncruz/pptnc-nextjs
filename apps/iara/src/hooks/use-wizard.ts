@@ -6,15 +6,16 @@ import {
   canNavigateToPhase,
   ConsoleMessage,
   createInitialWizardState,
-  ExtendedWizardPhase,
   getFirstIncompletePhase,
   getNextPhase,
   getWizardProgress,
+  isTrackedPhaseId,
   isWizardComplete,
-  PHASE_METADATA,
+  PHASE_ID_METADATA,
   PhaseStatus,
+  type TrackedPhaseId,
   VideoDataForSync,
-  WizardPhase,
+  type WizardPhaseId,
   WizardState,
   wizardReducer,
 } from '@/lib/wizard'
@@ -194,7 +195,7 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
 
   // Navigation
   const goToPhase = useCallback(
-    (phase: WizardPhase) => {
+    (phase: TrackedPhaseId) => {
       if (canNavigateToPhase(state, phase)) {
         dispatch({ type: 'SET_PHASE', phase })
       }
@@ -210,23 +211,23 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
   }, [state])
 
   // Phase status updates
-  const setPhaseStatus = useCallback((phase: WizardPhase, status: PhaseStatus) => {
+  const setPhaseStatus = useCallback((phase: TrackedPhaseId, status: PhaseStatus) => {
     dispatch({ type: 'SET_PHASE_STATUS', phase, status })
   }, [])
 
-  const setPhaseLoading = useCallback((phase: WizardPhase) => {
+  const setPhaseLoading = useCallback((phase: TrackedPhaseId) => {
     dispatch({ type: 'SET_PHASE_STATUS', phase, status: 'loading' })
   }, [])
 
-  const setPhaseData = useCallback((phase: WizardPhase, data: unknown) => {
+  const setPhaseData = useCallback((phase: TrackedPhaseId, data: unknown) => {
     dispatch({ type: 'SET_PHASE_DATA', phase, data })
   }, [])
 
-  const setPhaseError = useCallback((phase: WizardPhase, error: string) => {
+  const setPhaseError = useCallback((phase: TrackedPhaseId, error: string) => {
     dispatch({ type: 'SET_PHASE_ERROR', phase, error })
   }, [])
 
-  const invalidateFromPhase = useCallback((phase: WizardPhase) => {
+  const invalidateFromPhase = useCallback((phase: TrackedPhaseId) => {
     dispatch({ type: 'INVALIDATE_FROM_PHASE', phase })
   }, [])
 
@@ -247,7 +248,7 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
    */
   const completePhaseAndAdvance = useCallback(
     (
-      phase: ExtendedWizardPhase,
+      phase: WizardPhaseId,
       data: unknown,
       features?: { thumbnailGeneration?: boolean }
     ) => {
@@ -281,14 +282,14 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
   }, [])
 
   // Console message management
-  const addSpinner = useCallback((phase: WizardPhase, text?: string) => {
+  const addSpinner = useCallback((phase: WizardPhaseId, text?: string) => {
     const messageId = `${idPrefix}-spinner-${phase}-${++messageCounter.current}`
     const message: ConsoleMessage = {
       id: messageId,
       phase,
       type: 'spinner',
       timestamp: new Date(),
-      spinnerText: text ?? PHASE_METADATA[phase].spinnerText,
+      spinnerText: text ?? PHASE_ID_METADATA[phase].spinnerText,
     }
     setConsoleMessages((prev) => [...prev, message])
     return message.id
@@ -300,7 +301,7 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
 
   const addAlert = useCallback(
     (
-      phase: WizardPhase,
+      phase: WizardPhaseId,
       title: string,
       text: string,
       severity: ConsoleMessage['alertSeverity'] = 'info'
@@ -327,12 +328,13 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
 
   // Computed values
   const currentPhaseData = useMemo(
-    () => state.phases[state.currentPhase],
+    () =>
+      isTrackedPhaseId(state.currentPhase) ? state.phases[state.currentPhase] : undefined,
     [state.phases, state.currentPhase]
   )
 
   const currentPhaseMetadata = useMemo(
-    () => PHASE_METADATA[state.currentPhase],
+    () => PHASE_ID_METADATA[state.currentPhase],
     [state.currentPhase]
   )
 
@@ -344,7 +346,7 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
 
   // Memoize canNavigateToPhase to avoid creating new function on every render
   const canNavigateToPhaseCallback = useCallback(
-    (phase: WizardPhase) => canNavigateToPhase(state, phase),
+    (phase: TrackedPhaseId) => canNavigateToPhase(state, phase),
     [state]
   )
 

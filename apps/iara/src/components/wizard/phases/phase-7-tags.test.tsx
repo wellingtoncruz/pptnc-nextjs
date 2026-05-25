@@ -46,16 +46,16 @@ const mockEmptyTags: Phase7Response = {
 // Create mock wizard
 function createMockWizard(): UseWizardReturn {
   return {
-    currentPhase: 7,
+    currentPhase: 'tags',
     phases: {
-      1: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      2: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      3: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      4: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      5: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      6: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      7: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      8: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      critique: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      'edit-check': { status: 'completed', needsRevalidation: false, data: null, error: null },
+      risk: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      chapters: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      title: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      description: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      tags: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      publish: { status: 'pending', needsRevalidation: false, data: null, error: null },
     },
     consoleMessages: [],
     setPhaseStatus: vi.fn(),
@@ -294,7 +294,7 @@ describe('Phase7Tags', () => {
       // Wait for async operations to complete
       await waitFor(() => {
         expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(
-          7,
+          'tags',
           { tags: mockTagsWithData.tags },
           undefined // features prop not passed in this test
         )
@@ -322,7 +322,7 @@ describe('Phase7Tags', () => {
       // Wait for async operations to complete
       await waitFor(() => {
         expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(
-          7,
+          'tags',
           { tags: mockTagsWithData.tags },
           undefined // features prop not passed in this test
         )
@@ -352,7 +352,7 @@ describe('Phase7Tags', () => {
       // and routes 7 -> 'THUMB' instead of skipping straight to 8.
       await waitFor(() => {
         expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(
-          7,
+          'tags',
           { tags: mockTagsWithData.tags },
           { thumbnailGeneration: true }
         )

@@ -424,7 +424,7 @@ export function Phase7Tags({
         error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
-    wizard.completePhaseAndAdvance(7, { tags }, features)
+    wizard.completePhaseAndAdvance('tags', { tags }, features)
   }
 
   const handleRevalidateClick = () => {
@@ -594,7 +594,7 @@ export function Phase7Tags({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseNameForType(7, video.videoType, features)}
+                Avançar para {getNextPhaseNameForType('tags', video.videoType, features)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

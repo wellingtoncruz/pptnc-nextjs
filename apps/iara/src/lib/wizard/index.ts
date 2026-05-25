@@ -1,5 +1,5 @@
 /**
- * Wizard module - state management for the 8-phase video processing flow.
+ * Wizard module - state management for the multi-phase video processing flow.
  */
 
 // Types
@@ -22,19 +22,30 @@ export type {
 // Schemas
 export { WizardPhaseSchema } from './types'
 
+// Phase IDs + mapper (TD-7)
+export {
+  toPhaseId,
+  toLegacyPhase,
+  isWizardPhaseId,
+  isTrackedPhaseId,
+  phaseIdOrder,
+  WIZARD_PHASE_IDS,
+  TRACKED_PHASE_IDS,
+  type WizardPhaseId,
+  type TrackedPhaseId,
+} from './phase-id-map'
+
 // Constants
 export {
-  EXTENDED_PHASE_METADATA,
-  IMMUTABLE_PHASES,
-  PHASE_METADATA,
-  PHASES_BY_VIDEO_TYPE,
-  REPROCESSABLE_PHASES,
-  WIZARD_PHASES,
-  getPhasesForVideoType,
-  getPhasesForVideoTypeWithFeatures,
-  getPhasesToInvalidate,
-  isPhaseValidForVideoType,
-  isReprocessablePhase,
+  PHASE_ID_METADATA,
+  IMMUTABLE_PHASE_IDS,
+  REPROCESSABLE_PHASE_IDS,
+  PHASE_IDS_BY_VIDEO_TYPE,
+  getPhaseIdsForVideoType,
+  getPhaseIdsForVideoTypeWithFeatures,
+  getPhaseIdsToInvalidate,
+  isPhaseIdValidForVideoType,
+  isReprocessablePhaseId,
 } from './constants'
 
 // State machine

@@ -41,16 +41,16 @@ const mockEmptyTitles: Phase5Response = {
 // Create mock wizard
 function createMockWizard(): UseWizardReturn {
   return {
-    currentPhase: 5,
+    currentPhase: 'title',
     phases: {
-      1: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      2: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      3: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      4: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      5: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      6: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      7: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      8: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      critique: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      'edit-check': { status: 'completed', needsRevalidation: false, data: null, error: null },
+      risk: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      chapters: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      title: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      description: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      tags: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      publish: { status: 'pending', needsRevalidation: false, data: null, error: null },
     },
     consoleMessages: [],
     setPhaseStatus: vi.fn(),
@@ -198,7 +198,7 @@ describe('Phase5Title', () => {
       const advanceButton = screen.getByRole('button', { name: /avançar para descri/i })
       fireEvent.click(advanceButton)
 
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(5, {
+      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('title', {
         selectedTitle: 'Titulo 1 - Conservador e profissional',
       })
     })

@@ -1,79 +1,99 @@
 /**
  * Constants and metadata for the wizard phases.
+ *
+ * TD-7 (Epic 25): kebab-native. Phases are identified by semantic
+ * {@link WizardPhaseId}; the former numeric tables were removed.
  */
 
 import {
+  TRACKED_PHASE_IDS,
   WIZARD_PHASE_IDS,
-  toLegacyPhase,
-  toPhaseId,
+  phaseIdOrder,
+  type TrackedPhaseId,
   type WizardPhaseId,
 } from './phase-id-map'
-import type { ExtendedWizardPhase, PhaseMetadata, VideoTypeForWizard, WizardPhase } from './types'
+import type { PhaseMetadata, VideoTypeForWizard } from './types'
 
 /**
- * All wizard phases in order.
- */
-export const WIZARD_PHASES: WizardPhase[] = [1, 2, 3, 4, 5, 6, 7, 8]
-
-/**
- * Metadata for each phase of the wizard.
+ * Metadata for each phase of the wizard, keyed by semantic phase ID.
  *
- * - immutable: Cannot be reprocessed (phases 1-4)
- * - reprocessable: Can be reprocessed with prompt override (phases 5-7)
- * - final: No LLM processing, just API call (phase 8)
+ * - immutable: Cannot be reprocessed (critique, edit-check, risk, chapters, parent)
+ * - reprocessable: Can be reprocessed (title, short-title, description, tags, thumbnail)
+ * - final: No LLM processing, just API call (publish)
  */
-export const PHASE_METADATA: Record<WizardPhase, PhaseMetadata> = {
-  1: {
-    phase: 1,
+export const PHASE_ID_METADATA: Record<WizardPhaseId, PhaseMetadata> = {
+  parent: {
+    phase: 'parent',
+    label: 'Vídeo Pai',
+    type: 'immutable',
+    spinnerText: 'Carregando episódios disponíveis...',
+    alertTitle: 'Seleção de Vídeo Pai',
+  },
+  critique: {
+    phase: 'critique',
     label: 'Crítica',
     type: 'immutable',
     spinnerText: 'Estou assistindo o episódio para te dar uma opinião sincera...',
     alertTitle: 'Crítica do Especialista',
   },
-  2: {
-    phase: 2,
+  'edit-check': {
+    phase: 'edit-check',
     label: 'Edição',
     type: 'immutable',
     spinnerText: 'Verificando se existem falhas de edição perceptíveis...',
     alertTitle: 'Checagem de Edição',
   },
-  3: {
-    phase: 3,
+  risk: {
+    phase: 'risk',
     label: 'Compliance',
     type: 'immutable',
     spinnerText: 'Verificando se existem pontos polêmicos ou riscos de conformidade...',
     alertTitle: 'Riscos e Conformidade',
   },
-  4: {
-    phase: 4,
+  chapters: {
+    phase: 'chapters',
     label: 'Capítulos',
     type: 'immutable',
     spinnerText: 'Fazendo a separação de capítulos...',
     alertTitle: 'Capítulos',
   },
-  5: {
-    phase: 5,
+  title: {
+    phase: 'title',
     label: 'Título',
     type: 'reprocessable',
     spinnerText: 'Pensando em boas sugestões de título...',
     alertTitle: 'Títulos',
   },
-  6: {
-    phase: 6,
+  'short-title': {
+    phase: 'short-title',
+    label: 'Título Curto',
+    type: 'reprocessable',
+    spinnerText: 'Gerando sugestões de título curto para thumbnail...',
+    alertTitle: 'Títulos Curtos',
+  },
+  description: {
+    phase: 'description',
     label: 'Descrição',
     type: 'reprocessable',
     spinnerText: 'Calculando uma descrição otimizada para você...',
     alertTitle: 'Descrição',
   },
-  7: {
-    phase: 7,
+  tags: {
+    phase: 'tags',
     label: 'Tags',
     type: 'reprocessable',
     spinnerText: 'Calculando as tags...',
     alertTitle: 'Tags',
   },
-  8: {
-    phase: 8,
+  thumbnail: {
+    phase: 'thumbnail',
+    label: 'Thumbnail',
+    type: 'reprocessable',
+    spinnerText: 'Gerando thumbnail...',
+    alertTitle: 'Thumbnail',
+  },
+  publish: {
+    phase: 'publish',
     label: 'Publicar',
     type: 'final',
     spinnerText: 'Enviando para o YouTube...',
@@ -81,33 +101,28 @@ export const PHASE_METADATA: Record<WizardPhase, PhaseMetadata> = {
   },
 }
 
-/**
- * Get phases that are reprocessable.
- */
-export const REPROCESSABLE_PHASES: WizardPhase[] = WIZARD_PHASES.filter(
-  (phase) => PHASE_METADATA[phase].type === 'reprocessable'
+/** Tracked phase IDs that are reprocessable. */
+export const REPROCESSABLE_PHASE_IDS: TrackedPhaseId[] = TRACKED_PHASE_IDS.filter(
+  (id) => PHASE_ID_METADATA[id].type === 'reprocessable'
 )
 
-/**
- * Get phases that are immutable.
- */
-export const IMMUTABLE_PHASES: WizardPhase[] = WIZARD_PHASES.filter(
-  (phase) => PHASE_METADATA[phase].type === 'immutable'
+/** Tracked phase IDs that are immutable. */
+export const IMMUTABLE_PHASE_IDS: TrackedPhaseId[] = TRACKED_PHASE_IDS.filter(
+  (id) => PHASE_ID_METADATA[id].type === 'immutable'
 )
 
-/**
- * Check if a phase is reprocessable.
- */
-export function isReprocessablePhase(phase: WizardPhase): boolean {
-  return PHASE_METADATA[phase].type === 'reprocessable'
+/** Check if a phase is reprocessable. */
+export function isReprocessablePhaseId(id: WizardPhaseId): boolean {
+  return PHASE_ID_METADATA[id].type === 'reprocessable'
 }
 
 /**
- * Get phases that would be invalidated if reprocessing from a given phase.
- * Only phases AFTER the given phase are invalidated.
+ * Get tracked phases that would be invalidated if reprocessing from a given phase.
+ * Only phases AFTER the given phase (canonical order) are invalidated.
  */
-export function getPhasesToInvalidate(fromPhase: WizardPhase): WizardPhase[] {
-  return WIZARD_PHASES.filter((phase) => phase > fromPhase)
+export function getPhaseIdsToInvalidate(fromPhase: WizardPhaseId): TrackedPhaseId[] {
+  const fromOrder = phaseIdOrder(fromPhase)
+  return TRACKED_PHASE_IDS.filter((id) => phaseIdOrder(id) > fromOrder)
 }
 
 // ============================================================================
@@ -117,132 +132,55 @@ export function getPhasesToInvalidate(fromPhase: WizardPhase): WizardPhase[] {
 /**
  * Phases available for each video type.
  *
- * - episode: Full flow (phases 1-8)
+ * - episode: Full flow (critique → publish)
  * - cut: Parent selection → Title → Short Title → Description → Tags → Publish
  * - reel: Parent selection → Title → Description → Tags → Publish
- *
- * Phase 0: Parent video selection (cut/reel only)
- * Phase 5B: Short title for thumbnails (cut only)
  */
-export const PHASES_BY_VIDEO_TYPE: Record<VideoTypeForWizard, ExtendedWizardPhase[]> = {
-  episode: [1, 2, 3, 4, 5, 6, 7, 8],
-  cut: [0, 5, '5B', 6, 7, 8],
-  reel: [0, 5, 6, 7, 8],
+export const PHASE_IDS_BY_VIDEO_TYPE: Record<VideoTypeForWizard, WizardPhaseId[]> = {
+  episode: ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'],
+  cut: ['parent', 'title', 'short-title', 'description', 'tags', 'publish'],
+  reel: ['parent', 'title', 'description', 'tags', 'publish'],
 }
 
 /**
- * Returns the valid phases for a given video type.
+ * Returns the valid phase IDs for a given video type.
  * Defaults to episode phases if video type is unknown.
  */
-export function getPhasesForVideoType(videoType: VideoTypeForWizard): ExtendedWizardPhase[] {
-  return PHASES_BY_VIDEO_TYPE[videoType] ?? PHASES_BY_VIDEO_TYPE.episode
-}
-
-/**
- * Checks if a phase is valid for a given video type.
- */
-export function isPhaseValidForVideoType(
-  phase: ExtendedWizardPhase,
-  videoType: VideoTypeForWizard
-): boolean {
-  const validPhases = PHASES_BY_VIDEO_TYPE[videoType]
-  if (!validPhases) return false
-  return validPhases.includes(phase)
-}
-
-/**
- * Extended phase metadata including phase 0, 5B and THUMB.
- * Used for cut, reel and (with feature flag) episode/cut video types.
- *
- * Note: Phase 0 is numeric (consistent with other phases).
- * Phase '5B' is a string to differentiate from phase 5 (full title).
- * Phase 'THUMB' is a string (Epic 22) for thumbnail generation between Tags and Publicar.
- */
-export const EXTENDED_PHASE_METADATA: Record<ExtendedWizardPhase, PhaseMetadata> = {
-  ...PHASE_METADATA,
-  0: {
-    phase: 0, // Phase 0 for parent selection (cut/reel only)
-    label: 'Vídeo Pai',
-    type: 'immutable',
-    spinnerText: 'Carregando episódios disponíveis...',
-    alertTitle: 'Seleção de Vídeo Pai',
-  },
-  '5B': {
-    phase: 5, // Uses phase 5 as base for compatibility with existing code
-    label: 'Título Curto',
-    type: 'reprocessable',
-    spinnerText: 'Gerando sugestões de título curto para thumbnail...',
-    alertTitle: 'Títulos Curtos',
-  },
-  THUMB: {
-    phase: 7, // Uses phase 7 as base for compatibility (sits between 7 and 8)
-    label: 'Thumbnail',
-    type: 'reprocessable', // Producer can regenerate or upload manually multiple times
-    spinnerText: 'Gerando thumbnail...',
-    alertTitle: 'Thumbnail',
-  },
-}
-
-/**
- * Returns the wizard phases for a given video type, optionally inserting the
- * Thumbnail phase (Epic 22) between Tags (7) and Publicar (8) when the podcast
- * has `features.thumbnailGeneration` enabled.
- *
- * Reels never get the Thumbnail phase (scope decision: only episode and cut).
- */
-export function getPhasesForVideoTypeWithFeatures(
-  videoType: VideoTypeForWizard,
-  features?: { thumbnailGeneration?: boolean }
-): ExtendedWizardPhase[] {
-  const base = getPhasesForVideoType(videoType)
-  if (!features?.thumbnailGeneration) return base
-  if (videoType === 'reel') return base
-  // Insert 'THUMB' immediately before phase 8 (Publicar).
-  const publishIndex = base.indexOf(8)
-  if (publishIndex < 0) return base
-  return [...base.slice(0, publishIndex), 'THUMB', ...base.slice(publishIndex)]
-}
-
-// ============================================================================
-// TD-7 (Epic 25) — Semantic phase-ID layer
-// ============================================================================
-// Kebab-case vocabulary for the wizard phases, derived from the legacy numeric
-// structures via the bidirectional mapper (phase-id-map.ts). Story 25.2 adds
-// this layer; stories 25.3-25.5 migrate consumers onto it; 25.7 removes the
-// legacy numeric exports once nothing references them.
-//
-// Deriving from the legacy structures (instead of redefining) guarantees the
-// two representations cannot drift while both exist.
-
-/** Phase IDs available for each video type (kebab equivalent of PHASES_BY_VIDEO_TYPE). */
-export const PHASE_IDS_BY_VIDEO_TYPE: Record<VideoTypeForWizard, WizardPhaseId[]> = {
-  episode: PHASES_BY_VIDEO_TYPE.episode.map(toPhaseId),
-  cut: PHASES_BY_VIDEO_TYPE.cut.map(toPhaseId),
-  reel: PHASES_BY_VIDEO_TYPE.reel.map(toPhaseId),
-}
-
-/** Returns the valid phase IDs for a given video type (kebab equivalent). */
 export function getPhaseIdsForVideoType(videoType: VideoTypeForWizard): WizardPhaseId[] {
-  return getPhasesForVideoType(videoType).map(toPhaseId)
+  return PHASE_IDS_BY_VIDEO_TYPE[videoType] ?? PHASE_IDS_BY_VIDEO_TYPE.episode
 }
 
-/** Checks if a phase ID is valid for a given video type (kebab equivalent). */
+/**
+ * Checks if a phase ID is valid for a given video type.
+ */
 export function isPhaseIdValidForVideoType(
   phaseId: WizardPhaseId,
   videoType: VideoTypeForWizard
 ): boolean {
-  return isPhaseValidForVideoType(toLegacyPhase(phaseId), videoType)
+  const validPhases = PHASE_IDS_BY_VIDEO_TYPE[videoType]
+  if (!validPhases) return false
+  return validPhases.includes(phaseId)
 }
 
-/** Phase IDs for a video type with the thumbnail phase inserted when enabled (kebab equivalent). */
+/**
+ * Returns the wizard phase IDs for a given video type, optionally inserting the
+ * Thumbnail phase (Epic 22) between Tags and Publish when the podcast has
+ * `features.thumbnailGeneration` enabled.
+ *
+ * Reels never get the Thumbnail phase (scope decision: only episode and cut).
+ */
 export function getPhaseIdsForVideoTypeWithFeatures(
   videoType: VideoTypeForWizard,
   features?: { thumbnailGeneration?: boolean }
 ): WizardPhaseId[] {
-  return getPhasesForVideoTypeWithFeatures(videoType, features).map(toPhaseId)
+  const base = getPhaseIdsForVideoType(videoType)
+  if (!features?.thumbnailGeneration) return base
+  if (videoType === 'reel') return base
+  // Insert 'thumbnail' immediately before 'publish'.
+  const publishIndex = base.indexOf('publish')
+  if (publishIndex < 0) return base
+  return [...base.slice(0, publishIndex), 'thumbnail', ...base.slice(publishIndex)]
 }
 
-/** Phase metadata keyed by semantic ID (derived from EXTENDED_PHASE_METADATA). */
-export const PHASE_ID_METADATA: Record<WizardPhaseId, PhaseMetadata> = Object.fromEntries(
-  WIZARD_PHASE_IDS.map((id) => [id, EXTENDED_PHASE_METADATA[toLegacyPhase(id)]])
-) as Record<WizardPhaseId, PhaseMetadata>
+// Re-export the canonical phase-ID list for convenience.
+export { WIZARD_PHASE_IDS, TRACKED_PHASE_IDS }

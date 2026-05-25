@@ -1,24 +1,39 @@
 /**
- * Wizard state machine for managing the 8-phase video processing flow.
+ * Wizard state machine for managing the multi-phase video processing flow.
  *
  * The state machine handles:
  * - Phase transitions
  * - Phase status updates
  * - Data persistence per phase
  * - Cascade invalidation when reprocessing
+ *
+ * TD-7 (Epic 25): phases are identified by semantic `WizardPhaseId` (kebab-case).
+ * `state.phases` is keyed by `TrackedPhaseId` (the former numeric 1-8). The
+ * extended phases (`parent`, `short-title`, `thumbnail`) are not tracked in the
+ * record — their completion is derived from video data. Numbers survive only at
+ * serialization boundaries (Firestore `reviewedPhases`), bridged via the mapper.
  */
 
-import { getPhasesForVideoTypeWithFeatures, PHASES_BY_VIDEO_TYPE, WIZARD_PHASES } from './constants'
+import { getPhaseIdsForVideoTypeWithFeatures, PHASE_IDS_BY_VIDEO_TYPE } from './constants'
+import {
+  TRACKED_PHASE_IDS,
+  isTrackedPhaseId,
+  phaseIdOrder,
+  toLegacyPhase,
+  type TrackedPhaseId,
+  type WizardPhaseId,
+} from './phase-id-map'
 import type {
-  ExtendedWizardPhase,
   PhaseState,
   PhaseStatus,
   VideoDataForSync,
   VideoTypeForWizard,
   WizardAction,
-  WizardPhase,
   WizardState,
 } from './types'
+
+/** Phases skipped (auto-completed) for cut/reel — the former immutable phases 1-4. */
+const IMMUTABLE_SKIP_PHASES: readonly TrackedPhaseId[] = ['critique', 'edit-check', 'risk', 'chapters']
 
 /**
  * Creates the initial state for a phase.
@@ -35,28 +50,28 @@ function createInitialPhaseState(): PhaseState {
  * Check if a phase has data in the video document.
  * Used to validate localStorage state against Firestore data.
  */
-function phaseHasDataInVideo(video: VideoDataForSync, phase: WizardPhase): boolean {
+function phaseHasDataInVideo(video: VideoDataForSync, phase: TrackedPhaseId): boolean {
   switch (phase) {
-    case 1:
+    case 'critique':
       return typeof video.critique === 'string' && video.critique.trim().length > 0
-    case 2:
+    case 'edit-check':
       // editingIssues: array existence means data exists (empty = no issues found)
       return video.editingIssues !== undefined
-    case 3:
+    case 'risk':
       // riskAndCompliance: array existence means data exists (empty = no risks found)
       return video.riskAndCompliance !== undefined
-    case 4:
+    case 'chapters':
       // chapters: must have actual content
       return Array.isArray(video.chapters) && video.chapters.length > 0
-    case 5:
-      // Phase 5 checks suggestedTitles (LLM output), NOT title (YouTube provisional title)
+    case 'title':
+      // title checks suggestedTitles (LLM output), NOT title (YouTube provisional title)
       return Array.isArray(video.suggestedTitles) && video.suggestedTitles.length > 0
-    case 6:
+    case 'description':
       return typeof video.description === 'string' && video.description.trim().length > 0
-    case 7:
+    case 'tags':
       // tags: must have actual content
       return Array.isArray(video.tags) && video.tags.length > 0
-    case 8:
+    case 'publish':
       return video.status === 'sent'
     default:
       return false
@@ -64,46 +79,35 @@ function phaseHasDataInVideo(video: VideoDataForSync, phase: WizardPhase): boole
 }
 
 /**
- * Check if Phase 5B has data in the video document.
- * Phase 5B is exclusive to cut videos and uses suggestedShortTitles.
+ * Check if the short-title phase has data in the video document.
+ * Short-title is exclusive to cut videos and uses suggestedShortTitles.
  */
-function phase5BHasDataInVideo(video: VideoDataForSync): boolean {
+function shortTitleHasDataInVideo(video: VideoDataForSync): boolean {
   return Array.isArray(video.suggestedShortTitles) && video.suggestedShortTitles.length > 0
 }
 
 /**
  * Get the initial phase for a video based on its type and state.
  *
- * - episode: always starts at phase 1
- * - cut/reel: starts at phase 0 if no parent selected, or phase 5 if parent exists
- *
- * IMPORTANT: Phase 0 is not a standard WizardPhase (1-8), but is supported for cut/reel videos.
- * The WizardState.currentPhase field stores this value, and the orchestrator handles rendering
- * by checking `(wizard.currentPhase as number) === 0`.
- *
- * Type Safety Note: We return 0 cast to WizardPhase because WizardState.currentPhase
- * is typed as WizardPhase, but the runtime value can be 0 for cut/reel videos.
- * This is a known type limitation - a full fix would require changing WizardState.currentPhase
- * to ExtendedWizardPhase, which would be a larger refactor affecting many files.
+ * - episode: always starts at 'critique'
+ * - cut/reel: starts at 'parent' if no parent selected, or 'title' if parent exists
  */
 function getInitialPhaseForVideoType(
-  videoType?: 'episode' | 'cut' | 'reel',
+  videoType?: VideoTypeForWizard,
   parentEpisodeId?: string
-): WizardPhase {
-  // Episode always starts at phase 1
+): WizardPhaseId {
+  // Episode always starts at the first phase
   if (!videoType || videoType === 'episode') {
-    return 1
+    return 'critique'
   }
 
-  // Cut/reel with parent already set: start at phase 5 (title)
+  // Cut/reel with parent already set: start at 'title'
   if (parentEpisodeId) {
-    return 5
+    return 'title'
   }
 
-  // Cut/reel without parent: start at phase 0 (parent selection)
-  // Cast is necessary because WizardPhase type doesn't include 0,
-  // but the orchestrator correctly handles phase 0 at runtime.
-  return 0 as WizardPhase
+  // Cut/reel without parent: start at 'parent' (parent selection)
+  return 'parent'
 }
 
 /**
@@ -118,9 +122,9 @@ export function createInitialWizardState(
   videoType: VideoTypeForWizard = 'episode',
   parentEpisodeId?: string
 ): WizardState {
-  const phases = {} as Record<WizardPhase, PhaseState>
+  const phases = {} as Record<TrackedPhaseId, PhaseState>
 
-  for (const phase of WIZARD_PHASES) {
+  for (const phase of TRACKED_PHASE_IDS) {
     phases[phase] = createInitialPhaseState()
   }
 
@@ -199,11 +203,12 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     }
 
     case 'INVALIDATE_FROM_PHASE': {
-      // Invalidate all phases AFTER the given phase
+      // Invalidate all tracked phases AFTER the given phase (canonical order)
       const newPhases = { ...state.phases }
+      const fromOrder = phaseIdOrder(action.phase)
 
-      for (const phase of WIZARD_PHASES) {
-        if (phase > action.phase) {
+      for (const phase of TRACKED_PHASE_IDS) {
+        if (phaseIdOrder(phase) > fromOrder) {
           newPhases[phase] = createInitialPhaseState()
         }
       }
@@ -215,37 +220,32 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     }
 
     case 'COMPLETE_PHASE_AND_ADVANCE': {
-      // Combined action: mark phase as completed AND navigate to next phase
-      // This avoids the stale state issue when calling setPhaseData + goToNextPhase separately
-      //
-      // IMPORTANT: Uses getNextPhaseForType to respect video type's phase flow.
-      // For example: cut videos go 5 → 5B → 6, not 5 → 6.
+      // Combined action: mark phase as completed AND navigate to next phase.
+      // Uses getNextPhaseForType to respect video type's phase flow.
+      // For example: cut videos go title → short-title → description, not title → description.
       // When features.thumbnailGeneration is on (Epic 22), the sequence inserts
-      // 'THUMB' between Tags (7) and Publicar (8) for episode and cut.
+      // 'thumbnail' between tags and publish for episode and cut.
       const nextPhase = getNextPhaseForType(action.phase, state.videoType, action.features)
 
-      // Extended phases (0, '5B', 'THUMB') are not tracked in the phases record.
-      // They are tracked via video data (parentEpisodeId for 0, shortTitle for 5B,
-      // storageThumbnailUrl for THUMB). For these phases, we only navigate —
-      // completion is determined by video data.
-      const isExtendedPhase = action.phase === 0 || action.phase === '5B' || action.phase === 'THUMB'
-
-      if (isExtendedPhase) {
+      // Extended phases (parent, short-title, thumbnail) are not tracked in the
+      // phases record — they are tracked via video data (parentEpisodeId,
+      // shortTitle, storageThumbnailUrl). For these phases, we only navigate.
+      if (!isTrackedPhaseId(action.phase)) {
         return {
           ...state,
-          currentPhase: (nextPhase ?? state.currentPhase) as WizardPhase,
+          currentPhase: nextPhase ?? state.currentPhase,
         }
       }
 
-      // Standard phases (1-8): update phases record and navigate
+      // Tracked phases: update phases record and navigate
       return {
         ...state,
         // If no next phase (at last phase), stay at current phase
-        currentPhase: (nextPhase ?? state.currentPhase) as WizardPhase,
+        currentPhase: nextPhase ?? state.currentPhase,
         phases: {
           ...state.phases,
           [action.phase]: {
-            ...state.phases[action.phase as WizardPhase],
+            ...state.phases[action.phase],
             data: action.data,
             status: 'completed',
             error: null,
@@ -271,7 +271,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       let hasChanges = false
       const newPhases = { ...state.phases }
 
-      for (const phase of WIZARD_PHASES) {
+      for (const phase of TRACKED_PHASE_IDS) {
         const phaseState = state.phases[phase]
 
         // Only check phases that are marked as completed
@@ -291,10 +291,10 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         return state
       }
 
-      // Find the first incomplete phase to set as current
-      // Default to 8 if all phases are complete
-      let newCurrentPhase: WizardPhase = 8
-      for (const phase of WIZARD_PHASES) {
+      // Find the first incomplete phase to set as current.
+      // Default to the last phase if all phases are complete.
+      let newCurrentPhase: WizardPhaseId = 'publish'
+      for (const phase of TRACKED_PHASE_IDS) {
         if (newPhases[phase].status !== 'completed') {
           newCurrentPhase = phase
           break
@@ -319,38 +319,35 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       // - Se Firestore TEM dados → fase tem dados (completed ou needs_review)
       // - Se Firestore NÃO tem dados → fase pending (mesmo que localStorage diga diferente)
       //
-      // FASES COM ESTADO INTERMEDIÁRIO (2 e 3):
-      // - Fases 2 e 3 requerem confirmação do usuário antes de serem "completed"
+      // FASES COM ESTADO INTERMEDIÁRIO (edit-check, risk, chapters):
+      // - Requerem confirmação do usuário antes de serem "completed"
       // - Se tem dados mas não foi confirmado → needs_review
-      // - A confirmação é rastreada via video.reviewedPhases
+      // - A confirmação é rastreada via video.reviewedPhases (numérico no Firestore)
       //
       // CUT/REEL SUPPORT:
-      // - For cut/reel videos, skip phases 1-4 when calculating first incomplete phase
-      // - If no parentEpisodeId, set phase to 0 (parent selection)
-      //
-      // Isso garante que toda fase tem apenas dois caminhos possíveis:
-      // 1. Smart Load: dados existem → exibe (e aguarda confirmação se necessário)
-      // 2. LLM Call: dados não existem → processa
+      // - For cut/reel videos, skip the immutable phases when calculating first incomplete
+      // - If no parentEpisodeId, set phase to 'parent' (parent selection)
       const { videoData } = action
       let phasesChanged = false
       const newPhases = { ...state.phases }
 
       // Phases that require review confirmation before being marked as completed
-      // Phases 2 (Edit Check), 3 (Compliance), and 4 (Chapters) need user confirmation before completing
-      const phasesRequiringReview: WizardPhase[] = [2, 3, 4]
+      const phasesRequiringReview: TrackedPhaseId[] = ['edit-check', 'risk', 'chapters']
 
       // Determine video type and which phases are applicable
       const videoType = videoData.videoType ?? 'episode'
       const isEpisode = videoType === 'episode'
 
-      for (const phase of WIZARD_PHASES) {
+      for (const phase of TRACKED_PHASE_IDS) {
         const phaseState = state.phases[phase]
         const hasData = phaseHasDataInVideo(videoData, phase)
         const requiresReview = phasesRequiringReview.includes(phase)
-        const isReviewed = videoData.reviewedPhases?.includes(phase) ?? false
+        // reviewedPhases is numeric in Firestore — bridge via the mapper.
+        const isReviewed =
+          videoData.reviewedPhases?.includes(toLegacyPhase(phase) as number) ?? false
 
-        // For cut/reel, skip phases 1-4 (mark as completed to allow navigation)
-        if (!isEpisode && phase <= 4) {
+        // For cut/reel, skip the immutable phases (mark as completed to allow navigation)
+        if (!isEpisode && IMMUTABLE_SKIP_PHASES.includes(phase)) {
           if (phaseState.status !== 'completed') {
             newPhases[phase] = {
               ...phaseState,
@@ -365,7 +362,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         if (hasData) {
           // Firestore TEM dados
           if (requiresReview && !isReviewed) {
-            // Fases 2/3: tem dados mas não foi confirmado → needs_review
+            // tem dados mas não foi confirmado → needs_review
             if (phaseState.status !== 'needs_review') {
               newPhases[phase] = {
                 ...phaseState,
@@ -400,8 +397,6 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       }
 
       // Re-hydration: only update phase statuses, preserve currentPhase.
-      // This prevents the wizard from jumping to a different phase when the
-      // video data is re-fetched (e.g., after onVideoStatusChange triggers).
       if (action.isRehydration) {
         if (!phasesChanged) {
           return state
@@ -413,36 +408,30 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         }
       }
 
-      // Calculate the first incomplete phase (only needed for initial hydration)
-      // For cut/reel: if no parent, phase 0; otherwise start at phase 5
-      // For cut: includes Phase 5B between 5 and 6
-      let firstIncompletePhase: WizardPhase
+      // Calculate the first incomplete phase (only needed for initial hydration).
+      // For cut/reel: if no parent, 'parent'; otherwise start at 'title'.
+      // For cut: includes 'short-title' between title and description.
+      let firstIncompletePhase: WizardPhaseId
 
       if (!isEpisode) {
         // Cut/reel video
         if (!videoData.parentEpisodeId) {
-          // No parent selected - go to phase 0
-          // Cast necessary - see getInitialPhaseForVideoType for explanation
-          firstIncompletePhase = 0 as WizardPhase
+          // No parent selected - go to parent selection
+          firstIncompletePhase = 'parent'
         } else {
-          // Parent selected - find first incomplete phase starting from 5
-          // For cut videos, Phase 5B comes between 5 and 6
-          firstIncompletePhase = 8
+          // Parent selected - find first incomplete phase starting from 'title'
+          firstIncompletePhase = 'publish'
 
-          // Check phase 5 first
-          if (newPhases[5].status !== 'completed') {
-            firstIncompletePhase = 5
+          if (newPhases.title.status !== 'completed') {
+            firstIncompletePhase = 'title'
           }
-          // For cut: check Phase 5B (uses suggestedShortTitles)
-          else if (videoType === 'cut' && !phase5BHasDataInVideo(videoData)) {
-            // Phase 5 complete but 5B not complete - go to 5B
-            // Cast '5B' to WizardPhase for type compatibility
-            // The orchestrator handles '5B' at runtime
-            firstIncompletePhase = '5B' as unknown as WizardPhase
+          // For cut: check short-title (uses suggestedShortTitles)
+          else if (videoType === 'cut' && !shortTitleHasDataInVideo(videoData)) {
+            firstIncompletePhase = 'short-title'
           }
-          // Then check phases 6, 7, 8
+          // Then check description, tags, publish
           else {
-            for (const phase of [6, 7, 8] as WizardPhase[]) {
+            for (const phase of ['description', 'tags', 'publish'] as TrackedPhaseId[]) {
               if (newPhases[phase].status !== 'completed') {
                 firstIncompletePhase = phase
                 break
@@ -451,9 +440,9 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
           }
         }
       } else {
-        // Episode video - find first incomplete phase (1-8)
-        firstIncompletePhase = 8
-        for (const phase of WIZARD_PHASES) {
+        // Episode video - find first incomplete phase
+        firstIncompletePhase = 'publish'
+        for (const phase of TRACKED_PHASE_IDS) {
           if (newPhases[phase].status !== 'completed') {
             firstIncompletePhase = phase
             break
@@ -462,9 +451,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       }
 
       // Initial hydration: navigate to firstIncompletePhase.
-      // This handles the case where localStorage has stale currentPhase
-      // (e.g., user was on phase 1 but Firestore shows phases 1-7 completed).
-      const currentPhaseAhead = state.currentPhase > firstIncompletePhase
+      const currentPhaseAhead = phaseIdOrder(state.currentPhase) > phaseIdOrder(firstIncompletePhase)
       const shouldUpdateCurrentPhase = phasesChanged || currentPhaseAhead
 
       if (!shouldUpdateCurrentPhase) {
@@ -484,44 +471,40 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
 }
 
 /**
- * Gets the next phase after the current one.
+ * Gets the next phase after the current one (canonical order, video-type-agnostic).
  * Returns null if already at the last phase.
  *
  * @deprecated Use getNextPhaseForType for proper videoType-aware navigation.
  */
-export function getNextPhase(currentPhase: WizardPhase): WizardPhase | null {
-  if (currentPhase >= 8) return null
-  return (currentPhase + 1) as WizardPhase
+export function getNextPhase(currentPhase: WizardPhaseId): TrackedPhaseId | null {
+  // Walk the tracked sequence: the deprecated helper only steps through tracked phases.
+  const idx = TRACKED_PHASE_IDS.indexOf(currentPhase as TrackedPhaseId)
+  if (idx === -1) return null
+  if (idx >= TRACKED_PHASE_IDS.length - 1) return null
+  return TRACKED_PHASE_IDS[idx + 1]
 }
 
 /**
  * Gets the next phase based on the video type's phase flow.
  *
  * For example:
- * - episode: 5 → 6
- * - cut: 5 → '5B' → 6
- * - reel: 5 → 6
+ * - episode: title → description
+ * - cut: title → short-title → description
+ * - reel: title → description
  *
  * When `features.thumbnailGeneration` is on (Epic 22) the sequence inserts
- * 'THUMB' between Tags (7) and Publicar (8) for episode and cut — the Reel
- * flow is unaffected.
+ * 'thumbnail' between tags and publish for episode and cut.
  *
- * @param currentPhase - The current phase
- * @param videoType - The video type (episode, cut, reel)
- * @param features - Optional podcast feature flags. When omitted, behaves
- *                   identically to before Epic 22 (no Thumbnail phase).
  * @returns The next phase, or null if at the last phase
  */
 export function getNextPhaseForType(
-  currentPhase: ExtendedWizardPhase,
+  currentPhase: WizardPhaseId,
   videoType: VideoTypeForWizard,
   features?: { thumbnailGeneration?: boolean }
-): ExtendedWizardPhase | null {
-  // Use the feature-aware sequence when features are provided so we don't
-  // skip the Thumbnail phase silently when advancing past Tags.
+): WizardPhaseId | null {
   const phases = features
-    ? getPhasesForVideoTypeWithFeatures(videoType, features)
-    : PHASES_BY_VIDEO_TYPE[videoType] ?? PHASES_BY_VIDEO_TYPE.episode
+    ? getPhaseIdsForVideoTypeWithFeatures(videoType, features)
+    : PHASE_IDS_BY_VIDEO_TYPE[videoType] ?? PHASE_IDS_BY_VIDEO_TYPE.episode
   const currentIndex = phases.indexOf(currentPhase)
 
   // Current phase not found in this video type's phases, or at last phase
@@ -533,12 +516,13 @@ export function getNextPhaseForType(
 }
 
 /**
- * Gets the previous phase before the current one.
- * Returns null if already at the first phase.
+ * Gets the previous tracked phase before the current one (canonical order).
+ * Returns null if already at the first tracked phase.
  */
-export function getPreviousPhase(currentPhase: WizardPhase): WizardPhase | null {
-  if (currentPhase <= 1) return null
-  return (currentPhase - 1) as WizardPhase
+export function getPreviousPhase(currentPhase: WizardPhaseId): WizardPhaseId | null {
+  const idx = TRACKED_PHASE_IDS.indexOf(currentPhase as TrackedPhaseId)
+  if (idx <= 0) return null
+  return TRACKED_PHASE_IDS[idx - 1]
 }
 
 /**
@@ -547,7 +531,7 @@ export function getPreviousPhase(currentPhase: WizardPhase): WizardPhase | null 
  * - It's completed (can review)
  * - It's the first pending phase after completed phases (can work on)
  */
-export function canNavigateToPhase(state: WizardState, targetPhase: WizardPhase): boolean {
+export function canNavigateToPhase(state: WizardState, targetPhase: TrackedPhaseId): boolean {
   const targetStatus = state.phases[targetPhase].status
 
   // Can always navigate to completed phases
@@ -558,8 +542,10 @@ export function canNavigateToPhase(state: WizardState, targetPhase: WizardPhase)
 
   // Can navigate to pending phase if all previous phases are completed or needs_review
   if (targetStatus === 'pending') {
-    for (let phase = 1; phase < targetPhase; phase++) {
-      const phaseStatus = state.phases[phase as WizardPhase].status
+    const targetOrder = phaseIdOrder(targetPhase)
+    for (const phase of TRACKED_PHASE_IDS) {
+      if (phaseIdOrder(phase) >= targetOrder) break
+      const phaseStatus = state.phases[phase].status
       if (phaseStatus !== 'completed' && phaseStatus !== 'needs_review') {
         return false
       }
@@ -575,30 +561,30 @@ export function canNavigateToPhase(state: WizardState, targetPhase: WizardPhase)
 }
 
 /**
- * Gets the first incomplete phase (first non-completed phase).
+ * Gets the first incomplete phase (first non-completed tracked phase).
  */
-export function getFirstIncompletePhase(state: WizardState): WizardPhase {
-  for (const phase of WIZARD_PHASES) {
+export function getFirstIncompletePhase(state: WizardState): TrackedPhaseId {
+  for (const phase of TRACKED_PHASE_IDS) {
     if (state.phases[phase].status !== 'completed') {
       return phase
     }
   }
-  return 8 // All completed, return last phase
+  return 'publish' // All completed, return last phase
 }
 
 /**
  * Checks if all phases are completed.
  */
 export function isWizardComplete(state: WizardState): boolean {
-  return WIZARD_PHASES.every((phase) => state.phases[phase].status === 'completed')
+  return TRACKED_PHASE_IDS.every((phase) => state.phases[phase].status === 'completed')
 }
 
 /**
  * Gets the overall progress percentage (0-100).
  */
 export function getWizardProgress(state: WizardState): number {
-  const completedCount = WIZARD_PHASES.filter(
+  const completedCount = TRACKED_PHASE_IDS.filter(
     (phase) => state.phases[phase].status === 'completed'
   ).length
-  return Math.round((completedCount / WIZARD_PHASES.length) * 100)
+  return Math.round((completedCount / TRACKED_PHASE_IDS.length) * 100)
 }

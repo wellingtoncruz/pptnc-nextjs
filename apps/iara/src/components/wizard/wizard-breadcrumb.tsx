@@ -4,10 +4,12 @@ import { AlertCircle, Check, Circle, Loader2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import {
-  EXTENDED_PHASE_METADATA,
-  ExtendedWizardPhase,
-  getPhasesForVideoTypeWithFeatures,
+  PHASE_ID_METADATA,
+  getPhaseIdsForVideoTypeWithFeatures,
+  isTrackedPhaseId,
+  type TrackedPhaseId,
   VideoTypeForWizard,
+  type WizardPhaseId,
   WizardState,
 } from '@/lib/wizard'
 import type { Video } from '@/types/video'
@@ -24,8 +26,8 @@ interface WizardBreadcrumbProps {
    * When omitted, behavior is identical to before Epic 22 (no Thumbnail).
    */
   features?: { thumbnailGeneration?: boolean }
-  onPhaseClick: (phase: ExtendedWizardPhase) => void
-  canNavigateToPhase: (phase: ExtendedWizardPhase) => boolean
+  onPhaseClick: (phase: WizardPhaseId) => void
+  canNavigateToPhase: (phase: WizardPhaseId) => boolean
 }
 
 /**
@@ -44,28 +46,28 @@ const DEFAULT_PHASE_STATE = { status: 'pending' as const, data: null, error: nul
  *   "produtor decidiu" para fins de progresso visual no breadcrumb.
  */
 function getExtendedPhaseState(
-  phase: ExtendedWizardPhase,
+  phase: WizardPhaseId,
   video?: Video
 ): { status: 'pending' | 'completed'; data: null; error: null } {
   if (!video) {
     return DEFAULT_PHASE_STATE
   }
 
-  if (phase === 0) {
-    // Phase 0 is complete when parentEpisodeId is set
+  if (phase === 'parent') {
+    // Parent phase is complete when parentEpisodeId is set
     return video.parentEpisodeId
       ? { status: 'completed', data: null, error: null }
       : DEFAULT_PHASE_STATE
   }
 
-  if (phase === '5B') {
-    // Phase 5B is complete when shortTitle is set
+  if (phase === 'short-title') {
+    // Short-title phase is complete when shortTitle is set
     return video.shortTitle
       ? { status: 'completed', data: null, error: null }
       : DEFAULT_PHASE_STATE
   }
 
-  if (phase === 'THUMB') {
+  if (phase === 'thumbnail') {
     // Phase THUMB é "completada" SÓ quando a thumbnail veio do fluxo do
     // wizard (Story 22.3g grava sempre como `/api/wizard/thumbnail/select?path=...`).
     // Vídeos importados do YouTube já vêm com `storageThumbnailUrl` populado
@@ -103,18 +105,17 @@ export function WizardBreadcrumb({
   onPhaseClick,
   canNavigateToPhase,
 }: WizardBreadcrumbProps) {
-  const phases = getPhasesForVideoTypeWithFeatures(videoType, features)
+  const phases = getPhaseIdsForVideoTypeWithFeatures(videoType, features)
 
   return (
     <nav aria-label="Wizard progress" className="w-full">
       <ol className="flex items-center justify-between gap-1">
         {phases.map((phase, index) => {
-          // Get phase state - use video data for extended phases (0, '5B')
-          const phaseState =
-            typeof phase === 'number' && phase >= 1 && phase <= 8
-              ? state.phases[phase as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8]
-              : getExtendedPhaseState(phase, video)
-          const metadata = EXTENDED_PHASE_METADATA[phase]
+          // Get phase state - use video data for extended phases (parent/short-title/thumbnail)
+          const phaseState = isTrackedPhaseId(phase)
+            ? state.phases[phase]
+            : getExtendedPhaseState(phase, video)
+          const metadata = PHASE_ID_METADATA[phase]
           const isCurrent = state.currentPhase === phase
           const canNavigate = canNavigateToPhase(phase)
 
@@ -174,7 +175,7 @@ export function WizardBreadcrumb({
 /**
  * Phase status icon component.
  */
-function PhaseIcon({ status }: { status: WizardState['phases'][1]['status'] }) {
+function PhaseIcon({ status }: { status: WizardState['phases'][TrackedPhaseId]['status'] }) {
   switch (status) {
     case 'completed':
       return <Check className="h-4 w-4 text-green-400 shrink-0" />

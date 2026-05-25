@@ -138,7 +138,7 @@ export function Phase3Compliance({
     if (canAdvance && complianceResult) {
       setIsAdvancing(true)
       // Use combined action to mark phase complete and navigate
-      wizard.completePhaseAndAdvance(3, complianceResult)
+      wizard.completePhaseAndAdvance('risk', complianceResult)
       log('INFO', 'Advancing from Phase 3 to Phase 4', { videoId: video.id, hasRisks })
     }
   }
@@ -224,7 +224,7 @@ export function Phase3Compliance({
                     </>
                   ) : (
                     <>
-                      Avançar para {getNextPhaseName(3)}
+                      Avançar para {getNextPhaseName('risk')}
                       <ArrowRightIcon className="size-4 ml-2" />
                     </>
                   )}
@@ -260,7 +260,7 @@ export function Phase3Compliance({
                 </>
               ) : (
                 <>
-                  Avançar para {getNextPhaseName(3)}
+                  Avançar para {getNextPhaseName('risk')}
                   <ArrowRightIcon className="size-4 ml-2" />
                 </>
               )}

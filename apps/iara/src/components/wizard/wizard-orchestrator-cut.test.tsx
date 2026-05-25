@@ -2,10 +2,10 @@
  * Integration tests for WizardOrchestrator with cut videos.
  *
  * Tests the complete flow for cut videos:
- * - Phase 0 (parent selection) → Phase 5 (title) → Phase 5B (short title) → Phase 6 (description) → Phase 7 (tags) → Phase 8 (publish)
- * - Skipping phases 1-4
+ * - parent (parent selection) → title → short-title → description → tags → publish
+ * - Skipping the episode-only phases (critique/edit-check/risk/chapters)
  * - Using cut-specific prompts with episode fallback
- * - Phase 5B exclusive to cut (not reel)
+ * - short-title exclusive to cut (not reel)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -13,62 +13,68 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   createInitialWizardState,
   wizardReducer,
-  getPhasesForVideoType,
-  isPhaseValidForVideoType,
-  PHASES_BY_VIDEO_TYPE,
+  getPhaseIdsForVideoType,
+  isPhaseIdValidForVideoType,
+  PHASE_IDS_BY_VIDEO_TYPE,
 } from '@/lib/wizard'
 import type { VideoDataForSync } from '@/lib/wizard'
 
 describe('WizardOrchestrator cut flow', () => {
   describe('Phase mapping for cut', () => {
-    it('cut has correct phases: 0, 5, 5B, 6, 7, 8', () => {
-      expect(PHASES_BY_VIDEO_TYPE.cut).toEqual([0, 5, '5B', 6, 7, 8])
+    it('cut has correct phases: parent, title, short-title, description, tags, publish', () => {
+      expect(PHASE_IDS_BY_VIDEO_TYPE.cut).toEqual([
+        'parent',
+        'title',
+        'short-title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
 
-    it('phases 1-4 are NOT valid for cut', () => {
-      expect(isPhaseValidForVideoType(1, 'cut')).toBe(false)
-      expect(isPhaseValidForVideoType(2, 'cut')).toBe(false)
-      expect(isPhaseValidForVideoType(3, 'cut')).toBe(false)
-      expect(isPhaseValidForVideoType(4, 'cut')).toBe(false)
+    it('episode-only phases are NOT valid for cut', () => {
+      expect(isPhaseIdValidForVideoType('critique', 'cut')).toBe(false)
+      expect(isPhaseIdValidForVideoType('edit-check', 'cut')).toBe(false)
+      expect(isPhaseIdValidForVideoType('risk', 'cut')).toBe(false)
+      expect(isPhaseIdValidForVideoType('chapters', 'cut')).toBe(false)
     })
 
-    it('phase 0 is valid for cut', () => {
-      expect(isPhaseValidForVideoType(0, 'cut')).toBe(true)
+    it('parent is valid for cut', () => {
+      expect(isPhaseIdValidForVideoType('parent', 'cut')).toBe(true)
     })
 
-    it('phase 5B is valid for cut', () => {
-      expect(isPhaseValidForVideoType('5B', 'cut')).toBe(true)
+    it('short-title is valid for cut', () => {
+      expect(isPhaseIdValidForVideoType('short-title', 'cut')).toBe(true)
     })
 
-    it('phase 5B is NOT valid for reel', () => {
-      expect(isPhaseValidForVideoType('5B', 'reel')).toBe(false)
+    it('short-title is NOT valid for reel', () => {
+      expect(isPhaseIdValidForVideoType('short-title', 'reel')).toBe(false)
     })
 
-    it('phases 5, 6, 7, 8 are valid for cut', () => {
-      expect(isPhaseValidForVideoType(5, 'cut')).toBe(true)
-      expect(isPhaseValidForVideoType(6, 'cut')).toBe(true)
-      expect(isPhaseValidForVideoType(7, 'cut')).toBe(true)
-      expect(isPhaseValidForVideoType(8, 'cut')).toBe(true)
+    it('title, description, tags, publish are valid for cut', () => {
+      expect(isPhaseIdValidForVideoType('title', 'cut')).toBe(true)
+      expect(isPhaseIdValidForVideoType('description', 'cut')).toBe(true)
+      expect(isPhaseIdValidForVideoType('tags', 'cut')).toBe(true)
+      expect(isPhaseIdValidForVideoType('publish', 'cut')).toBe(true)
     })
   })
 
   describe('Initial state for cut', () => {
-    it('starts at phase 0 when no parent selected', () => {
+    it('starts at parent when no parent selected', () => {
       const state = createInitialWizardState('cut-video', 'cut', undefined)
 
-      // Phase 0 is stored as a runtime value even though WizardPhase type doesn't include it
-      expect(state.currentPhase as number).toBe(0)
+      expect(state.currentPhase).toBe('parent')
     })
 
-    it('starts at phase 5 when parent already selected', () => {
+    it('starts at title when parent already selected', () => {
       const state = createInitialWizardState('cut-video', 'cut', 'parent-episode-id')
 
-      expect(state.currentPhase).toBe(5)
+      expect(state.currentPhase).toBe('title')
     })
   })
 
   describe('HYDRATE_FROM_VIDEO_DATA for cut', () => {
-    it('marks phases 1-4 as completed for cut video', () => {
+    it('marks the episode-only phases as completed for cut video', () => {
       const initialState = createInitialWizardState('cut-video', 'cut', 'parent-id')
 
       const videoData: VideoDataForSync = {
@@ -81,14 +87,14 @@ describe('WizardOrchestrator cut flow', () => {
         videoData,
       })
 
-      // Phases 1-4 should be marked as completed
-      expect(hydratedState.phases[1].status).toBe('completed')
-      expect(hydratedState.phases[2].status).toBe('completed')
-      expect(hydratedState.phases[3].status).toBe('completed')
-      expect(hydratedState.phases[4].status).toBe('completed')
+      // Episode-only phases should be marked as completed
+      expect(hydratedState.phases['critique'].status).toBe('completed')
+      expect(hydratedState.phases['edit-check'].status).toBe('completed')
+      expect(hydratedState.phases['risk'].status).toBe('completed')
+      expect(hydratedState.phases['chapters'].status).toBe('completed')
     })
 
-    it('sets phase 0 when cut has no parentEpisodeId', () => {
+    it('sets parent when cut has no parentEpisodeId', () => {
       const initialState = createInitialWizardState('cut-video', 'cut', undefined)
 
       const videoData: VideoDataForSync = {
@@ -101,18 +107,18 @@ describe('WizardOrchestrator cut flow', () => {
         videoData,
       })
 
-      // Should be at phase 0
-      expect(hydratedState.currentPhase as number).toBe(0)
+      // Should be at parent
+      expect(hydratedState.currentPhase).toBe('parent')
     })
 
-    it('finds first incomplete phase starting from 5 for cut with parent', () => {
+    it('finds first incomplete phase starting from title for cut with parent', () => {
       const initialState = createInitialWizardState('cut-video', 'cut', 'parent-id')
 
       const videoData: VideoDataForSync = {
         videoType: 'cut',
         parentEpisodeId: 'parent-id',
-        suggestedTitles: ['Title 1', 'Title 2'], // Phase 5 has data
-        // No short titles - so first incomplete is phase 5B (for cut videos)
+        suggestedTitles: ['Title 1', 'Title 2'], // title has data
+        // No short titles - so first incomplete is short-title (for cut videos)
       }
 
       const hydratedState = wizardReducer(initialState, {
@@ -120,21 +126,21 @@ describe('WizardOrchestrator cut flow', () => {
         videoData,
       })
 
-      // Phase 5 should be completed (has suggestedTitles)
-      expect(hydratedState.phases[5].status).toBe('completed')
-      // Should be at phase 5B (first incomplete after 5 for cut videos)
-      expect(hydratedState.currentPhase as string).toBe('5B')
+      // title should be completed (has suggestedTitles)
+      expect(hydratedState.phases['title'].status).toBe('completed')
+      // Should be at short-title (first incomplete after title for cut videos)
+      expect(hydratedState.currentPhase).toBe('short-title')
     })
 
-    it('goes to phase 6 when cut has suggestedShortTitles', () => {
+    it('goes to description when cut has suggestedShortTitles', () => {
       const initialState = createInitialWizardState('cut-video', 'cut', 'parent-id')
 
       const videoData: VideoDataForSync = {
         videoType: 'cut',
         parentEpisodeId: 'parent-id',
-        suggestedTitles: ['Title 1', 'Title 2'], // Phase 5 has data
-        suggestedShortTitles: ['Short 1', 'Short 2'], // Phase 5B has data
-        // No description, tags - so first incomplete is phase 6
+        suggestedTitles: ['Title 1', 'Title 2'], // title has data
+        suggestedShortTitles: ['Short 1', 'Short 2'], // short-title has data
+        // No description, tags - so first incomplete is description
       }
 
       const hydratedState = wizardReducer(initialState, {
@@ -142,10 +148,10 @@ describe('WizardOrchestrator cut flow', () => {
         videoData,
       })
 
-      // Phase 5 should be completed (has suggestedTitles)
-      expect(hydratedState.phases[5].status).toBe('completed')
-      // Should be at phase 6 (5B is complete via suggestedShortTitles)
-      expect(hydratedState.currentPhase).toBe(6)
+      // title should be completed (has suggestedTitles)
+      expect(hydratedState.phases['title'].status).toBe('completed')
+      // Should be at description (short-title is complete via suggestedShortTitles)
+      expect(hydratedState.currentPhase).toBe('description')
     })
 
     it('handles full cut flow completion', () => {
@@ -155,7 +161,7 @@ describe('WizardOrchestrator cut flow', () => {
         videoType: 'cut',
         parentEpisodeId: 'parent-id',
         suggestedTitles: ['Title 1'],
-        suggestedShortTitles: ['Short 1'], // Phase 5B data
+        suggestedShortTitles: ['Short 1'], // short-title data
         description: 'A great cut',
         tags: ['tag1', 'tag2'],
         status: 'sent',
@@ -167,99 +173,130 @@ describe('WizardOrchestrator cut flow', () => {
       })
 
       // All phases should be completed
-      expect(hydratedState.phases[5].status).toBe('completed')
-      expect(hydratedState.phases[6].status).toBe('completed')
-      expect(hydratedState.phases[7].status).toBe('completed')
-      expect(hydratedState.phases[8].status).toBe('completed')
+      expect(hydratedState.phases['title'].status).toBe('completed')
+      expect(hydratedState.phases['description'].status).toBe('completed')
+      expect(hydratedState.phases['tags'].status).toBe('completed')
+      expect(hydratedState.phases['publish'].status).toBe('completed')
 
-      // Should be at phase 8 (last phase)
-      expect(hydratedState.currentPhase).toBe(8)
+      // Should be at publish (last phase)
+      expect(hydratedState.currentPhase).toBe('publish')
     })
   })
 
   describe('Cut vs Reel comparison', () => {
-    it('episode starts at phase 1, cut at phase 0 (without parent)', () => {
+    it('episode starts at critique, cut at parent (without parent)', () => {
       const episodeState = createInitialWizardState('ep-1', 'episode', undefined)
       const cutState = createInitialWizardState('cut-1', 'cut', undefined)
 
-      expect(episodeState.currentPhase).toBe(1)
-      expect(cutState.currentPhase as number).toBe(0)
+      expect(episodeState.currentPhase).toBe('critique')
+      expect(cutState.currentPhase).toBe('parent')
     })
 
-    it('episode has 8 phases, cut has 6 phases (including 5B)', () => {
-      const episodePhases = getPhasesForVideoType('episode')
-      const cutPhases = getPhasesForVideoType('cut')
+    it('episode has 8 phases, cut has 6 phases (including short-title)', () => {
+      const episodePhases = getPhaseIdsForVideoType('episode')
+      const cutPhases = getPhaseIdsForVideoType('cut')
 
       expect(episodePhases).toHaveLength(8)
-      expect(cutPhases).toHaveLength(6) // 0, 5, 5B, 6, 7, 8
+      expect(cutPhases).toHaveLength(6) // parent, title, short-title, description, tags, publish
     })
 
-    it('cut includes phase 5B, reel does not', () => {
-      const cutPhases = getPhasesForVideoType('cut')
-      const reelPhases = getPhasesForVideoType('reel')
+    it('cut includes short-title, reel does not', () => {
+      const cutPhases = getPhaseIdsForVideoType('cut')
+      const reelPhases = getPhaseIdsForVideoType('reel')
 
-      expect(cutPhases).toContain('5B')
-      expect(reelPhases).not.toContain('5B')
+      expect(cutPhases).toContain('short-title')
+      expect(reelPhases).not.toContain('short-title')
     })
 
-    it('cut skips critique, editing, compliance, chapters (phases 1-4)', () => {
-      const cutPhases = getPhasesForVideoType('cut')
+    it('cut skips critique, editing, compliance, chapters', () => {
+      const cutPhases = getPhaseIdsForVideoType('cut')
 
-      expect(cutPhases).not.toContain(1)
-      expect(cutPhases).not.toContain(2)
-      expect(cutPhases).not.toContain(3)
-      expect(cutPhases).not.toContain(4)
-    })
-  })
-
-  describe('Phase 5B specific behavior', () => {
-    it('phase 5B is only in cut phases array', () => {
-      expect(PHASES_BY_VIDEO_TYPE.episode).not.toContain('5B')
-      expect(PHASES_BY_VIDEO_TYPE.cut).toContain('5B')
-      expect(PHASES_BY_VIDEO_TYPE.reel).not.toContain('5B')
-    })
-
-    it('phase 5B comes after phase 5 in cut flow', () => {
-      const cutPhases = getPhasesForVideoType('cut')
-      const phase5Index = cutPhases.indexOf(5)
-      const phase5BIndex = cutPhases.indexOf('5B')
-
-      expect(phase5BIndex).toBe(phase5Index + 1)
-    })
-
-    it('phase 6 comes after phase 5B in cut flow', () => {
-      const cutPhases = getPhasesForVideoType('cut')
-      const phase5BIndex = cutPhases.indexOf('5B')
-      const phase6Index = cutPhases.indexOf(6)
-
-      expect(phase6Index).toBe(phase5BIndex + 1)
+      expect(cutPhases).not.toContain('critique')
+      expect(cutPhases).not.toContain('edit-check')
+      expect(cutPhases).not.toContain('risk')
+      expect(cutPhases).not.toContain('chapters')
     })
   })
 
-  describe('getPhasesForVideoType', () => {
+  describe('short-title specific behavior', () => {
+    it('short-title is only in cut phases array', () => {
+      expect(PHASE_IDS_BY_VIDEO_TYPE.episode).not.toContain('short-title')
+      expect(PHASE_IDS_BY_VIDEO_TYPE.cut).toContain('short-title')
+      expect(PHASE_IDS_BY_VIDEO_TYPE.reel).not.toContain('short-title')
+    })
+
+    it('short-title comes after title in cut flow', () => {
+      const cutPhases = getPhaseIdsForVideoType('cut')
+      const titleIndex = cutPhases.indexOf('title')
+      const shortTitleIndex = cutPhases.indexOf('short-title')
+
+      expect(shortTitleIndex).toBe(titleIndex + 1)
+    })
+
+    it('description comes after short-title in cut flow', () => {
+      const cutPhases = getPhaseIdsForVideoType('cut')
+      const shortTitleIndex = cutPhases.indexOf('short-title')
+      const descriptionIndex = cutPhases.indexOf('description')
+
+      expect(descriptionIndex).toBe(shortTitleIndex + 1)
+    })
+  })
+
+  describe('getPhaseIdsForVideoType', () => {
     it('returns correct phases for cut', () => {
-      expect(getPhasesForVideoType('cut')).toEqual([0, 5, '5B', 6, 7, 8])
+      expect(getPhaseIdsForVideoType('cut')).toEqual([
+        'parent',
+        'title',
+        'short-title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
 
-    it('returns correct phases for reel (without 5B)', () => {
-      expect(getPhasesForVideoType('reel')).toEqual([0, 5, 6, 7, 8])
+    it('returns correct phases for reel (without short-title)', () => {
+      expect(getPhaseIdsForVideoType('reel')).toEqual([
+        'parent',
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
 
     it('returns correct phases for episode', () => {
-      expect(getPhasesForVideoType('episode')).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+      expect(getPhaseIdsForVideoType('episode')).toEqual([
+        'critique',
+        'edit-check',
+        'risk',
+        'chapters',
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
 
     it('defaults to episode phases for unknown type', () => {
-      expect(getPhasesForVideoType('unknown' as any)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+      expect(getPhaseIdsForVideoType('unknown' as any)).toEqual([
+        'critique',
+        'edit-check',
+        'risk',
+        'chapters',
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
   })
 })
 
-describe('AUTO-READY: Phase 7 → Phase 8 transition for cut', () => {
+describe('AUTO-READY: tags → publish transition for cut', () => {
   /**
    * Story 13.10: When a cut video with status 'new' completes all phases,
-   * the wizard reaches Phase 8 where the AUTO-READY effect should transition
-   * the video to 'ready' status.
+   * the wizard reaches the publish phase where the AUTO-READY effect should
+   * transition the video to 'ready' status.
    *
    * Root cause: The server-side AUTO-DRAFT (videos-admin.ts:449-458) transitions
    * new → draft when any phase saves data, but the client never receives this
@@ -268,65 +305,65 @@ describe('AUTO-READY: Phase 7 → Phase 8 transition for cut', () => {
    * Fix: Added CLIENT-SIDE AUTO-DRAFT effect that mirrors the server behavior —
    * when the wizard advances past the first phase, the client transitions
    * videoData.status from 'new' to 'draft'. This ensures AUTO-READY fires
-   * correctly at Phase 8.
+   * correctly at the publish phase.
    */
-  it('COMPLETE_PHASE_AND_ADVANCE for phase 7 sets currentPhase to 8', () => {
+  it('COMPLETE_PHASE_AND_ADVANCE for tags sets currentPhase to publish', () => {
     const state = createInitialWizardState('cut-video', 'cut', 'parent-id')
-    state.currentPhase = 7 as 7
+    state.currentPhase = 'tags'
 
     const newState = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 7,
+      phase: 'tags',
       data: { tags: ['tag1', 'tag2'] },
     })
 
-    // currentPhase = 8 is what triggers the AUTO-READY useEffect
-    expect(newState.currentPhase).toBe(8)
-    expect(newState.phases[7].status).toBe('completed')
+    // currentPhase = 'publish' is what triggers the AUTO-READY useEffect
+    expect(newState.currentPhase).toBe('publish')
+    expect(newState.phases['tags'].status).toBe('completed')
   })
 
-  it('full cut phase flow reaches phase 8', () => {
+  it('full cut phase flow reaches publish', () => {
     let state = createInitialWizardState('cut-video', 'cut', undefined)
 
-    // Phase 0: select parent
+    // parent: select parent
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 0,
+      phase: 'parent',
       data: { parentEpisodeId: 'ep-123' },
     })
-    expect(state.currentPhase).toBe(5)
+    expect(state.currentPhase).toBe('title')
 
-    // Phase 5: title
+    // title
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 5,
+      phase: 'title',
       data: { selectedTitle: 'My Cut Title' },
     })
-    expect(state.currentPhase as string).toBe('5B')
+    expect(state.currentPhase).toBe('short-title')
 
-    // Phase 5B: short title
+    // short-title
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: '5B',
+      phase: 'short-title',
       data: { shortTitle: 'SHORT!' },
     })
-    expect(state.currentPhase).toBe(6)
+    expect(state.currentPhase).toBe('description')
 
-    // Phase 6: description
+    // description
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 6,
+      phase: 'description',
       data: { description: 'A great cut' },
     })
-    expect(state.currentPhase).toBe(7)
+    expect(state.currentPhase).toBe('tags')
 
-    // Phase 7: tags → should reach Phase 8
+    // tags → should reach publish
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 7,
+      phase: 'tags',
       data: { tags: ['tag1'] },
     })
-    expect(state.currentPhase).toBe(8)
+    expect(state.currentPhase).toBe('publish')
   })
 })
 
@@ -346,17 +383,17 @@ describe('Cut-specific prompts fallback', () => {
   })
 })
 
-describe('Phase 5B integration', () => {
-  // These tests verify Phase 5B behavior specific to cuts
+describe('short-title integration', () => {
+  // These tests verify short-title behavior specific to cuts
 
-  it('Phase 5B does NOT invalidate phases 6 and 7', () => {
-    // Phase 5B (short title) is independent of SEO chain
+  it('short-title does NOT invalidate description and tags', () => {
+    // short-title is independent of SEO chain
     // Changing short title should NOT require regenerating description/tags
-    // This is implemented in the handleRevalidatePhase5B handler
+    // This is implemented in the handleRevalidateShortTitle handler
     expect(true).toBe(true)
   })
 
-  it('Phase 5B uses podcast.prompt.cut.thumbs when configured', () => {
+  it('short-title uses podcast.prompt.cut.thumbs when configured', () => {
     // This is tested in the route.test.ts
     expect(true).toBe(true)
   })

@@ -56,16 +56,16 @@ const mockEmptyChapters: Phase4Response = {
 // Create mock wizard
 function createMockWizard(): UseWizardReturn {
   return {
-    currentPhase: 4,
+    currentPhase: 'chapters',
     phases: {
-      1: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      2: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      3: { status: 'completed', needsRevalidation: false, data: null, error: null },
-      4: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      5: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      6: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      7: { status: 'pending', needsRevalidation: false, data: null, error: null },
-      8: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      critique: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      'edit-check': { status: 'completed', needsRevalidation: false, data: null, error: null },
+      risk: { status: 'completed', needsRevalidation: false, data: null, error: null },
+      chapters: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      title: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      description: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      tags: { status: 'pending', needsRevalidation: false, data: null, error: null },
+      publish: { status: 'pending', needsRevalidation: false, data: null, error: null },
     },
     consoleMessages: [],
     setPhaseStatus: vi.fn(),
@@ -307,7 +307,7 @@ describe('Phase4Chapters', () => {
       const confirmButton = screen.getByRole('button', { name: /sim, aprovar/i })
       fireEvent.click(confirmButton)
 
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(4, mockChaptersWithData)
+      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('chapters', mockChaptersWithData)
     })
 
     it('closes dialog when cancel is clicked', () => {

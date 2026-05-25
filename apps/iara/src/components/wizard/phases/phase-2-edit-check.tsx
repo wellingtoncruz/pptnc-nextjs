@@ -122,7 +122,7 @@ export function Phase2EditCheck({
     if (canAdvance && editCheckResult) {
       setIsAdvancing(true)
       // Use combined action to mark phase complete and navigate
-      wizard.completePhaseAndAdvance(2, editCheckResult)
+      wizard.completePhaseAndAdvance('edit-check', editCheckResult)
       log('INFO', 'Advancing from Phase 2 to Phase 3', { videoId: video.id, hasIssues })
     }
   }
@@ -210,7 +210,7 @@ export function Phase2EditCheck({
                     </>
                   ) : (
                     <>
-                      Avançar para {getNextPhaseName(2)}
+                      Avançar para {getNextPhaseName('edit-check')}
                       <ArrowRightIcon className="size-4 ml-2" />
                     </>
                   )}
@@ -246,7 +246,7 @@ export function Phase2EditCheck({
                 </>
               ) : (
                 <>
-                  Avançar para {getNextPhaseName(2)}
+                  Avançar para {getNextPhaseName('edit-check')}
                   <ArrowRightIcon className="size-4 ml-2" />
                 </>
               )}

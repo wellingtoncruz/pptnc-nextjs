@@ -422,7 +422,7 @@ export function Phase1Critique({
       return
     }
 
-    wizard.completePhaseAndAdvance(1, critique)
+    wizard.completePhaseAndAdvance('critique', critique)
     log('INFO', 'Advancing from Phase 1 to Phase 2', { videoId: video.id })
   }
 
@@ -613,7 +613,7 @@ export function Phase1Critique({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseName(1)}
+                Avançar para {getNextPhaseName('critique')}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

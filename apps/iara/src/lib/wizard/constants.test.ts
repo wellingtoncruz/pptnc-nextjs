@@ -1,136 +1,195 @@
 /**
  * Tests for wizard constants, including cut/reel phase mappings.
+ *
+ * TD-7 (Epic 25): the wizard is kebab-native. The former numeric tables
+ * (PHASES_BY_VIDEO_TYPE / PHASE_METADATA / EXTENDED_PHASE_METADATA and the
+ * `getPhasesForVideoType*` / `isPhaseValidForVideoType` helpers) were removed.
+ * These tests cover the semantic phase-ID surface that replaced them.
  */
 
 import { describe, expect, it } from 'vitest'
 
 import {
-  EXTENDED_PHASE_METADATA,
-  getPhasesForVideoType,
-  getPhasesForVideoTypeWithFeatures,
-  isPhaseValidForVideoType,
-  PHASE_METADATA,
-  PHASES_BY_VIDEO_TYPE,
-  PHASE_IDS_BY_VIDEO_TYPE,
-  PHASE_ID_METADATA,
   getPhaseIdsForVideoType,
   getPhaseIdsForVideoTypeWithFeatures,
+  getPhaseIdsToInvalidate,
+  IMMUTABLE_PHASE_IDS,
   isPhaseIdValidForVideoType,
+  isReprocessablePhaseId,
+  PHASE_ID_METADATA,
+  PHASE_IDS_BY_VIDEO_TYPE,
+  REPROCESSABLE_PHASE_IDS,
 } from './constants'
-import { toPhaseId } from './phase-id-map'
-import type { ExtendedWizardPhase, VideoTypeForWizard, WizardPhase } from './types'
+import type { VideoTypeForWizard } from './types'
 
-describe('PHASES_BY_VIDEO_TYPE', () => {
-  it('episode has phases 1-8', () => {
-    expect(PHASES_BY_VIDEO_TYPE.episode).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+describe('PHASE_IDS_BY_VIDEO_TYPE', () => {
+  it('episode has the full immutable→publish flow', () => {
+    expect(PHASE_IDS_BY_VIDEO_TYPE.episode).toEqual([
+      'critique',
+      'edit-check',
+      'risk',
+      'chapters',
+      'title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 
-  it('cut has phases 0, 5, 5B, 6, 7, 8', () => {
-    expect(PHASES_BY_VIDEO_TYPE.cut).toEqual([0, 5, '5B', 6, 7, 8])
+  it('cut has parent → title → short-title → description → tags → publish', () => {
+    expect(PHASE_IDS_BY_VIDEO_TYPE.cut).toEqual([
+      'parent',
+      'title',
+      'short-title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 
-  it('reel has phases 0, 5, 6, 7, 8', () => {
-    expect(PHASES_BY_VIDEO_TYPE.reel).toEqual([0, 5, 6, 7, 8])
+  it('reel has parent → title → description → tags → publish', () => {
+    expect(PHASE_IDS_BY_VIDEO_TYPE.reel).toEqual([
+      'parent',
+      'title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 })
 
-describe('getPhasesForVideoType', () => {
+describe('getPhaseIdsForVideoType', () => {
   it('returns correct phases for episode', () => {
-    expect(getPhasesForVideoType('episode')).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    expect(getPhaseIdsForVideoType('episode')).toEqual([
+      'critique',
+      'edit-check',
+      'risk',
+      'chapters',
+      'title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 
   it('returns correct phases for cut', () => {
-    expect(getPhasesForVideoType('cut')).toEqual([0, 5, '5B', 6, 7, 8])
+    expect(getPhaseIdsForVideoType('cut')).toEqual([
+      'parent',
+      'title',
+      'short-title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 
   it('returns correct phases for reel', () => {
-    expect(getPhasesForVideoType('reel')).toEqual([0, 5, 6, 7, 8])
+    expect(getPhaseIdsForVideoType('reel')).toEqual([
+      'parent',
+      'title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 
   it('defaults to episode for unknown type', () => {
-    expect(getPhasesForVideoType('unknown' as VideoTypeForWizard)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    expect(getPhaseIdsForVideoType('unknown' as VideoTypeForWizard)).toEqual([
+      'critique',
+      'edit-check',
+      'risk',
+      'chapters',
+      'title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 })
 
-describe('isPhaseValidForVideoType', () => {
-  describe('phase 0 (parent selection)', () => {
+describe('isPhaseIdValidForVideoType', () => {
+  describe('parent (parent selection)', () => {
     it('is NOT valid for episode', () => {
-      expect(isPhaseValidForVideoType(0, 'episode')).toBe(false)
+      expect(isPhaseIdValidForVideoType('parent', 'episode')).toBe(false)
     })
 
     it('is valid for cut', () => {
-      expect(isPhaseValidForVideoType(0, 'cut')).toBe(true)
+      expect(isPhaseIdValidForVideoType('parent', 'cut')).toBe(true)
     })
 
     it('is valid for reel', () => {
-      expect(isPhaseValidForVideoType(0, 'reel')).toBe(true)
+      expect(isPhaseIdValidForVideoType('parent', 'reel')).toBe(true)
     })
   })
 
-  describe('phases 1-4 (episode-only phases)', () => {
-    const episodeOnlyPhases: ExtendedWizardPhase[] = [1, 2, 3, 4]
+  describe('critique/edit-check/risk/chapters (episode-only phases)', () => {
+    const episodeOnlyPhases = ['critique', 'edit-check', 'risk', 'chapters'] as const
 
     episodeOnlyPhases.forEach((phase) => {
-      it(`phase ${phase} is valid for episode`, () => {
-        expect(isPhaseValidForVideoType(phase, 'episode')).toBe(true)
+      it(`${phase} is valid for episode`, () => {
+        expect(isPhaseIdValidForVideoType(phase, 'episode')).toBe(true)
       })
 
-      it(`phase ${phase} is NOT valid for cut`, () => {
-        expect(isPhaseValidForVideoType(phase, 'cut')).toBe(false)
+      it(`${phase} is NOT valid for cut`, () => {
+        expect(isPhaseIdValidForVideoType(phase, 'cut')).toBe(false)
       })
 
-      it(`phase ${phase} is NOT valid for reel`, () => {
-        expect(isPhaseValidForVideoType(phase, 'reel')).toBe(false)
+      it(`${phase} is NOT valid for reel`, () => {
+        expect(isPhaseIdValidForVideoType(phase, 'reel')).toBe(false)
       })
     })
   })
 
-  describe('phase 5 (title)', () => {
+  describe('title', () => {
     it('is valid for all video types', () => {
-      expect(isPhaseValidForVideoType(5, 'episode')).toBe(true)
-      expect(isPhaseValidForVideoType(5, 'cut')).toBe(true)
-      expect(isPhaseValidForVideoType(5, 'reel')).toBe(true)
+      expect(isPhaseIdValidForVideoType('title', 'episode')).toBe(true)
+      expect(isPhaseIdValidForVideoType('title', 'cut')).toBe(true)
+      expect(isPhaseIdValidForVideoType('title', 'reel')).toBe(true)
     })
   })
 
-  describe('phase 5B (short title)', () => {
+  describe('short-title', () => {
     it('is NOT valid for episode', () => {
-      expect(isPhaseValidForVideoType('5B', 'episode')).toBe(false)
+      expect(isPhaseIdValidForVideoType('short-title', 'episode')).toBe(false)
     })
 
     it('is valid for cut', () => {
-      expect(isPhaseValidForVideoType('5B', 'cut')).toBe(true)
+      expect(isPhaseIdValidForVideoType('short-title', 'cut')).toBe(true)
     })
 
     it('is NOT valid for reel', () => {
-      expect(isPhaseValidForVideoType('5B', 'reel')).toBe(false)
+      expect(isPhaseIdValidForVideoType('short-title', 'reel')).toBe(false)
     })
   })
 
-  describe('phases 6-8 (shared phases)', () => {
-    const sharedPhases: ExtendedWizardPhase[] = [6, 7, 8]
+  describe('description/tags/publish (shared phases)', () => {
+    const sharedPhases = ['description', 'tags', 'publish'] as const
 
     sharedPhases.forEach((phase) => {
-      it(`phase ${phase} is valid for all video types`, () => {
-        expect(isPhaseValidForVideoType(phase, 'episode')).toBe(true)
-        expect(isPhaseValidForVideoType(phase, 'cut')).toBe(true)
-        expect(isPhaseValidForVideoType(phase, 'reel')).toBe(true)
+      it(`${phase} is valid for all video types`, () => {
+        expect(isPhaseIdValidForVideoType(phase, 'episode')).toBe(true)
+        expect(isPhaseIdValidForVideoType(phase, 'cut')).toBe(true)
+        expect(isPhaseIdValidForVideoType(phase, 'reel')).toBe(true)
       })
     })
   })
 
   describe('unknown video type', () => {
     it('returns false for any phase', () => {
-      expect(isPhaseValidForVideoType(1, 'unknown' as VideoTypeForWizard)).toBe(false)
-      expect(isPhaseValidForVideoType(5, 'unknown' as VideoTypeForWizard)).toBe(false)
+      expect(isPhaseIdValidForVideoType('critique', 'unknown' as VideoTypeForWizard)).toBe(false)
+      expect(isPhaseIdValidForVideoType('title', 'unknown' as VideoTypeForWizard)).toBe(false)
     })
   })
 })
 
-describe('EXTENDED_PHASE_METADATA', () => {
-  it('includes metadata for phase 0', () => {
-    expect(EXTENDED_PHASE_METADATA[0]).toEqual({
-      phase: 0,
+describe('PHASE_ID_METADATA', () => {
+  it('covers all 11 phase ids', () => {
+    expect(Object.keys(PHASE_ID_METADATA)).toHaveLength(11)
+  })
+
+  it('includes metadata for parent', () => {
+    expect(PHASE_ID_METADATA.parent).toEqual({
+      phase: 'parent',
       label: 'Vídeo Pai',
       type: 'immutable',
       spinnerText: 'Carregando episódios disponíveis...',
@@ -138,9 +197,9 @@ describe('EXTENDED_PHASE_METADATA', () => {
     })
   })
 
-  it('includes metadata for phase 5B', () => {
-    expect(EXTENDED_PHASE_METADATA['5B']).toEqual({
-      phase: 5,
+  it('includes metadata for short-title', () => {
+    expect(PHASE_ID_METADATA['short-title']).toEqual({
+      phase: 'short-title',
       label: 'Título Curto',
       type: 'reprocessable',
       spinnerText: 'Gerando sugestões de título curto para thumbnail...',
@@ -148,159 +207,161 @@ describe('EXTENDED_PHASE_METADATA', () => {
     })
   })
 
-  it('includes all original phase metadata (1-8)', () => {
-    for (let phase = 1; phase <= 8; phase++) {
-      expect(EXTENDED_PHASE_METADATA[phase as ExtendedWizardPhase]).toBeDefined()
-      expect(EXTENDED_PHASE_METADATA[phase as ExtendedWizardPhase].phase).toBe(phase)
+  it('derives label/type for the core phases', () => {
+    expect(PHASE_ID_METADATA.title.label).toBe('Título')
+    expect(PHASE_ID_METADATA['short-title'].label).toBe('Título Curto')
+    expect(PHASE_ID_METADATA.parent.label).toBe('Vídeo Pai')
+    expect(PHASE_ID_METADATA.publish.type).toBe('final')
+  })
+
+  it('parent is immutable', () => {
+    expect(PHASE_ID_METADATA.parent.type).toBe('immutable')
+  })
+
+  it('short-title is reprocessable', () => {
+    expect(PHASE_ID_METADATA['short-title'].type).toBe('reprocessable')
+  })
+
+  it('thumbnail is reprocessable (Epic 22)', () => {
+    expect(PHASE_ID_METADATA.thumbnail.type).toBe('reprocessable')
+    expect(PHASE_ID_METADATA.thumbnail.label).toBe('Thumbnail')
+  })
+
+  it('each entry has a self-consistent phase field', () => {
+    for (const [id, meta] of Object.entries(PHASE_ID_METADATA)) {
+      expect(meta.phase).toBe(id)
     }
   })
+})
 
-  it('preserves exact values from PHASE_METADATA for phases 1-8', () => {
-    for (let phase = 1; phase <= 8; phase++) {
-      expect(EXTENDED_PHASE_METADATA[phase as ExtendedWizardPhase]).toEqual(
-        PHASE_METADATA[phase as WizardPhase]
-      )
-    }
+describe('REPROCESSABLE_PHASE_IDS / IMMUTABLE_PHASE_IDS', () => {
+  it('classifies tracked reprocessable phases', () => {
+    expect(REPROCESSABLE_PHASE_IDS).toEqual(['title', 'description', 'tags'])
   })
 
-  it('phase 0 is immutable', () => {
-    expect(EXTENDED_PHASE_METADATA[0].type).toBe('immutable')
+  it('classifies tracked immutable phases', () => {
+    expect(IMMUTABLE_PHASE_IDS).toEqual(['critique', 'edit-check', 'risk', 'chapters'])
   })
 
-  it('phase 5B is reprocessable', () => {
-    expect(EXTENDED_PHASE_METADATA['5B'].type).toBe('reprocessable')
+  it('isReprocessablePhaseId agrees with the metadata', () => {
+    expect(isReprocessablePhaseId('title')).toBe(true)
+    expect(isReprocessablePhaseId('tags')).toBe(true)
+    expect(isReprocessablePhaseId('critique')).toBe(false)
+    expect(isReprocessablePhaseId('publish')).toBe(false)
+  })
+})
+
+describe('getPhaseIdsToInvalidate', () => {
+  it('returns only tracked phases after the given phase (canonical order)', () => {
+    expect(getPhaseIdsToInvalidate('title')).toEqual(['description', 'tags', 'publish'])
   })
 
-  it('phase THUMB is reprocessable (Epic 22)', () => {
-    expect(EXTENDED_PHASE_METADATA.THUMB.type).toBe('reprocessable')
-    expect(EXTENDED_PHASE_METADATA.THUMB.label).toBe('Thumbnail')
+  it('returns all later tracked phases when reprocessing from the first', () => {
+    expect(getPhaseIdsToInvalidate('critique')).toEqual([
+      'edit-check',
+      'risk',
+      'chapters',
+      'title',
+      'description',
+      'tags',
+      'publish',
+    ])
+  })
+
+  it('returns empty for the last phase', () => {
+    expect(getPhaseIdsToInvalidate('publish')).toEqual([])
   })
 })
 
 // ============================================================================
-// Epic 22 / Story 22.3a — getPhasesForVideoTypeWithFeatures
+// Epic 22 / Story 22.3a — getPhaseIdsForVideoTypeWithFeatures
 // ============================================================================
 
-describe('getPhasesForVideoTypeWithFeatures (Epic 22)', () => {
+describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
   describe('with thumbnailGeneration disabled or undefined', () => {
-    it('returns the same as getPhasesForVideoType for episode', () => {
-      expect(getPhasesForVideoTypeWithFeatures('episode')).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-      expect(getPhasesForVideoTypeWithFeatures('episode', {})).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-      expect(getPhasesForVideoTypeWithFeatures('episode', { thumbnailGeneration: false })).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    it('returns the base flow for episode', () => {
+      const base = getPhaseIdsForVideoType('episode')
+      expect(getPhaseIdsForVideoTypeWithFeatures('episode')).toEqual(base)
+      expect(getPhaseIdsForVideoTypeWithFeatures('episode', {})).toEqual(base)
+      expect(getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: false })).toEqual(
+        base
+      )
     })
 
-    it('returns the same as getPhasesForVideoType for cut', () => {
-      expect(getPhasesForVideoTypeWithFeatures('cut')).toEqual([0, 5, '5B', 6, 7, 8])
-      expect(getPhasesForVideoTypeWithFeatures('cut', { thumbnailGeneration: false })).toEqual([0, 5, '5B', 6, 7, 8])
+    it('returns the base flow for cut', () => {
+      const base = getPhaseIdsForVideoType('cut')
+      expect(getPhaseIdsForVideoTypeWithFeatures('cut')).toEqual(base)
+      expect(getPhaseIdsForVideoTypeWithFeatures('cut', { thumbnailGeneration: false })).toEqual(
+        base
+      )
     })
 
-    it('returns the same as getPhasesForVideoType for reel', () => {
-      expect(getPhasesForVideoTypeWithFeatures('reel')).toEqual([0, 5, 6, 7, 8])
-      expect(getPhasesForVideoTypeWithFeatures('reel', { thumbnailGeneration: false })).toEqual([0, 5, 6, 7, 8])
+    it('returns the base flow for reel', () => {
+      const base = getPhaseIdsForVideoType('reel')
+      expect(getPhaseIdsForVideoTypeWithFeatures('reel')).toEqual(base)
+      expect(getPhaseIdsForVideoTypeWithFeatures('reel', { thumbnailGeneration: false })).toEqual(
+        base
+      )
     })
   })
 
   describe('with thumbnailGeneration enabled', () => {
-    it("inserts 'THUMB' between Tags and Publicar for episode", () => {
-      expect(getPhasesForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })).toEqual([
-        1, 2, 3, 4, 5, 6, 7, 'THUMB', 8,
+    it("inserts 'thumbnail' between tags and publish for episode", () => {
+      expect(getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })).toEqual([
+        'critique',
+        'edit-check',
+        'risk',
+        'chapters',
+        'title',
+        'description',
+        'tags',
+        'thumbnail',
+        'publish',
       ])
     })
 
-    it("inserts 'THUMB' between Tags and Publicar for cut", () => {
-      expect(getPhasesForVideoTypeWithFeatures('cut', { thumbnailGeneration: true })).toEqual([
-        0, 5, '5B', 6, 7, 'THUMB', 8,
-      ])
-    })
-
-    it('does NOT insert THUMB for reel (out of scope by Epic 22 decision)', () => {
-      expect(getPhasesForVideoTypeWithFeatures('reel', { thumbnailGeneration: true })).toEqual([
-        0, 5, 6, 7, 8,
-      ])
-    })
-  })
-
-  it('does not mutate the original PHASES_BY_VIDEO_TYPE arrays', () => {
-    getPhasesForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })
-    expect(PHASES_BY_VIDEO_TYPE.episode).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-    expect(PHASES_BY_VIDEO_TYPE.cut).toEqual([0, 5, '5B', 6, 7, 8])
-  })
-})
-
-// ============================================================================
-// TD-7 (Story 25.2) — Semantic phase-ID layer
-// ============================================================================
-
-describe('semantic phase-ID layer (TD-7)', () => {
-  const videoTypes: VideoTypeForWizard[] = ['episode', 'cut', 'reel']
-
-  describe('PHASE_IDS_BY_VIDEO_TYPE', () => {
-    it('episode maps to the kebab equivalent of phases 1-8', () => {
-      expect(PHASE_IDS_BY_VIDEO_TYPE.episode).toEqual([
-        'critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish',
-      ])
-    })
-
-    it('cut maps to parent → title → short-title → description → tags → publish', () => {
-      expect(PHASE_IDS_BY_VIDEO_TYPE.cut).toEqual([
-        'parent', 'title', 'short-title', 'description', 'tags', 'publish',
-      ])
-    })
-
-    it('reel maps to parent → title → description → tags → publish', () => {
-      expect(PHASE_IDS_BY_VIDEO_TYPE.reel).toEqual([
-        'parent', 'title', 'description', 'tags', 'publish',
-      ])
-    })
-
-    it.each(videoTypes)('stays consistent with the legacy PHASES_BY_VIDEO_TYPE for %s', (vt) => {
-      expect(PHASE_IDS_BY_VIDEO_TYPE[vt]).toEqual(PHASES_BY_VIDEO_TYPE[vt].map(toPhaseId))
-    })
-  })
-
-  describe('getPhaseIdsForVideoType', () => {
-    it.each(videoTypes)('mirrors getPhasesForVideoType for %s', (vt) => {
-      expect(getPhaseIdsForVideoType(vt)).toEqual(getPhasesForVideoType(vt).map(toPhaseId))
-    })
-  })
-
-  describe('isPhaseIdValidForVideoType', () => {
-    it('accepts a valid phase id for the type', () => {
-      expect(isPhaseIdValidForVideoType('short-title', 'cut')).toBe(true)
-      expect(isPhaseIdValidForVideoType('title', 'reel')).toBe(true)
-    })
-
-    it('rejects a phase id not in the type flow', () => {
-      expect(isPhaseIdValidForVideoType('short-title', 'reel')).toBe(false)
-      expect(isPhaseIdValidForVideoType('critique', 'cut')).toBe(false)
-    })
-  })
-
-  describe('getPhaseIdsForVideoTypeWithFeatures', () => {
-    it('inserts thumbnail before publish for cut when enabled', () => {
+    it("inserts 'thumbnail' between tags and publish for cut", () => {
       expect(getPhaseIdsForVideoTypeWithFeatures('cut', { thumbnailGeneration: true })).toEqual([
-        'parent', 'title', 'short-title', 'description', 'tags', 'thumbnail', 'publish',
+        'parent',
+        'title',
+        'short-title',
+        'description',
+        'tags',
+        'thumbnail',
+        'publish',
       ])
     })
 
-    it('does not insert thumbnail for reel', () => {
+    it('does NOT insert thumbnail for reel (out of scope by Epic 22 decision)', () => {
       expect(getPhaseIdsForVideoTypeWithFeatures('reel', { thumbnailGeneration: true })).toEqual([
-        'parent', 'title', 'description', 'tags', 'publish',
+        'parent',
+        'title',
+        'description',
+        'tags',
+        'publish',
       ])
     })
   })
 
-  describe('PHASE_ID_METADATA', () => {
-    it('derives label/type from the legacy metadata', () => {
-      expect(PHASE_ID_METADATA.title.label).toBe('Título')
-      expect(PHASE_ID_METADATA['short-title'].label).toBe('Título Curto')
-      expect(PHASE_ID_METADATA.thumbnail.label).toBe('Thumbnail')
-      expect(PHASE_ID_METADATA.parent.label).toBe('Vídeo Pai')
-      expect(PHASE_ID_METADATA.publish.type).toBe('final')
-    })
-
-    it('covers all 11 phase ids', () => {
-      expect(Object.keys(PHASE_ID_METADATA)).toHaveLength(11)
-    })
+  it('does not mutate the original PHASE_IDS_BY_VIDEO_TYPE arrays', () => {
+    getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })
+    expect(PHASE_IDS_BY_VIDEO_TYPE.episode).toEqual([
+      'critique',
+      'edit-check',
+      'risk',
+      'chapters',
+      'title',
+      'description',
+      'tags',
+      'publish',
+    ])
+    expect(PHASE_IDS_BY_VIDEO_TYPE.cut).toEqual([
+      'parent',
+      'title',
+      'short-title',
+      'description',
+      'tags',
+      'publish',
+    ])
   })
 })

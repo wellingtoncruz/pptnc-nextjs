@@ -2,8 +2,8 @@
  * Integration tests for WizardOrchestrator with reel videos.
  *
  * Tests the complete flow for reel videos:
- * - Phase 0 (parent selection) → Phase 5 (title) → Phase 6 (description) → Phase 7 (tags) → Phase 8 (publish)
- * - Skipping phases 1-4
+ * - parent (parent selection) → title → description → tags → publish
+ * - Skipping the episode-only phases (critique/edit-check/risk/chapters)
  * - Using reel-specific prompts with episode fallback
  */
 
@@ -12,60 +12,65 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   createInitialWizardState,
   wizardReducer,
-  getPhasesForVideoType,
-  isPhaseValidForVideoType,
-  PHASES_BY_VIDEO_TYPE,
+  getPhaseIdsForVideoType,
+  isPhaseIdValidForVideoType,
+  PHASE_IDS_BY_VIDEO_TYPE,
 } from '@/lib/wizard'
 import type { VideoDataForSync } from '@/lib/wizard'
 
 describe('WizardOrchestrator reel flow', () => {
   describe('Phase mapping for reel', () => {
-    it('reel has correct phases: 0, 5, 6, 7, 8', () => {
-      expect(PHASES_BY_VIDEO_TYPE.reel).toEqual([0, 5, 6, 7, 8])
+    it('reel has correct phases: parent, title, description, tags, publish', () => {
+      expect(PHASE_IDS_BY_VIDEO_TYPE.reel).toEqual([
+        'parent',
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
 
-    it('phases 1-4 are NOT valid for reel', () => {
-      expect(isPhaseValidForVideoType(1, 'reel')).toBe(false)
-      expect(isPhaseValidForVideoType(2, 'reel')).toBe(false)
-      expect(isPhaseValidForVideoType(3, 'reel')).toBe(false)
-      expect(isPhaseValidForVideoType(4, 'reel')).toBe(false)
+    it('episode-only phases are NOT valid for reel', () => {
+      expect(isPhaseIdValidForVideoType('critique', 'reel')).toBe(false)
+      expect(isPhaseIdValidForVideoType('edit-check', 'reel')).toBe(false)
+      expect(isPhaseIdValidForVideoType('risk', 'reel')).toBe(false)
+      expect(isPhaseIdValidForVideoType('chapters', 'reel')).toBe(false)
     })
 
-    it('phase 0 is valid for reel', () => {
-      expect(isPhaseValidForVideoType(0, 'reel')).toBe(true)
+    it('parent is valid for reel', () => {
+      expect(isPhaseIdValidForVideoType('parent', 'reel')).toBe(true)
     })
 
-    it('phase 5B is NOT valid for reel (only for cut)', () => {
-      expect(isPhaseValidForVideoType('5B', 'reel')).toBe(false)
+    it('short-title is NOT valid for reel (only for cut)', () => {
+      expect(isPhaseIdValidForVideoType('short-title', 'reel')).toBe(false)
     })
 
-    it('phases 5, 6, 7, 8 are valid for reel', () => {
-      expect(isPhaseValidForVideoType(5, 'reel')).toBe(true)
-      expect(isPhaseValidForVideoType(6, 'reel')).toBe(true)
-      expect(isPhaseValidForVideoType(7, 'reel')).toBe(true)
-      expect(isPhaseValidForVideoType(8, 'reel')).toBe(true)
+    it('title, description, tags, publish are valid for reel', () => {
+      expect(isPhaseIdValidForVideoType('title', 'reel')).toBe(true)
+      expect(isPhaseIdValidForVideoType('description', 'reel')).toBe(true)
+      expect(isPhaseIdValidForVideoType('tags', 'reel')).toBe(true)
+      expect(isPhaseIdValidForVideoType('publish', 'reel')).toBe(true)
     })
   })
 
   describe('Initial state for reel', () => {
-    it('starts at phase 0 when no parent selected', () => {
+    it('starts at parent when no parent selected', () => {
       const state = createInitialWizardState('reel-video', 'reel', undefined)
-      
-      // Phase 0 is stored as a runtime value even though WizardPhase type doesn't include it
-      expect(state.currentPhase as number).toBe(0)
+
+      expect(state.currentPhase).toBe('parent')
     })
 
-    it('starts at phase 5 when parent already selected', () => {
+    it('starts at title when parent already selected', () => {
       const state = createInitialWizardState('reel-video', 'reel', 'parent-episode-id')
-      
-      expect(state.currentPhase).toBe(5)
+
+      expect(state.currentPhase).toBe('title')
     })
   })
 
   describe('HYDRATE_FROM_VIDEO_DATA for reel', () => {
-    it('marks phases 1-4 as completed for reel video', () => {
+    it('marks the episode-only phases as completed for reel video', () => {
       const initialState = createInitialWizardState('reel-video', 'reel', 'parent-id')
-      
+
       const videoData: VideoDataForSync = {
         videoType: 'reel',
         parentEpisodeId: 'parent-id',
@@ -76,16 +81,16 @@ describe('WizardOrchestrator reel flow', () => {
         videoData,
       })
 
-      // Phases 1-4 should be marked as completed
-      expect(hydratedState.phases[1].status).toBe('completed')
-      expect(hydratedState.phases[2].status).toBe('completed')
-      expect(hydratedState.phases[3].status).toBe('completed')
-      expect(hydratedState.phases[4].status).toBe('completed')
+      // Episode-only phases should be marked as completed
+      expect(hydratedState.phases['critique'].status).toBe('completed')
+      expect(hydratedState.phases['edit-check'].status).toBe('completed')
+      expect(hydratedState.phases['risk'].status).toBe('completed')
+      expect(hydratedState.phases['chapters'].status).toBe('completed')
     })
 
-    it('sets phase 0 when reel has no parentEpisodeId', () => {
+    it('sets parent when reel has no parentEpisodeId', () => {
       const initialState = createInitialWizardState('reel-video', 'reel', undefined)
-      
+
       const videoData: VideoDataForSync = {
         videoType: 'reel',
         parentEpisodeId: undefined,
@@ -96,18 +101,18 @@ describe('WizardOrchestrator reel flow', () => {
         videoData,
       })
 
-      // Should be at phase 0
-      expect(hydratedState.currentPhase as number).toBe(0)
+      // Should be at parent
+      expect(hydratedState.currentPhase).toBe('parent')
     })
 
-    it('finds first incomplete phase starting from 5 for reel with parent', () => {
+    it('finds first incomplete phase starting from title for reel with parent', () => {
       const initialState = createInitialWizardState('reel-video', 'reel', 'parent-id')
-      
+
       const videoData: VideoDataForSync = {
         videoType: 'reel',
         parentEpisodeId: 'parent-id',
-        suggestedTitles: ['Title 1', 'Title 2'], // Phase 5 has data
-        // No description, tags - so first incomplete is phase 6
+        suggestedTitles: ['Title 1', 'Title 2'], // title has data
+        // No description, tags - so first incomplete is description
       }
 
       const hydratedState = wizardReducer(initialState, {
@@ -115,15 +120,15 @@ describe('WizardOrchestrator reel flow', () => {
         videoData,
       })
 
-      // Phase 5 should be completed (has suggestedTitles)
-      expect(hydratedState.phases[5].status).toBe('completed')
-      // Should be at phase 6 (first incomplete after 5)
-      expect(hydratedState.currentPhase).toBe(6)
+      // title should be completed (has suggestedTitles)
+      expect(hydratedState.phases['title'].status).toBe('completed')
+      // Should be at description (first incomplete after title)
+      expect(hydratedState.currentPhase).toBe('description')
     })
 
     it('handles full reel flow completion', () => {
       const initialState = createInitialWizardState('reel-video', 'reel', 'parent-id')
-      
+
       const videoData: VideoDataForSync = {
         videoType: 'reel',
         parentEpisodeId: 'parent-id',
@@ -139,108 +144,123 @@ describe('WizardOrchestrator reel flow', () => {
       })
 
       // All phases should be completed
-      expect(hydratedState.phases[5].status).toBe('completed')
-      expect(hydratedState.phases[6].status).toBe('completed')
-      expect(hydratedState.phases[7].status).toBe('completed')
-      expect(hydratedState.phases[8].status).toBe('completed')
-      
-      // Should be at phase 8 (last phase)
-      expect(hydratedState.currentPhase).toBe(8)
+      expect(hydratedState.phases['title'].status).toBe('completed')
+      expect(hydratedState.phases['description'].status).toBe('completed')
+      expect(hydratedState.phases['tags'].status).toBe('completed')
+      expect(hydratedState.phases['publish'].status).toBe('completed')
+
+      // Should be at publish (last phase)
+      expect(hydratedState.currentPhase).toBe('publish')
     })
   })
 
   describe('Reel vs Episode comparison', () => {
-    it('episode starts at phase 1, reel at phase 0 (without parent)', () => {
+    it('episode starts at critique, reel at parent (without parent)', () => {
       const episodeState = createInitialWizardState('ep-1', 'episode', undefined)
       const reelState = createInitialWizardState('reel-1', 'reel', undefined)
 
-      expect(episodeState.currentPhase).toBe(1)
-      expect(reelState.currentPhase as number).toBe(0)
+      expect(episodeState.currentPhase).toBe('critique')
+      expect(reelState.currentPhase).toBe('parent')
     })
 
     it('episode has 8 phases, reel has 5 phases', () => {
-      const episodePhases = getPhasesForVideoType('episode')
-      const reelPhases = getPhasesForVideoType('reel')
+      const episodePhases = getPhaseIdsForVideoType('episode')
+      const reelPhases = getPhaseIdsForVideoType('reel')
 
       expect(episodePhases).toHaveLength(8)
       expect(reelPhases).toHaveLength(5)
     })
 
-    it('reel skips critique, editing, compliance, chapters (phases 1-4)', () => {
-      const reelPhases = getPhasesForVideoType('reel')
-      
-      expect(reelPhases).not.toContain(1)
-      expect(reelPhases).not.toContain(2)
-      expect(reelPhases).not.toContain(3)
-      expect(reelPhases).not.toContain(4)
+    it('reel skips critique, editing, compliance, chapters', () => {
+      const reelPhases = getPhaseIdsForVideoType('reel')
+
+      expect(reelPhases).not.toContain('critique')
+      expect(reelPhases).not.toContain('edit-check')
+      expect(reelPhases).not.toContain('risk')
+      expect(reelPhases).not.toContain('chapters')
     })
   })
 
-  describe('getPhasesForVideoType', () => {
+  describe('getPhaseIdsForVideoType', () => {
     it('returns correct phases for reel', () => {
-      expect(getPhasesForVideoType('reel')).toEqual([0, 5, 6, 7, 8])
+      expect(getPhaseIdsForVideoType('reel')).toEqual([
+        'parent',
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
 
     it('defaults to episode phases for unknown type', () => {
-      expect(getPhasesForVideoType('unknown' as any)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+      expect(getPhaseIdsForVideoType('unknown' as any)).toEqual([
+        'critique',
+        'edit-check',
+        'risk',
+        'chapters',
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
     })
   })
 })
 
-describe('AUTO-READY: Phase 7 → Phase 8 transition for reel', () => {
+describe('AUTO-READY: tags → publish transition for reel', () => {
   /**
    * Story 13.10: Same fix applies to reels.
-   * CLIENT-SIDE AUTO-DRAFT mirrors server new → draft when wizard advances past phase 0.
-   * AUTO-READY then correctly transitions draft → ready at Phase 8.
+   * CLIENT-SIDE AUTO-DRAFT mirrors server new → draft when wizard advances past parent.
+   * AUTO-READY then correctly transitions draft → ready at the publish phase.
    */
-  it('COMPLETE_PHASE_AND_ADVANCE for phase 7 sets currentPhase to 8', () => {
+  it('COMPLETE_PHASE_AND_ADVANCE for tags sets currentPhase to publish', () => {
     const state = createInitialWizardState('reel-video', 'reel', 'parent-id')
-    state.currentPhase = 7 as 7
+    state.currentPhase = 'tags'
 
     const newState = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 7,
+      phase: 'tags',
       data: { tags: ['tag1'] },
     })
 
-    expect(newState.currentPhase).toBe(8)
-    expect(newState.phases[7].status).toBe('completed')
+    expect(newState.currentPhase).toBe('publish')
+    expect(newState.phases['tags'].status).toBe('completed')
   })
 
-  it('full reel phase flow reaches phase 8', () => {
+  it('full reel phase flow reaches publish', () => {
     let state = createInitialWizardState('reel-video', 'reel', undefined)
 
-    // Phase 0: select parent
+    // parent: select parent
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 0,
+      phase: 'parent',
       data: { parentEpisodeId: 'ep-123' },
     })
-    expect(state.currentPhase).toBe(5)
+    expect(state.currentPhase).toBe('title')
 
-    // Phase 5: title
+    // title
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 5,
+      phase: 'title',
       data: { selectedTitle: 'My Reel Title' },
     })
-    expect(state.currentPhase).toBe(6)
+    expect(state.currentPhase).toBe('description')
 
-    // Phase 6: description
+    // description
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 6,
+      phase: 'description',
       data: { description: 'A great reel' },
     })
-    expect(state.currentPhase).toBe(7)
+    expect(state.currentPhase).toBe('tags')
 
-    // Phase 7: tags → should reach Phase 8
+    // tags → should reach publish
     state = wizardReducer(state, {
       type: 'COMPLETE_PHASE_AND_ADVANCE',
-      phase: 7,
+      phase: 'tags',
       data: { tags: ['tag1'] },
     })
-    expect(state.currentPhase).toBe(8)
+    expect(state.currentPhase).toBe('publish')
   })
 })
 

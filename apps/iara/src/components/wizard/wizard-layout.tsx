@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 
 import { cn } from '@/lib/utils'
 import { getBestThumbnailUrl } from '@/lib/video-utils'
-import type { ExtendedWizardPhase, WizardPhase } from '@/lib/wizard'
+import { isTrackedPhaseId, type WizardPhaseId } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 
@@ -13,13 +13,6 @@ import { VideoHeader, VideoMetadata, VideoShortTitle } from './video-header'
 import { VideoPreview } from './video-preview'
 import { WizardBreadcrumb } from './wizard-breadcrumb'
 import { YouTubeProvider } from './youtube-context'
-
-/**
- * Check if a phase is a standard wizard phase (1-8).
- */
-function isStandardPhase(phase: ExtendedWizardPhase): phase is WizardPhase {
-  return typeof phase === 'number' && phase >= 1 && phase <= 8
-}
 
 interface WizardLayoutProps {
   wizard: UseWizardReturn
@@ -71,34 +64,30 @@ export function WizardLayout({
   features,
   className,
 }: WizardLayoutProps) {
-  // Wrapper to handle ExtendedWizardPhase in navigation
-  // Standard phases (1-8) use wizard.goToPhase
-  // Extended phases (0, '5B') are handled by phase-specific components
+  // Wrapper to handle phase navigation.
+  // Tracked phases use wizard.goToPhase; extended phases (parent/short-title/
+  // thumbnail) are handled by phase-specific components.
   const handlePhaseClick = useCallback(
-    (phase: ExtendedWizardPhase) => {
-      if (isStandardPhase(phase)) {
+    (phase: WizardPhaseId) => {
+      if (isTrackedPhaseId(phase)) {
         wizard.goToPhase(phase)
       }
-      // Phase 0 and '5B' navigation is handled by their respective components
-      // (phase-0-parent-selection.tsx and future phase-5b-short-title.tsx)
+      // Extended phase navigation is handled by their respective components
+      // (e.g., phase-0-parent-selection.tsx)
     },
     [wizard]
   )
 
-  // Wrapper to check if extended phase can be navigated to
-  // For standard phases, delegates to wizard.canNavigateToPhase
-  // For phase 0: only navigable if it's the current phase (can't go back)
-  // For phase '5B': same pattern - handled by phase component
+  // Wrapper to check if a phase can be navigated to.
+  // For tracked phases, delegates to wizard.canNavigateToPhase.
+  // Extended phases (parent/short-title/thumbnail) are only clickable when
+  // current — this prevents going back to parent selection after advancing.
   const canNavigateToExtendedPhase = useCallback(
-    (phase: ExtendedWizardPhase): boolean => {
-      if (isStandardPhase(phase)) {
+    (phase: WizardPhaseId): boolean => {
+      if (isTrackedPhaseId(phase)) {
         return wizard.canNavigateToPhase(phase)
       }
-      // Extended phases (0, '5B') are only clickable when current
-      // This prevents going back to phase 0 after advancing
-      // Cast needed because wizard.state.currentPhase is typed as WizardPhase,
-      // but can be 0 at runtime for cut/reel videos
-      return (wizard.state.currentPhase as ExtendedWizardPhase) === phase
+      return wizard.state.currentPhase === phase
     },
     [wizard]
   )

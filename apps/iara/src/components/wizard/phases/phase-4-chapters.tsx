@@ -102,7 +102,7 @@ export function Phase4Chapters({
   const handleConfirmAdvance = () => {
     setShowApprovalDialog(false)
     setIsAdvancing(true)
-    wizard.completePhaseAndAdvance(4, chaptersResult)
+    wizard.completePhaseAndAdvance('chapters', chaptersResult)
   }
 
   const videoId = video.id
@@ -224,7 +224,7 @@ export function Phase4Chapters({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseName(4)}
+                Avançar para {getNextPhaseName('chapters')}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

@@ -59,22 +59,23 @@ function createMockWizard(overrides: Partial<UseWizardReturn> = {}): UseWizardRe
   return {
     state: {
       videoId: 'test-video-123',
-      currentPhase: 1,
+      videoType: 'episode',
+      currentPhase: 'critique',
       phases: {
-        1: { status: 'pending', data: null, error: null },
-        2: { status: 'pending', data: null, error: null },
-        3: { status: 'pending', data: null, error: null },
-        4: { status: 'pending', data: null, error: null },
-        5: { status: 'pending', data: null, error: null },
-        6: { status: 'pending', data: null, error: null },
-        7: { status: 'pending', data: null, error: null },
-        8: { status: 'pending', data: null, error: null },
+        critique: { status: 'pending', data: null, error: null },
+        'edit-check': { status: 'pending', data: null, error: null },
+        risk: { status: 'pending', data: null, error: null },
+        chapters: { status: 'pending', data: null, error: null },
+        title: { status: 'pending', data: null, error: null },
+        description: { status: 'pending', data: null, error: null },
+        tags: { status: 'pending', data: null, error: null },
+        publish: { status: 'pending', data: null, error: null },
       },
     },
-    currentPhase: 1,
+    currentPhase: 'critique',
     currentPhaseData: { status: 'pending', data: null, error: null },
     currentPhaseMetadata: {
-      phase: 1,
+      phase: 'critique',
       label: 'Crítica',
       type: 'immutable',
       spinnerText: 'Estou assistindo o episódio para te dar uma opinião sincera...',
@@ -82,7 +83,7 @@ function createMockWizard(overrides: Partial<UseWizardReturn> = {}): UseWizardRe
     },
     progress: 0,
     isComplete: false,
-    firstIncompletePhase: 1,
+    firstIncompletePhase: 'critique',
     goToPhase: vi.fn(),
     goToNextPhase: vi.fn(),
     canNavigateToPhase: vi.fn().mockReturnValue(false),
@@ -469,7 +470,7 @@ describe('Phase1Critique', () => {
       // changes — Story 24.1). With a pristine form, save() is a no-op so the
       // dispatch lands on the next tick.
       await waitFor(() => {
-        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('critique', mockPhase1Response)
       })
     })
 
@@ -505,7 +506,7 @@ describe('Phase1Critique', () => {
 
       // And completePhaseAndAdvance must have been called AFTER the fetch
       await waitFor(() => {
-        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(1, mockPhase1Response)
+        expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('critique', mockPhase1Response)
       })
 
       const fetchCallOrders = mockFetch.mock.invocationCallOrder

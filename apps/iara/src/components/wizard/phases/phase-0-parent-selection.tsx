@@ -131,7 +131,7 @@ export function Phase0ParentSelection({
 
       // Advance to phase 5 (Title) using completePhaseAndAdvance
       // Phase 0 completion is tracked via video.parentEpisodeId in Firestore
-      wizard.completePhaseAndAdvance(0, { parentEpisodeId: selectedEpisodeId })
+      wizard.completePhaseAndAdvance('parent', { parentEpisodeId: selectedEpisodeId })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar'
       setSaveError(errorMessage)

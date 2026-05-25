@@ -57,22 +57,23 @@ function createMockWizard(overrides: Partial<UseWizardReturn> = {}): UseWizardRe
   return {
     state: {
       videoId: 'test-video-123',
-      currentPhase: 2,
+      videoType: 'episode',
+      currentPhase: 'edit-check',
       phases: {
-        1: { status: 'completed', data: {}, error: null },
-        2: { status: 'pending', data: null, error: null },
-        3: { status: 'pending', data: null, error: null },
-        4: { status: 'pending', data: null, error: null },
-        5: { status: 'pending', data: null, error: null },
-        6: { status: 'pending', data: null, error: null },
-        7: { status: 'pending', data: null, error: null },
-        8: { status: 'pending', data: null, error: null },
+        critique: { status: 'completed', data: {}, error: null },
+        'edit-check': { status: 'pending', data: null, error: null },
+        risk: { status: 'pending', data: null, error: null },
+        chapters: { status: 'pending', data: null, error: null },
+        title: { status: 'pending', data: null, error: null },
+        description: { status: 'pending', data: null, error: null },
+        tags: { status: 'pending', data: null, error: null },
+        publish: { status: 'pending', data: null, error: null },
       },
     },
-    currentPhase: 2,
+    currentPhase: 'edit-check',
     currentPhaseData: { status: 'pending', data: null, error: null },
     currentPhaseMetadata: {
-      phase: 2,
+      phase: 'edit-check',
       label: 'Edição',
       type: 'immutable',
       spinnerText: 'Verificando se existem falhas de edição perceptíveis...',
@@ -80,7 +81,7 @@ function createMockWizard(overrides: Partial<UseWizardReturn> = {}): UseWizardRe
     },
     progress: 12.5,
     isComplete: false,
-    firstIncompletePhase: 2,
+    firstIncompletePhase: 'edit-check',
     goToPhase: vi.fn(),
     goToNextPhase: vi.fn(),
     canNavigateToPhase: vi.fn().mockReturnValue(true),
@@ -153,7 +154,7 @@ describe('Phase2EditCheck', () => {
       )
       const button = screen.getByRole('button', { name: /avançar para risco/i })
       fireEvent.click(button)
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(2, mockPhase2NoIssues)
+      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('edit-check', mockPhase2NoIssues)
     })
   })
 
@@ -239,7 +240,7 @@ describe('Phase2EditCheck', () => {
       const confirmButton = within(dialog).getByRole('button', { name: /sim, continuar/i })
       fireEvent.click(confirmButton)
 
-      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith(2, mockPhase2WithIssues)
+      expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('edit-check', mockPhase2WithIssues)
     })
   })
 

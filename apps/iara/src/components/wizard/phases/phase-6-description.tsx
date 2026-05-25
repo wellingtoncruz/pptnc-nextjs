@@ -151,7 +151,7 @@ export function Phase6Description({
         error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
-    wizard.completePhaseAndAdvance(6, { description })
+    wizard.completePhaseAndAdvance('description', { description })
   }
 
   const handleRevalidateClick = () => {
@@ -277,7 +277,7 @@ export function Phase6Description({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseNameForType(6, video.videoType)}
+                Avançar para {getNextPhaseNameForType('description', video.videoType)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}
