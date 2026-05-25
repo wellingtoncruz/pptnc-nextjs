@@ -173,7 +173,10 @@ describe('SocialLayout', () => {
     expect(capturedVariant).toBe('social')
   })
 
-  it('filtra episódios e ordena sent-first', () => {
+  it('filtra episódios e preserva a ordem recent-first da API (não força sent pro topo)', () => {
+    // API entrega recent-first (publishedAt desc). O social-layout NÃO deve
+    // reordenar sent pro topo — isso enterrava vídeos ready/draft recentes
+    // atrás de sent antigos (Story 25.12).
     const mixedVideos = [
       { id: 'v-draft', status: 'draft', videoType: 'cut' },
       { id: 'v-sent', status: 'sent', videoType: 'reel' },
@@ -196,8 +199,8 @@ describe('SocialLayout', () => {
 
     render(<SocialLayout />)
 
-    // Episode filtered out, sent first
+    // Episode filtered out; ordem da API preservada (sent NÃO vai pro topo)
     const videoIds = screen.getByTestId('video-ids').textContent
-    expect(videoIds).toBe('v-sent,v-draft,v-new')
+    expect(videoIds).toBe('v-draft,v-sent,v-new')
   })
 })
