@@ -11,9 +11,11 @@ import {
   getWizardProgress,
   isTrackedPhaseId,
   isWizardComplete,
+  isWizardPhaseId,
   PHASE_ID_METADATA,
   PhaseStatus,
   type TrackedPhaseId,
+  TRACKED_PHASE_IDS,
   VideoDataForSync,
   type WizardPhaseId,
   WizardState,
@@ -26,7 +28,22 @@ import {
 const WIZARD_STORAGE_KEY_PREFIX = 'wizard-state-'
 
 /**
+ * Persisted-state schema version. Bumped to 2 for TD-7 (Epic 25), which changed
+ * the wizard state shape from numeric phases (currentPhase: 1..8, phases keyed
+ * 1..8) to semantic kebab IDs (currentPhase: WizardPhaseId, phases keyed by
+ * TrackedPhaseId). State persisted by an older build (no version, or numeric
+ * keys) is discarded on load — no data loss, since the wizard re-hydrates from
+ * Firestore (the source of truth) on the next render.
+ */
+const WIZARD_STATE_SCHEMA_VERSION = 2
+
+type PersistedWizardState = WizardState & { schemaVersion?: number }
+
+/**
  * Load wizard state from localStorage.
+ *
+ * Returns null (→ rebuild fresh + hydrate from Firestore) when the stored state
+ * is from an older schema version or doesn't match the current kebab shape.
  */
 function loadWizardState(videoId: string): WizardState | null {
   if (typeof window === 'undefined') return null
@@ -35,12 +52,20 @@ function loadWizardState(videoId: string): WizardState | null {
     const stored = localStorage.getItem(`${WIZARD_STORAGE_KEY_PREFIX}${videoId}`)
     if (!stored) return null
 
-    const parsed = JSON.parse(stored) as WizardState
+    const parsed = JSON.parse(stored) as PersistedWizardState
+
+    // Schema gate (TD-7): discard pre-refactor state (numeric phase shape).
+    if (parsed.schemaVersion !== WIZARD_STATE_SCHEMA_VERSION) return null
 
     // Validate the stored state has the expected shape
     if (parsed.videoId !== videoId || !parsed.phases || !parsed.currentPhase) {
       return null
     }
+
+    // Defense-in-depth: currentPhase must be a valid semantic ID and every
+    // tracked phase must be present (guards against any malformed v2 state).
+    if (!isWizardPhaseId(parsed.currentPhase)) return null
+    if (TRACKED_PHASE_IDS.some((id) => !parsed.phases[id])) return null
 
     return parsed
   } catch {
@@ -49,15 +74,19 @@ function loadWizardState(videoId: string): WizardState | null {
 }
 
 /**
- * Save wizard state to localStorage.
+ * Save wizard state to localStorage (tagged with the current schema version).
  */
 function saveWizardState(state: WizardState): void {
   if (typeof window === 'undefined') return
 
   try {
+    const persisted: PersistedWizardState = {
+      ...state,
+      schemaVersion: WIZARD_STATE_SCHEMA_VERSION,
+    }
     localStorage.setItem(
       `${WIZARD_STORAGE_KEY_PREFIX}${state.videoId}`,
-      JSON.stringify(state)
+      JSON.stringify(persisted)
     )
   } catch {
     // Ignore storage errors (e.g., quota exceeded)
