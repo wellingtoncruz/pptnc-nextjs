@@ -131,7 +131,7 @@ async function main(): Promise<void> {
   const execute = process.argv.slice(2).includes('--execute')
   console.log(`reviewedPhases backfill — ${execute ? 'EXECUTE (writing)' : 'DRY-RUN (no writes)'}`)
   if (!execute) {
-    console.log('⚠️  Dry-run. Pass --execute to write. BACK UP THE DB FIRST (shared dev/prod).')
+    console.log('⚠️  Dry-run. Pass --execute to write. BACK UP THE TARGET DB FIRST (pptnc-prod for production).')
   }
 
   const db = initFirebase()
