@@ -1494,10 +1494,8 @@ export function WizardOrchestrator({
       return
     }
 
-    // Only process for cut videos on phase 5B
-    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
-    // but can be '5B' at runtime for cut videos
-    if ((wizard.currentPhase as unknown as string) !== '5B' || video.videoType !== 'cut') {
+    // Only process for cut videos on the short-title phase
+    if (wizard.currentPhase !== 'short-title' || video.videoType !== 'cut') {
       return
     }
 
@@ -2453,10 +2451,8 @@ export function WizardOrchestrator({
       )
     }
 
-    // Phase 5B is only for cut videos (short title for thumbnails)
-    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
-    // but can be '5B' at runtime for cut videos
-    if ((wizard.currentPhase as unknown as string) === '5B' && video.videoType === 'cut') {
+    // short-title is only for cut videos (short title for thumbnails)
+    if (wizard.currentPhase === 'short-title' && video.videoType === 'cut') {
       return (
         <Phase5BShortTitle
           wizard={wizard}
@@ -2475,13 +2471,11 @@ export function WizardOrchestrator({
       )
     }
 
-    // Phase 'THUMB' — Epic 22 / Story 22.3 (sub-stories 22.3a..22.3g). Gated
-    // by podcast.features.thumbnailGeneration and only inserted into the
-    // wizard flow for episode/cut via getPhasesForVideoTypeWithFeatures.
-    // Cast needed because wizard.currentPhase is typed as WizardPhase (1-8),
-    // but can be 'THUMB' at runtime. 22.3c wires the advance handler that
-    // marks THUMB completed and navigates to Publicar (8).
-    if ((wizard.currentPhase as unknown as string) === 'THUMB') {
+    // thumbnail phase — Epic 22 / Story 22.3 (sub-stories 22.3a..22.3g). Gated
+    // by podcast.features.thumbnailGeneration and only inserted into the wizard
+    // flow for episode/cut via getPhaseIdsForVideoTypeWithFeatures. 22.3c wires
+    // the advance handler that marks thumbnail completed and navigates to Publicar.
+    if (wizard.currentPhase === 'thumbnail') {
       return (
         <PhaseThumbnail
           video={videoData}
