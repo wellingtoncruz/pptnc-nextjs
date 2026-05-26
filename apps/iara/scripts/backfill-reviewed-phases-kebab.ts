@@ -15,14 +15,15 @@
  * - Idempotent: re-running is a no-op (already-kebab arrays are skipped).
  * - Dry-run by default; pass `--execute` to write.
  *
- * ⚠️ PREREQUISITE (gate): BACK UP (or apartar) the shared dev/prod Firestore
- * database BEFORE running with `--execute`. The database is shared across the
- * dev and prod runtimes. Run inside the coordinated deploy window (see
+ * ⚠️ PREREQUISITE (gate): BACK UP the TARGET database BEFORE `--execute`. The
+ * production data lives in pptnc-prod (now an exclusive prod DB); select it via
+ * FIRESTORE_DATABASE_ID. Run inside the coordinated deploy window (see
  * epic-25-td7-full-migration-plan.md §5/§6).
  *
- * Usage:
- *   npx tsx scripts/backfill-reviewed-phases-kebab.ts            # dry-run
- *   npx tsx scripts/backfill-reviewed-phases-kebab.ts --execute  # writes
+ * Usage (DB chosen by FIRESTORE_DATABASE_ID env; pptnc-prod = production):
+ *   FIRESTORE_DATABASE_ID=pptnc-prod npx tsx scripts/backfill-reviewed-phases-kebab.ts            # dry-run (prod)
+ *   FIRESTORE_DATABASE_ID=pptnc-prod npx tsx scripts/backfill-reviewed-phases-kebab.ts --execute  # writes (prod, after backup)
+ *   npx tsx scripts/backfill-reviewed-phases-kebab.ts                                              # dry-run (stage, default)
  *
  * Prerequisites: `gcloud auth application-default login`; access to the DB.
  *
@@ -33,7 +34,9 @@ import { applicationDefault, getApps, initializeApp } from 'firebase-admin/app'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 
 const PROJECT_ID = 'pptnc-stage'
-const FIRESTORE_DATABASE_ID = 'pptnc-stage'
+// pptnc-prod is the exclusive production Firestore DB (named DB in the same
+// pptnc-stage GCP project). Select the target via FIRESTORE_DATABASE_ID.
+const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'pptnc-stage'
 const PODCAST_ID = 'pptnc'
 
 /**
