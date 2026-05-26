@@ -76,14 +76,14 @@ const mockPhase4Response = {
 }
 
 // Generic mock responses per phase for the "all phases" test
-const mockPhaseResponses: Record<number, object> = {
-  1: mockPhase1Response,
-  2: mockPhase2Response,
-  3: mockPhase3Response,
-  4: mockPhase4Response,
-  5: { titles: ['Title 1', 'Title 2', 'Title 3', 'Title 4', 'Title 5'] },
-  6: { description: 'Video description' },
-  7: { tags: ['tag1', 'tag2'] },
+const mockPhaseResponses: Record<string, object> = {
+  critique: mockPhase1Response,
+  'edit-check': mockPhase2Response,
+  risk: mockPhase3Response,
+  chapters: mockPhase4Response,
+  title: { titles: ['Title 1', 'Title 2', 'Title 3', 'Title 4', 'Title 5'] },
+  description: { description: 'Video description' },
+  tags: { tags: ['tag1', 'tag2'] },
 }
 
 function createRequest(phase: string, body: object): NextRequest {
@@ -110,8 +110,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
     it('returns 401 if session is not authenticated', async () => {
       vi.mocked(auth).mockResolvedValue(null)
 
-      const request = createRequest('1', { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
       const data = await response.json()
 
       expect(response.status).toBe(401)
@@ -130,19 +130,19 @@ describe('POST /api/wizard/phase/[phase]', () => {
       expect(data.error.message).toContain('Fase inválida')
     })
 
-    it('returns 400 for phase 8 (no LLM)', async () => {
-      const request = createRequest('8', { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '8' }) })
+    it('returns 400 for publish (no LLM)', async () => {
+      const request = createRequest('publish', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'publish' }) })
       const data = await response.json()
 
       expect(response.status).toBe(400)
       expect(data.error.code).toBe('VALIDATION_ERROR')
-      expect(data.error.message).toContain('Fase 8 não usa LLM')
+      expect(data.error.message).toContain('Fase inválida')
     })
 
     it('returns 400 for missing videoId', async () => {
-      const request = createRequest('1', {})
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', {})
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
       const data = await response.json()
 
       expect(response.status).toBe(400)
@@ -152,8 +152,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
     it('returns 404 if video not found', async () => {
       vi.mocked(getVideoAdmin).mockResolvedValue(null)
 
-      const request = createRequest('1', { videoId: 'not-found' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'not-found' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -163,11 +163,11 @@ describe('POST /api/wizard/phase/[phase]', () => {
 
   describe('LLM Processing', () => {
     it('calls callLLM with correct parameters for phase 1', async () => {
-      const request = createRequest('1', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
 
       expect(callLLMQueued).toHaveBeenCalledWith(
-        1,
+        'critique',
         mockVideo,
         undefined,
         {
@@ -179,14 +179,14 @@ describe('POST /api/wizard/phase/[phase]', () => {
     })
 
     it('passes promptOverride to callLLM', async () => {
-      const request = createRequest('5', {
+      const request = createRequest('title', {
         videoId: 'video-123',
         promptOverride: 'Custom prompt',
       })
-      await POST(request, { params: Promise.resolve({ phase: '5' }) })
+      await POST(request, { params: Promise.resolve({ phase: 'title' }) })
 
       expect(callLLMQueued).toHaveBeenCalledWith(
-        5,
+        'title',
         mockVideo,
         undefined,
         expect.objectContaining({
@@ -196,14 +196,14 @@ describe('POST /api/wizard/phase/[phase]', () => {
     })
 
     it('passes additionalContext to callLLM', async () => {
-      const request = createRequest('5', {
+      const request = createRequest('title', {
         videoId: 'video-123',
         additionalContext: 'Extra context',
       })
-      await POST(request, { params: Promise.resolve({ phase: '5' }) })
+      await POST(request, { params: Promise.resolve({ phase: 'title' }) })
 
       expect(callLLMQueued).toHaveBeenCalledWith(
-        5,
+        'title',
         mockVideo,
         undefined,
         expect.objectContaining({
@@ -216,8 +216,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
 
   describe('Success Response', () => {
     it('returns phase data on success', async () => {
-      const request = createRequest('1', { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -225,8 +225,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
     })
 
     it('returns usage information on success', async () => {
-      const request = createRequest('1', { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
       const data = await response.json()
 
       expect(data.usage).toEqual({
@@ -248,8 +248,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
         },
       })
 
-      const request = createRequest('1', { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
       const data = await response.json()
 
       expect(response.status).toBe(500)
@@ -267,8 +267,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
         },
       })
 
-      const request = createRequest('1', { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
 
       expect(response.status).toBe(429)
     })
@@ -276,8 +276,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
     it('returns 500 for unexpected errors', async () => {
       vi.mocked(callLLMQueued).mockRejectedValue(new Error('Unexpected error'))
 
-      const request = createRequest('1', { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
       const data = await response.json()
 
       expect(response.status).toBe(500)
@@ -286,25 +286,28 @@ describe('POST /api/wizard/phase/[phase]', () => {
   })
 
   describe('All valid phases', () => {
-    it.each([1, 2, 3, 4, 5, 6, 7])('processes phase %i successfully', async (phase) => {
-      // Use phase-specific mock response to avoid destructuring errors in persistence logic
-      vi.mocked(callLLMQueued).mockResolvedValue({
-        success: true,
-        data: mockPhaseResponses[phase],
-        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
-      })
+    it.each(['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags'] as const)(
+      'processes phase %s successfully',
+      async (phase) => {
+        // Use phase-specific mock response to avoid destructuring errors in persistence logic
+        vi.mocked(callLLMQueued).mockResolvedValue({
+          success: true,
+          data: mockPhaseResponses[phase],
+          usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+        })
 
-      const request = createRequest(String(phase), { videoId: 'video-123' })
-      const response = await POST(request, { params: Promise.resolve({ phase: String(phase) }) })
+        const request = createRequest(phase, { videoId: 'video-123' })
+        const response = await POST(request, { params: Promise.resolve({ phase }) })
 
-      expect(response.status).toBe(200)
-      expect(callLLMQueued).toHaveBeenCalledWith(
-        phase,
-        expect.anything(),
-        undefined,
-        expect.anything()
-      )
-    })
+        expect(response.status).toBe(200)
+        expect(callLLMQueued).toHaveBeenCalledWith(
+          phase,
+          expect.anything(),
+          undefined,
+          expect.anything()
+        )
+      }
+    )
   })
 
   describe('Phase data persistence', () => {
@@ -315,8 +318,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
-      const request = createRequest('1', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '1' }) })
+      const request = createRequest('critique', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'critique' }) })
 
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
@@ -332,8 +335,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
-      const request = createRequest('2', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '2' }) })
+      const request = createRequest('edit-check', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'edit-check' }) })
 
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
@@ -349,8 +352,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
-      const request = createRequest('3', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '3' }) })
+      const request = createRequest('risk', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'risk' }) })
 
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
@@ -366,8 +369,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
-      const request = createRequest('4', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '4' }) })
+      const request = createRequest('chapters', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'chapters' }) })
 
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
@@ -384,8 +387,8 @@ describe('POST /api/wizard/phase/[phase]', () => {
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
-      const request = createRequest('5', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '5' }) })
+      const request = createRequest('title', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'title' }) })
 
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
@@ -397,34 +400,34 @@ describe('POST /api/wizard/phase/[phase]', () => {
     it('persists description for Phase 6', async () => {
       vi.mocked(callLLMQueued).mockResolvedValue({
         success: true,
-        data: mockPhaseResponses[6],
+        data: mockPhaseResponses['description'],
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
-      const request = createRequest('6', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '6' }) })
+      const request = createRequest('description', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'description' }) })
 
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
         'video-123',
-        { description: mockPhaseResponses[6].description }
+        { description: mockPhaseResponses['description'].description }
       )
     })
 
     it('persists tags for Phase 7', async () => {
       vi.mocked(callLLMQueued).mockResolvedValue({
         success: true,
-        data: mockPhaseResponses[7],
+        data: mockPhaseResponses['tags'],
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
-      const request = createRequest('7', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: '7' }) })
+      const request = createRequest('tags', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'tags' }) })
 
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
         'video-123',
-        { tags: mockPhaseResponses[7].tags }
+        { tags: mockPhaseResponses['tags'].tags }
       )
     })
   })

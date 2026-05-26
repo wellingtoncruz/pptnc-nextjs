@@ -116,6 +116,38 @@ export const TRACKED_PHASE_IDS: readonly TrackedPhaseId[] = [
   'publish',
 ]
 
+/**
+ * Phase IDs that have an LLM call via the generic /api/wizard/phase/[phase]
+ * route (the former numeric phases 1-7). Excludes parent/publish (no LLM) and
+ * short-title/thumbnail (dedicated routes).
+ */
+export type LLMPhaseId =
+  | 'critique'
+  | 'edit-check'
+  | 'risk'
+  | 'chapters'
+  | 'title'
+  | 'description'
+  | 'tags'
+
+/** LLM phase IDs in canonical order (the generic route handles these). */
+export const LLM_PHASE_IDS: readonly LLMPhaseId[] = [
+  'critique',
+  'edit-check',
+  'risk',
+  'chapters',
+  'title',
+  'description',
+  'tags',
+]
+
+const LLM_PHASE_SET: ReadonlySet<string> = new Set(LLM_PHASE_IDS)
+
+/** Type guard: whether an arbitrary string is an LLM phase id (generic route). */
+export function isLLMPhaseId(value: string): value is LLMPhaseId {
+  return LLM_PHASE_SET.has(value)
+}
+
 const TRACKED_SET: ReadonlySet<string> = new Set(TRACKED_PHASE_IDS)
 
 /** Type guard: whether a phase ID has a slot in WizardState.phases. */

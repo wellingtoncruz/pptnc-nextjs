@@ -748,7 +748,7 @@ export function WizardOrchestrator({
 
     try {
       const phase1Data = await runAsyncPhase<Phase1Response>({
-        phase: 1,
+        phase: 'critique',
         videoId: video.id,
         pollIntervalMs: 10_000,
       })
@@ -858,7 +858,7 @@ export function WizardOrchestrator({
 
     try {
       const phase2Data = await runAsyncPhase<Phase2Response>({
-        phase: 2,
+        phase: 'edit-check',
         videoId: video.id,
         pollIntervalMs: 10_000,
       })
@@ -977,7 +977,7 @@ export function WizardOrchestrator({
 
     try {
       const phase3Data = await runAsyncPhase<Phase3Response>({
-        phase: 3,
+        phase: 'risk',
         videoId: video.id,
         pollIntervalMs: 10_000,
       })
@@ -1097,7 +1097,7 @@ export function WizardOrchestrator({
 
     try {
       const phase4Data = await runAsyncPhase<Phase4Response>({
-        phase: 4,
+        phase: 'chapters',
         videoId: video.id,
         pollIntervalMs: 10_000,
       })
@@ -1222,7 +1222,7 @@ export function WizardOrchestrator({
 
     try {
       const phase5Data = await runAsyncPhase<Phase5Response>({
-        phase: 5,
+        phase: 'title',
         videoId: video.id,
         body: additionalContext ? { additionalContext } : undefined,
         pollIntervalMs: 5_000,
@@ -1441,7 +1441,7 @@ export function WizardOrchestrator({
 
     try {
       const phase5BData = await runAsyncPhase<Phase5BResponse>({
-        phase: '5b',
+        phase: 'short-title',
         videoId: video.id,
         body: additionalContext ? { additionalContext } : undefined,
         pollIntervalMs: 5_000,
@@ -1604,7 +1604,7 @@ export function WizardOrchestrator({
 
     try {
       const phase6Data = await runAsyncPhase<Phase6Response>({
-        phase: 6,
+        phase: 'description',
         videoId: video.id,
         body: additionalContext ? { additionalContext } : undefined,
         pollIntervalMs: 5_000,
@@ -1814,7 +1814,7 @@ export function WizardOrchestrator({
 
     try {
       const phase7Data = await runAsyncPhase<Phase7Response>({
-        phase: 7,
+        phase: 'tags',
         videoId: video.id,
         body: additionalContext ? { additionalContext } : undefined,
         pollIntervalMs: 5_000,

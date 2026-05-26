@@ -1,4 +1,4 @@
-import type { WizardPhase } from '@/lib/wizard'
+import type { TrackedPhaseId } from '@/lib/wizard'
 import type { Video } from '@/types/video'
 
 import type { PromptVariables } from './types'
@@ -130,12 +130,12 @@ export function interpolatePrompt(
  */
 export function validateVideoForPhase(
   video: Video,
-  phase: WizardPhase
+  phase: TrackedPhaseId
 ): { valid: boolean; missingFields: string[] } {
   const missingFields: string[] = []
 
-  // All phases require transcript (except 8)
-  if (phase !== 8) {
+  // All phases require transcript (except publish)
+  if (phase !== 'publish') {
     if (!video.transcriptionSRT && !video.transcriptionTXT) {
       missingFields.push('transcrição')
     }

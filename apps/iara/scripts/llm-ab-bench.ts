@@ -222,8 +222,10 @@ async function runOne(
     data = r.data
     usage = r.usage
   } else {
-    const phaseNum = parseInt(phase, 10) as 5 | 6 | 7
-    const result = await callLLM(phaseNum, video, podcast)
+    const phaseId = ({ '5': 'title', '6': 'description', '7': 'tags' } as const)[
+      phase as Exclude<BenchPhase, '5B'>
+    ]
+    const result = await callLLM(phaseId, video, podcast)
     if (!result.success) {
       throw new LLMError(result.error.code, result.error.message, result.error.retryable)
     }

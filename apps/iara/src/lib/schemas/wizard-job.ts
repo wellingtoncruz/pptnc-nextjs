@@ -18,14 +18,14 @@ import { z } from 'zod'
 export const WizardJobStatusSchema = z.enum(['pending', 'processing', 'complete', 'failed'])
 
 export const WizardJobPhaseSchema = z.union([
-  z.literal(1),
-  z.literal(2),
-  z.literal(3),
-  z.literal(4),
-  z.literal(5),
-  z.literal(6),
-  z.literal(7),
-  z.literal('5b'),
+  z.literal('critique'),
+  z.literal('edit-check'),
+  z.literal('risk'),
+  z.literal('chapters'),
+  z.literal('title'),
+  z.literal('short-title'),
+  z.literal('description'),
+  z.literal('tags'),
   // Epic 22 / Story 22.4 — geração de thumbnail via Vertex AI (Gemini image).
   z.literal('thumbnail'),
 ])

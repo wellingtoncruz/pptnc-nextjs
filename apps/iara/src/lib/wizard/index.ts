@@ -28,11 +28,14 @@ export {
   toLegacyPhase,
   isWizardPhaseId,
   isTrackedPhaseId,
+  isLLMPhaseId,
   phaseIdOrder,
   WIZARD_PHASE_IDS,
   TRACKED_PHASE_IDS,
+  LLM_PHASE_IDS,
   type WizardPhaseId,
   type TrackedPhaseId,
+  type LLMPhaseId,
 } from './phase-id-map'
 
 // Constants

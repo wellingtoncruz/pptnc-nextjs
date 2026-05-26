@@ -39,8 +39,7 @@ import type { LLMResult } from '@/lib/llm/types'
 import { log } from '@/lib/logger'
 import type { Podcast } from '@/types/podcast'
 import type { Video } from '@/types/video'
-import type { WizardPhase } from '@/lib/wizard'
-import { WizardPhaseSchema } from '@/lib/wizard'
+import { isLLMPhaseId, type LLMPhaseId } from '@/lib/wizard'
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin and Vertex AI
 
@@ -55,7 +54,7 @@ interface RouteContext {
   params: Promise<{ phase: string }>
 }
 
-type LLMPhase = Exclude<WizardPhase, 8>
+type LLMPhase = LLMPhaseId
 
 /**
  * Persists the phase result to the parent video document and returns the
@@ -67,14 +66,14 @@ async function persistPhaseResult(
   videoId: string,
   data: PhaseResponse
 ): Promise<PhaseResponse> {
-  if (phase === 1) {
+  if (phase === 'critique') {
     const phase1Data = data as Phase1Response
     await updateVideoAdmin(PODCAST_ID, videoId, { critique: phase1Data.critique })
     log('INFO', 'Phase 1 critique persisted to video', { videoId })
     return phase1Data
   }
 
-  if (phase === 2) {
+  if (phase === 'edit-check') {
     const phase2Data = data as Phase2Response
     await updateVideoAdmin(PODCAST_ID, videoId, { editingIssues: phase2Data.issues })
     log('INFO', 'Phase 2 editing issues persisted to video', {
@@ -85,7 +84,7 @@ async function persistPhaseResult(
     return phase2Data
   }
 
-  if (phase === 3) {
+  if (phase === 'risk') {
     const phase3Data = data as Phase3Response
     await updateVideoAdmin(PODCAST_ID, videoId, { riskAndCompliance: phase3Data.risks })
     log('INFO', 'Phase 3 compliance risks persisted to video', {
@@ -96,7 +95,7 @@ async function persistPhaseResult(
     return phase3Data
   }
 
-  if (phase === 4) {
+  if (phase === 'chapters') {
     const phase4Data = data as Phase4Response
     let normalizedChapters = phase4Data.chapters
 
@@ -124,7 +123,7 @@ async function persistPhaseResult(
     return phase4Data
   }
 
-  if (phase === 5) {
+  if (phase === 'title') {
     const phase5Data = data as Phase5Response
     await updateVideoAdmin(PODCAST_ID, videoId, { suggestedTitles: phase5Data.titles })
     log('INFO', 'Phase 5 suggested titles persisted to video', {
@@ -134,7 +133,7 @@ async function persistPhaseResult(
     return phase5Data
   }
 
-  if (phase === 6) {
+  if (phase === 'description') {
     const phase6Data = data as Phase6Response
     await updateVideoAdmin(PODCAST_ID, videoId, { description: phase6Data.description })
     log('INFO', 'Phase 6 description persisted to video', {
@@ -144,7 +143,7 @@ async function persistPhaseResult(
     return phase6Data
   }
 
-  if (phase === 7) {
+  if (phase === 'tags') {
     const phase7Data = data as Phase7Response
     let normalizedTags = phase7Data.tags
 
@@ -271,24 +270,15 @@ export async function POST(
   }
 
   const { phase: phaseParam } = await context.params
-  const phaseNumber = parseInt(phaseParam, 10)
-  const phaseResult = WizardPhaseSchema.safeParse(phaseNumber)
 
-  if (!phaseResult.success) {
+  if (!isLLMPhaseId(phaseParam)) {
     return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Fase inválida. Use 1-7.' } },
+      { error: { code: 'VALIDATION_ERROR', message: 'Fase inválida (esperado um ID de fase LLM kebab-case).' } },
       { status: 400 }
     )
   }
 
-  const phase = phaseResult.data
-
-  if (phase === 8) {
-    return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Fase 8 não usa LLM. Use a API do YouTube.' } },
-      { status: 400 }
-    )
-  }
+  const phase: LLMPhase = phaseParam
 
   const isAsync = request.nextUrl.searchParams.get('mode') === 'async'
 

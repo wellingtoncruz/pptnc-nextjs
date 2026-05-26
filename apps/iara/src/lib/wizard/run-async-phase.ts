@@ -13,6 +13,8 @@
  * @see app/api/wizard/phase/[phase]/route.ts (and 5b/route.ts) for the async branch
  * @see lib/wizard/poll-job.ts for the polling implementation
  */
+import type { LLMPhaseId } from '@/lib/wizard'
+
 import { pollWizardJob } from './poll-job'
 
 interface RunAsyncPhaseOptions {
@@ -20,7 +22,7 @@ interface RunAsyncPhaseOptions {
    * Phase identifier. Phases 1-7 share /api/wizard/phase/[phase]; '5b' has
    * its own dedicated route.
    */
-  phase: 1 | 2 | 3 | 4 | 5 | '5b' | 6 | 7
+  phase: LLMPhaseId | 'short-title'
   videoId: string
   /**
    * Extra request body fields. `videoId` is added automatically.

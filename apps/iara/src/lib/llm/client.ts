@@ -6,7 +6,7 @@ import { GoogleGenAI } from '@google/genai'
 
 import { PROJECT_ID, VERTEX_AI_LOCATION, VERTEX_AI_MODEL } from '@/lib/firebase/config'
 import { log } from '@/lib/logger'
-import { toPhaseId, type TrackedPhaseId, type WizardPhase } from '@/lib/wizard'
+import type { LLMPhaseId, TrackedPhaseId } from '@/lib/wizard'
 import type { Podcast } from '@/types/podcast'
 import type { DebugContext } from '@/types/llm-log'
 import type { Video } from '@/types/video'
@@ -83,7 +83,7 @@ export { resetGenAIClient as resetVertexAIClient }
  * @param phase - Phase number for filename
  * @returns Path to temporary file
  */
-export async function createTranscriptionFile(content: string, phase: number): Promise<string> {
+export async function createTranscriptionFile(content: string, phase: string | number): Promise<string> {
   const tempDir = os.tmpdir()
   const filename = `iara-transcription-phase${phase}-${Date.now()}.txt`
   const filePath = path.join(tempDir, filename)
@@ -424,14 +424,13 @@ async function _callGenAIInner<T>(
  * Get the appropriate response type based on phase.
  */
 type PhaseResponseMap = {
-  1: Phase1Response
-  2: Phase2Response
-  3: Phase3Response
-  4: Phase4Response
-  5: Phase5Response
-  6: Phase6Response
-  7: Phase7Response
-  8: never
+  critique: Phase1Response
+  'edit-check': Phase2Response
+  risk: Phase3Response
+  chapters: Phase4Response
+  title: Phase5Response
+  description: Phase6Response
+  tags: Phase7Response
 }
 
 /**
@@ -450,7 +449,7 @@ type PhaseResponseMap = {
  * @param options - Call options (promptOverride, additionalContext, timeout)
  * @returns LLMResult with success/failure and data/error
  */
-export async function callLLM<P extends Exclude<WizardPhase, 8>>(
+export async function callLLM<P extends LLMPhaseId>(
   phase: P,
   video: Video,
   podcast?: Podcast,
@@ -474,14 +473,8 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
     }
   }
 
-  // Get phase configuration.
-  // TD-7 bridge (Story 25.7a): callLLM still receives the numeric phase from the
-  // route, but the prompt layer is now keyed by the semantic WizardPhaseId. This
-  // bridge is removed in 25.7b, when the route/runAsyncPhase pass the kebab id
-  // end-to-end. `phase` is 1-7 here (Exclude<WizardPhase, 8>), so it always maps
-  // to a TrackedPhaseId.
-  const phaseId = toPhaseId(phase) as TrackedPhaseId
-  const phaseConfig = PHASE_CONFIG[phaseId]
+  // Get phase configuration
+  const phaseConfig = PHASE_CONFIG[phase]
   const videoType = video.videoType || 'episode'
 
   // Determine which transcription to use based on phase config
@@ -502,7 +495,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
     } else if (podcast?.personas && podcast?.prompts) {
       // Use llm.md template with podcast configuration
       const persona = podcast.personas[phaseConfig.personaName]
-      systemPrompt = buildPhasePrompt(phaseId, persona, podcast.prompts, videoType)
+      systemPrompt = buildPhasePrompt(phase, persona, podcast.prompts, videoType)
 
       // Check if we got a fallback (buildPhasePrompt returns BASE_SYSTEM_PROMPTS when config incomplete)
       const isFallback = !persona?.role || !podcast.prompts[videoType]
@@ -513,14 +506,14 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       })
     } else {
       // Fallback to base prompts
-      systemPrompt = getSystemPrompt(phaseId)
+      systemPrompt = getSystemPrompt(phase)
       log('INFO', 'Using fallback prompts (no podcast config)', { phase })
     }
 
     // For Type 1 (Reprocessable) phases (5, 6, 7), append additionalContext to system prompt
     // This ensures the model pays attention to the user's specific instructions
     // Per processamento_video.md: "Dê uma atenção especial a essa instrução: {additionalContext}"
-    if (options?.additionalContext && [5, 6, 7].includes(phase)) {
+    if (options?.additionalContext && ['title', 'description', 'tags'].includes(phase)) {
       systemPrompt += `\n\n**INSTRUÇÃO PRIORITÁRIA DO PRODUTOR:**\nDê uma atenção especial a essa instrução: ${options.additionalContext}`
       log('INFO', 'Added additional context to system prompt', {
         phase,
@@ -529,7 +522,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
     }
 
     // Build user prompt (without transcription - it goes as attachment)
-    const userTemplate = getUserPromptTemplate(phaseId)
+    const userTemplate = getUserPromptTemplate(phase)
     const variables = extractVariables(video, options?.previousPhaseData, podcast?.hostName)
     // Clear transcript from variables since it will be sent as attachment
     variables.transcript = '[Transcrição anexada como arquivo]'
@@ -582,7 +575,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
  * Get the timeout for a phase.
  * Uses centralized PHASE_TIMEOUTS from types.ts.
  */
-function getPhaseTimeout(phase: WizardPhase): number {
+function getPhaseTimeout(phase: TrackedPhaseId): number {
   return PHASE_TIMEOUTS[phase]
 }
 
@@ -608,7 +601,7 @@ export function isLLMConfigured(): boolean {
  * @param options - Call options (promptOverride, additionalContext, timeout)
  * @returns LLMResult with success/failure and data/error
  */
-export async function callLLMQueued<P extends Exclude<WizardPhase, 8>>(
+export async function callLLMQueued<P extends LLMPhaseId>(
   phase: P,
   video: Video,
   podcast?: Podcast,

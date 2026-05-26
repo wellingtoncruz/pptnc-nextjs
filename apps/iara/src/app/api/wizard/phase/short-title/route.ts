@@ -152,7 +152,7 @@ ${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') ||
 
 [Transcrição anexada como arquivo]`
 
-  const transcriptionFilePath = await createTranscriptionFile(transcription, 5)
+  const transcriptionFilePath = await createTranscriptionFile(transcription, 'short-title')
 
   const debugContext = podcast?.features?.llmDebugMode
     ? { component: 'wizard/phase-5b', videoId: video.id, videoType: video.videoType || 'cut', podcastId: PODCAST_ID }
@@ -304,7 +304,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (isAsync) {
       const jobId = await createWizardJob(PODCAST_ID, {
         videoId,
-        phase: '5b',
+        phase: 'short-title',
         ...(additionalContext ? { additionalContext } : {}),
       })
 

@@ -36,7 +36,7 @@ describe('createWizardJob', () => {
   })
 
   it('writes to videos/{videoId}/wizardJobs subcollection', async () => {
-    await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 2 })
+    await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 'edit-check' })
 
     expect(mockPodcastDoc).toHaveBeenCalledWith('podcast-1')
     expect(mockVideosCollection).toHaveBeenCalledWith('videos')
@@ -45,11 +45,11 @@ describe('createWizardJob', () => {
   })
 
   it('persists pending status with timestamps', async () => {
-    await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 2 })
+    await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 'edit-check' })
 
     expect(mockSet).toHaveBeenCalledWith({
       videoId: 'video-abc',
-      phase: 2,
+      phase: 'edit-check',
       status: 'pending',
       createdAt: mockNow,
       updatedAt: mockNow,
@@ -59,7 +59,7 @@ describe('createWizardJob', () => {
   it('persists optional context fields when provided', async () => {
     await createWizardJob('podcast-1', {
       videoId: 'video-abc',
-      phase: 5,
+      phase: 'title',
       additionalContext: 'foco em IA',
       promptOverride: 'use o tom Y',
     })
@@ -71,7 +71,7 @@ describe('createWizardJob', () => {
   })
 
   it('returns the generated job id', async () => {
-    const id = await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 2 })
+    const id = await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 'edit-check' })
     expect(id).toBe('generated-job-id')
   })
 
@@ -83,16 +83,16 @@ describe('createWizardJob', () => {
 
   it('rejects empty videoId', async () => {
     await expect(
-      createWizardJob('podcast-1', { videoId: '', phase: 2 })
+      createWizardJob('podcast-1', { videoId: '', phase: 'edit-check' })
     ).rejects.toThrow()
   })
 
   it('logs success after creating', async () => {
-    await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 2 })
+    await createWizardJob('podcast-1', { videoId: 'video-abc', phase: 'edit-check' })
 
     expect(log).toHaveBeenCalledWith('INFO', 'Wizard job created', expect.objectContaining({
       videoId: 'video-abc',
-      phase: 2,
+      phase: 'edit-check',
     }))
   })
 })

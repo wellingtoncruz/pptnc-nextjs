@@ -1,4 +1,4 @@
-import type { WizardPhase } from '@/lib/wizard'
+import type { TrackedPhaseId, WizardPhaseId } from '@/lib/wizard'
 import type { Video } from '@/types/video'
 
 /**
@@ -223,7 +223,7 @@ export interface PromptVariables {
  */
 export interface LLMContext {
   video: Video
-  phase: WizardPhase
+  phase: WizardPhaseId
   podcastPrompts?: {
     description: string
     expectedOutput: string
@@ -268,13 +268,13 @@ export const MAX_RETRYABLE_ATTEMPTS = RETRYABLE_DELAYS.length + 1
  * Phases 1-4 use SRT transcription as input (can be 100K+ tokens for long episodes).
  * Gemini 2.5 Flash thinking tokens increase processing time for large inputs.
  */
-export const PHASE_TIMEOUTS: Record<WizardPhase, number> = {
-  1: 0, // No timeout - let model work (thinking tokens can be slow for large SRT)
-  2: 0, // No timeout
-  3: 0, // No timeout
-  4: 0, // No timeout
-  5: 120000, // Titles (2 min)
-  6: 120000, // Description (2 min)
-  7: 120000, // Tags (2 min)
-  8: 0,      // No LLM call
+export const PHASE_TIMEOUTS: Record<TrackedPhaseId, number> = {
+  critique: 0, // No timeout - let model work (thinking tokens can be slow for large SRT)
+  'edit-check': 0, // No timeout
+  risk: 0, // No timeout
+  chapters: 0, // No timeout
+  title: 120000, // Titles (2 min)
+  description: 120000, // Description (2 min)
+  tags: 120000, // Tags (2 min)
+  publish: 0,      // No LLM call
 }

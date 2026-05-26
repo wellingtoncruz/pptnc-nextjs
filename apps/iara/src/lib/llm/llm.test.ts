@@ -277,7 +277,7 @@ describe('validateVideoForPhase', () => {
       publishedAt: new Date(),
     }
 
-    for (let phase = 1; phase <= 7; phase++) {
+    for (const phase of ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags'] as const) {
       const result = validateVideoForPhase(video, phase)
       expect(result.valid).toBe(false)
       expect(result.missingFields).toContain('transcrição')
@@ -292,7 +292,7 @@ describe('validateVideoForPhase', () => {
       publishedAt: new Date(),
     }
 
-    const result = validateVideoForPhase(video, 8)
+    const result = validateVideoForPhase(video, 'publish')
 
     expect(result.valid).toBe(true)
     expect(result.missingFields).toHaveLength(0)
@@ -1055,7 +1055,7 @@ describe('callLLM validation', () => {
       publishedAt: new Date(),
     }
 
-    const result = await callLLM(1, videoWithoutTranscript)
+    const result = await callLLM('critique', videoWithoutTranscript)
 
     expect(result.success).toBe(false)
     if (!result.success) {
