@@ -6,7 +6,7 @@ import { GoogleGenAI } from '@google/genai'
 
 import { PROJECT_ID, VERTEX_AI_LOCATION, VERTEX_AI_MODEL } from '@/lib/firebase/config'
 import { log } from '@/lib/logger'
-import type { WizardPhase } from '@/lib/wizard'
+import { toPhaseId, type TrackedPhaseId, type WizardPhase } from '@/lib/wizard'
 import type { Podcast } from '@/types/podcast'
 import type { DebugContext } from '@/types/llm-log'
 import type { Video } from '@/types/video'
@@ -474,8 +474,14 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
     }
   }
 
-  // Get phase configuration
-  const phaseConfig = PHASE_CONFIG[phase]
+  // Get phase configuration.
+  // TD-7 bridge (Story 25.7a): callLLM still receives the numeric phase from the
+  // route, but the prompt layer is now keyed by the semantic WizardPhaseId. This
+  // bridge is removed in 25.7b, when the route/runAsyncPhase pass the kebab id
+  // end-to-end. `phase` is 1-7 here (Exclude<WizardPhase, 8>), so it always maps
+  // to a TrackedPhaseId.
+  const phaseId = toPhaseId(phase) as TrackedPhaseId
+  const phaseConfig = PHASE_CONFIG[phaseId]
   const videoType = video.videoType || 'episode'
 
   // Determine which transcription to use based on phase config
@@ -496,7 +502,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
     } else if (podcast?.personas && podcast?.prompts) {
       // Use llm.md template with podcast configuration
       const persona = podcast.personas[phaseConfig.personaName]
-      systemPrompt = buildPhasePrompt(phase, persona, podcast.prompts, videoType)
+      systemPrompt = buildPhasePrompt(phaseId, persona, podcast.prompts, videoType)
 
       // Check if we got a fallback (buildPhasePrompt returns BASE_SYSTEM_PROMPTS when config incomplete)
       const isFallback = !persona?.role || !podcast.prompts[videoType]
@@ -507,7 +513,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
       })
     } else {
       // Fallback to base prompts
-      systemPrompt = getSystemPrompt(phase)
+      systemPrompt = getSystemPrompt(phaseId)
       log('INFO', 'Using fallback prompts (no podcast config)', { phase })
     }
 
@@ -523,7 +529,7 @@ export async function callLLM<P extends Exclude<WizardPhase, 8>>(
     }
 
     // Build user prompt (without transcription - it goes as attachment)
-    const userTemplate = getUserPromptTemplate(phase)
+    const userTemplate = getUserPromptTemplate(phaseId)
     const variables = extractVariables(video, options?.previousPhaseData, podcast?.hostName)
     // Clear transcript from variables since it will be sent as attachment
     variables.transcript = '[Transcrição anexada como arquivo]'

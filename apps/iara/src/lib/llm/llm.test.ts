@@ -353,8 +353,8 @@ describe('validateVideoForPhase', () => {
 
 describe('getSystemPrompt', () => {
   it('returns base prompt for each phase', () => {
-    for (let phase = 1; phase <= 7; phase++) {
-      const prompt = getSystemPrompt(phase as 1 | 2 | 3 | 4 | 5 | 6 | 7)
+    for (const phase of ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags'] as const) {
+      const prompt = getSystemPrompt(phase)
       expect(prompt).toBeTruthy()
       expect(prompt.length).toBeGreaterThan(100)
     }
@@ -366,7 +366,7 @@ describe('getSystemPrompt', () => {
       expectedOutput: 'Include joke count',
     }
 
-    const prompt = getSystemPrompt(1, config)
+    const prompt = getSystemPrompt('critique', config)
 
     expect(prompt).toContain('Focus on humor')
     expect(prompt).toContain('Include joke count')
@@ -374,22 +374,22 @@ describe('getSystemPrompt', () => {
   })
 
   it('returns empty for phase 8', () => {
-    const prompt = getSystemPrompt(8)
+    const prompt = getSystemPrompt('publish')
     expect(prompt).toBe('')
   })
 })
 
 describe('getUserPromptTemplate', () => {
   it('returns template for each phase', () => {
-    for (let phase = 1; phase <= 7; phase++) {
-      const template = getUserPromptTemplate(phase as 1 | 2 | 3 | 4 | 5 | 6 | 7)
+    for (const phase of ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags'] as const) {
+      const template = getUserPromptTemplate(phase)
       expect(template).toBeTruthy()
       expect(template).toContain('{title}')
     }
   })
 
   it('includes transcript placeholder', () => {
-    const template = getUserPromptTemplate(1)
+    const template = getUserPromptTemplate('critique')
     expect(template).toContain('{transcript}')
   })
 })
@@ -400,8 +400,8 @@ describe('getUserPromptTemplate', () => {
 
 describe('PHASE_CONFIG', () => {
   it('defines config for all phases 1-8', () => {
-    for (let phase = 1; phase <= 8; phase++) {
-      const config = PHASE_CONFIG[phase as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8]
+    for (const phase of ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'] as const) {
+      const config = PHASE_CONFIG[phase]
       expect(config).toBeDefined()
       expect(config.personaName).toBeDefined()
       expect(config.attachmentType).toMatch(/^(TXT|SRT)$/)
@@ -410,26 +410,26 @@ describe('PHASE_CONFIG', () => {
   })
 
   it('uses critic persona for phase 1', () => {
-    expect(PHASE_CONFIG[1].personaName).toBe('critic')
-    expect(PHASE_CONFIG[1].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[1].promptKey).toBe('critique')
+    expect(PHASE_CONFIG['critique'].personaName).toBe('critic')
+    expect(PHASE_CONFIG['critique'].attachmentType).toBe('TXT')
+    expect(PHASE_CONFIG['critique'].promptKey).toBe('critique')
   })
 
   it('uses SRT for analysis phases (2, 3, 4) per processamento_video.md', () => {
-    expect(PHASE_CONFIG[2].attachmentType).toBe('SRT') // Edição
-    expect(PHASE_CONFIG[3].attachmentType).toBe('SRT') // Compliance
-    expect(PHASE_CONFIG[4].attachmentType).toBe('SRT') // Capítulos
+    expect(PHASE_CONFIG['edit-check'].attachmentType).toBe('SRT') // Edição
+    expect(PHASE_CONFIG['risk'].attachmentType).toBe('SRT') // Compliance
+    expect(PHASE_CONFIG['chapters'].attachmentType).toBe('SRT') // Capítulos
   })
 
   it('uses TXT for content generation phases (1, 5, 6, 7)', () => {
-    expect(PHASE_CONFIG[1].attachmentType).toBe('TXT') // Crítica
-    expect(PHASE_CONFIG[5].attachmentType).toBe('TXT') // Títulos
-    expect(PHASE_CONFIG[6].attachmentType).toBe('TXT') // Descrição
-    expect(PHASE_CONFIG[7].attachmentType).toBe('TXT') // Tags
+    expect(PHASE_CONFIG['critique'].attachmentType).toBe('TXT') // Crítica
+    expect(PHASE_CONFIG['title'].attachmentType).toBe('TXT') // Títulos
+    expect(PHASE_CONFIG['description'].attachmentType).toBe('TXT') // Descrição
+    expect(PHASE_CONFIG['tags'].attachmentType).toBe('TXT') // Tags
   })
 
   it('has empty promptKey for phase 8 (no LLM)', () => {
-    expect(PHASE_CONFIG[8].promptKey).toBe('')
+    expect(PHASE_CONFIG['publish'].promptKey).toBe('')
   })
 })
 
@@ -470,7 +470,7 @@ describe('buildPhasePrompt', () => {
   }
 
   it('builds prompt following llm.md template when persona and prompts are provided', () => {
-    const result = buildPhasePrompt(1, mockPersona, mockPrompts, 'episode')
+    const result = buildPhasePrompt('critique', mockPersona, mockPrompts, 'episode')
 
     expect(result).toContain('Seu papel: Você é um crítico experiente de podcasts')
     expect(result).toContain('Seu objetivo: Analisar e fornecer feedback construtivo')
@@ -482,7 +482,7 @@ describe('buildPhasePrompt', () => {
   })
 
   it('returns fallback prompt when persona is undefined', () => {
-    const result = buildPhasePrompt(1, undefined, mockPrompts, 'episode')
+    const result = buildPhasePrompt('critique', undefined, mockPrompts, 'episode')
 
     // Should return BASE_SYSTEM_PROMPTS fallback
     expect(result).toContain('crítico especializado')
@@ -490,7 +490,7 @@ describe('buildPhasePrompt', () => {
   })
 
   it('returns fallback prompt when prompts is undefined', () => {
-    const result = buildPhasePrompt(1, mockPersona, undefined, 'episode')
+    const result = buildPhasePrompt('critique', mockPersona, undefined, 'episode')
 
     // Should return BASE_SYSTEM_PROMPTS fallback
     expect(result).toContain('crítico especializado')
@@ -506,7 +506,7 @@ describe('buildPhasePrompt', () => {
       },
     }
 
-    const result = buildPhasePrompt(1, mockPersona, emptyPrompts, 'episode')
+    const result = buildPhasePrompt('critique', mockPersona, emptyPrompts, 'episode')
 
     // Should return BASE_SYSTEM_PROMPTS fallback
     expect(result).toContain('crítico especializado')
@@ -514,7 +514,7 @@ describe('buildPhasePrompt', () => {
   })
 
   it('returns fallback for phase 8 (no LLM)', () => {
-    const result = buildPhasePrompt(8, mockPersona, mockPrompts, 'episode')
+    const result = buildPhasePrompt('publish', mockPersona, mockPrompts, 'episode')
 
     // Phase 8 has no LLM call, should return empty string (fallback)
     expect(result).toBe('')
@@ -538,7 +538,7 @@ describe('buildPhasePrompt', () => {
       resume: 'Expert em SEO para YouTube',
     }
 
-    const result = buildPhasePrompt(5, writerPersona, cutPrompts, 'cut')
+    const result = buildPhasePrompt('title', writerPersona, cutPrompts, 'cut')
 
     expect(result).toContain('Seu papel: Especialista em títulos virais')
     expect(result).toContain('Gere títulos para o corte')
@@ -547,7 +547,7 @@ describe('buildPhasePrompt', () => {
   it('logs fallback mode when using base prompts', () => {
     // This test verifies the function returns fallback correctly
     // The actual logging is tested via integration tests
-    const result = buildPhasePrompt(1, undefined, undefined, 'episode')
+    const result = buildPhasePrompt('critique', undefined, undefined, 'episode')
 
     expect(result).toBeTruthy()
     expect(result.length).toBeGreaterThan(100)

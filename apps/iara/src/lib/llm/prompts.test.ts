@@ -94,7 +94,7 @@ const validPrompts: Prompts = {
 
 describe('PHASE_CONFIG', () => {
   it('has configuration for all 8 phases', () => {
-    const phases = [1, 2, 3, 4, 5, 6, 7, 8] as const
+    const phases = ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'] as const
     phases.forEach((phase) => {
       expect(PHASE_CONFIG[phase]).toBeDefined()
       expect(PHASE_CONFIG[phase].personaName).toBeDefined()
@@ -104,109 +104,109 @@ describe('PHASE_CONFIG', () => {
   })
 
   it('uses critic persona for phases 1-4 (Type 2 - Immutable)', () => {
-    expect(PHASE_CONFIG[1].personaName).toBe('critic')
-    expect(PHASE_CONFIG[2].personaName).toBe('critic')
-    expect(PHASE_CONFIG[3].personaName).toBe('critic')
-    expect(PHASE_CONFIG[4].personaName).toBe('critic')
+    expect(PHASE_CONFIG['critique'].personaName).toBe('critic')
+    expect(PHASE_CONFIG['edit-check'].personaName).toBe('critic')
+    expect(PHASE_CONFIG['risk'].personaName).toBe('critic')
+    expect(PHASE_CONFIG['chapters'].personaName).toBe('critic')
   })
 
   it('uses writer persona for phases 5-7 (Type 1 - Reprocessable)', () => {
-    expect(PHASE_CONFIG[5].personaName).toBe('writer')
-    expect(PHASE_CONFIG[6].personaName).toBe('writer')
-    expect(PHASE_CONFIG[7].personaName).toBe('writer')
+    expect(PHASE_CONFIG['title'].personaName).toBe('writer')
+    expect(PHASE_CONFIG['description'].personaName).toBe('writer')
+    expect(PHASE_CONFIG['tags'].personaName).toBe('writer')
   })
 
   it('uses TXT attachment for phases 1, 5, 6, 7', () => {
-    expect(PHASE_CONFIG[1].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[5].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[6].attachmentType).toBe('TXT')
-    expect(PHASE_CONFIG[7].attachmentType).toBe('TXT')
+    expect(PHASE_CONFIG['critique'].attachmentType).toBe('TXT')
+    expect(PHASE_CONFIG['title'].attachmentType).toBe('TXT')
+    expect(PHASE_CONFIG['description'].attachmentType).toBe('TXT')
+    expect(PHASE_CONFIG['tags'].attachmentType).toBe('TXT')
   })
 
   it('uses SRT attachment for phases 2, 3, 4', () => {
-    expect(PHASE_CONFIG[2].attachmentType).toBe('SRT')
-    expect(PHASE_CONFIG[3].attachmentType).toBe('SRT')
-    expect(PHASE_CONFIG[4].attachmentType).toBe('SRT')
+    expect(PHASE_CONFIG['edit-check'].attachmentType).toBe('SRT')
+    expect(PHASE_CONFIG['risk'].attachmentType).toBe('SRT')
+    expect(PHASE_CONFIG['chapters'].attachmentType).toBe('SRT')
   })
 
   it('has correct promptKey mappings', () => {
-    expect(PHASE_CONFIG[1].promptKey).toBe('critique')
-    expect(PHASE_CONFIG[2].promptKey).toBe('editing')
-    expect(PHASE_CONFIG[3].promptKey).toBe('compliance')
-    expect(PHASE_CONFIG[4].promptKey).toBe('chapters')
-    expect(PHASE_CONFIG[5].promptKey).toBe('titles')
-    expect(PHASE_CONFIG[6].promptKey).toBe('description')
-    expect(PHASE_CONFIG[7].promptKey).toBe('tags')
-    expect(PHASE_CONFIG[8].promptKey).toBe('')
+    expect(PHASE_CONFIG['critique'].promptKey).toBe('critique')
+    expect(PHASE_CONFIG['edit-check'].promptKey).toBe('editing')
+    expect(PHASE_CONFIG['risk'].promptKey).toBe('compliance')
+    expect(PHASE_CONFIG['chapters'].promptKey).toBe('chapters')
+    expect(PHASE_CONFIG['title'].promptKey).toBe('titles')
+    expect(PHASE_CONFIG['description'].promptKey).toBe('description')
+    expect(PHASE_CONFIG['tags'].promptKey).toBe('tags')
+    expect(PHASE_CONFIG['publish'].promptKey).toBe('')
   })
 })
 
 describe('PHASE_JSON_SCHEMAS', () => {
   it('has schemas for all phases', () => {
-    const phases = [1, 2, 3, 4, 5, 6, 7, 8] as const
+    const phases = ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'] as const
     phases.forEach((phase) => {
       expect(PHASE_JSON_SCHEMAS[phase]).toBeDefined()
     })
   })
 
   it('phase 8 has empty schema (no LLM call)', () => {
-    expect(PHASE_JSON_SCHEMAS[8]).toBe('')
+    expect(PHASE_JSON_SCHEMAS['publish']).toBe('')
   })
 
   it('phase 2 schema uses string timestamp format with compact JSON instructions', () => {
-    expect(PHASE_JSON_SCHEMAS[2]).toContain('"timestamp": "HH:MM:SS"')
-    expect(PHASE_JSON_SCHEMAS[2]).toContain('STRING no formato "HH:MM:SS"')
-    expect(PHASE_JSON_SCHEMAS[2]).toContain('JSON COMPACTO')
+    expect(PHASE_JSON_SCHEMAS['edit-check']).toContain('"timestamp": "HH:MM:SS"')
+    expect(PHASE_JSON_SCHEMAS['edit-check']).toContain('STRING no formato "HH:MM:SS"')
+    expect(PHASE_JSON_SCHEMAS['edit-check']).toContain('JSON COMPACTO')
   })
 
   it('phase 3 schema uses string timestamp format with json_response tags', () => {
-    expect(PHASE_JSON_SCHEMAS[3]).toContain('"timestamp": "00:08:20"')
-    expect(PHASE_JSON_SCHEMAS[3]).toContain('STRING no formato "HH:MM:SS"')
-    expect(PHASE_JSON_SCHEMAS[3]).toContain('<json_response>')
-    expect(PHASE_JSON_SCHEMAS[3]).toContain('</json_response>')
+    expect(PHASE_JSON_SCHEMAS['risk']).toContain('"timestamp": "00:08:20"')
+    expect(PHASE_JSON_SCHEMAS['risk']).toContain('STRING no formato "HH:MM:SS"')
+    expect(PHASE_JSON_SCHEMAS['risk']).toContain('<json_response>')
+    expect(PHASE_JSON_SCHEMAS['risk']).toContain('</json_response>')
   })
 
   it('phase 4 schema uses string timestamp format', () => {
-    expect(PHASE_JSON_SCHEMAS[4]).toContain('"timestamp": "00:00"')
-    expect(PHASE_JSON_SCHEMAS[4]).toContain('"timestamp": "05:30"')
-    expect(PHASE_JSON_SCHEMAS[4]).toContain('STRING no formato "HH:MM:SS"')
+    expect(PHASE_JSON_SCHEMAS['chapters']).toContain('"timestamp": "00:00"')
+    expect(PHASE_JSON_SCHEMAS['chapters']).toContain('"timestamp": "05:30"')
+    expect(PHASE_JSON_SCHEMAS['chapters']).toContain('STRING no formato "HH:MM:SS"')
   })
 })
 
 describe('BASE_SYSTEM_PROMPTS', () => {
   it('has prompts for all phases', () => {
-    const phases = [1, 2, 3, 4, 5, 6, 7, 8] as const
+    const phases = ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'] as const
     phases.forEach((phase) => {
       expect(BASE_SYSTEM_PROMPTS[phase]).toBeDefined()
     })
   })
 
   it('phase 8 has empty prompt (no LLM call)', () => {
-    expect(BASE_SYSTEM_PROMPTS[8]).toBe('')
+    expect(BASE_SYSTEM_PROMPTS['publish']).toBe('')
   })
 
   it('phase 1 prompt mentions JSON response', () => {
-    expect(BASE_SYSTEM_PROMPTS[1]).toContain('JSON válido')
-    expect(BASE_SYSTEM_PROMPTS[1]).toContain('critique')
+    expect(BASE_SYSTEM_PROMPTS['critique']).toContain('JSON válido')
+    expect(BASE_SYSTEM_PROMPTS['critique']).toContain('critique')
   })
 })
 
 describe('USER_PROMPT_TEMPLATES', () => {
   it('has templates for all phases', () => {
-    const phases = [1, 2, 3, 4, 5, 6, 7, 8] as const
+    const phases = ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'] as const
     phases.forEach((phase) => {
       expect(USER_PROMPT_TEMPLATES[phase]).toBeDefined()
     })
   })
 
   it('phase 8 has empty template (no LLM call)', () => {
-    expect(USER_PROMPT_TEMPLATES[8]).toBe('')
+    expect(USER_PROMPT_TEMPLATES['publish']).toBe('')
   })
 
   it('templates contain expected placeholders', () => {
-    expect(USER_PROMPT_TEMPLATES[1]).toContain('{title}')
-    expect(USER_PROMPT_TEMPLATES[1]).toContain('{transcript}')
-    expect(USER_PROMPT_TEMPLATES[5]).toContain('{previousPhaseData}')
+    expect(USER_PROMPT_TEMPLATES['critique']).toContain('{title}')
+    expect(USER_PROMPT_TEMPLATES['critique']).toContain('{transcript}')
+    expect(USER_PROMPT_TEMPLATES['title']).toContain('{previousPhaseData}')
   })
 })
 
@@ -214,24 +214,24 @@ describe('buildPhasePrompt', () => {
   const videoType: VideoType = 'episode'
 
   it('returns empty string for phase 8', () => {
-    const result = buildPhasePrompt(8, validCriticPersona, validPrompts, videoType)
+    const result = buildPhasePrompt('publish', validCriticPersona, validPrompts, videoType)
     expect(result).toBe('')
   })
 
   it('falls back to BASE_SYSTEM_PROMPTS when persona is undefined', () => {
-    const result = buildPhasePrompt(1, undefined, validPrompts, videoType)
-    expect(result).toBe(BASE_SYSTEM_PROMPTS[1])
+    const result = buildPhasePrompt('critique', undefined, validPrompts, videoType)
+    expect(result).toBe(BASE_SYSTEM_PROMPTS['critique'])
   })
 
   it('falls back to BASE_SYSTEM_PROMPTS when prompts is undefined', () => {
-    const result = buildPhasePrompt(1, validCriticPersona, undefined, videoType)
-    expect(result).toBe(BASE_SYSTEM_PROMPTS[1])
+    const result = buildPhasePrompt('critique', validCriticPersona, undefined, videoType)
+    expect(result).toBe(BASE_SYSTEM_PROMPTS['critique'])
   })
 
   it('falls back to BASE_SYSTEM_PROMPTS when videoType prompts not found', () => {
     const partialPrompts = { ...validPrompts, episode: undefined } as unknown as Prompts
-    const result = buildPhasePrompt(1, validCriticPersona, partialPrompts, videoType)
-    expect(result).toBe(BASE_SYSTEM_PROMPTS[1])
+    const result = buildPhasePrompt('critique', validCriticPersona, partialPrompts, videoType)
+    expect(result).toBe(BASE_SYSTEM_PROMPTS['critique'])
   })
 
   it('falls back to BASE_SYSTEM_PROMPTS when phase prompt is empty', () => {
@@ -242,12 +242,12 @@ describe('buildPhasePrompt', () => {
         critique: { description: '', expectedOutput: '' },
       },
     }
-    const result = buildPhasePrompt(1, validCriticPersona, emptyPrompts, videoType)
-    expect(result).toBe(BASE_SYSTEM_PROMPTS[1])
+    const result = buildPhasePrompt('critique', validCriticPersona, emptyPrompts, videoType)
+    expect(result).toBe(BASE_SYSTEM_PROMPTS['critique'])
   })
 
   it('builds prompt from persona and prompts for phase 1', () => {
-    const result = buildPhasePrompt(1, validCriticPersona, validPrompts, videoType)
+    const result = buildPhasePrompt('critique', validCriticPersona, validPrompts, videoType)
 
     expect(result).toContain('Seu papel: Crítico de conteúdo digital')
     expect(result).toContain('Seu objetivo: Analisar conteúdo e fornecer feedback construtivo')
@@ -259,27 +259,27 @@ describe('buildPhasePrompt', () => {
   })
 
   it('appends JSON schema to built prompt', () => {
-    const result = buildPhasePrompt(1, validCriticPersona, validPrompts, videoType)
+    const result = buildPhasePrompt('critique', validCriticPersona, validPrompts, videoType)
 
-    expect(result).toContain(PHASE_JSON_SCHEMAS[1])
+    expect(result).toContain(PHASE_JSON_SCHEMAS['critique'])
   })
 
   it('builds prompt for phase 5 with writer persona', () => {
-    const result = buildPhasePrompt(5, validWriterPersona, validPrompts, videoType)
+    const result = buildPhasePrompt('title', validWriterPersona, validPrompts, videoType)
 
     expect(result).toContain('Seu papel: Redator de conteúdo')
     expect(result).toContain('Gere títulos SEO')
-    expect(result).toContain(PHASE_JSON_SCHEMAS[5])
+    expect(result).toContain(PHASE_JSON_SCHEMAS['title'])
   })
 
   it('builds prompt for cut video type', () => {
-    const result = buildPhasePrompt(5, validWriterPersona, validPrompts, 'cut')
+    const result = buildPhasePrompt('title', validWriterPersona, validPrompts, 'cut')
 
     expect(result).toContain('Gere títulos para corte')
   })
 
   it('builds prompt for reel video type', () => {
-    const result = buildPhasePrompt(5, validWriterPersona, validPrompts, 'reel')
+    const result = buildPhasePrompt('title', validWriterPersona, validPrompts, 'reel')
 
     expect(result).toContain('Gere títulos para reel')
   })
@@ -294,7 +294,7 @@ describe('buildPhasePrompt', () => {
           tags: { description: '', expectedOutput: '' },
         },
       }
-      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyReel, 'reel')
+      const result = buildPhasePrompt('title', validWriterPersona, promptsWithEmptyReel, 'reel')
 
       // Should use episode titles prompt as fallback
       expect(result).toContain('Gere títulos SEO')
@@ -311,7 +311,7 @@ describe('buildPhasePrompt', () => {
           tags: { description: '', expectedOutput: '' },
         },
       }
-      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyCut, 'cut')
+      const result = buildPhasePrompt('title', validWriterPersona, promptsWithEmptyCut, 'cut')
 
       // Should use episode titles prompt as fallback
       expect(result).toContain('Gere títulos SEO')
@@ -331,13 +331,13 @@ describe('buildPhasePrompt', () => {
           tags: { description: '', expectedOutput: '' },
         },
       }
-      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyBoth, 'reel')
+      const result = buildPhasePrompt('title', validWriterPersona, promptsWithEmptyBoth, 'reel')
 
-      expect(result).toBe(BASE_SYSTEM_PROMPTS[5])
+      expect(result).toBe(BASE_SYSTEM_PROMPTS['title'])
     })
 
     it('uses reel-specific prompt when available (no fallback)', () => {
-      const result = buildPhasePrompt(5, validWriterPersona, validPrompts, 'reel')
+      const result = buildPhasePrompt('title', validWriterPersona, validPrompts, 'reel')
 
       // Should use reel-specific prompt, not episode fallback
       expect(result).toContain('Gere títulos para reel')
@@ -352,43 +352,43 @@ describe('buildPhasePrompt', () => {
           titles: { description: '', expectedOutput: '' },
         },
       }
-      const result = buildPhasePrompt(5, validWriterPersona, promptsWithEmptyEpisode, 'episode')
+      const result = buildPhasePrompt('title', validWriterPersona, promptsWithEmptyEpisode, 'episode')
 
       // Should fallback to BASE_SYSTEM_PROMPTS, not look for other types
-      expect(result).toBe(BASE_SYSTEM_PROMPTS[5])
+      expect(result).toBe(BASE_SYSTEM_PROMPTS['title'])
     })
   })
 })
 
 describe('getSystemPrompt (deprecated)', () => {
   it('returns base prompt when no configured prompt', () => {
-    const result = getSystemPrompt(1)
-    expect(result).toBe(BASE_SYSTEM_PROMPTS[1])
+    const result = getSystemPrompt('critique')
+    expect(result).toBe(BASE_SYSTEM_PROMPTS['critique'])
   })
 
   it('returns base prompt when configured prompt is empty', () => {
-    const result = getSystemPrompt(1, { description: '', expectedOutput: '' })
-    expect(result).toBe(BASE_SYSTEM_PROMPTS[1])
+    const result = getSystemPrompt('critique', { description: '', expectedOutput: '' })
+    expect(result).toBe(BASE_SYSTEM_PROMPTS['critique'])
   })
 
   it('appends configured description to base prompt', () => {
-    const result = getSystemPrompt(1, { description: 'Custom instructions', expectedOutput: '' })
+    const result = getSystemPrompt('critique', { description: 'Custom instructions', expectedOutput: '' })
 
-    expect(result).toContain(BASE_SYSTEM_PROMPTS[1])
+    expect(result).toContain(BASE_SYSTEM_PROMPTS['critique'])
     expect(result).toContain('## Instruções Adicionais do Produtor')
     expect(result).toContain('Custom instructions')
   })
 
   it('appends configured expectedOutput to base prompt', () => {
-    const result = getSystemPrompt(1, { description: '', expectedOutput: 'Custom output format' })
+    const result = getSystemPrompt('critique', { description: '', expectedOutput: 'Custom output format' })
 
-    expect(result).toContain(BASE_SYSTEM_PROMPTS[1])
+    expect(result).toContain(BASE_SYSTEM_PROMPTS['critique'])
     expect(result).toContain('## Formato de Saída Esperado')
     expect(result).toContain('Custom output format')
   })
 
   it('appends both description and expectedOutput', () => {
-    const result = getSystemPrompt(1, {
+    const result = getSystemPrompt('critique', {
       description: 'Custom instructions',
       expectedOutput: 'Custom output format',
     })
@@ -402,7 +402,7 @@ describe('getSystemPrompt (deprecated)', () => {
 
 describe('getUserPromptTemplate', () => {
   it('returns template for each phase', () => {
-    const phases = [1, 2, 3, 4, 5, 6, 7, 8] as const
+    const phases = ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'] as const
     phases.forEach((phase) => {
       expect(getUserPromptTemplate(phase)).toBe(USER_PROMPT_TEMPLATES[phase])
     })

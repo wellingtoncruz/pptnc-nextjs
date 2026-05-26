@@ -1,4 +1,4 @@
-import type { WizardPhase } from '@/lib/wizard'
+import type { TrackedPhaseId } from '@/lib/wizard'
 import type { Persona, Prompts } from '@/types/podcast'
 import type { VideoType } from '@/types/video'
 
@@ -6,8 +6,8 @@ import type { VideoType } from '@/types/video'
  * Base system prompts for each phase.
  * These are combined with user-configured prompts from the podcast settings.
  */
-export const BASE_SYSTEM_PROMPTS: Record<WizardPhase, string> = {
-  1: `Você é um crítico especializado em podcasts e conteúdo de vídeo.
+export const BASE_SYSTEM_PROMPTS: Record<TrackedPhaseId, string> = {
+  critique: `Você é um crítico especializado em podcasts e conteúdo de vídeo.
 Analise o episódio com base na transcrição fornecida e forneça uma crítica construtiva.
 
 Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
@@ -17,7 +17,7 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
   "suggestions": ["Sugestão de melhoria 1", "Sugestão 2", "..."]
 }`,
 
-  2: `Você é um editor de vídeo experiente.
+  'edit-check': `Você é um editor de vídeo experiente.
 Analise a transcrição (SRT) procurando por possíveis falhas de edição.
 
 Procure por:
@@ -30,7 +30,7 @@ Responda com JSON compacto (uma linha, sem indentação). Descriptions curtas (m
 
 Exemplo: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"Pausa longa de 5s entre falas"}]}`,
 
-  3: `Você é um especialista em compliance de conteúdo de mídia.
+  risk: `Você é um especialista em compliance de conteúdo de mídia.
 Analise a transcrição (SRT) procurando por possíveis riscos de compliance.
 
 Procure por:
@@ -67,7 +67,7 @@ Exemplo 2 - Sem riscos:
 
 IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
 
-  4: `Você é um especialista em estruturação de conteúdo de vídeo.
+  chapters: `Você é um especialista em estruturação de conteúdo de vídeo.
 Analise a transcrição e sugira capítulos que dividam o conteúdo por assuntos.
 
 Regras:
@@ -87,7 +87,7 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 
 IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS", NÃO um número.`,
 
-  5: `Você é um especialista em SEO para YouTube e criação de títulos virais.
+  title: `Você é um especialista em SEO para YouTube e criação de títulos virais.
 Gere 5 sugestões de título para o vídeo baseado na transcrição e contexto.
 
 Regras:
@@ -107,7 +107,7 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
   ]
 }`,
 
-  6: `Você é um especialista em SEO para YouTube e copywriting.
+  description: `Você é um especialista em SEO para YouTube e copywriting.
 Crie uma descrição otimizada para o vídeo baseada na transcrição e contexto.
 
 A descrição deve:
@@ -127,7 +127,7 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
   "description": "Descrição completa aqui..."
 }`,
 
-  7: `Você é um especialista em SEO para YouTube e análise de palavras-chave.
+  tags: `Você é um especialista em SEO para YouTube e análise de palavras-chave.
 Gere uma lista de tags relevantes para o vídeo baseado na transcrição e contexto.
 
 Regras OBRIGATÓRIAS:
@@ -145,15 +145,15 @@ Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 
 IMPORTANTE: Gere entre 10 e 20 tags. Se você gerar mais de 20, o sistema irá rejeitá-las.`,
 
-  8: '', // No LLM call for phase 8
+  publish: '', // No LLM call for phase 8
 }
 
 /**
  * User prompt template for each phase.
  * Variables are replaced with actual values before sending.
  */
-export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
-  1: `## Informações do Vídeo
+export const USER_PROMPT_TEMPLATES: Record<TrackedPhaseId, string> = {
+  critique: `## Informações do Vídeo
 
 **Título:** {title}
 **Duração:** {duration}
@@ -169,7 +169,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 
 {additionalContext}`,
 
-  2: `## Informações do Vídeo
+  'edit-check': `## Informações do Vídeo
 
 **Título:** {title}
 **Duração:** {duration}
@@ -178,7 +178,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 
 {transcript}`,
 
-  3: `## Informações do Vídeo
+  risk: `## Informações do Vídeo
 
 **Título:** {title}
 **Duração:** {duration}
@@ -191,7 +191,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 
 {transcript}`,
 
-  4: `## Informações do Vídeo
+  chapters: `## Informações do Vídeo
 
 **Título:** {title}
 **Duração:** {duration}
@@ -201,7 +201,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 
 {transcript}`,
 
-  5: `## Contexto do Vídeo
+  title: `## Contexto do Vídeo
 
 **Título original:** {title}
 **Duração:** {duration}
@@ -221,7 +221,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 
 {additionalContext}`,
 
-  6: `## Contexto do Vídeo
+  description: `## Contexto do Vídeo
 
 **Título escolhido:** {title}
 **Duração:** {duration}
@@ -243,7 +243,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 
 {additionalContext}`,
 
-  7: `## Contexto do Vídeo
+  tags: `## Contexto do Vídeo
 
 **Título:** {title}
 **Duração:** {duration}
@@ -260,7 +260,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
 
 {additionalContext}`,
 
-  8: '', // No LLM call for phase 8
+  publish: '', // No LLM call for phase 8
 }
 
 /**
@@ -271,7 +271,7 @@ export const USER_PROMPT_TEMPLATES: Record<WizardPhase, string> = {
  * This function is kept for backwards compatibility but will be removed in a future version.
  */
 export function getSystemPrompt(
-  phase: WizardPhase,
+  phase: TrackedPhaseId,
   configuredPrompt?: { description: string; expectedOutput: string }
 ): string {
   const basePrompt = BASE_SYSTEM_PROMPTS[phase]
@@ -296,7 +296,7 @@ export function getSystemPrompt(
 /**
  * Get the user prompt template for a phase.
  */
-export function getUserPromptTemplate(phase: WizardPhase): string {
+export function getUserPromptTemplate(phase: TrackedPhaseId): string {
   return USER_PROMPT_TEMPLATES[phase]
 }
 
@@ -308,8 +308,8 @@ export function getUserPromptTemplate(phase: WizardPhase): string {
  * JSON schemas for each phase response.
  * These are always appended to prompts to ensure correct response format.
  */
-export const PHASE_JSON_SCHEMAS: Record<WizardPhase, string> = {
-  1: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+export const PHASE_JSON_SCHEMAS: Record<TrackedPhaseId, string> = {
+  critique: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "critique": "Crítica geral do episódio em texto (string, 2-4 parágrafos)",
   "highlights": ["Ponto forte 1", "Ponto forte 2", "..."],
@@ -318,7 +318,7 @@ export const PHASE_JSON_SCHEMAS: Record<WizardPhase, string> = {
 
 IMPORTANTE: O campo "critique" DEVE ser uma STRING única com parágrafos separados por \\n\\n, NÃO um array.`,
 
-  2: `## FORMATO DE RESPOSTA
+  'edit-check': `## FORMATO DE RESPOSTA
 
 Responda APENAS com JSON válido. A resposta será parseada diretamente como JSON.
 NÃO use tags, NÃO use markdown, NÃO inclua texto fora do JSON.
@@ -340,7 +340,7 @@ ERRADO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"O apr
 
 IMPORTANTE: O campo "timestamp" DEVE ser STRING no formato "HH:MM:SS".`,
 
-  3: `## FORMATO DE RESPOSTA
+  risk: `## FORMATO DE RESPOSTA
 
 Responda APENAS com JSON válido dentro das tags <json_response>. Não inclua markdown, explicações ou texto fora das tags.
 
@@ -366,7 +366,7 @@ Exemplo 2 - Sem riscos:
 
 IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS".`,
 
-  4: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+  chapters: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "chapters": [
     { "timestamp": "00:00", "title": "Introdução" },
@@ -377,7 +377,7 @@ IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM
 
 IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM:SS", NÃO um número.`,
 
-  5: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+  title: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "titles": [
     "Título 1 - mais conservador",
@@ -388,17 +388,17 @@ IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM
   ]
 }`,
 
-  6: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+  description: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "description": "Descrição completa aqui..."
 }`,
 
-  7: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
+  tags: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "tags": ["tag1", "tag2", "tag3", ...]
 }`,
 
-  8: '', // No LLM call
+  publish: '', // No LLM call
 }
 
 /**
@@ -432,16 +432,16 @@ export interface PhaseConfig {
  *
  * @see processamento_video.md for full specification
  */
-export const PHASE_CONFIG: Record<WizardPhase, PhaseConfig> = {
-  1: { personaName: 'critic', attachmentType: 'TXT', promptKey: 'critique' },
-  2: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'editing' },
-  3: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'compliance' },
-  4: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'chapters' },
-  5: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'titles' },
-  6: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'description' },
-  7: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'tags' },
+export const PHASE_CONFIG: Record<TrackedPhaseId, PhaseConfig> = {
+  critique: { personaName: 'critic', attachmentType: 'TXT', promptKey: 'critique' },
+  'edit-check': { personaName: 'critic', attachmentType: 'SRT', promptKey: 'editing' },
+  risk: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'compliance' },
+  chapters: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'chapters' },
+  title: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'titles' },
+  description: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'description' },
+  tags: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'tags' },
   // Phase 8 has no LLM call - these values are never used, kept for type completeness
-  8: { personaName: 'critic', attachmentType: 'TXT', promptKey: '' },
+  publish: { personaName: 'critic', attachmentType: 'TXT', promptKey: '' },
 }
 
 /**
@@ -490,14 +490,14 @@ function getPhasePromptFromVideoType(
  * @returns Constructed prompt or fallback BASE_SYSTEM_PROMPTS
  */
 export function buildPhasePrompt(
-  phase: WizardPhase,
+  phase: TrackedPhaseId,
   persona: Persona | undefined,
   prompts: Prompts | undefined,
   videoType: VideoType
 ): string {
   // Phase 8 has no LLM call
-  if (phase === 8) {
-    return BASE_SYSTEM_PROMPTS[8]
+  if (phase === 'publish') {
+    return BASE_SYSTEM_PROMPTS['publish']
   }
 
   // Fallback when persona or prompts are not configured
