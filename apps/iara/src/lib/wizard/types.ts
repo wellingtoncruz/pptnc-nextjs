@@ -163,7 +163,7 @@ export interface VideoDataForSync {
   description?: string
   tags?: string[]
   status?: string
-  reviewedPhases?: number[]
+  reviewedPhases?: string[]
   // For cut/reel videos
   videoType?: 'episode' | 'cut' | 'reel'
   parentEpisodeId?: string

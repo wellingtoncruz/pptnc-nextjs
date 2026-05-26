@@ -30,8 +30,8 @@ import {
  * Phases 2, 3, and 4 require review confirmation.
  */
 const ReviewedPhaseSchema = z.object({
-  phase: z.union([z.literal(2), z.literal(3), z.literal(4)], {
-    message: 'Fase deve ser 2, 3 ou 4',
+  phase: z.union([z.literal('edit-check'), z.literal('risk'), z.literal('chapters')], {
+    message: "Fase deve ser 'edit-check', 'risk' ou 'chapters'",
   }),
 })
 

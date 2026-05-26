@@ -657,7 +657,7 @@ describe('wizardReducer', () => {
         critique: 'Great video!',
         editingIssues: [],
         riskAndCompliance: [],
-        reviewedPhases: [2, 3], // Phases 2 and 3 were confirmed by user
+        reviewedPhases: ['edit-check', 'risk'], // Phases 2 and 3 were confirmed by user
       }
 
       const newState = wizardReducer(state, {
@@ -799,7 +799,7 @@ describe('wizardReducer', () => {
       const videoData = {
         critique: 'Great!',
         editingIssues: [],
-        reviewedPhases: [2], // edit-check was confirmed by user
+        reviewedPhases: ['edit-check'], // edit-check was confirmed by user
       }
 
       const newState = wizardReducer(state, {
@@ -824,7 +824,7 @@ describe('wizardReducer', () => {
         description: 'Description',
         tags: ['tag1'],
         status: 'sent',
-        reviewedPhases: [2, 3, 4], // Phases 2, 3, and 4 were confirmed by user
+        reviewedPhases: ['edit-check', 'risk', 'chapters'], // Phases 2, 3, and 4 were confirmed by user
       }
 
       const newState = wizardReducer(state, {
@@ -850,7 +850,7 @@ describe('wizardReducer', () => {
         riskAndCompliance: [],
         // No chapters (chapters)
         suggestedTitles: ['Title 1', 'Title 2'],
-        reviewedPhases: [2, 3], // Phases 2 and 3 were confirmed by user
+        reviewedPhases: ['edit-check', 'risk'], // Phases 2 and 3 were confirmed by user
       }
 
       const newState = wizardReducer(state, {
@@ -886,7 +886,7 @@ describe('wizardReducer', () => {
           description: 'A great episode',
           tags: ['tag1'],
           status: 'ready', // changed from draft
-          reviewedPhases: [2, 3, 4],
+          reviewedPhases: ['edit-check', 'risk', 'chapters'],
         }
 
         const result = wizardReducer(state, {
@@ -916,7 +916,7 @@ describe('wizardReducer', () => {
           description: 'desc',
           tags: ['tag1'],
           status: 'ready',
-          reviewedPhases: [2, 3], // 4 NOT reviewed → will become needs_review
+          reviewedPhases: ['edit-check', 'risk'], // 4 NOT reviewed → will become needs_review
         }
 
         const result = wizardReducer(state, {
@@ -948,7 +948,7 @@ describe('wizardReducer', () => {
           // No description → description phase should become pending
           tags: ['tag1'],
           status: 'ready',
-          reviewedPhases: [2, 3, 4],
+          reviewedPhases: ['edit-check', 'risk', 'chapters'],
         }
 
         const result = wizardReducer(state, {
@@ -1032,7 +1032,7 @@ describe('wizardReducer', () => {
           chapters: [{ title: 'Intro', timestamp: '00:00' }],
           // No suggestedTitles (LLM hasn't finished yet)
           status: 'draft',
-          reviewedPhases: [2, 3, 4],
+          reviewedPhases: ['edit-check', 'risk', 'chapters'],
         }
 
         const result = wizardReducer(state, {
@@ -1082,7 +1082,7 @@ describe('wizardReducer', () => {
           description: 'A great episode',
           tags: ['tag1'],
           status: 'ready',
-          reviewedPhases: [2, 3, 4],
+          reviewedPhases: ['edit-check', 'risk', 'chapters'],
         }
 
         const result = wizardReducer(state, {
@@ -1320,7 +1320,7 @@ describe('wizardReducer', () => {
           editingIssues: [],
           riskAndCompliance: [],
           chapters: ['Ch 1'],
-          reviewedPhases: [2, 3],
+          reviewedPhases: ['edit-check', 'risk'],
           // No suggestedTitles — video has YouTube title but phase 5 not processed
         }
 

@@ -57,7 +57,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
     it('returns 401 when not authenticated', async () => {
       mockAuth.mockResolvedValue(null)
 
-      const request = createMockRequest({ phase: 2 })
+      const request = createMockRequest({ phase: 'edit-check' })
       const response = await POST(request, createContext('test-video'))
 
       expect(response.status).toBe(401)
@@ -69,7 +69,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
       mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
       mockGetVideoAdmin.mockResolvedValue(null)
 
-      const request = createMockRequest({ phase: 2 })
+      const request = createMockRequest({ phase: 'edit-check' })
       const response = await POST(request, createContext('test-video'))
 
       // Should get past auth check (will fail on video not found)
@@ -102,7 +102,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
         collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
       } as never)
 
-      const request = createMockRequest({ phase: 4 })
+      const request = createMockRequest({ phase: 'chapters' })
       const response = await POST(request, createContext('test-video'))
 
       expect(response.status).toBe(200)
@@ -128,7 +128,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
         collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
       } as never)
 
-      const request = createMockRequest({ phase: 2 })
+      const request = createMockRequest({ phase: 'edit-check' })
       const response = await POST(request, createContext('test-video'))
 
       expect(response.status).toBe(200)
@@ -145,7 +145,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
         collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
       } as never)
 
-      const request = createMockRequest({ phase: 3 })
+      const request = createMockRequest({ phase: 'risk' })
       const response = await POST(request, createContext('test-video'))
 
       expect(response.status).toBe(200)
@@ -160,7 +160,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
     it('returns 404 when video does not exist', async () => {
       mockGetVideoAdmin.mockResolvedValue(null)
 
-      const request = createMockRequest({ phase: 2 })
+      const request = createMockRequest({ phase: 'edit-check' })
       const response = await POST(request, createContext('non-existent'))
 
       expect(response.status).toBe(404)
@@ -177,16 +177,16 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
     it('returns success with alreadyReviewed=true when phase already reviewed', async () => {
       mockGetVideoAdmin.mockResolvedValue({
         id: 'test-video',
-        reviewedPhases: [2],
+        reviewedPhases: ['edit-check'],
       } as never)
 
-      const request = createMockRequest({ phase: 2 })
+      const request = createMockRequest({ phase: 'edit-check' })
       const response = await POST(request, createContext('test-video'))
 
       expect(response.status).toBe(200)
       const json = await response.json()
       expect(json.data.alreadyReviewed).toBe(true)
-      expect(json.data.phase).toBe(2)
+      expect(json.data.phase).toBe('edit-check')
     })
 
     it('returns success with alreadyReviewed=false for new review', async () => {
@@ -202,7 +202,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
         collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
       } as never)
 
-      const request = createMockRequest({ phase: 2 })
+      const request = createMockRequest({ phase: 'edit-check' })
       const response = await POST(request, createContext('test-video'))
 
       expect(response.status).toBe(200)
@@ -232,7 +232,7 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
         collection: vi.fn().mockReturnValue(mockPodcastsCollection),
       } as never)
 
-      const request = createMockRequest({ phase: 2 })
+      const request = createMockRequest({ phase: 'edit-check' })
       await POST(request, createContext('test-video'))
 
       expect(mockUpdate).toHaveBeenCalledTimes(1)

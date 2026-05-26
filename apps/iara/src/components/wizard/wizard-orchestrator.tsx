@@ -332,9 +332,9 @@ export function WizardOrchestrator({
 
         // Reset fromCache flags for phases that are already reviewed
         const reviewed = freshVideo.reviewedPhases || []
-        if (reviewed.includes(2)) setPhase2FromCache(false)
-        if (reviewed.includes(3)) setPhase3FromCache(false)
-        if (reviewed.includes(4)) setPhase4FromCache(false)
+        if (reviewed.includes('edit-check')) setPhase2FromCache(false)
+        if (reviewed.includes('risk')) setPhase3FromCache(false)
+        if (reviewed.includes('chapters')) setPhase4FromCache(false)
 
         // Re-hydrate wizard with fresh data to update phase statuses
         // This ensures Smart Loading works correctly for all phases
@@ -412,17 +412,17 @@ export function WizardOrchestrator({
     // Check if edit-check, risk, and chapters have data but need review (using fresh videoData).
     // reviewedPhases is numeric in Firestore (serialization boundary) — kept as numbers.
     const phase2CompletedInWizard = wizard.state.phases['edit-check'].status === 'completed'
-    const phase2IsReviewed = (videoData.reviewedPhases?.includes(2) ?? false) || phase2CompletedInWizard
+    const phase2IsReviewed = (videoData.reviewedPhases?.includes('edit-check') ?? false) || phase2CompletedInWizard
     const phase2HasData = videoData.editingIssues !== undefined
     const phase2NeedsReview = phase2HasData && !phase2IsReviewed
 
     const phase3CompletedInWizard = wizard.state.phases['risk'].status === 'completed'
-    const phase3IsReviewed = (videoData.reviewedPhases?.includes(3) ?? false) || phase3CompletedInWizard
+    const phase3IsReviewed = (videoData.reviewedPhases?.includes('risk') ?? false) || phase3CompletedInWizard
     const phase3HasData = videoData.riskAndCompliance !== undefined
     const phase3NeedsReview = phase3HasData && !phase3IsReviewed
 
     const phase4CompletedInWizard = wizard.state.phases['chapters'].status === 'completed'
-    const phase4IsReviewed = (videoData.reviewedPhases?.includes(4) ?? false) || phase4CompletedInWizard
+    const phase4IsReviewed = (videoData.reviewedPhases?.includes('chapters') ?? false) || phase4CompletedInWizard
     const phase4HasData = videoData.chapters !== undefined && videoData.chapters.length > 0
     const phase4NeedsReview = phase4HasData && !phase4IsReviewed
 
@@ -945,7 +945,7 @@ export function WizardOrchestrator({
       phase2ProcessingRef.current = video.id
 
       // Mark as loaded from cache (needs review confirmation if not already reviewed)
-      const isReviewed = videoData.reviewedPhases?.includes(2) ?? false
+      const isReviewed = videoData.reviewedPhases?.includes('edit-check') ?? false
       const needsReview = !isReviewed
       setPhase2FromCache(needsReview)
       if (needsReview) {
@@ -1065,7 +1065,7 @@ export function WizardOrchestrator({
       phase3ProcessingRef.current = video.id
 
       // Mark as loaded from cache (needs review confirmation if not already reviewed)
-      const isReviewed = videoData.reviewedPhases?.includes(3) ?? false
+      const isReviewed = videoData.reviewedPhases?.includes('risk') ?? false
       const needsReview = !isReviewed
       setPhase3FromCache(needsReview)
       if (needsReview) {
@@ -1189,7 +1189,7 @@ export function WizardOrchestrator({
       phase4ProcessingRef.current = video.id
 
       // Mark as loaded from cache (needs review confirmation if not already reviewed)
-      const isReviewed = videoData.reviewedPhases?.includes(4) ?? false
+      const isReviewed = videoData.reviewedPhases?.includes('chapters') ?? false
       const needsReview = !isReviewed
       setPhase4FromCache(needsReview)
       if (needsReview) {
@@ -2179,19 +2179,19 @@ export function WizardOrchestrator({
     // VALIDATION: Check if phases 2 and 3 need review confirmation
     const phase2HasData = video.editingIssues !== undefined
     const phase3HasData = video.riskAndCompliance !== undefined
-    const phase2Reviewed = videoData.reviewedPhases?.includes(2) ?? false
-    const phase3Reviewed = videoData.reviewedPhases?.includes(3) ?? false
+    const phase2Reviewed = videoData.reviewedPhases?.includes('edit-check') ?? false
+    const phase3Reviewed = videoData.reviewedPhases?.includes('risk') ?? false
 
-    const unreviewedPhases: number[] = []
+    const unreviewedPhases: string[] = []
     if (phase2HasData && !phase2Reviewed) {
-      unreviewedPhases.push(2)
+      unreviewedPhases.push('edit-check')
     }
     if (phase3HasData && !phase3Reviewed) {
-      unreviewedPhases.push(3)
+      unreviewedPhases.push('risk')
     }
 
     if (unreviewedPhases.length > 0) {
-      const phaseNames = unreviewedPhases.map(p => p === 2 ? 'Checagem de Edição' : 'Riscos e Conformidade')
+      const phaseNames = unreviewedPhases.map(p => p === 'edit-check' ? 'Checagem de Edição' : 'Riscos e Conformidade')
       const message = `Antes de publicar, você precisa revisar: ${phaseNames.join(' e ')}`
       setPhase8Error(message)
       wizard.addAlert('publish', 'Revisão Pendente', message, 'warning')
@@ -2354,11 +2354,7 @@ export function WizardOrchestrator({
    * Handle review confirmation for phases 2 and 3.
    * Persists the phase to reviewedPhases array in Firestore.
    */
-  const handleConfirmReview = useCallback(async (phase: 2 | 3 | 4) => {
-    // phase stays numeric here — reviewedPhases is numeric in Firestore (boundary).
-    // Map to the semantic ID for the wizard state calls.
-    const reviewPhaseIds = { 2: 'edit-check', 3: 'risk', 4: 'chapters' } as const
-    const reviewPhaseId = reviewPhaseIds[phase]
+  const handleConfirmReview = useCallback(async (phase: 'edit-check' | 'risk' | 'chapters') => {
     log('INFO', 'Confirming review for phase', { videoId: video.id, phase })
     setIsConfirmingReview(true)
 
@@ -2387,20 +2383,20 @@ export function WizardOrchestrator({
       })
 
       // Clear the "from cache" flag and mark as completed
-      if (phase === 2) {
+      if (phase === 'edit-check') {
         setPhase2FromCache(false)
-      } else if (phase === 3) {
+      } else if (phase === 'risk') {
         setPhase3FromCache(false)
       } else {
         setPhase4FromCache(false)
       }
-      wizard.setPhaseStatus(reviewPhaseId, 'completed')
+      wizard.setPhaseStatus(phase, 'completed')
 
       log('INFO', 'Review confirmed', { videoId: video.id, phase })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao confirmar revisao'
       log('ERROR', 'Failed to confirm review', { videoId: video.id, phase, error: message })
-      wizard.addAlert(reviewPhaseId, 'Erro', message, 'error')
+      wizard.addAlert(phase, 'Erro', message, 'error')
     } finally {
       setIsConfirmingReview(false)
     }
@@ -2514,8 +2510,8 @@ export function WizardOrchestrator({
               enqueueLLMCall(processPhase2EditCheck)
             }}
             isFromCache={phase2FromCache}
-            isReviewed={videoData.reviewedPhases?.includes(2) ?? false}
-            onConfirmReview={() => handleConfirmReview(2)}
+            isReviewed={videoData.reviewedPhases?.includes('edit-check') ?? false}
+            onConfirmReview={() => handleConfirmReview('edit-check')}
             isConfirmingReview={isConfirmingReview}
           />
         )
@@ -2532,8 +2528,8 @@ export function WizardOrchestrator({
               enqueueLLMCall(processPhase3Compliance)
             }}
             isFromCache={phase3FromCache}
-            isReviewed={videoData.reviewedPhases?.includes(3) ?? false}
-            onConfirmReview={() => handleConfirmReview(3)}
+            isReviewed={videoData.reviewedPhases?.includes('risk') ?? false}
+            onConfirmReview={() => handleConfirmReview('risk')}
             isConfirmingReview={isConfirmingReview}
           />
         )
@@ -2550,8 +2546,8 @@ export function WizardOrchestrator({
               enqueueLLMCall(processPhase4Chapters)
             }}
             isFromCache={phase4FromCache}
-            isReviewed={videoData.reviewedPhases?.includes(4) ?? false}
-            onConfirmReview={() => handleConfirmReview(4)}
+            isReviewed={videoData.reviewedPhases?.includes('chapters') ?? false}
+            onConfirmReview={() => handleConfirmReview('chapters')}
             isConfirmingReview={isConfirmingReview}
             onChapterChange={handleChapterChange}
           />

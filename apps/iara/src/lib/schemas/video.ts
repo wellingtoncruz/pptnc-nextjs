@@ -314,7 +314,7 @@ export const VideoSchema = z.object({
   updatedAt: TimestampSchema.optional().catch(undefined),
 
   // Smart loading - phases confirmed by producer (2 and 3 require review)
-  reviewedPhases: z.array(z.number()).optional(),
+  reviewedPhases: z.array(z.string()).optional(),
 
   // Thumbnail stored in Firebase Storage (works for draft/private videos)
   storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
@@ -394,7 +394,7 @@ export const VideoUpdateSchema = z.object({
   spotifyUrl: z.string().optional(),
 
   // Smart loading - phases confirmed by producer (2 and 3 require review)
-  reviewedPhases: z.array(z.number()).optional(),
+  reviewedPhases: z.array(z.string()).optional(),
 
   // Epic 22 / Story 22.3g — proxy URL da thumbnail final no Cloud Storage.
   // Atualizado quando o produtor clica Continuar na fase Thumbnail.
@@ -433,7 +433,7 @@ export const VideoSummarySchema = z.object({
   suggestedShortTitles: z.array(z.string()).optional(), // Títulos curtos sugeridos (cut only)
   shortTitle: z.string().optional(), // Título curto selecionado (cut only)
   tags: z.array(z.string()).optional(),
-  reviewedPhases: z.array(z.number()).optional(),
+  reviewedPhases: z.array(z.string()).optional(),
   // Timestamp fields - .catch(undefined) gracefully handles non-Timestamp values
   // (e.g. publishedAt stored as ISO string from YouTube API)
   publishedAt: TimestampSchema.optional().catch(undefined),

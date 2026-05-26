@@ -19,7 +19,6 @@ import {
   TRACKED_PHASE_IDS,
   isTrackedPhaseId,
   phaseIdOrder,
-  toLegacyPhase,
   type TrackedPhaseId,
   type WizardPhaseId,
 } from './phase-id-map'
@@ -344,7 +343,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         const requiresReview = phasesRequiringReview.includes(phase)
         // reviewedPhases is numeric in Firestore — bridge via the mapper.
         const isReviewed =
-          videoData.reviewedPhases?.includes(toLegacyPhase(phase) as number) ?? false
+          videoData.reviewedPhases?.includes(phase) ?? false
 
         // For cut/reel, skip the immutable phases (mark as completed to allow navigation)
         if (!isEpisode && IMMUTABLE_SKIP_PHASES.includes(phase)) {

@@ -4,46 +4,47 @@
  * Provides utilities to:
  * - Validate phase completion status
  * - Determine first incomplete phase for auto-navigation
- * - Check if phases 2 and 3 require review confirmation
+ * - Check if the edit-check and risk phases require review confirmation
  *
  * @see Story 5.3 - Smart Loading de Fases Imutaveis
  */
 
 import type { Video } from '@/types/video'
-import type { WizardPhase } from './types'
+import { TRACKED_PHASE_IDS, type TrackedPhaseId } from './phase-id-map'
 
 /**
  * Result of validating a phase's completion status.
  */
 export interface PhaseValidation {
-  /** Phase number (1-8) */
-  phase: WizardPhase
+  /** Semantic phase id (TrackedPhaseId) */
+  phase: TrackedPhaseId
   /** Phase has all criteria satisfied (including review if applicable) */
   isComplete: boolean
   /** Data for this phase exists in Firestore */
   hasData: boolean
-  /** Phase 2 or 3 - requires review confirmation */
+  /** edit-check or risk - requires review confirmation */
   requiresReview: boolean
-  /** Producer has confirmed review (for phases 2 and 3) */
+  /** Producer has confirmed review (for edit-check and risk) */
   isReviewed: boolean
 }
 
 /**
  * Mapping of phase -> data field in Video type.
- * Null means phase has special handling (e.g., phase 8 checks status).
+ * Null means phase has special handling (e.g., publish checks status).
  *
- * Note: Phase 5 uses 'suggestedTitles' (LLM output) not 'title' (user selection).
- * The phase is complete when LLM has generated suggestions, regardless of user choice.
+ * Note: the title phase uses 'suggestedTitles' (LLM output) not 'title' (user
+ * selection). The phase is complete when the LLM has generated suggestions,
+ * regardless of the user's choice.
  */
-const DATA_FIELDS: Record<WizardPhase, keyof Video | null> = {
-  1: 'critique',
-  2: 'editingIssues',
-  3: 'riskAndCompliance',
-  4: 'chapters',
-  5: 'suggestedTitles', // LLM-generated suggestions, not user-selected title
-  6: 'description',
-  7: 'tags',
-  8: null, // Phase 8 checks status === 'sent'
+const DATA_FIELDS: Record<TrackedPhaseId, keyof Video | null> = {
+  critique: 'critique',
+  'edit-check': 'editingIssues',
+  risk: 'riskAndCompliance',
+  chapters: 'chapters',
+  title: 'suggestedTitles', // LLM-generated suggestions, not user-selected title
+  description: 'description',
+  tags: 'tags',
+  publish: null, // publish checks status === 'sent'
 }
 
 /**
@@ -62,10 +63,10 @@ function hasValue(value: unknown): boolean {
  * Check if a phase has data based on its field.
  *
  * Special handling:
- * - Phases 2, 3: Empty arrays ARE valid (means "no issues found")
- * - Phases 4, 7: Empty arrays are NOT valid (need actual content)
+ * - edit-check, risk: Empty arrays ARE valid (means "no issues found")
+ * - chapters, tags: Empty arrays are NOT valid (need actual content)
  */
-function phaseHasData(video: Video, phase: WizardPhase): boolean {
+function phaseHasData(video: Video, phase: TrackedPhaseId): boolean {
   const field = DATA_FIELDS[phase]
   if (!field) return false
 
@@ -73,11 +74,11 @@ function phaseHasData(video: Video, phase: WizardPhase): boolean {
 
   // Arrays have special handling per phase
   if (Array.isArray(value)) {
-    // Phases 2 and 3: Empty array = "no issues" which is valid data
-    if (phase === 2 || phase === 3) {
+    // edit-check and risk: Empty array = "no issues" which is valid data
+    if (phase === 'edit-check' || phase === 'risk') {
       return true // Array exists (even if empty)
     }
-    // Phases 4 (chapters) and 7 (tags): Need actual content
+    // chapters and tags: Need actual content
     return value.length > 0
   }
 
@@ -88,21 +89,20 @@ function phaseHasData(video: Video, phase: WizardPhase): boolean {
  * Validate completion status of a specific phase.
  *
  * Rules:
- * - Phase 1, 4, 5, 6, 7: Complete if data field exists and has value
- * - Phase 2, 3: Complete if data exists AND phase has been reviewed
- * - Phase 8: Complete if video.status === 'sent'
+ * - critique, chapters, title, description, tags: Complete if data field exists and has value
+ * - edit-check, risk: Complete if data exists AND phase has been reviewed
+ * - publish: Complete if video.status === 'sent'
  *
  * @param video - Video document to validate
- * @param phase - Phase number to validate
+ * @param phase - Phase id to validate
  * @returns Validation result with completion status and metadata
  */
-export function validatePhaseCompletion(video: Video, phase: WizardPhase): PhaseValidation {
-  const field = DATA_FIELDS[phase]
-  const requiresReview = phase === 2 || phase === 3
+export function validatePhaseCompletion(video: Video, phase: TrackedPhaseId): PhaseValidation {
+  const requiresReview = phase === 'edit-check' || phase === 'risk'
   const isReviewed = video.reviewedPhases?.includes(phase) ?? false
 
-  // Phase 8: check if video was sent to YouTube
-  if (phase === 8) {
+  // publish: check if video was sent to YouTube
+  if (phase === 'publish') {
     const isSent = video.status === 'sent'
     return {
       phase,
@@ -116,7 +116,7 @@ export function validatePhaseCompletion(video: Video, phase: WizardPhase): Phase
   // Other phases: check if data field exists and has value
   const hasData = phaseHasData(video, phase)
 
-  // Phases 2 and 3 require review confirmation even if data exists
+  // edit-check and risk require review confirmation even if data exists
   // Other phases are complete as soon as they have data
   const isComplete = requiresReview
     ? hasData && isReviewed
@@ -129,19 +129,19 @@ export function validatePhaseCompletion(video: Video, phase: WizardPhase): Phase
  * Get the first incomplete phase for a video.
  *
  * Used for auto-navigation when opening a video in the wizard.
- * Returns phase 8 if all phases are complete.
+ * Returns 'publish' if all phases are complete.
  *
  * @param video - Video document to analyze
- * @returns First incomplete phase (1-8)
+ * @returns First incomplete tracked phase id
  */
-export function getFirstIncompletePhase(video: Video): WizardPhase {
-  for (let phase = 1; phase <= 8; phase++) {
-    const validation = validatePhaseCompletion(video, phase as WizardPhase)
+export function getFirstIncompletePhase(video: Video): TrackedPhaseId {
+  for (const phase of TRACKED_PHASE_IDS) {
+    const validation = validatePhaseCompletion(video, phase)
     if (!validation.isComplete) {
-      return phase as WizardPhase
+      return phase
     }
   }
-  return 8 // All phases complete
+  return 'publish' // All phases complete
 }
 
 /**
@@ -150,25 +150,23 @@ export function getFirstIncompletePhase(video: Video): WizardPhase {
  * Useful for displaying overall progress or debugging.
  *
  * @param video - Video document to analyze
- * @returns Array of validation results for phases 1-8
+ * @returns Array of validation results for all tracked phases
  */
 export function getAllPhaseValidations(video: Video): PhaseValidation[] {
-  return ([1, 2, 3, 4, 5, 6, 7, 8] as WizardPhase[]).map(phase =>
-    validatePhaseCompletion(video, phase)
-  )
+  return TRACKED_PHASE_IDS.map((phase) => validatePhaseCompletion(video, phase))
 }
 
 /**
  * Check if a phase needs review confirmation.
  *
- * Only phases 2 (Edit Check) and 3 (Compliance) require explicit
- * confirmation from the producer before being considered complete.
+ * Only edit-check and risk require explicit confirmation from the producer
+ * before being considered complete.
  *
  * @param video - Video document to check
- * @param phase - Phase number to check
+ * @param phase - Phase id to check
  * @returns True if phase has data but needs review confirmation
  */
-export function phaseNeedsReviewConfirmation(video: Video, phase: WizardPhase): boolean {
+export function phaseNeedsReviewConfirmation(video: Video, phase: TrackedPhaseId): boolean {
   const validation = validatePhaseCompletion(video, phase)
   return validation.hasData && validation.requiresReview && !validation.isReviewed
 }
