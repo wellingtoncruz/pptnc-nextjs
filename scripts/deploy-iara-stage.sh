@@ -14,6 +14,7 @@ set -e
 PROJECT_ID="pptnc-stage"
 REGION="us-east1"
 SERVICE_NAME="iara-stage"
+FIRESTORE_DATABASE_ID="pptnc-stage"
 REGISTRY="us-east1-docker.pkg.dev/${PROJECT_ID}/pptnc/iara"
 IMAGE_TAG="latest"
 
@@ -170,6 +171,7 @@ run_cmd gcloud run deploy ${SERVICE_NAME} \
   --project=${PROJECT_ID} \
   --memory=1Gi \
   --timeout=300 \
+  --update-env-vars=FIRESTORE_DATABASE_ID=${FIRESTORE_DATABASE_ID} \
   --allow-unauthenticated
 log_success "Deployed to Cloud Run"
 

@@ -19,13 +19,18 @@
 #   Use --update-env-vars (NOT --set-env-vars) to avoid wiping existing vars.
 #   AUTH_URL must be the public URL of the service (e.g., https://iara.example.com)
 
+# Defaults target PRODUCTION (service iara-prod → Firestore database pptnc-prod).
+# ⚠️ Any non-prod trigger (stage/dev or another podcast) MUST override BOTH
+# _SERVICE_NAME and _FIRESTORE_DATABASE_ID — otherwise it deploys against the
+# production database. (pptnc-prod is a named Firestore DB in the pptnc-stage
+# GCP project, so GCP_PROJECT_ID stays $PROJECT_ID / pptnc-stage.)
 substitutions:
   _SERVICE_NAME: iara-prod
   _REGION: us-east1
   _REPOSITORY: pptnc
   _SERVICE_ACCOUNT: pptnc-build@pptnc-stage.iam.gserviceaccount.com
   _PODCAST_ID: pptnc
-  _FIRESTORE_DATABASE_ID: pptnc-stage
+  _FIRESTORE_DATABASE_ID: pptnc-prod
   _NEWSLETTER_IMAGES_BUCKET: 'iara-images'
 
 steps:
