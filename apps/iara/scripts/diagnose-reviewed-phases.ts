@@ -20,6 +20,10 @@ const PROJECT_ID = 'pptnc-stage'
 const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'pptnc-stage'
 const PODCAST_ID = 'pptnc'
 
+// Valid reviewedPhases entries — legacy numeric {2,3,4} OR migrated kebab ids.
+// An element outside this set is a real anomaly (in either pre- or post-backfill state).
+const VALID_REVIEW_VALUES: ReadonlySet<unknown> = new Set([2, 3, 4, 'edit-check', 'risk', 'chapters'])
+
 function describeReviewedPhases(v: unknown): string {
   if (v === undefined) return 'absent'
   if (v === null) return 'null'
@@ -59,8 +63,9 @@ async function main(): Promise<void> {
 
     if (Array.isArray(rp) && rp.length > 0) {
       rpValues[JSON.stringify(rp)] = (rpValues[JSON.stringify(rp)] ?? 0) + 1
-      // anomaly: any element not a number, or a number outside the review set {2,3,4}
-      const bad = rp.some((x) => typeof x !== 'number' || ![2, 3, 4].includes(x))
+      // anomaly: an element that is neither a legacy review number {2,3,4} nor a
+      // valid kebab review id {edit-check,risk,chapters}
+      const bad = rp.some((x) => !VALID_REVIEW_VALUES.has(x))
       if (bad) anomalies.push({ id: doc.id, videoType, reviewedPhases: rp })
     } else if (rp !== undefined && rp !== null && !Array.isArray(rp)) {
       // reviewedPhases present but NOT an array → backfill would skip it (potential gap)
@@ -87,7 +92,7 @@ async function main(): Promise<void> {
     console.log(`  ${val}: ${n}`)
   }
 
-  console.log(`\nAnomalies (non-array, or values outside {2,3,4}): ${anomalies.length}`)
+  console.log(`\nAnomalies (non-array, or values outside {2,3,4 | edit-check,risk,chapters}): ${anomalies.length}`)
   for (const a of anomalies.slice(0, 50)) {
     console.log(`  ${a.id} [${a.videoType}]: ${JSON.stringify(a.reviewedPhases)}`)
   }
