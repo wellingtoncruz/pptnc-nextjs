@@ -12,43 +12,7 @@
  * 8. Publish (final)
  */
 
-import { z } from 'zod'
-
 import type { TrackedPhaseId, WizardPhaseId } from './phase-id-map'
-
-/**
- * Zod schema for validating wizard phase numbers.
- * Phases 1-7 have LLM calls, phase 8 is YouTube API only.
- *
- * LEGACY (TD-7): numeric phases survive only at the serialization boundaries
- * (LLM prompt config keyed by phase number, the /api/wizard/phase/[phase] URL
- * param, Firestore reviewedPhases, wizard-job schema). The wizard state/logic
- * now uses semantic `WizardPhaseId` (see phase-id-map.ts); the mapper bridges
- * to/from these legacy numbers at the boundaries.
- */
-export const WizardPhaseSchema = z.union([
-  z.literal(1),
-  z.literal(2),
-  z.literal(3),
-  z.literal(4),
-  z.literal(5),
-  z.literal(6),
-  z.literal(7),
-  z.literal(8),
-])
-
-/**
- * The 8 numeric phases — LEGACY, kept only for the serialization boundaries
- * above. In-memory wizard state uses {@link WizardPhaseId} instead.
- */
-export type WizardPhase = z.infer<typeof WizardPhaseSchema>
-
-/**
- * Extended numeric/string phase — LEGACY. Kept only as the domain of the
- * bidirectional mapper (phase-id-map.ts). Do not use in new wizard state/logic;
- * use {@link WizardPhaseId} / {@link TrackedPhaseId}.
- */
-export type ExtendedWizardPhase = 0 | WizardPhase | '5B' | 'THUMB'
 
 /**
  * Video types that the wizard can handle.

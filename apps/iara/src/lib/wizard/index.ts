@@ -7,7 +7,6 @@ export type {
   AlertSeverity,
   ConsoleMessage,
   ConsoleMessageType,
-  ExtendedWizardPhase,
   PhaseMetadata,
   PhaseState,
   PhaseStatus,
@@ -15,17 +14,11 @@ export type {
   VideoDataForSync,
   VideoTypeForWizard,
   WizardAction,
-  WizardPhase,
   WizardState,
 } from './types'
 
-// Schemas
-export { WizardPhaseSchema } from './types'
-
-// Phase IDs + mapper (TD-7)
+// Phase IDs (TD-7)
 export {
-  toPhaseId,
-  toLegacyPhase,
   isWizardPhaseId,
   isTrackedPhaseId,
   isLLMPhaseId,
