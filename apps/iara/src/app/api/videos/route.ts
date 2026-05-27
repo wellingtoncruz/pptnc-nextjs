@@ -55,11 +55,15 @@ export async function GET(request: NextRequest) {
       ? (statusParam as 'new' | 'draft' | 'sent' | 'not_sent')
       : undefined
 
+    // Vídeo Avulso filter (Epic 25) — orthogonal to type.
+    const standalone = searchParams.get('standalone') === 'true' ? true : undefined
+
     const result = await getVideosForDisplayAdmin(PODCAST_ID, {
       page,
       limit,
       videoType,
       status,
+      standalone,
     })
 
     return NextResponse.json(result)

@@ -422,6 +422,7 @@ export const VideoSummarySchema = z.object({
   duration: z.number().nonnegative().default(0),
   status: VideoStatusSchema.optional().default('new'),
   videoType: VideoTypeSchema.optional().default('episode'),
+  standalone: z.boolean().optional(), // Flag editorial Vídeo Avulso (Epic 25)
   youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
   // Transcription fields - needed to determine if video is pending transcription
   transcriptionSRT: z.string().optional(),

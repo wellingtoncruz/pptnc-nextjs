@@ -54,9 +54,11 @@ export type VideoType = z.infer<typeof VideoTypeSchema>
 
 /**
  * Filter type for video list queries.
- * Includes all video types plus 'all' for no filtering.
+ * Includes all video types, 'all' for no filtering, and 'standalone' — the
+ * editorial Vídeo Avulso flag (Epic 25), which is orthogonal to videoType
+ * (a standalone video is still a cut or reel by duration).
  */
-export type VideoTypeFilter = VideoType | 'all'
+export type VideoTypeFilter = VideoType | 'all' | 'standalone'
 
 /**
  * Video status in the lifecycle.

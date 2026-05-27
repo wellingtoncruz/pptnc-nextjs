@@ -199,4 +199,32 @@ describe('useVideos', () => {
       expect(result.current.typeFilter).toBe('cut')
     })
   })
+
+  it('usa o param standalone (não type) quando o filtro é Avulso', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        data: [],
+        pagination: { page: 1, limit: 20, totalCount: 0, totalPages: 0 },
+      }),
+    })
+
+    const { result } = renderHook(() => useVideos())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    result.current.setTypeFilter('standalone')
+
+    await waitFor(() => {
+      expect(result.current.typeFilter).toBe('standalone')
+    })
+
+    // Avulso é flag, não videoType → param `standalone=true`, sem `type`.
+    expect(mockFetch).toHaveBeenLastCalledWith(
+      '/api/videos?page=1&limit=20&standalone=true&status=not_sent',
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    )
+  })
 })

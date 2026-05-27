@@ -75,6 +75,12 @@ export interface GetVideosForDisplayOptions {
   videoType?: 'episode' | 'cut' | 'reel'
   /** Filter by video status (undefined means all, 'not_sent' means all except 'sent') */
   status?: 'new' | 'draft' | 'sent' | 'not_sent'
+  /**
+   * Filter to only Vídeo Avulso (standalone=true, Epic 25). Orthogonal to
+   * videoType — when set, videoType is ignored and status is applied in-memory
+   * (avoids a composite index on (standalone, status); the standalone set is small).
+   */
+  standalone?: boolean
 }
 
 /**
@@ -188,7 +194,7 @@ export async function getVideosForDisplayAdmin(
   podcastId: string,
   options: GetVideosForDisplayOptions = {}
 ): Promise<PaginatedVideosResult> {
-  const { page = 1, limit = 20, videoType, status } = options
+  const { page = 1, limit = 20, videoType, status, standalone } = options
   const db = getAdminDb()
   const videosRef = db.collection('podcasts').doc(podcastId).collection('videos')
 
@@ -196,17 +202,24 @@ export async function getVideosForDisplayAdmin(
   // Note: Requires index on videoType field for efficient queries
   let query: Query<DocumentData> = videosRef
 
-  // Filter by videoType at Firestore level if specified
-  if (videoType) {
-    query = query.where('videoType', '==', videoType)
-  }
+  if (standalone) {
+    // Vídeo Avulso filter (Epic 25): single equality on the flag. videoType is
+    // ignored (orthogonal) and status is applied in-memory below, so we never
+    // need a composite index on (standalone, status).
+    query = query.where('standalone', '==', true)
+  } else {
+    // Filter by videoType at Firestore level if specified
+    if (videoType) {
+      query = query.where('videoType', '==', videoType)
+    }
 
-  // Filter by status at Firestore level if specified
-  if (status === 'not_sent') {
-    // Show all videos except 'sent' - for "Só novos" switch
-    query = query.where('status', '!=', 'sent')
-  } else if (status) {
-    query = query.where('status', '==', status)
+    // Filter by status at Firestore level if specified
+    if (status === 'not_sent') {
+      // Show all videos except 'sent' - for "Só novos" switch
+      query = query.where('status', '!=', 'sent')
+    } else if (status) {
+      query = query.where('status', '==', status)
+    }
   }
 
   try {
@@ -262,6 +275,16 @@ export async function getVideosForDisplayAdmin(
         continue
       }
 
+      // In-memory status filter for the standalone view (the Firestore status
+      // filter was skipped to avoid a composite index — see options.standalone).
+      if (standalone && status) {
+        const docStatus = rawData.status ?? 'new'
+        const excluded = status === 'not_sent' ? docStatus === 'sent' : docStatus !== status
+        if (excluded) {
+          continue
+        }
+      }
+
       // Parse publishedAt using helper for consistent handling
       const publishedAtDate = parsePublishedAt(rawData.publishedAt)
 
@@ -282,6 +305,7 @@ export async function getVideosForDisplayAdmin(
         duration: rawData.duration ?? 0,
         status: rawData.status ?? 'new',
         videoType: docVideoType,
+        standalone: rawData.standalone ?? false, // Vídeo Avulso flag (Epic 25)
         transcriptionSRT: rawData.transcriptionSRT,
         transcriptionTXT: rawData.transcriptionTXT,
         // Context fields (flat, not nested)
