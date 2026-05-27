@@ -495,7 +495,7 @@ export async function callLLM<P extends LLMPhaseId>(
     } else if (podcast?.personas && podcast?.prompts) {
       // Use llm.md template with podcast configuration
       const persona = podcast.personas[phaseConfig.personaName]
-      systemPrompt = buildPhasePrompt(phase, persona, podcast.prompts, videoType)
+      systemPrompt = buildPhasePrompt(phase, persona, podcast.prompts, videoType, video.standalone)
 
       // Check if we got a fallback (buildPhasePrompt returns BASE_SYSTEM_PROMPTS when config incomplete)
       const isFallback = !persona?.role || !podcast.prompts[videoType]

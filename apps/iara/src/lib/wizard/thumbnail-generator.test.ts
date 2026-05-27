@@ -165,6 +165,84 @@ describe('generateThumbnail', () => {
     ).rejects.toThrow(/episódios e cortes/)
   })
 
+  it('standalone (Epic 25): uses the standalone thumbnail config, not the cut bucket', async () => {
+    const video = { id: 'video-1', videoType: 'cut', standalone: true, title: 'Notícia X' } as never
+    const podcast = {
+      ...basePodcast,
+      prompts: {
+        cut: {
+          thumbnail: {
+            description: 'Thumbnail de CORTE do podcast',
+            expectedOutput: 'PNG 1280x720',
+            baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config%2Fpptnc%2Fcut%2Fbase.png',
+            baseImageMimeType: 'image/png',
+          },
+        },
+        standalone: {
+          thumbnail: {
+            description: 'Thumbnail de vídeo AVULSO',
+            expectedOutput: 'PNG 1280x720',
+            baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config%2Fpptnc%2Fstandalone%2Fbase.png',
+            baseImageMimeType: 'image/png',
+          },
+        },
+      },
+    } as never
+
+    await generateThumbnail({ video, podcast, observation: undefined })
+
+    const [prompt, , , options] = mockCallGenAIImage.mock.calls[0]
+    expect(String(prompt)).toContain('vídeo AVULSO')
+    expect(String(prompt)).not.toContain('CORTE do podcast')
+    expect(options.referenceImages[0].uri).toContain('/standalone/')
+  })
+
+  it('base/reference images are optional: generates text-only when none configured', async () => {
+    const podcast = {
+      ...basePodcast,
+      prompts: {
+        episode: {
+          thumbnail: {
+            description: 'Thumbnail sem imagens de referência',
+            expectedOutput: 'PNG 1280x720',
+            // sem baseImageUrl / referenceImageUrl
+          },
+        },
+      },
+    } as never
+
+    await expect(
+      generateThumbnail({ video: baseVideo, podcast, observation: undefined })
+    ).resolves.toBeDefined()
+
+    // A chamada acontece silenciosamente sem as imagens faltantes.
+    const [, , , options] = mockCallGenAIImage.mock.calls[0]
+    expect(options.referenceImages).toHaveLength(0)
+  })
+
+  it('base/reference images are optional: generates with only the configured one', async () => {
+    const podcast = {
+      ...basePodcast,
+      prompts: {
+        episode: {
+          thumbnail: {
+            description: 'Só base configurada',
+            expectedOutput: 'PNG 1280x720',
+            baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config%2Fpptnc%2Fepisode%2Fbase.png',
+            baseImageMimeType: 'image/png',
+            // sem referenceImageUrl
+          },
+        },
+      },
+    } as never
+
+    await generateThumbnail({ video: baseVideo, podcast, observation: undefined })
+
+    const [, , , options] = mockCallGenAIImage.mock.calls[0]
+    expect(options.referenceImages).toHaveLength(1)
+    expect(options.referenceImages[0].role).toBe('base')
+  })
+
   it('happy path: calls Vertex AI with base+reference, uploads to staging and returns proxy URL', async () => {
     const result = await generateThumbnail({
       video: baseVideo,

@@ -27,6 +27,16 @@ import type { SerializedPodcast, PromptField, ThumbnailPromptField, Persona, Per
 
 const DEFAULT_NEWSLETTER_PROMPTS = DEFAULT_EPISODE_PROMPTS.newsletter
 
+// Seed for the optional standalone prompt bucket (Epic 25) — cut-shaped with
+// empty fields, so the first edit (prompt or thumbnail) produces a schema-valid
+// bucket (CutPromptsSchema requires titles/thumbs/description/tags).
+const DEFAULT_STANDALONE_BUCKET: Prompts['cut'] = {
+  titles: DEFAULT_PROMPT_FIELD,
+  thumbs: DEFAULT_PROMPT_FIELD,
+  description: DEFAULT_PROMPT_FIELD,
+  tags: DEFAULT_PROMPT_FIELD,
+}
+
 /**
  * Section IDs for accordion persistence.
  */
@@ -88,13 +98,15 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
 
   const handleSavePromptField = useCallback(
     async (
-      videoType: 'episode' | 'cut' | 'reel',
+      videoType: 'episode' | 'cut' | 'reel' | 'standalone',
       fieldName: string,
       value: PromptField
     ) => {
       // Update ref immediately to capture this change for subsequent saves
       const currentPrompts = promptsRef.current
-      const currentVideoType = currentPrompts[videoType]
+      // The standalone bucket (Epic 25) is optional — seed a default so the
+      // first edit produces a schema-valid bucket.
+      const currentVideoType = currentPrompts[videoType] ?? DEFAULT_STANDALONE_BUCKET
       let updatedVideoType
 
       if (fieldName.startsWith('social.')) {
@@ -144,9 +156,9 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
   )
 
   const handleSaveThumbnailPromptField = useCallback(
-    async (videoType: 'episode' | 'cut', value: ThumbnailPromptField) => {
+    async (videoType: 'episode' | 'cut' | 'standalone', value: ThumbnailPromptField) => {
       const currentPrompts = promptsRef.current
-      const currentVideoType = currentPrompts[videoType]
+      const currentVideoType = currentPrompts[videoType] ?? DEFAULT_STANDALONE_BUCKET
       const updatedPrompts = {
         ...currentPrompts,
         [videoType]: {

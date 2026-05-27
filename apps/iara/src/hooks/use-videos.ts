@@ -74,7 +74,10 @@ export function useVideos(options: UseVideosOptions = {}): UseVideosResult {
         limit: PAGE_SIZE.toString(),
       })
 
-      if (typeFilter !== 'all') {
+      if (typeFilter === 'standalone') {
+        // Vídeo Avulso (Epic 25) is a flag, not a videoType → its own param.
+        params.set('standalone', 'true')
+      } else if (typeFilter !== 'all') {
         params.set('type', typeFilter)
       }
 

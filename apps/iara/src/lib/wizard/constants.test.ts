@@ -343,6 +343,61 @@ describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
     })
   })
 
+  describe('with standalone (Epic 25 — editorial flag)', () => {
+    it('drops parent for a standalone cut (no thumbnail feature)', () => {
+      expect(getPhaseIdsForVideoTypeWithFeatures('cut', undefined, true)).toEqual([
+        'title',
+        'short-title',
+        'description',
+        'tags',
+        'publish',
+      ])
+    })
+
+    it('drops parent for a standalone reel', () => {
+      expect(getPhaseIdsForVideoTypeWithFeatures('reel', undefined, true)).toEqual([
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
+    })
+
+    it('keeps thumbnail (by duration) for a standalone cut with the feature on', () => {
+      expect(
+        getPhaseIdsForVideoTypeWithFeatures('cut', { thumbnailGeneration: true }, true)
+      ).toEqual(['title', 'short-title', 'description', 'tags', 'thumbnail', 'publish'])
+    })
+
+    it('never adds thumbnail to a standalone reel even with the feature on', () => {
+      expect(
+        getPhaseIdsForVideoTypeWithFeatures('reel', { thumbnailGeneration: true }, true)
+      ).toEqual(['title', 'description', 'tags', 'publish'])
+    })
+
+    it('drops the analysis phases for a standalone episode (out-of-scope but safe)', () => {
+      // episode+standalone is not a real product case (decision Wellington), but
+      // the filter must still behave: parent + critique/edit-check/risk/chapters out.
+      expect(getPhaseIdsForVideoTypeWithFeatures('episode', undefined, true)).toEqual([
+        'title',
+        'description',
+        'tags',
+        'publish',
+      ])
+    })
+
+    it('standalone=false is identical to the non-standalone flow (regression)', () => {
+      for (const vt of ['episode', 'cut', 'reel'] as const) {
+        expect(getPhaseIdsForVideoTypeWithFeatures(vt, undefined, false)).toEqual(
+          getPhaseIdsForVideoTypeWithFeatures(vt)
+        )
+        expect(
+          getPhaseIdsForVideoTypeWithFeatures(vt, { thumbnailGeneration: true }, false)
+        ).toEqual(getPhaseIdsForVideoTypeWithFeatures(vt, { thumbnailGeneration: true }))
+      }
+    })
+  })
+
   it('does not mutate the original PHASE_IDS_BY_VIDEO_TYPE arrays', () => {
     getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })
     expect(PHASE_IDS_BY_VIDEO_TYPE.episode).toEqual([

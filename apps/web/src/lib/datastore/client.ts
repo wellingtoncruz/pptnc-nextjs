@@ -18,7 +18,14 @@ let firestoreClient: Firestore | null = null;
  * Returns a singleton Firestore client instance
  * Uses dynamic import to prevent module loading during SSG
  *
- * @returns Configured Firestore client for database 'pptnc'
+ * Database selection (shared with the IAra backoffice — same convention):
+ * - projectId via GOOGLE_PROJECT_ID (defaults to pptnc-stage)
+ * - databaseId via FIRESTORE_DATABASE_ID (defaults to pptnc-stage)
+ * The named Firestore DBs were split per environment (pptnc-stage = dev,
+ * pptnc-prod = production), so prod MUST set FIRESTORE_DATABASE_ID=pptnc-prod.
+ * NEVER hardcode pptnc-prod here, and never set it in a local .env.
+ *
+ * @returns Configured Firestore client for the env-selected database
  * @throws Error if Firestore cannot be initialized
  */
 export async function getFirestoreClient(): Promise<Firestore> {
@@ -27,7 +34,7 @@ export async function getFirestoreClient(): Promise<Firestore> {
     const { Firestore } = await import("@google-cloud/firestore");
     firestoreClient = new Firestore({
       projectId: process.env.GOOGLE_PROJECT_ID || "pptnc-stage",
-      databaseId: "pptnc-stage", // Shared database with IAra backoffice
+      databaseId: process.env.FIRESTORE_DATABASE_ID || "pptnc-stage",
       // ADC handles credentials automatically via:
       // - GOOGLE_APPLICATION_CREDENTIALS env var
       // - gcloud auth application-default login

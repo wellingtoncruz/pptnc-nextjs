@@ -75,6 +75,21 @@ describe('createInitialWizardState', () => {
     const state = createInitialWizardState('video-123')
     expect(state.videoType).toBe('episode')
   })
+
+  it('starts at title for a standalone cut (skips parent, no parentEpisodeId)', () => {
+    const state = createInitialWizardState('video-123', 'cut', undefined, true)
+    expect(state.currentPhase).toBe('title')
+  })
+
+  it('starts at title for a standalone reel (skips parent)', () => {
+    const state = createInitialWizardState('video-123', 'reel', undefined, true)
+    expect(state.currentPhase).toBe('title')
+  })
+
+  it('keeps episode at critique even when standalone (out of scope)', () => {
+    const state = createInitialWizardState('video-123', 'episode', undefined, true)
+    expect(state.currentPhase).toBe('critique')
+  })
 })
 
 describe('wizardReducer', () => {
@@ -1488,6 +1503,43 @@ describe('getNextPhaseForType', () => {
     it('falls back to legacy sequence when features.thumbnailGeneration is false', () => {
       // Same shape as omitting features — flag off must behave like before.
       expect(getNextPhaseForType('tags', 'episode', { thumbnailGeneration: false })).toBe('publish')
+    })
+  })
+
+  // ===========================================================================
+  // Epic 25 — standalone (editorial flag) navigation
+  // ===========================================================================
+
+  describe('with standalone enabled', () => {
+    it('routes a standalone cut title → short-title → description → tags → publish', () => {
+      expect(getNextPhaseForType('title', 'cut', undefined, true)).toBe('short-title')
+      expect(getNextPhaseForType('short-title', 'cut', undefined, true)).toBe('description')
+      expect(getNextPhaseForType('description', 'cut', undefined, true)).toBe('tags')
+      expect(getNextPhaseForType('tags', 'cut', undefined, true)).toBe('publish')
+    })
+
+    it('routes a standalone reel title → description → tags → publish', () => {
+      expect(getNextPhaseForType('title', 'reel', undefined, true)).toBe('description')
+      expect(getNextPhaseForType('tags', 'reel', undefined, true)).toBe('publish')
+    })
+
+    it("returns null for 'parent' on a standalone cut (phase no longer in the flow)", () => {
+      expect(getNextPhaseForType('parent', 'cut', undefined, true)).toBeNull()
+    })
+
+    it('still inserts thumbnail for a standalone cut with the feature on', () => {
+      expect(getNextPhaseForType('tags', 'cut', { thumbnailGeneration: true }, true)).toBe(
+        'thumbnail'
+      )
+      expect(getNextPhaseForType('thumbnail', 'cut', { thumbnailGeneration: true }, true)).toBe(
+        'publish'
+      )
+    })
+
+    it('never inserts thumbnail for a standalone reel even with the feature on', () => {
+      expect(getNextPhaseForType('tags', 'reel', { thumbnailGeneration: true }, true)).toBe(
+        'publish'
+      )
     })
   })
 })

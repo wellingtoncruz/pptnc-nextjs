@@ -47,6 +47,7 @@ const typeLabels: Record<VideoTypeFilter, string> = {
   episode: 'Episódios',
   cut: 'Cortes',
   reel: 'Reels',
+  standalone: 'Avulsos',
 }
 
 /**

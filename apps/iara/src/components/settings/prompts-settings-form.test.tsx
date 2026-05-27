@@ -20,7 +20,7 @@ const defaultProps = {
 
 describe('PromptsSettingsForm', () => {
   const mockOnSavePromptField = vi.fn<
-    (videoType: 'episode' | 'cut' | 'reel', fieldName: string, value: PromptField) => Promise<void>
+    (videoType: 'episode' | 'cut' | 'reel' | 'standalone', fieldName: string, value: PromptField) => Promise<void>
   >()
 
   beforeEach(() => {
@@ -76,6 +76,33 @@ describe('PromptsSettingsForm', () => {
     await waitFor(() => {
       // Cut has 4 fields: titles, thumbs, description, tags
       expect(screen.getByText('Brief de Thumbnail (texto)')).toBeInTheDocument()
+    })
+  })
+
+  it('renders the Avulsos (standalone) section and saves with videoType standalone', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    render(
+      <PromptsSettingsForm {...defaultProps} onSavePromptField={mockOnSavePromptField} />
+    )
+
+    expect(screen.getByText('Avulsos')).toBeInTheDocument()
+    await user.click(screen.getByText('Avulsos'))
+
+    const titlesTextarea = document.getElementById('standalone-titles-description') as HTMLTextAreaElement
+    await user.clear(titlesTextarea)
+    await user.type(titlesTextarea, 'Títulos para avulso')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    await waitFor(() => {
+      expect(mockOnSavePromptField).toHaveBeenCalledWith(
+        'standalone',
+        'titles',
+        expect.objectContaining({ description: 'Títulos para avulso' })
+      )
     })
   })
 

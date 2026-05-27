@@ -32,8 +32,8 @@ const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 /** Allowed values for the `role` form field. */
 const ROLES = new Set(['base', 'reference'])
 
-/** Allowed values for the `videoType` form field. */
-const VIDEO_TYPES = new Set(['episode', 'cut'])
+/** Allowed values for the `videoType` form field ('standalone' = Vídeo Avulso, Epic 25). */
+const VIDEO_TYPES = new Set(['episode', 'cut', 'standalone'])
 
 export async function POST(request: Request) {
   const session = await auth()
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
   if (typeof videoType !== 'string' || !VIDEO_TYPES.has(videoType)) {
     return NextResponse.json(
-      { error: { message: 'videoType inválido (use episode ou cut)' } },
+      { error: { message: 'videoType inválido (use episode, cut ou standalone)' } },
       { status: 400 }
     )
   }
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
   try {
     const buffer = Buffer.from(await (file.arrayBuffer as () => Promise<ArrayBuffer>)())
     const { filePath, mimeType } = await uploadThumbnailConfigImage(
-      videoType as 'episode' | 'cut',
+      videoType as 'episode' | 'cut' | 'standalone',
       role as 'base' | 'reference',
       buffer,
       file.type

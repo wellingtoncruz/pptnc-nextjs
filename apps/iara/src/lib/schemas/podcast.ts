@@ -181,10 +181,22 @@ export const NewsPromptsSchema = z.object({
  * Each video type has multiple specific prompts.
  * News prompts are optional (backward-compatible).
  */
+/**
+ * Standalone prompts - prompts for Vídeo Avulso (Epic 25 Bloco B).
+ *
+ * Same shape as cut prompts (a standalone video is a cut/reel by duration), so
+ * the producer can frame avulso content (notícia, recado) independently of the
+ * podcast cut/reel prompts. Optional + the resolver falls back to cut/reel →
+ * episode, so existing podcasts keep working until this bucket is filled in
+ * the Settings tab.
+ */
+export const StandalonePromptsSchema = CutPromptsSchema
+
 export const PromptsSchema = z.object({
   episode: EpisodePromptsSchema,
   cut: CutPromptsSchema,
   reel: ReelPromptsSchema,
+  standalone: StandalonePromptsSchema.optional(),
   news: NewsPromptsSchema.optional(),
 })
 

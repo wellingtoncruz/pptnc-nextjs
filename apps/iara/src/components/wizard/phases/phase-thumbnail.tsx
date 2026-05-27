@@ -85,6 +85,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
   const effectiveSelectedUrl = selectedVersionUrl ?? selectedThumbnailUrl ?? undefined
   const canAdvance = Boolean(effectiveSelectedUrl)
   const videoType = video.videoType
+  const standalone = video.standalone === true
 
   useEffect(() => {
     if (videoType !== 'episode' && videoType !== 'cut') {
@@ -96,7 +97,17 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (cancelled) return
-        const thumb = d?.data?.prompts?.[videoType]?.thumbnail as ThumbnailPromptField | undefined
+        const prompts = d?.data?.prompts
+        // Avulso (Epic 25) usa o bucket `standalone` quando completo, com fallback
+        // pro bucket do videoType — espelha getThumbnailConfig na geração, pra a
+        // UI refletir exatamente a config que será usada.
+        const standaloneThumb = standalone
+          ? (prompts?.standalone?.thumbnail as ThumbnailPromptField | undefined)
+          : undefined
+        const thumb =
+          standaloneThumb?.description && standaloneThumb?.expectedOutput
+            ? standaloneThumb
+            : (prompts?.[videoType]?.thumbnail as ThumbnailPromptField | undefined)
         setConfig(thumb ?? null)
         setConfigLoaded(true)
       })
@@ -111,7 +122,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
     return () => {
       cancelled = true
     }
-  }, [videoType])
+  }, [videoType, standalone])
 
   const handleGenerated = useCallback((payload: { url: string; observation: string | undefined }) => {
     const version: GeneratedThumbnailVersion = {
@@ -291,11 +302,12 @@ function ReferencesPanel({ config, configLoaded }: ReferencesPanelProps) {
   if (!hasBase && !hasReference) {
     return (
       <div className="rounded-md border bg-muted/30 p-4 text-sm" data-testid="references-empty">
-        <p className="font-medium">Nenhuma imagem de referência configurada.</p>
+        <p className="font-medium">Nenhuma imagem de referência configurada (opcional).</p>
         <p className="mt-1 text-muted-foreground">
-          Configure <strong>Thumbnail Base</strong> e <strong>Thumbnail Referência</strong> em Settings →
-          Prompts por Tipo de Vídeo → este tipo de vídeo → Geração de Thumbnail (imagem). Sem isso a
-          geração via IAra não tem contexto visual do branding.
+          A geração via IAra funciona mesmo assim — só não terá contexto visual do branding.
+          Para guiar o visual, configure <strong>Thumbnail Base</strong> e/ou <strong>Thumbnail
+          Referência</strong> em Settings → Prompts por Tipo de Vídeo → este tipo de vídeo →
+          Geração de Thumbnail (imagem).
         </p>
       </div>
     )

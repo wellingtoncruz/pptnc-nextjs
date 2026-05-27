@@ -135,7 +135,11 @@ export function buildThumbnailPrompt(
   return parts.join('\n\n')
 }
 
-function getThumbnailConfig(podcast: Podcast, videoType: Video['videoType']): ThumbnailPromptField {
+function getThumbnailConfig(
+  podcast: Podcast,
+  videoType: Video['videoType'],
+  standalone = false
+): ThumbnailPromptField {
   if (videoType !== 'episode' && videoType !== 'cut') {
     throw new LLMError(
       'INVALID_RESPONSE',
@@ -143,7 +147,13 @@ function getThumbnailConfig(podcast: Podcast, videoType: Video['videoType']): Th
       false
     )
   }
-  const config = podcast.prompts?.[videoType]?.thumbnail
+  // Standalone videos (Epic 25) use their own thumbnail config when complete,
+  // falling back to the videoType (cut) bucket otherwise.
+  const standaloneCfg = standalone ? podcast.prompts?.standalone?.thumbnail : undefined
+  const config =
+    standaloneCfg?.description && standaloneCfg?.expectedOutput
+      ? standaloneCfg
+      : podcast.prompts?.[videoType]?.thumbnail
   if (!config?.description || !config?.expectedOutput) {
     throw new LLMError(
       'INVALID_RESPONSE',
@@ -183,7 +193,7 @@ export async function generateThumbnail(
   params: GenerateThumbnailParams
 ): Promise<GenerateThumbnailResult> {
   const { video, podcast, observation, guestPhotoUrl } = params
-  const config = getThumbnailConfig(podcast, video.videoType)
+  const config = getThumbnailConfig(podcast, video.videoType, video.standalone)
   const prompt = buildThumbnailPrompt(config, video, observation)
   const referenceImages = buildReferenceImages(config, guestPhotoUrl)
   const modelOverride = podcast.llmConfig?.thumbnailImageModel

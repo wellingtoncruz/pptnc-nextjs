@@ -130,7 +130,8 @@ function initializeWizardState({ videoId, videoData }: InitParams): WizardState 
   let initial = stored ?? createInitialWizardState(
     videoId,
     videoType,
-    videoData?.parentEpisodeId
+    videoData?.parentEpisodeId,
+    videoData?.standalone
   )
 
   // If we have stored state but it doesn't have videoType (old format),
@@ -279,9 +280,10 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
     (
       phase: WizardPhaseId,
       data: unknown,
-      features?: { thumbnailGeneration?: boolean }
+      features?: { thumbnailGeneration?: boolean },
+      standalone?: boolean
     ) => {
-      dispatch({ type: 'COMPLETE_PHASE_AND_ADVANCE', phase, data, features })
+      dispatch({ type: 'COMPLETE_PHASE_AND_ADVANCE', phase, data, features, standalone })
     },
     []
   )
@@ -309,6 +311,23 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
   const hydrateFromVideoData = useCallback((videoData: VideoDataForSync) => {
     dispatch({ type: 'HYDRATE_FROM_VIDEO_DATA', videoData })
   }, [])
+
+  /**
+   * Re-initialize the wizard state from fresh video data, discarding the cached
+   * localStorage state. Used when an editorial change reshapes the phase flow —
+   * e.g. toggling the `standalone` flag (Epic 25), which removes/restores the
+   * parent phase. A plain re-hydration cannot move currentPhase off a now-removed
+   * phase (the HYDRATE guard keeps currentPhase when it is behind firstIncomplete
+   * and nothing changed), so we rebuild the state from scratch with the new data.
+   */
+  const reinitializeFromVideo = useCallback(
+    (videoData: VideoDataForSync) => {
+      clearWizardState(videoId)
+      const fresh = initializeWizardState({ videoId, videoData })
+      dispatch({ type: 'RESET_TO_STATE', state: fresh })
+    },
+    [videoId]
+  )
 
   // Console message management
   const addSpinner = useCallback((phase: WizardPhaseId, text?: string) => {
@@ -404,6 +423,7 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
     reset,
     syncWithVideoData,
     hydrateFromVideoData,
+    reinitializeFromVideo,
 
     // Console
     consoleMessages,

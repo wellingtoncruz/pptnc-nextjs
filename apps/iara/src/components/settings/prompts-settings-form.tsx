@@ -23,7 +23,7 @@ interface PromptsSettingsFormProps {
   enabledSocialNetworks: string[]
   socialNetworks: Array<{ id: string; name: string; icon: string }>
   onSavePromptField: (
-    videoType: 'episode' | 'cut' | 'reel',
+    videoType: 'episode' | 'cut' | 'reel' | 'standalone',
     fieldName: string,
     value: PromptField
   ) => Promise<void>
@@ -32,7 +32,7 @@ interface PromptsSettingsFormProps {
    * Called when the producer edits the Thumbnail sub-section in Episode or Cut.
    */
   onSaveThumbnailPromptField?: (
-    videoType: 'episode' | 'cut',
+    videoType: 'episode' | 'cut' | 'standalone',
     value: ThumbnailPromptField
   ) => Promise<void>
 }
@@ -61,6 +61,9 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
 const EPISODE_FIELDS: EpisodeFieldKey[] = ['critique', 'editing', 'compliance', 'chapters', 'titles', 'description', 'tags', 'topics']
 const CUT_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags', 'topics']
 const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags', 'topics']
+// Vídeo Avulso (Epic 25) shares the cut shape — title, short-title, description,
+// tags + thumbnail (imagem) — mas SEM tópicos (não se aplica a avulso).
+const STANDALONE_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags']
 
 /**
  * Form for editing AI prompts for each video type.
@@ -144,8 +147,8 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
     )
   }
 
-  function renderThumbnailPrompt(videoType: 'episode' | 'cut' | 'reel') {
-    if (videoType !== 'episode' && videoType !== 'cut') return null
+  function renderThumbnailPrompt(videoType: 'episode' | 'cut' | 'reel' | 'standalone') {
+    if (videoType !== 'episode' && videoType !== 'cut' && videoType !== 'standalone') return null
     if (!onSaveThumbnailPromptField) return null
 
     return (
@@ -160,7 +163,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
         <ThumbnailPromptFieldEditor
           fieldKey={`${videoType}-thumbnail`}
           videoType={videoType}
-          initialValue={prompts[videoType].thumbnail ?? DEFAULT_THUMBNAIL_PROMPT_FIELD}
+          initialValue={prompts[videoType]?.thumbnail ?? DEFAULT_THUMBNAIL_PROMPT_FIELD}
           onSave={(value) => onSaveThumbnailPromptField(videoType, value)}
         />
       </div>
@@ -240,6 +243,29 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
               />
             ))}
             {renderSocialPrompts('reel')}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Standalone (Vídeo Avulso) prompts — Epic 25 Bloco B */}
+      <AccordionItem value="standalone">
+        <AccordionTrigger>Avulsos</AccordionTrigger>
+        <AccordionContent forceOverflow>
+          <p className="text-xs text-muted-foreground mb-4">
+            Prompts para vídeos avulsos (notícia, recado) — não usam o enquadramento
+            de corte do podcast. Vídeos marcados como avulso usam estes prompts.
+          </p>
+          <div className="space-y-4">
+            {STANDALONE_FIELDS.map((fieldName) => (
+              <PromptFieldEditor
+                key={`standalone-${fieldName}`}
+                fieldKey={`standalone-${fieldName}`}
+                label={FIELD_LABELS[fieldName]}
+                initialValue={prompts.standalone?.[fieldName] ?? DEFAULT_PROMPT_FIELD}
+                onSave={(value) => onSavePromptField('standalone', fieldName, value)}
+              />
+            ))}
+            {renderThumbnailPrompt('standalone')}
           </div>
         </AccordionContent>
       </AccordionItem>

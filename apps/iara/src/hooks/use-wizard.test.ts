@@ -8,7 +8,7 @@
  * record and crashes ("Cannot read properties of undefined (reading 'status')").
  */
 
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { useWizard } from './use-wizard'
@@ -97,5 +97,42 @@ describe('useWizard — localStorage schema gate (TD-7 / Story 25.6)', () => {
     expect(parsed.schemaVersion).toBe(2)
     expect(parsed.phases.critique).toBeDefined()
     expect(parsed.phases['1']).toBeUndefined()
+  })
+})
+
+describe('useWizard — reinitializeFromVideo (Epic 25 / Story 25.9 — Vídeo Avulso)', () => {
+  it('rebuilds the flow to skip parent when standalone is enabled', () => {
+    // A cut with no parent starts at the parent-selection phase.
+    const { result } = renderHook(() => useWizard('vid-sa', { videoType: 'cut' }))
+    expect(result.current.currentPhase).toBe('parent')
+
+    // Enabling standalone clears the parent and removes the parent phase, so the
+    // flow must start at 'title' (a plain re-hydration could not move it).
+    act(() => {
+      result.current.reinitializeFromVideo({
+        videoType: 'cut',
+        standalone: true,
+        parentEpisodeId: '',
+      })
+    })
+
+    expect(result.current.currentPhase).toBe('title')
+  })
+
+  it('restores the parent phase when standalone is disabled and there is no parent', () => {
+    const { result } = renderHook(() =>
+      useWizard('vid-sb', { videoType: 'reel', standalone: true })
+    )
+    expect(result.current.currentPhase).toBe('title')
+
+    act(() => {
+      result.current.reinitializeFromVideo({
+        videoType: 'reel',
+        standalone: false,
+        parentEpisodeId: '',
+      })
+    })
+
+    expect(result.current.currentPhase).toBe('parent')
   })
 })
