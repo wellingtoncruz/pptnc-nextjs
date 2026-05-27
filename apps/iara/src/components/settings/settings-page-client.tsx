@@ -88,13 +88,20 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
 
   const handleSavePromptField = useCallback(
     async (
-      videoType: 'episode' | 'cut' | 'reel',
+      videoType: 'episode' | 'cut' | 'reel' | 'standalone',
       fieldName: string,
       value: PromptField
     ) => {
       // Update ref immediately to capture this change for subsequent saves
       const currentPrompts = promptsRef.current
-      const currentVideoType = currentPrompts[videoType]
+      // The standalone bucket (Epic 25) is optional — seed a full cut-shaped
+      // default so the first edit produces a schema-valid bucket.
+      const currentVideoType = currentPrompts[videoType] ?? {
+        titles: DEFAULT_PROMPT_FIELD,
+        thumbs: DEFAULT_PROMPT_FIELD,
+        description: DEFAULT_PROMPT_FIELD,
+        tags: DEFAULT_PROMPT_FIELD,
+      }
       let updatedVideoType
 
       if (fieldName.startsWith('social.')) {

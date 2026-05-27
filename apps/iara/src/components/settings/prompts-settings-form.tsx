@@ -23,7 +23,7 @@ interface PromptsSettingsFormProps {
   enabledSocialNetworks: string[]
   socialNetworks: Array<{ id: string; name: string; icon: string }>
   onSavePromptField: (
-    videoType: 'episode' | 'cut' | 'reel',
+    videoType: 'episode' | 'cut' | 'reel' | 'standalone',
     fieldName: string,
     value: PromptField
   ) => Promise<void>
@@ -61,6 +61,9 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
 const EPISODE_FIELDS: EpisodeFieldKey[] = ['critique', 'editing', 'compliance', 'chapters', 'titles', 'description', 'tags', 'topics']
 const CUT_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags', 'topics']
 const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags', 'topics']
+// Vídeo Avulso (Epic 25) shares the cut shape — the same phases (title, short-title,
+// description, tags) but framed for non-podcast content.
+const STANDALONE_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags', 'topics']
 
 /**
  * Form for editing AI prompts for each video type.
@@ -240,6 +243,28 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
               />
             ))}
             {renderSocialPrompts('reel')}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Standalone (Vídeo Avulso) prompts — Epic 25 Bloco B */}
+      <AccordionItem value="standalone">
+        <AccordionTrigger>Avulsos</AccordionTrigger>
+        <AccordionContent forceOverflow>
+          <p className="text-xs text-muted-foreground mb-4">
+            Prompts para vídeos avulsos (notícia, recado) — não usam o enquadramento
+            de corte do podcast. Vídeos marcados como avulso usam estes prompts.
+          </p>
+          <div className="space-y-4">
+            {STANDALONE_FIELDS.map((fieldName) => (
+              <PromptFieldEditor
+                key={`standalone-${fieldName}`}
+                fieldKey={`standalone-${fieldName}`}
+                label={FIELD_LABELS[fieldName]}
+                initialValue={prompts.standalone?.[fieldName] ?? DEFAULT_PROMPT_FIELD}
+                onSave={(value) => onSavePromptField('standalone', fieldName, value)}
+              />
+            ))}
           </div>
         </AccordionContent>
       </AccordionItem>

@@ -358,6 +358,55 @@ describe('buildPhasePrompt', () => {
       expect(result).toBe(BASE_SYSTEM_PROMPTS['title'])
     })
   })
+
+  describe('standalone (Vídeo Avulso, Epic 25)', () => {
+    const promptsWithStandalone: Prompts = {
+      ...validPrompts,
+      standalone: {
+        titles: { description: 'Gere títulos para vídeo avulso', expectedOutput: 'Um JSON com títulos' },
+        thumbs: { description: 'thumb avulso', expectedOutput: 'x' },
+        description: { description: 'desc avulso', expectedOutput: 'x' },
+        tags: { description: 'tags avulso', expectedOutput: 'x' },
+      },
+    }
+
+    it('uses the standalone bucket first when standalone=true (over cut)', () => {
+      const result = buildPhasePrompt('title', validWriterPersona, promptsWithStandalone, 'cut', true)
+      expect(result).toContain('Gere títulos para vídeo avulso')
+      expect(result).not.toContain('Gere títulos para corte')
+    })
+
+    it('ignores the standalone bucket when standalone=false', () => {
+      const result = buildPhasePrompt('title', validWriterPersona, promptsWithStandalone, 'cut', false)
+      expect(result).toContain('Gere títulos para corte')
+      expect(result).not.toContain('Gere títulos para vídeo avulso')
+    })
+
+    it('falls back to the videoType bucket (cut) when standalone is absent', () => {
+      const result = buildPhasePrompt('title', validWriterPersona, validPrompts, 'cut', true)
+      expect(result).toContain('Gere títulos para corte')
+    })
+
+    it('falls back through cut to episode when standalone + cut buckets are empty', () => {
+      const promptsEmpty: Prompts = {
+        ...validPrompts,
+        standalone: {
+          titles: { description: '', expectedOutput: '' },
+          thumbs: { description: '', expectedOutput: '' },
+          description: { description: '', expectedOutput: '' },
+          tags: { description: '', expectedOutput: '' },
+        },
+        cut: {
+          titles: { description: '', expectedOutput: '' },
+          thumbs: { description: 'x', expectedOutput: 'x' },
+          description: { description: '', expectedOutput: '' },
+          tags: { description: '', expectedOutput: '' },
+        },
+      }
+      const result = buildPhasePrompt('title', validWriterPersona, promptsEmpty, 'cut', true)
+      expect(result).toContain('Gere títulos SEO') // episode fallback
+    })
+  })
 })
 
 describe('getSystemPrompt (deprecated)', () => {

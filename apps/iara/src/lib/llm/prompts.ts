@@ -479,6 +479,7 @@ function getPhasePromptFromVideoType(
  * ```
  *
  * Fallback chain:
+ * 0. When `standalone` (Epic 25): try prompts.standalone first (e.g. prompts.standalone.titles)
  * 1. Try videoType-specific prompts (e.g., prompts.reel.titles)
  * 2. Fallback to episode prompts (e.g., prompts.episode.titles)
  * 3. Fallback to BASE_SYSTEM_PROMPTS (hardcoded defaults)
@@ -487,13 +488,15 @@ function getPhasePromptFromVideoType(
  * @param persona - Persona from podcast.personas.{personaName}
  * @param prompts - Prompts from podcast.prompts
  * @param videoType - Video type (episode, cut, reel)
+ * @param standalone - Vídeo Avulso flag (Epic 25). Resolves prompts.standalone first.
  * @returns Constructed prompt or fallback BASE_SYSTEM_PROMPTS
  */
 export function buildPhasePrompt(
   phase: TrackedPhaseId,
   persona: Persona | undefined,
   prompts: Prompts | undefined,
-  videoType: VideoType
+  videoType: VideoType,
+  standalone = false
 ): string {
   // Phase 8 has no LLM call
   if (phase === 'publish') {
@@ -507,19 +510,23 @@ export function buildPhasePrompt(
 
   const config = PHASE_CONFIG[phase]
 
-  // Try to get prompt from the video type's prompts
-  // Fallback chain: videoType -> episode -> BASE_SYSTEM_PROMPTS
-  let phasePrompt = getPhasePromptFromVideoType(
-    prompts[videoType] as unknown as Record<string, { description: string; expectedOutput: string } | undefined>,
-    config.promptKey
-  )
+  const asPromptRecord = (p: unknown) =>
+    p as Record<string, { description: string; expectedOutput: string } | undefined> | undefined
+
+  // Fallback chain: [standalone] -> videoType -> episode -> BASE_SYSTEM_PROMPTS.
+  // Standalone videos (Epic 25) try their dedicated bucket first so the producer
+  // can frame avulso content independently of the podcast cut/reel prompts.
+  let phasePrompt = standalone
+    ? getPhasePromptFromVideoType(asPromptRecord(prompts.standalone), config.promptKey)
+    : undefined
+
+  if (!phasePrompt) {
+    phasePrompt = getPhasePromptFromVideoType(asPromptRecord(prompts[videoType]), config.promptKey)
+  }
 
   // If not found and not already episode, try episode prompts as fallback
   if (!phasePrompt && videoType !== 'episode') {
-    phasePrompt = getPhasePromptFromVideoType(
-      prompts.episode as unknown as Record<string, { description: string; expectedOutput: string } | undefined>,
-      config.promptKey
-    )
+    phasePrompt = getPhasePromptFromVideoType(asPromptRecord(prompts.episode), config.promptKey)
   }
 
   // Final fallback to BASE_SYSTEM_PROMPTS
