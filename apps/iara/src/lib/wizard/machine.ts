@@ -232,7 +232,12 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       // For example: cut videos go title → short-title → description, not title → description.
       // When features.thumbnailGeneration is on (Epic 22), the sequence inserts
       // 'thumbnail' between tags and publish for episode and cut.
-      const nextPhase = getNextPhaseForType(action.phase, state.videoType, action.features)
+      const nextPhase = getNextPhaseForType(
+        action.phase,
+        state.videoType,
+        action.features,
+        action.standalone
+      )
 
       // Extended phases (parent, short-title, thumbnail) are not tracked in the
       // phases record — they are tracked via video data (parentEpisodeId,
@@ -422,11 +427,12 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
 
       if (!isEpisode) {
         // Cut/reel video
-        if (!videoData.parentEpisodeId) {
-          // No parent selected - go to parent selection
+        if (!videoData.standalone && !videoData.parentEpisodeId) {
+          // No parent selected (and not standalone) - go to parent selection
           firstIncompletePhase = 'parent'
         } else {
-          // Parent selected - find first incomplete phase starting from 'title'
+          // Parent selected OR standalone (no parent phase) - find first
+          // incomplete phase starting from 'title'
           firstIncompletePhase = 'publish'
 
           if (newPhases.title.status !== 'completed') {

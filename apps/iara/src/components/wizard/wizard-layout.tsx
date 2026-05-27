@@ -9,6 +9,7 @@ import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 
 import { ConsoleArea } from './console-area'
+import { StandaloneToggle } from './standalone-toggle'
 import { VideoHeader, VideoMetadata, VideoShortTitle } from './video-header'
 import { VideoPreview } from './video-preview'
 import { WizardBreadcrumb } from './wizard-breadcrumb'
@@ -24,6 +25,11 @@ interface WizardLayoutProps {
   onTitleChange?: (newTitle: string) => Promise<void>
   /** Callback when short title is changed. If provided, short title becomes editable. */
   onShortTitleChange?: (newShortTitle: string) => Promise<void>
+  /**
+   * Callback to toggle the editorial `standalone` flag (Epic 25). When provided,
+   * a "Vídeo avulso" toggle is shown in the video header for cut/reel videos.
+   */
+  onStandaloneToggle?: (next: boolean) => Promise<void>
   /**
    * Optional podcast features used to gate phases conditionally in the
    * breadcrumb. Currently only `thumbnailGeneration` (Epic 22 / Story 22.3a)
@@ -61,6 +67,7 @@ export function WizardLayout({
   interactivePanel,
   onTitleChange,
   onShortTitleChange,
+  onStandaloneToggle,
   features,
   className,
 }: WizardLayoutProps) {
@@ -111,7 +118,10 @@ export function WizardLayout({
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
           {/* Video Preview (left) */}
           <div className="lg:w-1/2 p-4 flex flex-col">
-            <VideoHeader video={video} onTitleChange={onTitleChange} className="mb-3" />
+            <VideoHeader video={video} onTitleChange={onTitleChange} className="mb-2" />
+            {onStandaloneToggle && (
+              <StandaloneToggle video={video} onToggle={onStandaloneToggle} className="mb-3" />
+            )}
             <VideoPreview
               videoId={wizard.state.videoId}
               thumbnailUrl={video.storageThumbnailUrl || getBestThumbnailUrl(video.thumbnails)}

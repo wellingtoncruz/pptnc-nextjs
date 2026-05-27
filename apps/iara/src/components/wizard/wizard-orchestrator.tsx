@@ -2027,6 +2027,43 @@ export function WizardOrchestrator({
   }, [video.id])
 
   /**
+   * Toggle the editorial `standalone` flag (Epic 25 Bloco B) from the workspace
+   * header. Enabling clears the parent link + inherited guests/theme (mirrors the
+   * endpoint), then the wizard state is rebuilt so the phase flow reflects the new
+   * shape (parent phase removed/restored). Handles its own errors (surfaces an
+   * alert) — the toggle only awaits this to drive its saving state.
+   */
+  const handleStandaloneToggle = useCallback(async (next: boolean) => {
+    log('INFO', 'Standalone toggle requested', { videoId: video.id, standalone: next })
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/standalone`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ standalone: next }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao alterar vídeo avulso')
+      }
+
+      // Reflect the persisted change locally, then rebuild the wizard flow.
+      const updated: Video = next
+        ? { ...videoData, standalone: true, parentEpisodeId: '', guests: [], theme: '' }
+        : { ...videoData, standalone: false }
+      setVideoData(updated)
+      wizard.reinitializeFromVideo(updated)
+
+      log('INFO', 'Standalone toggled successfully', { videoId: video.id, standalone: next })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao alterar vídeo avulso'
+      log('ERROR', 'Failed to toggle standalone', { videoId: video.id, error: message })
+      wizard.addAlert(wizard.currentPhase, 'Erro', message, 'error')
+    }
+  }, [video.id, videoData, wizard])
+
+  /**
    * Handle suggested title edit from Phase 5.
    * Persists the updated suggested title to the video document.
    *
@@ -2711,6 +2748,7 @@ export function WizardOrchestrator({
       interactivePanel={interactivePanel}
       onTitleChange={handleTitleChange}
       onShortTitleChange={handleShortTitleChange}
+      onStandaloneToggle={handleStandaloneToggle}
       features={features}
       className={className}
     />

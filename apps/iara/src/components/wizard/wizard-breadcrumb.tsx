@@ -105,7 +105,8 @@ export function WizardBreadcrumb({
   onPhaseClick,
   canNavigateToPhase,
 }: WizardBreadcrumbProps) {
-  const phases = getPhaseIdsForVideoTypeWithFeatures(videoType, features)
+  // Standalone videos (Epic 25) drop the parent + podcast-only phases.
+  const phases = getPhaseIdsForVideoTypeWithFeatures(videoType, features, video?.standalone)
 
   return (
     <nav aria-label="Wizard progress" className="w-full">

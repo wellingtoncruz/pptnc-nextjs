@@ -131,6 +131,8 @@ export interface VideoDataForSync {
   // For cut/reel videos
   videoType?: 'episode' | 'cut' | 'reel'
   parentEpisodeId?: string
+  /** Editorial flag (Epic 25): standalone cut/reel skip the parent phase. */
+  standalone?: boolean
 }
 
 /**
@@ -153,6 +155,8 @@ export type WizardAction =
        * Thumbnail phase silently — bug fixed in Story 22.3b follow-up.
        */
       features?: { thumbnailGeneration?: boolean }
+      /** Editorial flag (Epic 25): drives next-phase navigation for standalone videos. */
+      standalone?: boolean
     }
   | { type: 'SYNC_WITH_VIDEO_DATA'; videoData: VideoDataForSync }
   | { type: 'HYDRATE_FROM_VIDEO_DATA'; videoData: VideoDataForSync; isRehydration?: boolean }

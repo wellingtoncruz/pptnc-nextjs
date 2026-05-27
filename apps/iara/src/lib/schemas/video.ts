@@ -396,6 +396,7 @@ export const VideoUpdateSchema = z.object({
   // Context fields for AI processing (flat, not nested)
   theme: z.string().optional(),
   parentEpisodeId: z.string().optional(),
+  standalone: z.boolean().optional(), // Flag editorial (Epic 25 Bloco B) — ver VideoSchema
   guests: z.array(GuestDisplaySchema).optional(), // Lenient for round-trip compatibility with VideoSchema
   spotifyUrl: z.string().optional(),
 
