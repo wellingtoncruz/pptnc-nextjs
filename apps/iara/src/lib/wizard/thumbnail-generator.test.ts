@@ -165,6 +165,38 @@ describe('generateThumbnail', () => {
     ).rejects.toThrow(/episódios e cortes/)
   })
 
+  it('standalone (Epic 25): uses the standalone thumbnail config, not the cut bucket', async () => {
+    const video = { id: 'video-1', videoType: 'cut', standalone: true, title: 'Notícia X' } as never
+    const podcast = {
+      ...basePodcast,
+      prompts: {
+        cut: {
+          thumbnail: {
+            description: 'Thumbnail de CORTE do podcast',
+            expectedOutput: 'PNG 1280x720',
+            baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config%2Fpptnc%2Fcut%2Fbase.png',
+            baseImageMimeType: 'image/png',
+          },
+        },
+        standalone: {
+          thumbnail: {
+            description: 'Thumbnail de vídeo AVULSO',
+            expectedOutput: 'PNG 1280x720',
+            baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config%2Fpptnc%2Fstandalone%2Fbase.png',
+            baseImageMimeType: 'image/png',
+          },
+        },
+      },
+    } as never
+
+    await generateThumbnail({ video, podcast, observation: undefined })
+
+    const [prompt, , , options] = mockCallGenAIImage.mock.calls[0]
+    expect(String(prompt)).toContain('vídeo AVULSO')
+    expect(String(prompt)).not.toContain('CORTE do podcast')
+    expect(options.referenceImages[0].uri).toContain('/standalone/')
+  })
+
   it('happy path: calls Vertex AI with base+reference, uploads to staging and returns proxy URL', async () => {
     const result = await generateThumbnail({
       video: baseVideo,

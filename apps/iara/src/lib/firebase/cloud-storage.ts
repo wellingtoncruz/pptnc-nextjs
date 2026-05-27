@@ -366,8 +366,8 @@ export async function downloadGuestAvatar(filePath: string): Promise<Buffer> {
 // Epic 22 — Thumbnail config images (Base, Referência)
 // ==========================================================================
 
-/** Allowed video types for thumbnail config uploads. */
-const THUMBNAIL_CONFIG_VIDEO_TYPES = ['episode', 'cut'] as const
+/** Allowed video types for thumbnail config uploads ('standalone' = Vídeo Avulso, Epic 25). */
+const THUMBNAIL_CONFIG_VIDEO_TYPES = ['episode', 'cut', 'standalone'] as const
 type ThumbnailConfigVideoType = (typeof THUMBNAIL_CONFIG_VIDEO_TYPES)[number]
 
 /** Allowed roles inside the thumbnail config. */

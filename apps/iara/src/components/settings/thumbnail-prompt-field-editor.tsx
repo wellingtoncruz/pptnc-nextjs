@@ -22,7 +22,7 @@ export const MAX_THUMBNAIL_CONFIG_IMAGE_BYTES = 5 * 1024 * 1024
 
 interface ThumbnailPromptFieldEditorProps {
   fieldKey: string
-  videoType: 'episode' | 'cut'
+  videoType: 'episode' | 'cut' | 'standalone'
   initialValue: ThumbnailPromptField
   onSave: (value: ThumbnailPromptField) => Promise<void>
 }

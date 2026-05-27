@@ -32,7 +32,7 @@ interface PromptsSettingsFormProps {
    * Called when the producer edits the Thumbnail sub-section in Episode or Cut.
    */
   onSaveThumbnailPromptField?: (
-    videoType: 'episode' | 'cut',
+    videoType: 'episode' | 'cut' | 'standalone',
     value: ThumbnailPromptField
   ) => Promise<void>
 }
@@ -61,9 +61,9 @@ const FIELD_LABELS: Record<EpisodeFieldKey | CutFieldKey | ReelFieldKey, string>
 const EPISODE_FIELDS: EpisodeFieldKey[] = ['critique', 'editing', 'compliance', 'chapters', 'titles', 'description', 'tags', 'topics']
 const CUT_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags', 'topics']
 const REEL_FIELDS: ReelFieldKey[] = ['titles', 'description', 'tags', 'topics']
-// Vídeo Avulso (Epic 25) shares the cut shape — the same phases (title, short-title,
-// description, tags) but framed for non-podcast content.
-const STANDALONE_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags', 'topics']
+// Vídeo Avulso (Epic 25) shares the cut shape — title, short-title, description,
+// tags + thumbnail (imagem) — mas SEM tópicos (não se aplica a avulso).
+const STANDALONE_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'tags']
 
 /**
  * Form for editing AI prompts for each video type.
@@ -147,8 +147,8 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
     )
   }
 
-  function renderThumbnailPrompt(videoType: 'episode' | 'cut' | 'reel') {
-    if (videoType !== 'episode' && videoType !== 'cut') return null
+  function renderThumbnailPrompt(videoType: 'episode' | 'cut' | 'reel' | 'standalone') {
+    if (videoType !== 'episode' && videoType !== 'cut' && videoType !== 'standalone') return null
     if (!onSaveThumbnailPromptField) return null
 
     return (
@@ -163,7 +163,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
         <ThumbnailPromptFieldEditor
           fieldKey={`${videoType}-thumbnail`}
           videoType={videoType}
-          initialValue={prompts[videoType].thumbnail ?? DEFAULT_THUMBNAIL_PROMPT_FIELD}
+          initialValue={prompts[videoType]?.thumbnail ?? DEFAULT_THUMBNAIL_PROMPT_FIELD}
           onSave={(value) => onSaveThumbnailPromptField(videoType, value)}
         />
       </div>
@@ -265,6 +265,7 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
                 onSave={(value) => onSavePromptField('standalone', fieldName, value)}
               />
             ))}
+            {renderThumbnailPrompt('standalone')}
           </div>
         </AccordionContent>
       </AccordionItem>
