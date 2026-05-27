@@ -163,17 +163,42 @@ export function isPhaseIdValidForVideoType(
 }
 
 /**
- * Returns the wizard phase IDs for a given video type, optionally inserting the
- * Thumbnail phase (Epic 22) between Tags and Publish when the podcast has
- * `features.thumbnailGeneration` enabled.
+ * Phase IDs that exist only for podcast videos. A standalone video (Epic 25
+ * Bloco B — editorial flag) drops these: parent selection (Phase 0) + the
+ * analysis phases (critique/edit-check/risk/chapters). The format phases
+ * (short-title/thumbnail) are NOT here — they stay driven by duration, the
+ * flag does not change them. See ADR-25.3 / §7 of the epic doc.
+ */
+const PODCAST_ONLY_PHASE_IDS: ReadonlySet<WizardPhaseId> = new Set<WizardPhaseId>([
+  'parent',
+  'critique',
+  'edit-check',
+  'risk',
+  'chapters',
+])
+
+/**
+ * Returns the wizard phase IDs for a given video type, applying:
+ * - `standalone` (Epic 25): when true, drops the podcast-only phases
+ *   ({@link PODCAST_ONLY_PHASE_IDS}) — parent selection + analysis phases —
+ *   preserving the duration-driven format phases. For cut/reel this removes
+ *   only `parent` (they have no analysis phases).
+ * - `features.thumbnailGeneration` (Epic 22): inserts the Thumbnail phase
+ *   between Tags and Publish. Reels never get it (scope: only episode/cut).
+ *   The Thumbnail decision is by duration, independent of `standalone`.
  *
- * Reels never get the Thumbnail phase (scope decision: only episode and cut).
+ * Applied in order: standalone filter first, then thumbnail insertion — so a
+ * standalone cut with the feature on still gets a Thumbnail phase.
  */
 export function getPhaseIdsForVideoTypeWithFeatures(
   videoType: VideoTypeForWizard,
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean },
+  standalone = false
 ): WizardPhaseId[] {
-  const base = getPhaseIdsForVideoType(videoType)
+  let base = getPhaseIdsForVideoType(videoType)
+  if (standalone) {
+    base = base.filter((id) => !PODCAST_ONLY_PHASE_IDS.has(id))
+  }
   if (!features?.thumbnailGeneration) return base
   if (videoType === 'reel') return base
   // Insert 'thumbnail' immediately before 'publish'.

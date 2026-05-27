@@ -14,7 +14,7 @@
  * serialization boundaries (Firestore `reviewedPhases`), bridged via the mapper.
  */
 
-import { getPhaseIdsForVideoTypeWithFeatures, PHASE_IDS_BY_VIDEO_TYPE } from './constants'
+import { getPhaseIdsForVideoTypeWithFeatures } from './constants'
 import {
   TRACKED_PHASE_IDS,
   isTrackedPhaseId,
@@ -93,11 +93,17 @@ function shortTitleHasDataInVideo(video: VideoDataForSync): boolean {
  */
 function getInitialPhaseForVideoType(
   videoType?: VideoTypeForWizard,
-  parentEpisodeId?: string
+  parentEpisodeId?: string,
+  standalone = false
 ): WizardPhaseId {
   // Episode always starts at the first phase
   if (!videoType || videoType === 'episode') {
     return 'critique'
+  }
+
+  // Standalone cut/reel (Epic 25) skip parent selection — there is no parent.
+  if (standalone) {
+    return 'title'
   }
 
   // Cut/reel with parent already set: start at 'title'
@@ -115,11 +121,13 @@ function getInitialPhaseForVideoType(
  * @param videoId - The ID of the video
  * @param videoType - Video type (episode, cut, reel). Defaults to 'episode'.
  * @param parentEpisodeId - Optional parent episode ID (for cut/reel)
+ * @param standalone - Editorial flag (Epic 25): standalone cut/reel skip parent
  */
 export function createInitialWizardState(
   videoId: string,
   videoType: VideoTypeForWizard = 'episode',
-  parentEpisodeId?: string
+  parentEpisodeId?: string,
+  standalone = false
 ): WizardState {
   const phases = {} as Record<TrackedPhaseId, PhaseState>
 
@@ -130,7 +138,7 @@ export function createInitialWizardState(
   return {
     videoId,
     videoType,
-    currentPhase: getInitialPhaseForVideoType(videoType, parentEpisodeId),
+    currentPhase: getInitialPhaseForVideoType(videoType, parentEpisodeId, standalone),
     phases,
   }
 }
@@ -494,16 +502,18 @@ export function getNextPhase(currentPhase: WizardPhaseId): TrackedPhaseId | null
  * When `features.thumbnailGeneration` is on (Epic 22) the sequence inserts
  * 'thumbnail' between tags and publish for episode and cut.
  *
+ * When `standalone` is true (Epic 25) the podcast-only phases are dropped, so
+ * navigation follows the standalone sequence (e.g. cut: title → short-title).
+ *
  * @returns The next phase, or null if at the last phase
  */
 export function getNextPhaseForType(
   currentPhase: WizardPhaseId,
   videoType: VideoTypeForWizard,
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean },
+  standalone = false
 ): WizardPhaseId | null {
-  const phases = features
-    ? getPhaseIdsForVideoTypeWithFeatures(videoType, features)
-    : PHASE_IDS_BY_VIDEO_TYPE[videoType] ?? PHASE_IDS_BY_VIDEO_TYPE.episode
+  const phases = getPhaseIdsForVideoTypeWithFeatures(videoType, features, standalone)
   const currentIndex = phases.indexOf(currentPhase)
 
   // Current phase not found in this video type's phases, or at last phase

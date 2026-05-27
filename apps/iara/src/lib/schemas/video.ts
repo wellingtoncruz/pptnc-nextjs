@@ -308,6 +308,12 @@ export const VideoSchema = z.object({
   // Context fields for AI processing (flat, not nested)
   theme: z.string().optional(), // Tema do episódio
   parentEpisodeId: z.string().optional(), // Para cuts/reels - referência ao episode de origem
+  // Flag editorial (Epic 25 Bloco B): marca um vídeo PPTNC que NÃO é podcast
+  // (notícia gerada por IA, recado aos ouvintes). Ortogonal à duração — não é um
+  // 4º videoType. Quando ligada, a derivação de fases tira a seleção de pai + as
+  // fases de análise podcast-only; o formato por duração (short-title/thumbnail)
+  // é preservado. Ver ADR-25.3.
+  standalone: z.boolean().default(false),
 
   // Timestamps — .catch(undefined) for legacy data with non-Timestamp values
   createdAt: TimestampSchema.optional().catch(undefined),
