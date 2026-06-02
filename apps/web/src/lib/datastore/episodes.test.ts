@@ -14,6 +14,8 @@ const mockWhere = vi.fn().mockReturnThis();
 const mockOrderBy = vi.fn().mockReturnThis();
 const mockSelect = vi.fn().mockReturnThis();
 const mockGet = vi.fn();
+const mockBatchUpdate = vi.fn();
+const mockBatchCommit = vi.fn().mockResolvedValue(undefined);
 
 // Mock the @google-cloud/firestore module
 vi.mock("@google-cloud/firestore", () => {
@@ -35,10 +37,26 @@ vi.mock("@google-cloud/firestore", () => {
         get: () => mockGet(),
       };
     }
+    batch() {
+      return {
+        update: (...args: unknown[]) => mockBatchUpdate(...args),
+        commit: () => mockBatchCommit(),
+      };
+    }
   }
 
-  return { Firestore };
+  const FieldValue = {
+    serverTimestamp: () => "__SERVER_TIMESTAMP__",
+  };
+
+  return { Firestore, FieldValue };
 });
+
+// Mock the YouTube visibility helper — tests control responses per case.
+const mockVisibilitySafe = vi.fn();
+vi.mock("@/lib/youtube/visibility", () => ({
+  fetchYouTubeVisibilitySafe: (...args: unknown[]) => mockVisibilitySafe(...args),
+}));
 
 import { resetFirestoreClient } from "./client";
 import {
@@ -105,11 +123,15 @@ const createMockDocument = (overrides: Record<string, unknown> = {}, docId = "0d
     position: 0,
     topics: ["javascript", "agile"],
     guests: [{ name: "John Doe", role: "Developer", company: "Acme" }],
+    // Default to public so existing tests skip the YouTube reconciliation path.
+    // Tests that exercise the reconciler override this explicitly.
+    youtubePrivacyStatus: "public",
     ...dataOverrides,
   };
 
   return {
     id: docId,
+    ref: { __docId: docId },
     data: () => data,
   };
 };
@@ -125,6 +147,9 @@ describe("getEpisodes", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("returns episodes sorted by publishedAt descending", async () => {
@@ -224,6 +249,9 @@ describe("getEpisodesCount", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("returns count from cached episodes", async () => {
@@ -251,6 +279,9 @@ describe("getEpisodeByVideoId", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("finds episode by doc ID (videoId)", async () => {
@@ -282,6 +313,9 @@ describe("getEpisodeBySlug", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("finds episode by generated slug", async () => {
@@ -313,6 +347,9 @@ describe("getEpisodesByTopic", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("filters by topic in memory", async () => {
@@ -347,6 +384,9 @@ describe("getEpisodesCountByTopic", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("counts episodes with topic from cached data", async () => {
@@ -379,6 +419,9 @@ describe("getAllTopics", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("returns sorted topics from collection", async () => {
@@ -413,6 +456,9 @@ describe("getLatestEpisode", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("returns the first episode from cached data (already sorted)", async () => {
@@ -456,6 +502,9 @@ describe("Date handling", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("handles ISO string dates", async () => {
@@ -515,6 +564,9 @@ describe("Field mapping edge cases", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("handles missing optional fields with defaults", async () => {
@@ -578,6 +630,9 @@ describe("getRelatedEpisodes", () => {
     vi.clearAllMocks();
     resetFirestoreClient();
     clearTopicsCache();
+    // Default: no candidates (all docs are public in Firestore in the existing tests).
+    // The reconciler tests below override this with explicit scenarios.
+    mockVisibilitySafe.mockResolvedValue(new Map());
   });
 
   it("returns episodes with shared topics sorted by number of shared topics", async () => {
@@ -735,5 +790,112 @@ describe("getRelatedEpisodes", () => {
 
     expect(related).toHaveLength(1);
     expect(related[0].id).toBe("match");
+  });
+});
+
+describe("getEpisodes — visibility reconciliation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetFirestoreClient();
+    clearTopicsCache();
+    mockVisibilitySafe.mockResolvedValue(new Map());
+  });
+
+  it("does NOT call YouTube when every Firestore doc is already public", async () => {
+    const docs = [
+      createMockDocument({}, "pub1"),
+      createMockDocument({}, "pub2"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+
+    expect(mockVisibilitySafe).not.toHaveBeenCalled();
+    expect(episodes).toHaveLength(2);
+  });
+
+  it("hides private candidate even when YouTube confirms it is private-or-deleted", async () => {
+    const docs = [
+      createMockDocument({ youtubePrivacyStatus: "public" }, "pub"),
+      createMockDocument({ youtubePrivacyStatus: "private" }, "scheduled"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+    mockVisibilitySafe.mockResolvedValue(new Map([["scheduled", "private-or-deleted"]]));
+
+    const episodes = await getEpisodes();
+
+    expect(mockVisibilitySafe).toHaveBeenCalledWith(["scheduled"]);
+    expect(episodes.map((e) => e.id)).toEqual(["pub"]);
+  });
+
+  it("promotes unlisted-in-Firestore doc that is now public on YouTube AND writes back", async () => {
+    const docs = [
+      createMockDocument({ youtubePrivacyStatus: "unlisted" }, "stale"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+    mockVisibilitySafe.mockResolvedValue(new Map([["stale", "public"]]));
+
+    const episodes = await getEpisodes();
+
+    expect(episodes.map((e) => e.id)).toEqual(["stale"]);
+    expect(mockBatchUpdate).toHaveBeenCalledWith(
+      { __docId: "stale" },
+      expect.objectContaining({
+        youtubePrivacyStatus: "public",
+        visibilityUpdatedAt: "__SERVER_TIMESTAMP__",
+      })
+    );
+    expect(mockBatchCommit).toHaveBeenCalled();
+  });
+
+  it("hides unlisted videos even when YouTube confirms unlisted", async () => {
+    const docs = [
+      createMockDocument({ youtubePrivacyStatus: "unlisted" }, "unl"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+    mockVisibilitySafe.mockResolvedValue(new Map([["unl", "unlisted"]]));
+
+    const episodes = await getEpisodes();
+
+    expect(episodes).toHaveLength(0);
+  });
+
+  it("hides candidates conservatively when YouTube fetch fails (empty map)", async () => {
+    const docs = [
+      createMockDocument({ youtubePrivacyStatus: "public" }, "ok"),
+      createMockDocument({ youtubePrivacyStatus: "private" }, "unknown"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+    mockVisibilitySafe.mockResolvedValue(new Map()); // failure path returns empty
+
+    const episodes = await getEpisodes();
+
+    expect(episodes.map((e) => e.id)).toEqual(["ok"]);
+  });
+
+  it("treats docs without youtubePrivacyStatus as candidates", async () => {
+    const docs = [
+      createMockDocument({ youtubePrivacyStatus: undefined }, "legacy"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+    mockVisibilitySafe.mockResolvedValue(new Map([["legacy", "public"]]));
+
+    const episodes = await getEpisodes();
+
+    expect(mockVisibilitySafe).toHaveBeenCalledWith(["legacy"]);
+    expect(episodes.map((e) => e.id)).toEqual(["legacy"]);
+  });
+
+  it("does not call commit when no doc actually diverged from YouTube", async () => {
+    const docs = [
+      createMockDocument({ youtubePrivacyStatus: "private" }, "still-private"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+    mockVisibilitySafe.mockResolvedValue(new Map([["still-private", "private-or-deleted"]]));
+
+    await getEpisodes();
+
+    expect(mockBatchUpdate).not.toHaveBeenCalled();
+    expect(mockBatchCommit).not.toHaveBeenCalled();
   });
 });
