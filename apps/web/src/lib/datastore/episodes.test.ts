@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock next/cache before any imports that use it
 vi.mock("next/cache", () => ({
@@ -897,5 +897,40 @@ describe("getEpisodes — visibility reconciliation", () => {
 
     expect(mockBatchUpdate).not.toHaveBeenCalled();
     expect(mockBatchCommit).not.toHaveBeenCalled();
+  });
+});
+
+describe("getEpisodes — SSG build phase skips reconciliation", () => {
+  const originalPhase = process.env.NEXT_PHASE;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetFirestoreClient();
+    clearTopicsCache();
+    mockVisibilitySafe.mockResolvedValue(new Map());
+    process.env.NEXT_PHASE = "phase-production-build";
+  });
+
+  afterEach(() => {
+    if (originalPhase === undefined) delete process.env.NEXT_PHASE;
+    else process.env.NEXT_PHASE = originalPhase;
+  });
+
+  it("does NOT call YouTube nor batch.commit during build, even with candidates", async () => {
+    const docs = [
+      createMockDocument({ youtubePrivacyStatus: "public" }, "pub"),
+      createMockDocument({ youtubePrivacyStatus: "unlisted" }, "unl"),
+      createMockDocument({ youtubePrivacyStatus: "private" }, "priv"),
+      createMockDocument({ youtubePrivacyStatus: undefined }, "legacy"),
+    ];
+    mockGet.mockResolvedValue({ docs, empty: false });
+
+    const episodes = await getEpisodes();
+
+    expect(mockVisibilitySafe).not.toHaveBeenCalled();
+    expect(mockBatchUpdate).not.toHaveBeenCalled();
+    expect(mockBatchCommit).not.toHaveBeenCalled();
+    // Build trusts Firestore: only youtubePrivacyStatus === 'public' passes.
+    expect(episodes.map((e) => e.id)).toEqual(["pub"]);
   });
 });
