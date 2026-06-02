@@ -73,10 +73,22 @@ async function fetchAllEpisodesFromFirestore(): Promise<Episode[]> {
       .select(...EPISODE_LIST_FIELDS)
       .get();
 
+    const docs = snapshot.docs;
+
+    // SSG build path: no YouTube reconciliation, no write-through. Trust the
+    // Firestore state and filter on `youtubePrivacyStatus === 'public'`.
+    // Why: YOUTUBE_API_KEY is runtime-only (not in cloudbuild.yaml), so during
+    // `next build` the reconciler would always fail-closed and hide every
+    // candidate — producing an empty home until the first ISR revalidation.
+    // Runtime requests still reconcile against the live YouTube state.
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+      const visible = docs.filter((doc) => doc.data().youtubePrivacyStatus === "public");
+      return visible.map((doc) => mapDocumentToEpisode(doc.id, doc.data(), db, false));
+    }
+
     // Reconcile visibility with YouTube for any doc not already public in Firestore.
     // Source of truth is YouTube; Firestore is treated as a cache that can drift
     // (full sync is not guaranteed to run between video state changes).
-    const docs = snapshot.docs;
     const candidateIds: string[] = [];
     for (const doc of docs) {
       const ps = doc.data().youtubePrivacyStatus;
