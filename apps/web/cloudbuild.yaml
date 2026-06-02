@@ -62,7 +62,8 @@ steps:
       - '--allow-unauthenticated'
       - '--service-account'
       - '${_SERVICE_ACCOUNT}'
-      # Runtime DB selection. --update-env-vars merges (não apaga UPSTASH/RESEND/etc).
+      # Runtime DB selection. --update-env-vars merges (não apaga UPSTASH/RESEND/
+      # YOUTUBE_API_KEY/etc — runtime envs persistem na revisão do Cloud Run).
       - '--update-env-vars'
       - 'FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID}'
 

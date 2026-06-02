@@ -1,6 +1,8 @@
 import { unstable_cache } from "next/cache";
+import { FieldValue } from "@google-cloud/firestore";
 import { getFirestoreClient, COLLECTION_EPISODES, COLLECTION_TOPICS } from "./client";
 import { logger } from "@/lib/logger";
+import { fetchYouTubeVisibilitySafe, type RealVisibility } from "@/lib/youtube/visibility";
 
 import type {
   Episode,
@@ -30,7 +32,8 @@ const CACHE_REVALIDATE = 3600;
  * Transcripts are excluded to keep cache size manageable (~50MB -> ~2MB)
  * This is wrapped by unstable_cache for cross-request caching
  */
-// Fields needed for episode listing (excludes large transcript fields)
+// Fields needed for episode listing (excludes large transcript fields).
+// `youtubePrivacyStatus` is required for the visibility reconciliation step.
 const EPISODE_LIST_FIELDS = [
   "publishedAt",
   "slug",
@@ -49,7 +52,14 @@ const EPISODE_LIST_FIELDS = [
   "guests",
   "topics",
   "videoType",
+  "youtubePrivacyStatus",
 ];
+
+// Map RealVisibility back to the value stored in Firestore. `private` and
+// `deleted` are indistinguishable via API key, so we collapse to `private`.
+function visibilityToFirestoreValue(v: RealVisibility): "public" | "unlisted" | "private" {
+  return v === "private-or-deleted" ? "private" : v;
+}
 
 async function fetchAllEpisodesFromFirestore(): Promise<Episode[]> {
   try {
@@ -63,8 +73,74 @@ async function fetchAllEpisodesFromFirestore(): Promise<Episode[]> {
       .select(...EPISODE_LIST_FIELDS)
       .get();
 
-    // Map WITHOUT transcripts - they're excluded at query level now
-    return snapshot.docs.map((doc) => mapDocumentToEpisode(doc.id, doc.data(), db, false));
+    // Reconcile visibility with YouTube for any doc not already public in Firestore.
+    // Source of truth is YouTube; Firestore is treated as a cache that can drift
+    // (full sync is not guaranteed to run between video state changes).
+    const docs = snapshot.docs;
+    const candidateIds: string[] = [];
+    for (const doc of docs) {
+      const ps = doc.data().youtubePrivacyStatus;
+      if (ps !== "public") candidateIds.push(doc.id);
+    }
+
+    let realVisibility = new Map<string, RealVisibility>();
+    let promoted = 0;
+    let demoted = 0;
+    if (candidateIds.length > 0) {
+      const t0 = Date.now();
+      realVisibility = await fetchYouTubeVisibilitySafe(candidateIds);
+
+      // Write-through: update Firestore docs whose privacy diverged from YouTube.
+      if (realVisibility.size > 0) {
+        const writer = db.batch();
+        let writes = 0;
+        for (const doc of docs) {
+          const real = realVisibility.get(doc.id);
+          if (!real) continue;
+          const current = doc.data().youtubePrivacyStatus;
+          const next = visibilityToFirestoreValue(real);
+          if (current === next) continue;
+          writer.update(doc.ref, {
+            youtubePrivacyStatus: next,
+            visibilityUpdatedAt: FieldValue.serverTimestamp(),
+          });
+          writes++;
+          if (next === "public") promoted++;
+          else demoted++;
+        }
+        if (writes > 0) {
+          try {
+            await writer.commit();
+          } catch (error) {
+            logger.warn("Failed to write-through youtubePrivacyStatus", {
+              service: "episodes",
+              writes,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
+      }
+
+      logger.info("youtube visibility reconciled", {
+        service: "episodes",
+        totalDocs: docs.length,
+        candidates: candidateIds.length,
+        promoted,
+        demoted,
+        durationMs: Date.now() - t0,
+      });
+    }
+
+    // Filter: keep only episodes that are public on YouTube right now.
+    // - Docs already public in Firestore: trust Firestore (not in candidates).
+    // - Docs in the candidates set: trust the YouTube response. Unknowns (API failed
+    //   so realVisibility is empty for them) are hidden — conservative fallback.
+    const visible = docs.filter((doc) => {
+      if (doc.data().youtubePrivacyStatus === "public") return true;
+      return realVisibility.get(doc.id) === "public";
+    });
+
+    return visible.map((doc) => mapDocumentToEpisode(doc.id, doc.data(), db, false));
   } catch (error) {
     logger.warn("Firestore not available, returning empty episodes", {
       service: "episodes",
