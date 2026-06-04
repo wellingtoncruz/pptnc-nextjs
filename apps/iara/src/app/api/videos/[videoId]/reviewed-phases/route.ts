@@ -27,12 +27,17 @@ import {
 
 /**
  * Schema for validating reviewed phase request body.
- * Phases 2, 3, and 4 require review confirmation.
+ * edit-check, risk and chapters require review confirmation; the Links phase
+ * (Epic 26) also uses this mechanism — zero links is a valid reviewed state,
+ * so completion comes from confirmation, not from data presence.
  */
 const ReviewedPhaseSchema = z.object({
-  phase: z.union([z.literal('edit-check'), z.literal('risk'), z.literal('chapters')], {
-    message: "Fase deve ser 'edit-check', 'risk' ou 'chapters'",
-  }),
+  phase: z.union(
+    [z.literal('edit-check'), z.literal('risk'), z.literal('chapters'), z.literal('links')],
+    {
+      message: "Fase deve ser 'edit-check', 'risk', 'chapters' ou 'links'",
+    }
+  ),
 })
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin

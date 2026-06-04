@@ -8,6 +8,7 @@ import type {
   VideoStatusSchema,
   YouTubePrivacyStatusSchema,
   ChapterSchema,
+  LinkSchema,
   ComplianceSchema,
   ComplianceItemSchema,
   VideoSummarySchema,
@@ -74,6 +75,11 @@ export type YouTubePrivacyStatus = z.infer<typeof YouTubePrivacyStatusSchema>
  * Chapter marker in video.
  */
 export type Chapter = z.infer<typeof ChapterSchema>
+
+/**
+ * Reference link attached to an episode (Epic 26 — Links phase).
+ */
+export type Link = z.infer<typeof LinkSchema>
 
 /**
  * Compliance check result.

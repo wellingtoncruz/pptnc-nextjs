@@ -9,7 +9,7 @@ import { log } from '@/lib/logger'
 import { phaseIdOrder, type WizardPhaseId } from '@/lib/wizard'
 import { runAsyncPhase } from '@/lib/wizard/run-async-phase'
 import { buildCompleteYouTubeDescription } from '@/lib/youtube'
-import type { Video, Guest } from '@/types/video'
+import type { Video, Guest, Link } from '@/types/video'
 import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase5BResponse, Phase6Response, Phase7Response } from '@/lib/llm'
 
 import { TranscriptionLoader, type TranscriptionData } from './transcription-loader'
@@ -25,6 +25,7 @@ import { Phase6Description } from './phases/phase-6-description'
 import { Phase7Tags } from './phases/phase-7-tags'
 import { Phase8Publish } from './phases/phase-8-publish'
 import { PhaseThumbnail } from './phases/phase-thumbnail'
+import { PhaseLinks } from './phases/phase-links'
 
 interface WizardOrchestratorProps {
   video: Video
@@ -2289,6 +2290,7 @@ export function WizardOrchestrator({
         description: videoData.description || '',
         guests: videoData.guests,
         chapters: videoData.chapters,
+        links: videoData.links, // Epic 26 — só os includeInDescription são anexados (filtro interno)
         youtubeFooter,
         video: placeholderVideo,
       })
@@ -2439,6 +2441,50 @@ export function WizardOrchestrator({
     }
   }, [video.id, wizard])
 
+  // Links phase (Epic 26) — extended, manual. The panel persists the full array
+  // via PUT /links; advancing confirms the review ('links' → reviewedPhases) and
+  // navigates to Publicar. Zero links is a valid reviewed state (ADR-26.5).
+  const [isLinksAdvancing, setIsLinksAdvancing] = useState(false)
+
+  const handleLinksChange = useCallback(async (links: Link[]) => {
+    const response = await fetch(`/api/videos/${video.id}/links`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ links }),
+    })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error?.message || 'Erro ao salvar os links')
+    }
+    setVideoData(prev => ({ ...prev, links }))
+  }, [video.id])
+
+  const handleLinksAdvance = useCallback(async () => {
+    setIsLinksAdvancing(true)
+    try {
+      const response = await fetch(`/api/videos/${video.id}/reviewed-phases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phase: 'links' }),
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao confirmar revisao')
+      }
+      setVideoData(prev => {
+        const current = prev.reviewedPhases || []
+        return current.includes('links') ? prev : { ...prev, reviewedPhases: [...current, 'links'] }
+      })
+      wizard.completePhaseAndAdvance('links', {}, features)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao confirmar revisao'
+      log('ERROR', 'Failed to advance from links phase', { videoId: video.id, error: message })
+      wizard.addAlert('links', 'Erro', message, 'error')
+    } finally {
+      setIsLinksAdvancing(false)
+    }
+  }, [video.id, wizard, features])
+
   /**
    * Check if video is already sent (from initial video data).
    */
@@ -2520,6 +2566,20 @@ export function WizardOrchestrator({
             setVideoData((prev) => ({ ...prev, storageThumbnailUrl: payload.newStorageUrl }))
             wizard.completePhaseAndAdvance('thumbnail', {}, features)
           }}
+        />
+      )
+    }
+
+    // links phase — Epic 26 (episode-only, extended/manual). The panel persists
+    // links via PUT /links; advancing confirms the review and navigates to Publicar.
+    if (wizard.currentPhase === 'links') {
+      return (
+        <PhaseLinks
+          video={videoData}
+          features={features}
+          onLinksChange={handleLinksChange}
+          onAdvance={() => void handleLinksAdvance()}
+          isAdvancing={isLinksAdvancing}
         />
       )
     }
@@ -2690,6 +2750,9 @@ export function WizardOrchestrator({
     handleParentSelected,
     handleContextChange,
     handleConfirmReview,
+    handleLinksChange,
+    handleLinksAdvance,
+    isLinksAdvancing,
     handleChapterChange,
     handleRevalidatePhase5,
     handleTitleSelect,

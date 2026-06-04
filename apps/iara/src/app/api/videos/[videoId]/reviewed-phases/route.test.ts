@@ -108,6 +108,23 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
       expect(response.status).toBe(200)
     })
 
+    it('accepts phase links (Epic 26)', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
+      mockGetVideoAdmin.mockResolvedValue({ id: 'test-video' } as never)
+
+      const mockUpdate = vi.fn().mockResolvedValue(undefined)
+      const mockDocRef = { update: mockUpdate }
+      const mockCollection = vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue(mockDocRef) })
+      mockGetAdminDb.mockReturnValue({
+        collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
+      } as never)
+
+      const request = createMockRequest({ phase: 'links' })
+      const response = await POST(request, createContext('test-video'))
+
+      expect(response.status).toBe(200)
+    })
+
     it('returns 400 for non-number phase', async () => {
       mockGetVideoAdmin.mockResolvedValue({ id: 'test-video' } as never)
 
