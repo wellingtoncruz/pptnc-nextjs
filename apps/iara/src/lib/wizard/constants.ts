@@ -92,6 +92,13 @@ export const PHASE_ID_METADATA: Record<WizardPhaseId, PhaseMetadata> = {
     spinnerText: 'Gerando thumbnail...',
     alertTitle: 'Thumbnail',
   },
+  links: {
+    phase: 'links',
+    label: 'Links',
+    type: 'reprocessable',
+    spinnerText: 'Carregando links...',
+    alertTitle: 'Links do Episódio',
+  },
   publish: {
     phase: 'publish',
     label: 'Publicar',
@@ -137,7 +144,9 @@ export function getPhaseIdsToInvalidate(fromPhase: WizardPhaseId): TrackedPhaseI
  * - reel: Parent selection → Title → Description → Tags → Publish
  */
 export const PHASE_IDS_BY_VIDEO_TYPE: Record<VideoTypeForWizard, WizardPhaseId[]> = {
-  episode: ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'publish'],
+  // Epic 26: 'links' is an episode-only phase, right before publish (after
+  // thumbnail when the feature is on — see getPhaseIdsForVideoTypeWithFeatures).
+  episode: ['critique', 'edit-check', 'risk', 'chapters', 'title', 'description', 'tags', 'links', 'publish'],
   cut: ['parent', 'title', 'short-title', 'description', 'tags', 'publish'],
   reel: ['parent', 'title', 'description', 'tags', 'publish'],
 }
@@ -201,10 +210,13 @@ export function getPhaseIdsForVideoTypeWithFeatures(
   }
   if (!features?.thumbnailGeneration) return base
   if (videoType === 'reel') return base
-  // Insert 'thumbnail' immediately before 'publish'.
-  const publishIndex = base.indexOf('publish')
-  if (publishIndex < 0) return base
-  return [...base.slice(0, publishIndex), 'thumbnail', ...base.slice(publishIndex)]
+  // Insert 'thumbnail' before the closing phases. For episodes that means
+  // before 'links' (Epic 26: …tags → thumbnail → links → publish); otherwise
+  // before 'publish' (…tags → thumbnail → publish).
+  const linksIndex = base.indexOf('links')
+  const anchorIndex = linksIndex >= 0 ? linksIndex : base.indexOf('publish')
+  if (anchorIndex < 0) return base
+  return [...base.slice(0, anchorIndex), 'thumbnail', ...base.slice(anchorIndex)]
 }
 
 // Re-export the canonical phase-ID list for convenience.

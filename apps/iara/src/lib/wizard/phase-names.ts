@@ -26,6 +26,7 @@ export const PHASE_NAMES: Record<WizardPhaseId, string> = {
   description: 'Descrição',
   tags: 'Tags',
   thumbnail: 'Thumbnail',
+  links: 'Links',
   publish: 'Publicar no YouTube',
 }
 

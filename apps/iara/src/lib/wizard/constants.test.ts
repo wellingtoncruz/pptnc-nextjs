@@ -23,7 +23,7 @@ import {
 import type { VideoTypeForWizard } from './types'
 
 describe('PHASE_IDS_BY_VIDEO_TYPE', () => {
-  it('episode has the full immutable→publish flow', () => {
+  it('episode has the full immutable→publish flow (incl. links, Epic 26)', () => {
     expect(PHASE_IDS_BY_VIDEO_TYPE.episode).toEqual([
       'critique',
       'edit-check',
@@ -32,6 +32,7 @@ describe('PHASE_IDS_BY_VIDEO_TYPE', () => {
       'title',
       'description',
       'tags',
+      'links',
       'publish',
     ])
   })
@@ -68,6 +69,7 @@ describe('getPhaseIdsForVideoType', () => {
       'title',
       'description',
       'tags',
+      'links',
       'publish',
     ])
   })
@@ -102,6 +104,7 @@ describe('getPhaseIdsForVideoType', () => {
       'title',
       'description',
       'tags',
+      'links',
       'publish',
     ])
   })
@@ -162,6 +165,18 @@ describe('isPhaseIdValidForVideoType', () => {
     })
   })
 
+  describe('links (episode-only, Epic 26)', () => {
+    it('is valid for episode', () => {
+      expect(isPhaseIdValidForVideoType('links', 'episode')).toBe(true)
+    })
+    it('is NOT valid for cut', () => {
+      expect(isPhaseIdValidForVideoType('links', 'cut')).toBe(false)
+    })
+    it('is NOT valid for reel', () => {
+      expect(isPhaseIdValidForVideoType('links', 'reel')).toBe(false)
+    })
+  })
+
   describe('description/tags/publish (shared phases)', () => {
     const sharedPhases = ['description', 'tags', 'publish'] as const
 
@@ -183,8 +198,8 @@ describe('isPhaseIdValidForVideoType', () => {
 })
 
 describe('PHASE_ID_METADATA', () => {
-  it('covers all 11 phase ids', () => {
-    expect(Object.keys(PHASE_ID_METADATA)).toHaveLength(11)
+  it('covers all 12 phase ids (incl. links, Epic 26)', () => {
+    expect(Object.keys(PHASE_ID_METADATA)).toHaveLength(12)
   })
 
   it('includes metadata for parent', () => {
@@ -225,6 +240,11 @@ describe('PHASE_ID_METADATA', () => {
   it('thumbnail is reprocessable (Epic 22)', () => {
     expect(PHASE_ID_METADATA.thumbnail.type).toBe('reprocessable')
     expect(PHASE_ID_METADATA.thumbnail.label).toBe('Thumbnail')
+  })
+
+  it('links has label "Links" (Epic 26)', () => {
+    expect(PHASE_ID_METADATA.links.label).toBe('Links')
+    expect(PHASE_ID_METADATA.links.phase).toBe('links')
   })
 
   it('each entry has a self-consistent phase field', () => {
@@ -306,7 +326,7 @@ describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
   })
 
   describe('with thumbnailGeneration enabled', () => {
-    it("inserts 'thumbnail' between tags and publish for episode", () => {
+    it("inserts 'thumbnail' between tags and links for episode (Epic 26: …tags → thumbnail → links → publish)", () => {
       expect(getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })).toEqual([
         'critique',
         'edit-check',
@@ -316,6 +336,7 @@ describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
         'description',
         'tags',
         'thumbnail',
+        'links',
         'publish',
       ])
     })
@@ -378,10 +399,12 @@ describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
     it('drops the analysis phases for a standalone episode (out-of-scope but safe)', () => {
       // episode+standalone is not a real product case (decision Wellington), but
       // the filter must still behave: parent + critique/edit-check/risk/chapters out.
+      // 'links' stays (episode phase, not podcast-only).
       expect(getPhaseIdsForVideoTypeWithFeatures('episode', undefined, true)).toEqual([
         'title',
         'description',
         'tags',
+        'links',
         'publish',
       ])
     })
@@ -408,6 +431,7 @@ describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
       'title',
       'description',
       'tags',
+      'links',
       'publish',
     ])
     expect(PHASE_IDS_BY_VIDEO_TYPE.cut).toEqual([

@@ -163,11 +163,11 @@ describe('WizardOrchestrator reel flow', () => {
       expect(reelState.currentPhase).toBe('parent')
     })
 
-    it('episode has 8 phases, reel has 5 phases', () => {
+    it('episode has 9 phases (incl. links, Epic 26), reel has 5 phases', () => {
       const episodePhases = getPhaseIdsForVideoType('episode')
       const reelPhases = getPhaseIdsForVideoType('reel')
 
-      expect(episodePhases).toHaveLength(8)
+      expect(episodePhases).toHaveLength(9)
       expect(reelPhases).toHaveLength(5)
     })
 
@@ -201,6 +201,7 @@ describe('WizardOrchestrator reel flow', () => {
         'title',
         'description',
         'tags',
+        'links',
         'publish',
       ])
     })

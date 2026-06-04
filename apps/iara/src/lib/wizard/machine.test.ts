@@ -1408,11 +1408,12 @@ describe('getNextPhase', () => {
 
 describe('getNextPhaseForType', () => {
   describe('episode video type', () => {
-    it('returns sequential phases 1->2->...->8', () => {
+    it('returns sequential phases 1->2->...->links->publish (Epic 26)', () => {
       expect(getNextPhaseForType('critique', 'episode')).toBe('edit-check')
       expect(getNextPhaseForType('edit-check', 'episode')).toBe('risk')
       expect(getNextPhaseForType('title', 'episode')).toBe('description')
-      expect(getNextPhaseForType('tags', 'episode')).toBe('publish')
+      expect(getNextPhaseForType('tags', 'episode')).toBe('links')
+      expect(getNextPhaseForType('links', 'episode')).toBe('publish')
     })
 
     it('returns null for last phase', () => {
@@ -1477,8 +1478,9 @@ describe('getNextPhaseForType', () => {
       expect(getNextPhaseForType('tags', 'episode', features)).toBe('thumbnail')
     })
 
-    it("routes 'THUMB' → 8 (Publicar) for episode", () => {
-      expect(getNextPhaseForType('thumbnail', 'episode', features)).toBe('publish')
+    it("routes 'THUMB' → links → publish for episode (Epic 26)", () => {
+      expect(getNextPhaseForType('thumbnail', 'episode', features)).toBe('links')
+      expect(getNextPhaseForType('links', 'episode', features)).toBe('publish')
     })
 
     it("routes Tags (7) → 'THUMB' for cut", () => {
@@ -1501,8 +1503,8 @@ describe('getNextPhaseForType', () => {
     })
 
     it('falls back to legacy sequence when features.thumbnailGeneration is false', () => {
-      // Same shape as omitting features — flag off must behave like before.
-      expect(getNextPhaseForType('tags', 'episode', { thumbnailGeneration: false })).toBe('publish')
+      // Same shape as omitting features — flag off routes tags → links (Epic 26).
+      expect(getNextPhaseForType('tags', 'episode', { thumbnailGeneration: false })).toBe('links')
     })
   })
 

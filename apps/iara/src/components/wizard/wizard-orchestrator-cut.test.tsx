@@ -192,11 +192,11 @@ describe('WizardOrchestrator cut flow', () => {
       expect(cutState.currentPhase).toBe('parent')
     })
 
-    it('episode has 8 phases, cut has 6 phases (including short-title)', () => {
+    it('episode has 9 phases (incl. links, Epic 26), cut has 6 phases (including short-title)', () => {
       const episodePhases = getPhaseIdsForVideoType('episode')
       const cutPhases = getPhaseIdsForVideoType('cut')
 
-      expect(episodePhases).toHaveLength(8)
+      expect(episodePhases).toHaveLength(9)
       expect(cutPhases).toHaveLength(6) // parent, title, short-title, description, tags, publish
     })
 
@@ -273,6 +273,7 @@ describe('WizardOrchestrator cut flow', () => {
         'title',
         'description',
         'tags',
+        'links',
         'publish',
       ])
     })
@@ -286,6 +287,7 @@ describe('WizardOrchestrator cut flow', () => {
         'title',
         'description',
         'tags',
+        'links',
         'publish',
       ])
     })
