@@ -22,18 +22,15 @@ export function SocialLayout({ enabledSocialNetworks = [] }: SocialLayoutProps) 
   const selectedVideoId = searchParams.get('selected')
 
   const {
-    videos: rawVideos, isLoading, error, refresh, page, totalPages, setPage,
+    videos, isLoading, error, refresh, page, totalPages, setPage,
     typeFilter, setTypeFilter, statusFilter, setStatusFilter,
-  } = useVideos({ statusFilter: 'all' })
+  } = useVideos({ statusFilter: 'ready_sent' })
 
-  // Filter: exclude episodes from social view.
+  // Epic 26: episodes are now included in the social view (no type exclusion).
+  // The query is scoped to ready+sent (Epic 26 / TD-11), so only videos with
+  // finalized metadata or already published appear here.
   // Order: preserve the API order (publishedAt desc, recent-first). Sent videos
-  // are visually highlighted by VideoListPanel, so no need to float them to the
-  // top — that buried recent ready/draft videos behind older sent ones (Story 25.12).
-  const videos = useMemo(
-    () => rawVideos.filter(v => v.videoType !== 'episode'),
-    [rawVideos]
-  )
+  // are visually highlighted by VideoListPanel, not floated to the top (Story 25.12).
 
   // Fetch social networks catalog once
   const [allNetworks, setAllNetworks] = useState<SocialNetwork[]>([])
@@ -81,7 +78,6 @@ export function SocialLayout({ enabledSocialNetworks = [] }: SocialLayoutProps) 
           onTypeFilterChange={setTypeFilter}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
-          excludeTypes={['episode']}
           variant="social"
           onVideoReopened={refresh}
         />

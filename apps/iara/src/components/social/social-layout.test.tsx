@@ -155,16 +155,16 @@ describe('SocialLayout', () => {
     expect(mockPush).toHaveBeenCalledWith('/videos?view=social&selected=video-1')
   })
 
-  it('chama useVideos com statusFilter "all"', () => {
+  it('chama useVideos com statusFilter "ready_sent" (Epic 26 / TD-11)', () => {
     render(<SocialLayout />)
 
-    expect(useVideos).toHaveBeenCalledWith({ statusFilter: 'all' })
+    expect(useVideos).toHaveBeenCalledWith({ statusFilter: 'ready_sent' })
   })
 
-  it('passa excludeTypes={["episode"]} para VideoListPanel', () => {
+  it('NÃO passa excludeTypes — episódios agora aparecem na aba social (Epic 26)', () => {
     render(<SocialLayout />)
 
-    expect(capturedExcludeTypes).toEqual(['episode'])
+    expect(capturedExcludeTypes).toBeUndefined()
   })
 
   it('passa variant="social" para VideoListPanel', () => {
@@ -173,15 +173,15 @@ describe('SocialLayout', () => {
     expect(capturedVariant).toBe('social')
   })
 
-  it('filtra episódios e preserva a ordem recent-first da API (não força sent pro topo)', () => {
-    // API entrega recent-first (publishedAt desc). O social-layout NÃO deve
-    // reordenar sent pro topo — isso enterrava vídeos ready/draft recentes
-    // atrás de sent antigos (Story 25.12).
+  it('inclui episódios e preserva a ordem recent-first da API (não força sent pro topo)', () => {
+    // Epic 26: episódios agora aparecem na aba social (sem exclusão por tipo).
+    // A API entrega recent-first (publishedAt desc) já escopada a ready+sent;
+    // o social-layout NÃO deve reordenar sent pro topo (Story 25.12).
     const mixedVideos = [
-      { id: 'v-draft', status: 'draft', videoType: 'cut' },
-      { id: 'v-sent', status: 'sent', videoType: 'reel' },
-      { id: 'v-episode', status: 'draft', videoType: 'episode' },
-      { id: 'v-new', status: 'new', videoType: 'cut' },
+      { id: 'v-ready-cut', status: 'ready', videoType: 'cut' },
+      { id: 'v-sent-reel', status: 'sent', videoType: 'reel' },
+      { id: 'v-ready-episode', status: 'ready', videoType: 'episode' },
+      { id: 'v-sent-episode', status: 'sent', videoType: 'episode' },
     ]
     vi.mocked(useVideos).mockReturnValueOnce({
       videos: mixedVideos,
@@ -193,14 +193,14 @@ describe('SocialLayout', () => {
       setPage: vi.fn(),
       typeFilter: 'all',
       setTypeFilter: vi.fn(),
-      statusFilter: 'all',
+      statusFilter: 'ready_sent',
       setStatusFilter: vi.fn(),
     } as ReturnType<typeof useVideos>)
 
     render(<SocialLayout />)
 
-    // Episode filtered out; ordem da API preservada (sent NÃO vai pro topo)
+    // Episódios incluídos; ordem da API preservada (sent NÃO vai pro topo)
     const videoIds = screen.getByTestId('video-ids').textContent
-    expect(videoIds).toBe('v-draft,v-sent,v-new')
+    expect(videoIds).toBe('v-ready-cut,v-sent-reel,v-ready-episode,v-sent-episode')
   })
 })
