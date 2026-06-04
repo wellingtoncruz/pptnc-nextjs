@@ -7,8 +7,8 @@ import type { VideoSummary, VideoTypeFilter, VideoStatus } from '@/types/video'
 
 const PAGE_SIZE = 20
 
-/** Filter for video status. 'all' means no filtering, 'not_sent' means all except 'sent'. */
-export type VideoStatusFilter = VideoStatus | 'all' | 'not_sent'
+/** Filter for video status. 'all' means no filtering, 'not_sent' means all except 'sent', 'ready_sent' means only 'ready'+'sent' (Social tab, Epic 26/TD-11). */
+export type VideoStatusFilter = VideoStatus | 'all' | 'not_sent' | 'ready_sent'
 
 interface UseVideosOptions {
   typeFilter?: VideoTypeFilter

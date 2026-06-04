@@ -72,6 +72,7 @@ import {
   getChildVideos,
   updateVideoEmbedding,
   findSimilarEpisodes,
+  getVideosForDisplayAdmin,
 } from './videos-admin'
 
 describe('videos-admin.ts - Admin SDK operations', () => {
@@ -639,6 +640,51 @@ describe('videos-admin.ts - Admin SDK operations', () => {
         { _vector: queryVector },
         { limit: 3, distanceMeasure: 'COSINE' }
       )
+    })
+  })
+
+  describe('getVideosForDisplayAdmin - status filter (Epic 26 / TD-11)', () => {
+    const displayDoc = (id: string, status: string, videoType = 'episode') => ({
+      id,
+      data: () => ({
+        title: `Video ${id}`,
+        status,
+        videoType,
+        duration: 100,
+        publishedAt: mockTimestamp,
+      }),
+    })
+
+    it("maps status='ready_sent' to a Firestore 'in' query on [ready, sent]", async () => {
+      mockGet.mockResolvedValue({ empty: false, docs: [displayDoc('ep-1', 'ready')] })
+
+      const result = await getVideosForDisplayAdmin('pptnc', { status: 'ready_sent' })
+
+      expect(mockWhere).toHaveBeenCalledWith('status', 'in', ['ready', 'sent'])
+      expect(result.data).toHaveLength(1)
+      expect(result.data[0].id).toBe('ep-1')
+    })
+
+    it("applies ready_sent in-memory for the standalone view (keeps ready/sent, drops others)", async () => {
+      mockGet.mockResolvedValue({
+        empty: false,
+        docs: [
+          displayDoc('s-ready', 'ready', 'cut'),
+          displayDoc('s-sent', 'sent', 'reel'),
+          displayDoc('s-draft', 'draft', 'cut'),
+          displayDoc('s-new', 'new', 'reel'),
+        ],
+      })
+
+      const result = await getVideosForDisplayAdmin('pptnc', {
+        status: 'ready_sent',
+        standalone: true,
+      })
+
+      // standalone path filters by the flag at Firestore level, status in-memory
+      expect(mockWhere).toHaveBeenCalledWith('standalone', '==', true)
+      const ids = result.data.map((v) => v.id).sort()
+      expect(ids).toEqual(['s-ready', 's-sent'])
     })
   })
 })
