@@ -330,6 +330,7 @@ export async function getVideosForDisplayAdmin(
         editingIssues: rawData.editingIssues,
         riskAndCompliance: rawData.riskAndCompliance,
         chapters: rawData.chapters,
+        links: rawData.links, // Epic 26 — fase Links (TD-10: builder manual precisa listar o campo)
         suggestedTitles: rawData.suggestedTitles,
         description: rawData.description,
         tags: rawData.tags,
