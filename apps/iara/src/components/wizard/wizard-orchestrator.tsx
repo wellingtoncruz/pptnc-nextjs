@@ -2558,6 +2558,7 @@ export function WizardOrchestrator({
       return (
         <PhaseThumbnail
           video={videoData}
+          features={features}
           selectedThumbnailUrl={videoData.storageThumbnailUrl}
           onAdvance={(payload) => {
             // Story 22.3g: PhaseThumbnail já persistiu a URL final via POST /select.

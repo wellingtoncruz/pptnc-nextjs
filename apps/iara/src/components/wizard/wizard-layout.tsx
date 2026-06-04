@@ -76,27 +76,36 @@ export function WizardLayout({
   // thumbnail) are handled by phase-specific components.
   const handlePhaseClick = useCallback(
     (phase: WizardPhaseId) => {
-      if (isTrackedPhaseId(phase)) {
+      // Tracked phases + 'links' (Epic 26 — revisitable to add more links) use
+      // goToPhase. Other extended phases (parent/short-title/thumbnail) are
+      // handled by their respective components.
+      if (isTrackedPhaseId(phase) || phase === 'links') {
         wizard.goToPhase(phase)
       }
-      // Extended phase navigation is handled by their respective components
-      // (e.g., phase-0-parent-selection.tsx)
     },
     [wizard]
   )
 
   // Wrapper to check if a phase can be navigated to.
   // For tracked phases, delegates to wizard.canNavigateToPhase.
-  // Extended phases (parent/short-title/thumbnail) are only clickable when
-  // current — this prevents going back to parent selection after advancing.
+  // 'links' (Epic 26) is revisitable after completion so the producer can go
+  // back and add another link. Other extended phases (parent/short-title/
+  // thumbnail) are only clickable when current — this prevents going back to
+  // parent selection after advancing.
   const canNavigateToExtendedPhase = useCallback(
     (phase: WizardPhaseId): boolean => {
       if (isTrackedPhaseId(phase)) {
         return wizard.canNavigateToPhase(phase)
       }
+      if (phase === 'links') {
+        return (
+          wizard.state.currentPhase === 'links' ||
+          (video.reviewedPhases?.includes('links') ?? false)
+        )
+      }
       return wizard.state.currentPhase === phase
     },
-    [wizard]
+    [wizard, video.reviewedPhases]
   )
 
   return (

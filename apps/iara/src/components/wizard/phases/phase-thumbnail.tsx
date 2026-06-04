@@ -15,6 +15,7 @@ import { GuestPhotoUploader } from '@/components/wizard/thumbnail/guest-photo-up
 import { ManualUploadDropzone } from '@/components/wizard/thumbnail/manual-upload-dropzone'
 import { ThumbnailLightbox } from '@/components/wizard/thumbnail/thumbnail-lightbox'
 import { log } from '@/lib/logger'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { VideoTypeForWizard } from '@/lib/wizard/types'
 
 /**
@@ -32,6 +33,11 @@ import type { Video } from '@/types/video'
 
 interface PhaseThumbnailProps {
   video: Video
+  /**
+   * Podcast features — used to compute the next-phase label on the advance
+   * button (episode: Thumbnail → Links; cut: Thumbnail → Publicar). Epic 26.
+   */
+  features?: { thumbnailGeneration?: boolean }
   /**
    * Disparado após persistir com sucesso a thumbnail selecionada em
    * `video.storageThumbnailUrl`. Recebe o novo URL final pra que o
@@ -69,7 +75,7 @@ interface PhaseThumbnailProps {
  * Gated by `podcast.features.thumbnailGeneration` e renderizada apenas para
  * `episode` e `cut` (ver `getPhasesForVideoTypeWithFeatures`).
  */
-export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, className }: PhaseThumbnailProps) {
+export function PhaseThumbnail({ video, features, onAdvance, selectedThumbnailUrl, className }: PhaseThumbnailProps) {
   const [config, setConfig] = useState<ThumbnailPromptField | null>(null)
   const [configLoaded, setConfigLoaded] = useState(false)
   const [versions, setVersions] = useState<GeneratedThumbnailVersion[]>([])
@@ -272,7 +278,7 @@ export function PhaseThumbnail({ video, onAdvance, selectedThumbnailUrl, classNa
                   Salvando seleção...
                 </>
               ) : (
-                'Continuar para Publicar'
+                `Continuar para ${getNextPhaseNameForType('thumbnail', video.videoType, features) ?? 'Publicar'}`
               )}
             </Button>
           </div>

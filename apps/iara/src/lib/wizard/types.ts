@@ -139,7 +139,9 @@ export interface VideoDataForSync {
  * Actions for the wizard reducer.
  */
 export type WizardAction =
-  | { type: 'SET_PHASE'; phase: TrackedPhaseId }
+  // SET_PHASE accepts any phase id — extended phases (e.g. 'links', Epic 26) can
+  // be navigated to directly; the reducer handles their lack of a state slot.
+  | { type: 'SET_PHASE'; phase: WizardPhaseId }
   | { type: 'SET_PHASE_STATUS'; phase: TrackedPhaseId; status: PhaseStatus }
   | { type: 'SET_PHASE_DATA'; phase: TrackedPhaseId; data: unknown }
   | { type: 'SET_PHASE_ERROR'; phase: TrackedPhaseId; error: string }

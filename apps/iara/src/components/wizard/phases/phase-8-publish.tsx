@@ -14,6 +14,7 @@ import {
   LinkedinIcon,
   ClockIcon,
   ImageIcon,
+  LinkIcon,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -84,6 +85,7 @@ export function Phase8Publish({
   const tags = video.tags || []
   const chapters = video.chapters || []
   const guests = video.guests || []
+  const links = video.links || []
 
   // Fetch youtubeFooter from podcast settings
   const [youtubeFooter, setYoutubeFooter] = useState<string>('')
@@ -290,20 +292,7 @@ export function Phase8Publish({
               </p>
             </div>
 
-            <Separator />
-
-            {/* Description - full content */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <FileTextIcon className="size-4" />
-                Descrição
-              </div>
-              <p className="text-sm whitespace-pre-wrap">
-                {description || <span className="text-muted-foreground italic">Descrição não definida</span>}
-              </p>
-            </div>
-
-            {/* Guests */}
+            {/* Guests — mostrados antes da Descrição (ordem do resumo, Epic 26) */}
             {guests.length > 0 && (
               <>
                 <Separator />
@@ -334,6 +323,19 @@ export function Phase8Publish({
               </>
             )}
 
+            <Separator />
+
+            {/* Description - full content */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <FileTextIcon className="size-4" />
+                Descrição
+              </div>
+              <p className="text-sm whitespace-pre-wrap">
+                {description || <span className="text-muted-foreground italic">Descrição não definida</span>}
+              </p>
+            </div>
+
             {/* Chapters */}
             {chapters.length > 0 && (
               <>
@@ -350,6 +352,42 @@ export function Phase8Publish({
                           {chapter.timestamp}
                         </span>
                         <span>{chapter.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
+
+            {/* Links (Epic 26) — o resumo mostra todos os cadastrados; só os
+                marcados "incluir na descrição" entram de fato na descrição do YouTube. */}
+            {links.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <LinkIcon className="size-4" />
+                    Links ({links.length})
+                  </div>
+                  <ul className="space-y-1.5 text-sm">
+                    {links.map((link, index) => (
+                      <li key={index} className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{link.description}</span>
+                          {link.includeInDescription && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              na descrição
+                            </Badge>
+                          )}
+                        </div>
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block truncate text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {link.url}
+                        </a>
                       </li>
                     ))}
                   </ul>

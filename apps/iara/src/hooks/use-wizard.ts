@@ -225,7 +225,13 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
 
   // Navigation
   const goToPhase = useCallback(
-    (phase: TrackedPhaseId) => {
+    (phase: WizardPhaseId) => {
+      // Extended phases (e.g. 'links', Epic 26) have no tracked status — navigate
+      // directly; the gating is done by the caller (wizard-layout).
+      if (!isTrackedPhaseId(phase)) {
+        dispatch({ type: 'SET_PHASE', phase })
+        return
+      }
       if (canNavigateToPhase(state, phase)) {
         dispatch({ type: 'SET_PHASE', phase })
       }

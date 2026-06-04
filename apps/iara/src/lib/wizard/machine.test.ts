@@ -122,6 +122,16 @@ describe('wizardReducer', () => {
 
       expect(newState.currentPhase).toBe('critique') // Unchanged
     })
+
+    it('navigates directly to an extended phase with no state slot (links, Epic 26)', () => {
+      const state = createInitialWizardState('video-123')
+      state.currentPhase = 'publish'
+
+      // 'links' has no slot in state.phases — must navigate without throwing.
+      const newState = wizardReducer(state, { type: 'SET_PHASE', phase: 'links' })
+
+      expect(newState.currentPhase).toBe('links')
+    })
   })
 
   describe('SET_PHASE_STATUS', () => {
