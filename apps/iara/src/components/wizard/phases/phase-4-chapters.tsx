@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { getNextPhaseName } from '@/lib/wizard'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 import type { Phase4Response } from '@/lib/llm/types'
@@ -224,7 +224,7 @@ export function Phase4Chapters({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseName('chapters')}
+                Avançar para {getNextPhaseNameForType('chapters', video.videoType)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

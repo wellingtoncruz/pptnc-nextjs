@@ -263,7 +263,7 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
     dispatch({ type: 'SET_PHASE_ERROR', phase, error })
   }, [])
 
-  const invalidateFromPhase = useCallback((phase: TrackedPhaseId) => {
+  const invalidateFromPhase = useCallback((phase: WizardPhaseId) => {
     dispatch({ type: 'INVALIDATE_FROM_PHASE', phase })
   }, [])
 

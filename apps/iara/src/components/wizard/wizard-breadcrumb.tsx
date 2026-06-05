@@ -48,7 +48,7 @@ const DEFAULT_PHASE_STATE = { status: 'pending' as const, data: null, error: nul
  * - Phase links: completed if video.reviewedPhases includes 'links' (Epic 26 —
  *   confirmação de revisão; zero links é estado válido).
  */
-function getExtendedPhaseState(
+export function getExtendedPhaseState(
   phase: WizardPhaseId,
   video?: Video
 ): { status: 'pending' | 'completed'; data: null; error: null } {

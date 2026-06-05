@@ -124,7 +124,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={null} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeDisabled()
     })
   })
@@ -143,7 +143,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2NoIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeEnabled()
     })
 
@@ -152,7 +152,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2NoIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(button)
       expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('edit-check', mockPhase2NoIssues)
     })
@@ -195,7 +195,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeEnabled()
     })
   })
@@ -206,7 +206,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(button)
 
       expect(screen.getByText(/tem certeza que deseja continuar\?/i)).toBeInTheDocument()
@@ -218,7 +218,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const advanceButton = screen.getByRole('button', { name: /avançar para risco/i })
+      const advanceButton = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(advanceButton)
 
       const dialog = screen.getByRole('alertdialog')
@@ -233,7 +233,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const advanceButton = screen.getByRole('button', { name: /avançar para risco/i })
+      const advanceButton = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(advanceButton)
 
       const dialog = screen.getByRole('alertdialog')
@@ -302,7 +302,7 @@ describe('Phase2EditCheck', () => {
           error="Erro"
         />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeDisabled()
     })
 
@@ -355,7 +355,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={singleIssue} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(button)
 
       expect(screen.getByText(/foram identificadas 1 possível falha de edição/i)).toBeInTheDocument()

@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 import { EditableText } from '@/components/ui/editable-text'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -349,7 +350,7 @@ export function Phase5BShortTitle({
               </>
             ) : (
               <>
-                Avançar para Descrição
+                Avançar para {getNextPhaseNameForType('short-title', video.videoType)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

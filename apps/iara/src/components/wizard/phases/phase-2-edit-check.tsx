@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { log } from '@/lib/logger'
-import { getNextPhaseName } from '@/lib/wizard'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 import type { EditingIssue, Phase2Response } from '@/lib/llm'
@@ -210,7 +210,7 @@ export function Phase2EditCheck({
                     </>
                   ) : (
                     <>
-                      Avançar para {getNextPhaseName('edit-check')}
+                      Avançar para {getNextPhaseNameForType('edit-check', video.videoType)}
                       <ArrowRightIcon className="size-4 ml-2" />
                     </>
                   )}
@@ -246,7 +246,7 @@ export function Phase2EditCheck({
                 </>
               ) : (
                 <>
-                  Avançar para {getNextPhaseName('edit-check')}
+                  Avançar para {getNextPhaseNameForType('edit-check', video.videoType)}
                   <ArrowRightIcon className="size-4 ml-2" />
                 </>
               )}

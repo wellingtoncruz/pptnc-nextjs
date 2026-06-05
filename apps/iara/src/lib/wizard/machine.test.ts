@@ -221,6 +221,21 @@ describe('wizardReducer', () => {
         }
       }
     })
+
+    it("from the extended 'parent' phase invalidates every tracked phase (Epic 26)", () => {
+      // Re-selecting a parent re-derives guests/theme — all downstream tracked
+      // phases must reset. 'parent' is order 0, so all tracked phases follow it.
+      const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+      for (const phase of TRACKED_PHASE_IDS) {
+        state.phases[phase].status = 'completed'
+      }
+
+      const newState = wizardReducer(state, { type: 'INVALIDATE_FROM_PHASE', phase: 'parent' })
+
+      for (const phase of TRACKED_PHASE_IDS) {
+        expect(newState.phases[phase].status).toBe('pending')
+      }
+    })
   })
 
   describe('COMPLETE_PHASE_AND_ADVANCE', () => {

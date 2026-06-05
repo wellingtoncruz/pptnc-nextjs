@@ -2501,7 +2501,12 @@ export function WizardOrchestrator({
   // Handler for Phase 0 parent selection (cut/reel only)
   const handleParentSelected = useCallback(
     (parentEpisodeId: string, inheritedData: { guests: Video['guests']; theme: string }) => {
-      // Update local video data with inherited fields
+      // Selecting a NEW parent re-derives guests/theme, so every downstream phase
+      // that may already be finalized must be invalidated (decision Wellington —
+      // unified extended-phase navigation, Epic 26). 'parent' is order 0, so this
+      // resets all tracked phases after it (title/description/tags/publish).
+      const parentChanged = videoData.parentEpisodeId !== parentEpisodeId
+
       setVideoData((prev) => ({
         ...prev,
         parentEpisodeId,
@@ -2509,13 +2514,18 @@ export function WizardOrchestrator({
         theme: inheritedData.theme,
       }))
 
+      if (parentChanged) {
+        wizard.invalidateFromPhase('parent')
+      }
+
       log('INFO', 'Parent episode selected', {
         videoId: video.id,
         parentEpisodeId,
         videoType: video.videoType,
+        parentChanged,
       })
     },
-    [video.id, video.videoType]
+    [video.id, video.videoType, videoData.parentEpisodeId, wizard]
   )
 
   const interactivePanel = useMemo(() => {
