@@ -150,8 +150,11 @@ export const EditingIssueSchema = z.object({
  * against the immutable edit-check output.
  */
 export const MentionedLinkSchema = z.object({
-  timestamp: z.string(),
-  context: z.string(),
+  // Tolerant: a malformed mention (missing timestamp/context) must NEVER break
+  // the immutable edit-check phase. Incomplete items are filtered out at persist
+  // time; defaults here keep VideoUpdateSchema.parse from throwing.
+  timestamp: z.string().optional().default(''),
+  context: z.string().optional().default(''),
 })
 
 /**

@@ -367,6 +367,32 @@ describe('POST /api/wizard/phase/[phase]', () => {
       )
     })
 
+    it('drops incomplete mentions (missing context/timestamp) without failing the phase (Epic 26)', async () => {
+      const valid = { timestamp: '00:08:10', context: 'Vai deixar o link na descrição' }
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: {
+          ...mockPhase2Response,
+          mentionedLinks: [
+            valid,
+            { timestamp: '00:12:00' }, // missing context — must be dropped, not crash
+            { context: 'sem timestamp' }, // missing timestamp — dropped
+          ],
+        },
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('edit-check', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'edit-check' }) })
+
+      expect(response.status).toBe(200)
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { editingIssues: mockPhase2Response.issues, mentionedLinks: [valid] }
+      )
+    })
+
     it('persists riskAndCompliance for Phase 3', async () => {
       vi.mocked(callLLMQueued).mockResolvedValue({
         success: true,

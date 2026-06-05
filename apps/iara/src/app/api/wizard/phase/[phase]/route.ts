@@ -75,17 +75,22 @@ async function persistPhaseResult(
 
   if (phase === 'edit-check') {
     const phase2Data = data as Phase2Response
+    // Epic 26 (Bloco D) — menções a links/descrição detectadas no vídeo, exibidas
+    // como badge não-acionável na fase Links. O modelo às vezes devolve itens
+    // incompletos (sem context/timestamp) — descartamos esses para não quebrar a
+    // fase imutável nem poluir o badge. Default [] quando não há nenhuma.
+    const mentionedLinks = (phase2Data.mentionedLinks ?? []).filter(
+      (m) => (m?.timestamp ?? '').trim().length > 0 && (m?.context ?? '').trim().length > 0
+    )
     await updateVideoAdmin(PODCAST_ID, videoId, {
       editingIssues: phase2Data.issues,
-      // Epic 26 (Bloco D) — menções a links/descrição detectadas no vídeo, exibidas
-      // como badge não-acionável na fase Links. Default [] quando o modelo não retorna.
-      mentionedLinks: phase2Data.mentionedLinks ?? [],
+      mentionedLinks,
     })
     log('INFO', 'Phase 2 editing issues persisted to video', {
       videoId,
       hasIssues: phase2Data.hasIssues,
       issueCount: phase2Data.issues.length,
-      mentionedLinkCount: phase2Data.mentionedLinks?.length ?? 0,
+      mentionedLinkCount: mentionedLinks.length,
     })
     return phase2Data
   }
