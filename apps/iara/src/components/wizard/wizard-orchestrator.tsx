@@ -2441,6 +2441,28 @@ export function WizardOrchestrator({
     }
   }, [video.id, wizard])
 
+  // Reprocess an immutable analysis phase (edit-check/risk/chapters) on demand
+  // (Epic 26). Un-reviews the phase — the regenerated result must be
+  // re-acknowledged — then re-runs the LLM. `rerun` clears the local result and
+  // from-cache flag, resets the processing ref and enqueues the call.
+  const reprocessImmutablePhase = useCallback(
+    (phase: 'edit-check' | 'risk' | 'chapters', rerun: () => void) => {
+      setVideoData((prev) => ({
+        ...prev,
+        reviewedPhases: (prev.reviewedPhases || []).filter((p) => p !== phase),
+      }))
+      void fetch(`/api/videos/${video.id}/reviewed-phases`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phase }),
+      }).catch(() => {
+        /* best-effort — local state already cleared, re-run will persist fresh data */
+      })
+      rerun()
+    },
+    [video.id]
+  )
+
   // Links phase (Epic 26) — extended, manual. The panel persists the full array
   // via PUT /links; advancing confirms the review ('links' → reviewedPhases) and
   // navigates to Publicar. Zero links is a valid reviewed state (ADR-26.5).
@@ -2617,6 +2639,14 @@ export function WizardOrchestrator({
               phase2ProcessingRef.current = null
               enqueueLLMCall(processPhase2EditCheck)
             }}
+            onReprocess={() =>
+              reprocessImmutablePhase('edit-check', () => {
+                setPhase2FromCache(false)
+                setEditCheckResult(null)
+                phase2ProcessingRef.current = null
+                enqueueLLMCall(processPhase2EditCheck)
+              })
+            }
             isFromCache={phase2FromCache}
             isReviewed={videoData.reviewedPhases?.includes('edit-check') ?? false}
             onConfirmReview={() => handleConfirmReview('edit-check')}
@@ -2635,6 +2665,14 @@ export function WizardOrchestrator({
               phase3ProcessingRef.current = null
               enqueueLLMCall(processPhase3Compliance)
             }}
+            onReprocess={() =>
+              reprocessImmutablePhase('risk', () => {
+                setPhase3FromCache(false)
+                setComplianceResult(null)
+                phase3ProcessingRef.current = null
+                enqueueLLMCall(processPhase3Compliance)
+              })
+            }
             isFromCache={phase3FromCache}
             isReviewed={videoData.reviewedPhases?.includes('risk') ?? false}
             onConfirmReview={() => handleConfirmReview('risk')}
@@ -2653,6 +2691,14 @@ export function WizardOrchestrator({
               phase4ProcessingRef.current = null
               enqueueLLMCall(processPhase4Chapters)
             }}
+            onReprocess={() =>
+              reprocessImmutablePhase('chapters', () => {
+                setPhase4FromCache(false)
+                setChaptersResult(null)
+                phase4ProcessingRef.current = null
+                enqueueLLMCall(processPhase4Chapters)
+              })
+            }
             isFromCache={phase4FromCache}
             isReviewed={videoData.reviewedPhases?.includes('chapters') ?? false}
             onConfirmReview={() => handleConfirmReview('chapters')}
@@ -2761,6 +2807,7 @@ export function WizardOrchestrator({
     handleParentSelected,
     handleContextChange,
     handleConfirmReview,
+    reprocessImmutablePhase,
     handleLinksChange,
     handleLinksAdvance,
     isLinksAdvancing,

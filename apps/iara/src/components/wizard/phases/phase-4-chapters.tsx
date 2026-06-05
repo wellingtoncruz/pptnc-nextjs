@@ -35,6 +35,8 @@ interface Phase4ChaptersProps {
   error?: string | null
   /** Callback to retry processing after error */
   onRetry?: () => void
+  /** Callback to reprocess (regenerate) the result on demand (Epic 26). */
+  onReprocess?: () => void
   /** If true, data was loaded from cache (not fresh LLM call) */
   isFromCache?: boolean
   /** If true, producer has already confirmed review of cached data */
@@ -70,6 +72,7 @@ export function Phase4Chapters({
   chaptersResult,
   error,
   onRetry,
+  onReprocess,
   isFromCache = false,
   isReviewed = false,
   onConfirmReview,
@@ -209,6 +212,17 @@ export function Phase4Chapters({
             onConfirm={onConfirmReview}
             isConfirming={isConfirmingReview}
           />
+        )}
+
+        {/* Reprocess (regenerate) — Epic 26. Available once chapters exist; the
+            fresh result must be re-reviewed (handled by the orchestrator). */}
+        {chaptersResult && hasChapters && !hasError && onReprocess && !isAdvancing && (
+          <div className="flex justify-end pt-2">
+            <Button variant="ghost" size="sm" onClick={onReprocess}>
+              <RefreshCwIcon className="size-4 mr-2" />
+              Reprocessar
+            </Button>
+          </div>
         )}
 
         {/* Advance button */}

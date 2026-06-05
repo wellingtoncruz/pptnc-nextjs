@@ -112,3 +112,47 @@ export async function POST(
     return handleVideoFieldError(error, 'fase revisada', videoId)
   }
 }
+
+/**
+ * DELETE /api/videos/[videoId]/reviewed-phases
+ *
+ * Removes a phase from the reviewedPhases array using Firestore arrayRemove.
+ * Used when an immutable analysis phase (edit-check/risk/chapters) is
+ * reprocessed (Epic 26) — the freshly generated result must be re-reviewed.
+ * Idempotent: removing an absent phase is a no-op.
+ */
+export async function DELETE(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  const session = await auth()
+  if (!session) {
+    return authExpiredResponse()
+  }
+
+  const { videoId } = await context.params
+
+  try {
+    const body = await request.json()
+    const { phase } = ReviewedPhaseSchema.parse(body)
+
+    const video = await getVideoAdmin(PODCAST_ID, videoId)
+    if (!video) {
+      return notFoundResponse('Video')
+    }
+
+    const db = getAdminDb()
+    const docRef = db.collection('podcasts').doc(PODCAST_ID).collection('videos').doc(videoId)
+
+    await docRef.update({
+      reviewedPhases: FieldValue.arrayRemove(phase),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+
+    log('INFO', 'Phase review cleared (reprocess)', { videoId, phase })
+
+    return NextResponse.json({ data: { videoId, phase, removed: true } })
+  } catch (error) {
+    return handleVideoFieldError(error, 'fase revisada', videoId)
+  }
+}

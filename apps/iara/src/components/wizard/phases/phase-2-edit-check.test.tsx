@@ -361,4 +361,47 @@ describe('Phase2EditCheck', () => {
       expect(screen.getByText(/foram identificadas 1 possível falha de edição/i)).toBeInTheDocument()
     })
   })
+
+  describe('Reprocess (Epic 26)', () => {
+    it('shows a "Reprocessar" button when a result exists and onReprocess is provided', () => {
+      const wizard = createMockWizard()
+      render(
+        <Phase2EditCheck
+          wizard={wizard}
+          video={mockVideo}
+          editCheckResult={mockPhase2WithIssues}
+          onReprocess={vi.fn()}
+        />
+      )
+      expect(screen.getByRole('button', { name: /reprocessar/i })).toBeInTheDocument()
+    })
+
+    it('does not show "Reprocessar" without a result', () => {
+      const wizard = createMockWizard()
+      render(
+        <Phase2EditCheck
+          wizard={wizard}
+          video={mockVideo}
+          editCheckResult={null}
+          onReprocess={vi.fn()}
+        />
+      )
+      expect(screen.queryByRole('button', { name: /reprocessar/i })).not.toBeInTheDocument()
+    })
+
+    it('calls onReprocess when clicked', () => {
+      const onReprocess = vi.fn()
+      const wizard = createMockWizard()
+      render(
+        <Phase2EditCheck
+          wizard={wizard}
+          video={mockVideo}
+          editCheckResult={mockPhase2WithIssues}
+          onReprocess={onReprocess}
+        />
+      )
+      fireEvent.click(screen.getByRole('button', { name: /reprocessar/i }))
+      expect(onReprocess).toHaveBeenCalledTimes(1)
+    })
+  })
 })
