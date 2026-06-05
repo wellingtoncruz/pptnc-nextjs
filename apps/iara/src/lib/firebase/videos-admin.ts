@@ -328,6 +328,7 @@ export async function getVideosForDisplayAdmin(
         // AI-generated fields - needed for wizard phase detection
         critique: rawData.critique,
         editingIssues: rawData.editingIssues,
+        mentionedLinks: rawData.mentionedLinks, // Epic 26 Bloco D — badge de menção a link
         riskAndCompliance: rawData.riskAndCompliance,
         chapters: rawData.chapters,
         links: rawData.links, // Epic 26 — fase Links (TD-10: builder manual precisa listar o campo)

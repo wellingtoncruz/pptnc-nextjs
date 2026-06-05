@@ -70,6 +70,7 @@ export function PhaseLinks({
   const [isSaving, setIsSaving] = useState(false)
 
   const nextPhaseName = getNextPhaseNameForType('links', video.videoType, features)
+  const mentionedLinks = video.mentionedLinks ?? []
 
   /** Optimistically apply the new array, then persist it. */
   const persist = async (next: Link[]) => {
@@ -123,6 +124,37 @@ export function PhaseLinks({
   return (
     <div className={className}>
       <div className="space-y-4">
+        {/* Mentions detected by the edit-check phase (Epic 26 Bloco D) — sinal
+            não-acionável: o editor decide se cadastra os links manualmente. */}
+        {mentionedLinks.length > 0 && (
+          <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base text-amber-800 dark:text-amber-200">
+                <LinkIcon className="size-4 text-amber-600 dark:text-amber-400" />
+                {mentionedLinks.length === 1
+                  ? 'O vídeo menciona um link em 1 ponto'
+                  : `O vídeo menciona links em ${mentionedLinks.length} pontos`}
+              </CardTitle>
+              <CardDescription className="text-amber-700 dark:text-amber-300">
+                A fase de Edição detectou estas menções. Cadastre manualmente abaixo
+                os links que quiser incluir.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-1.5 text-sm">
+                {mentionedLinks.map((mention, index) => (
+                  <li key={`${mention.timestamp}-${index}`} className="flex items-start gap-2">
+                    <span className="font-mono text-xs text-amber-700 dark:text-amber-300 shrink-0">
+                      {mention.timestamp}
+                    </span>
+                    <span className="text-amber-900 dark:text-amber-100">{mention.context}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Add link form */}
         <Card>
           <CardHeader className="pb-3">

@@ -33,6 +33,21 @@ export interface EditingIssue {
 }
 
 /**
+ * Mentioned link/resource detected by the edit-check phase (Epic 26).
+ *
+ * When someone in the video says they'll leave a link/info in the description
+ * or a card, the model records the moment + a short summary. Surfaced as a
+ * non-actionable badge in the Links phase (Bloco D). The producer's editorial
+ * prompt already asks to flag these — this only gives them a dedicated slot.
+ */
+export interface MentionedLink {
+  /** Timestamp in format "HH:MM:SS" or "MM:SS" */
+  timestamp: string
+  /** Short summary of what was said (what link/resource was mentioned) */
+  context: string
+}
+
+/**
  * Phase 2 response - Editing check.
  *
  * Identifies potential editing issues in the video.
@@ -45,6 +60,11 @@ export interface Phase2Response {
   hasIssues: boolean
   /** List of editing issues with timestamps */
   issues: EditingIssue[]
+  /**
+   * Mentions of links/resources to be left in the description or cards (Epic 26).
+   * Optional + additive — older responses without it parse fine.
+   */
+  mentionedLinks?: MentionedLink[]
 }
 
 /**

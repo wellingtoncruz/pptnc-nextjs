@@ -75,11 +75,17 @@ async function persistPhaseResult(
 
   if (phase === 'edit-check') {
     const phase2Data = data as Phase2Response
-    await updateVideoAdmin(PODCAST_ID, videoId, { editingIssues: phase2Data.issues })
+    await updateVideoAdmin(PODCAST_ID, videoId, {
+      editingIssues: phase2Data.issues,
+      // Epic 26 (Bloco D) — menções a links/descrição detectadas no vídeo, exibidas
+      // como badge não-acionável na fase Links. Default [] quando o modelo não retorna.
+      mentionedLinks: phase2Data.mentionedLinks ?? [],
+    })
     log('INFO', 'Phase 2 editing issues persisted to video', {
       videoId,
       hasIssues: phase2Data.hasIssues,
       issueCount: phase2Data.issues.length,
+      mentionedLinkCount: phase2Data.mentionedLinks?.length ?? 0,
     })
     return phase2Data
   }

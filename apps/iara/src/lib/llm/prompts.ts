@@ -324,18 +324,19 @@ Responda APENAS com JSON válido. A resposta será parseada diretamente como JSO
 NÃO use tags, NÃO use markdown, NÃO inclua texto fora do JSON.
 
 Estrutura obrigatória:
-{"hasIssues": boolean, "issues": [{"timestamp": "HH:MM:SS", "description": "string"}]}
+{"hasIssues": boolean, "issues": [{"timestamp": "HH:MM:SS", "description": "string"}], "mentionedLinks": [{"timestamp": "HH:MM:SS", "context": "string"}]}
 
 ## REGRAS OBRIGATÓRIAS DE OUTPUT
 
 1. JSON COMPACTO: sem indentação, sem quebras de linha, uma única linha.
 2. DESCRIPTIONS CURTAS: máximo 80 caracteres. Descreva o tipo do problema, NÃO transcreva o diálogo.
 3. TIMESTAMPS válidos: formato "HH:MM:SS", dentro da duração do vídeo.
+4. mentionedLinks: quando alguém disser que vai deixar um link/informação na descrição do vídeo ou em um card, registre o "timestamp" e um "context" curto (máx 80 chars) do que foi dito. Array vazio se não houver menção.
 
 ## EXEMPLOS
 
-CORRETO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"Pausa longa de 5s entre falas"},{"timestamp":"00:25:30","description":"Instrução de edição: apresentador pede corte"}]}
-CORRETO: {"hasIssues":false,"issues":[]}
+CORRETO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"Pausa longa de 5s entre falas"},{"timestamp":"00:25:30","description":"Instrução de edição: apresentador pede corte"}],"mentionedLinks":[{"timestamp":"00:08:10","context":"Apresentador diz que vai deixar o link do projeto na descrição"}]}
+CORRETO: {"hasIssues":false,"issues":[],"mentionedLinks":[]}
 ERRADO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"O apresentador falou: \\"vamos cortar essa parte aqui porque ficou ruim e eu acho que a gente deveria regravar essa cena toda\\" - Remover imediatamente do corte final."}]}
 
 IMPORTANTE: O campo "timestamp" DEVE ser STRING no formato "HH:MM:SS".`,

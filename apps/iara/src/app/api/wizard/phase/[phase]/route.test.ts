@@ -341,7 +341,29 @@ describe('POST /api/wizard/phase/[phase]', () => {
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
         'video-123',
-        { editingIssues: mockPhase2Response.issues }
+        {
+          editingIssues: mockPhase2Response.issues,
+          // Epic 26 Bloco D — defaults to [] when the model returns no mentions.
+          mentionedLinks: mockPhase2Response.mentionedLinks ?? [],
+        }
+      )
+    })
+
+    it('persists mentionedLinks for Phase 2 when the model returns them (Epic 26 Bloco D)', async () => {
+      const mentions = [{ timestamp: '00:08:10', context: 'Vai deixar o link do projeto na descrição' }]
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: { ...mockPhase2Response, mentionedLinks: mentions },
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('edit-check', { videoId: 'video-123' })
+      await POST(request, { params: Promise.resolve({ phase: 'edit-check' }) })
+
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { editingIssues: mockPhase2Response.issues, mentionedLinks: mentions }
       )
     })
 

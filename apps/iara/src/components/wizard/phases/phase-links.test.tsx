@@ -102,6 +102,25 @@ describe('PhaseLinks (Epic 26)', () => {
     )
   })
 
+  it('shows the non-actionable mentions badge when edit-check detected links (Bloco D)', () => {
+    const video = makeVideo({
+      mentionedLinks: [
+        { timestamp: '00:08:10', context: 'Vai deixar o link do projeto na descrição' },
+        { timestamp: '00:21:00', context: 'Cita um card com o site do convidado' },
+      ],
+    })
+    render(<PhaseLinks video={video} onLinksChange={onLinksChange} onAdvance={onAdvance} />)
+
+    expect(screen.getByText('O vídeo menciona links em 2 pontos')).toBeInTheDocument()
+    expect(screen.getByText('00:08:10')).toBeInTheDocument()
+    expect(screen.getByText('Vai deixar o link do projeto na descrição')).toBeInTheDocument()
+  })
+
+  it('does not show the mentions badge when there are no mentions', () => {
+    render(<PhaseLinks video={makeVideo()} onLinksChange={onLinksChange} onAdvance={onAdvance} />)
+    expect(screen.queryByText(/o vídeo menciona/i)).not.toBeInTheDocument()
+  })
+
   it('advances with zero links (valid reviewed state, ADR-26.5)', async () => {
     const user = userEvent.setup()
     render(<PhaseLinks video={makeVideo()} onLinksChange={onLinksChange} onAdvance={onAdvance} />)
