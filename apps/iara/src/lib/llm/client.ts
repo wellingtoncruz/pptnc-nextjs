@@ -482,6 +482,39 @@ export async function callLLM<P extends LLMPhaseId>(
     ? (video.transcriptionTXT || video.transcriptionSRT || '')
     : (video.transcriptionSRT || video.transcriptionTXT || '')
 
+  // GUARD: never send an empty/whitespace transcript to the LLM. All
+  // analysis/generation phases (1-7) depend on it; with an empty attachment the
+  // model hallucinates plausible-but-fake output (e.g. repeated generic "audio
+  // noise" issues). validateVideoForPhase covers a MISSING field, but an empty
+  // STRING can slip through — fail clearly so the producer reloads the transcript
+  // instead of getting nonsense. Applies equally to first run and reprocess.
+  if (!transcription.trim()) {
+    log('ERROR', 'Empty transcription — refusing to call LLM (would hallucinate)', {
+      phase,
+      videoId: video.id,
+      hasSRT: !!video.transcriptionSRT,
+      hasTXT: !!video.transcriptionTXT,
+    })
+    return {
+      success: false,
+      error: {
+        code: 'MISSING_TRANSCRIPT',
+        message: 'Transcrição indisponível para esta fase. Recarregue a transcrição do vídeo antes de processar.',
+        retryable: false,
+      },
+    }
+  }
+
+  // Diagnostic: how much transcript the model actually received. A tiny/garbled
+  // transcript is the usual cause of hallucinated generic output even when the
+  // field is non-empty. Lets us compare first-run vs reprocess in the logs.
+  log('INFO', 'Transcription resolved for phase', {
+    phase,
+    videoId: video.id,
+    source: phaseConfig.attachmentType,
+    transcriptionLength: transcription.length,
+  })
+
   // Create temporary file for transcription attachment
   let transcriptionFilePath: string | undefined
 

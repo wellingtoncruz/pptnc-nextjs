@@ -1064,6 +1064,26 @@ describe('callLLM validation', () => {
     }
   })
 
+  it('returns MISSING_TRANSCRIPT for an EMPTY-string transcript (no hallucination, Epic 26)', async () => {
+    const callLLM = await getCallLLM()
+    const videoEmptyTranscript: Video = {
+      id: 'video123',
+      title: 'Test',
+      duration: 60,
+      publishedAt: new Date(),
+      transcriptionSRT: '   ', // whitespace-only — must NOT reach the LLM
+      transcriptionTXT: '',
+      videoType: 'episode',
+    }
+
+    const result = await callLLM('edit-check', videoEmptyTranscript)
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.code).toBe('MISSING_TRANSCRIPT')
+    }
+  })
+
   it('does NOT require theme for episode in phase 1', async () => {
     // Phase 1 (critique) only requires transcript
     const videoWithoutTheme: Video = {
