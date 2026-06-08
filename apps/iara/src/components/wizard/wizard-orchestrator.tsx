@@ -9,7 +9,7 @@ import { log } from '@/lib/logger'
 import { phaseIdOrder, type WizardPhaseId } from '@/lib/wizard'
 import { runAsyncPhase } from '@/lib/wizard/run-async-phase'
 import { buildCompleteYouTubeDescription } from '@/lib/youtube'
-import type { Video, Guest } from '@/types/video'
+import type { Video, Guest, Link } from '@/types/video'
 import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase5BResponse, Phase6Response, Phase7Response } from '@/lib/llm'
 
 import { TranscriptionLoader, type TranscriptionData } from './transcription-loader'
@@ -25,6 +25,7 @@ import { Phase6Description } from './phases/phase-6-description'
 import { Phase7Tags } from './phases/phase-7-tags'
 import { Phase8Publish } from './phases/phase-8-publish'
 import { PhaseThumbnail } from './phases/phase-thumbnail'
+import { PhaseLinks } from './phases/phase-links'
 
 interface WizardOrchestratorProps {
   video: Video
@@ -878,10 +879,17 @@ export function WizardOrchestrator({
         'success'
       )
       setEditCheckResult(phase2Data)
+      // Mantém o videoData em sincronia com o que acabou de ser persistido, para
+      // consumidores cross-phase verem os issues novos NESTA sessão (sem precisar
+      // recarregar). Em especial o badge da fase Links (Epic 26 Bloco D v2), que
+      // deriva as menções de `editingIssues` com `category === 'link'`. Sem isto,
+      // a Edição mostra (lê editCheckResult) mas a fase Links fica stale.
+      setVideoData((prev) => ({ ...prev, editingIssues: phase2Data.issues }))
       log('INFO', 'Phase 2 edit check completed', {
         videoId: video.id,
         hasIssues: phase2Data.hasIssues,
         issueCount: phase2Data.issues.length,
+        linkMentionCount: phase2Data.issues.filter((i) => i.category === 'link').length,
       })
     } catch (error) {
       if (activeVideoIdRef.current !== video.id) {
@@ -2289,6 +2297,7 @@ export function WizardOrchestrator({
         description: videoData.description || '',
         guests: videoData.guests,
         chapters: videoData.chapters,
+        links: videoData.links, // Epic 26 — só os includeInDescription são anexados (filtro interno)
         youtubeFooter,
         video: placeholderVideo,
       })
@@ -2439,6 +2448,72 @@ export function WizardOrchestrator({
     }
   }, [video.id, wizard])
 
+  // Reprocess an immutable analysis phase (edit-check/risk/chapters) on demand
+  // (Epic 26). Un-reviews the phase — the regenerated result must be
+  // re-acknowledged — then re-runs the LLM. `rerun` clears the local result and
+  // from-cache flag, resets the processing ref and enqueues the call.
+  const reprocessImmutablePhase = useCallback(
+    (phase: 'edit-check' | 'risk' | 'chapters', rerun: () => void) => {
+      setVideoData((prev) => ({
+        ...prev,
+        reviewedPhases: (prev.reviewedPhases || []).filter((p) => p !== phase),
+      }))
+      void fetch(`/api/videos/${video.id}/reviewed-phases`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phase }),
+      }).catch(() => {
+        /* best-effort — local state already cleared, re-run will persist fresh data */
+      })
+      rerun()
+    },
+    [video.id]
+  )
+
+  // Links phase (Epic 26) — extended, manual. The panel persists the full array
+  // via PUT /links; advancing confirms the review ('links' → reviewedPhases) and
+  // navigates to Publicar. Zero links is a valid reviewed state (ADR-26.5).
+  const [isLinksAdvancing, setIsLinksAdvancing] = useState(false)
+
+  const handleLinksChange = useCallback(async (links: Link[]) => {
+    const response = await fetch(`/api/videos/${video.id}/links`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ links }),
+    })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error?.message || 'Erro ao salvar os links')
+    }
+    setVideoData(prev => ({ ...prev, links }))
+  }, [video.id])
+
+  const handleLinksAdvance = useCallback(async () => {
+    setIsLinksAdvancing(true)
+    try {
+      const response = await fetch(`/api/videos/${video.id}/reviewed-phases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phase: 'links' }),
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao confirmar revisao')
+      }
+      setVideoData(prev => {
+        const current = prev.reviewedPhases || []
+        return current.includes('links') ? prev : { ...prev, reviewedPhases: [...current, 'links'] }
+      })
+      wizard.completePhaseAndAdvance('links', {}, features)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao confirmar revisao'
+      log('ERROR', 'Failed to advance from links phase', { videoId: video.id, error: message })
+      wizard.addAlert('links', 'Erro', message, 'error')
+    } finally {
+      setIsLinksAdvancing(false)
+    }
+  }, [video.id, wizard, features])
+
   /**
    * Check if video is already sent (from initial video data).
    */
@@ -2455,7 +2530,12 @@ export function WizardOrchestrator({
   // Handler for Phase 0 parent selection (cut/reel only)
   const handleParentSelected = useCallback(
     (parentEpisodeId: string, inheritedData: { guests: Video['guests']; theme: string }) => {
-      // Update local video data with inherited fields
+      // Selecting a NEW parent re-derives guests/theme, so every downstream phase
+      // that may already be finalized must be invalidated (decision Wellington —
+      // unified extended-phase navigation, Epic 26). 'parent' is order 0, so this
+      // resets all tracked phases after it (title/description/tags/publish).
+      const parentChanged = videoData.parentEpisodeId !== parentEpisodeId
+
       setVideoData((prev) => ({
         ...prev,
         parentEpisodeId,
@@ -2463,13 +2543,18 @@ export function WizardOrchestrator({
         theme: inheritedData.theme,
       }))
 
+      if (parentChanged) {
+        wizard.invalidateFromPhase('parent')
+      }
+
       log('INFO', 'Parent episode selected', {
         videoId: video.id,
         parentEpisodeId,
         videoType: video.videoType,
+        parentChanged,
       })
     },
-    [video.id, video.videoType]
+    [video.id, video.videoType, videoData.parentEpisodeId, wizard]
   )
 
   const interactivePanel = useMemo(() => {
@@ -2512,6 +2597,7 @@ export function WizardOrchestrator({
       return (
         <PhaseThumbnail
           video={videoData}
+          features={features}
           selectedThumbnailUrl={videoData.storageThumbnailUrl}
           onAdvance={(payload) => {
             // Story 22.3g: PhaseThumbnail já persistiu a URL final via POST /select.
@@ -2520,6 +2606,20 @@ export function WizardOrchestrator({
             setVideoData((prev) => ({ ...prev, storageThumbnailUrl: payload.newStorageUrl }))
             wizard.completePhaseAndAdvance('thumbnail', {}, features)
           }}
+        />
+      )
+    }
+
+    // links phase — Epic 26 (episode-only, extended/manual). The panel persists
+    // links via PUT /links; advancing confirms the review and navigates to Publicar.
+    if (wizard.currentPhase === 'links') {
+      return (
+        <PhaseLinks
+          video={videoData}
+          features={features}
+          onLinksChange={handleLinksChange}
+          onAdvance={() => void handleLinksAdvance()}
+          isAdvancing={isLinksAdvancing}
         />
       )
     }
@@ -2546,6 +2646,14 @@ export function WizardOrchestrator({
               phase2ProcessingRef.current = null
               enqueueLLMCall(processPhase2EditCheck)
             }}
+            onReprocess={() =>
+              reprocessImmutablePhase('edit-check', () => {
+                setPhase2FromCache(false)
+                setEditCheckResult(null)
+                phase2ProcessingRef.current = null
+                enqueueLLMCall(processPhase2EditCheck)
+              })
+            }
             isFromCache={phase2FromCache}
             isReviewed={videoData.reviewedPhases?.includes('edit-check') ?? false}
             onConfirmReview={() => handleConfirmReview('edit-check')}
@@ -2564,6 +2672,14 @@ export function WizardOrchestrator({
               phase3ProcessingRef.current = null
               enqueueLLMCall(processPhase3Compliance)
             }}
+            onReprocess={() =>
+              reprocessImmutablePhase('risk', () => {
+                setPhase3FromCache(false)
+                setComplianceResult(null)
+                phase3ProcessingRef.current = null
+                enqueueLLMCall(processPhase3Compliance)
+              })
+            }
             isFromCache={phase3FromCache}
             isReviewed={videoData.reviewedPhases?.includes('risk') ?? false}
             onConfirmReview={() => handleConfirmReview('risk')}
@@ -2582,6 +2698,14 @@ export function WizardOrchestrator({
               phase4ProcessingRef.current = null
               enqueueLLMCall(processPhase4Chapters)
             }}
+            onReprocess={() =>
+              reprocessImmutablePhase('chapters', () => {
+                setPhase4FromCache(false)
+                setChaptersResult(null)
+                phase4ProcessingRef.current = null
+                enqueueLLMCall(processPhase4Chapters)
+              })
+            }
             isFromCache={phase4FromCache}
             isReviewed={videoData.reviewedPhases?.includes('chapters') ?? false}
             onConfirmReview={() => handleConfirmReview('chapters')}
@@ -2690,6 +2814,10 @@ export function WizardOrchestrator({
     handleParentSelected,
     handleContextChange,
     handleConfirmReview,
+    reprocessImmutablePhase,
+    handleLinksChange,
+    handleLinksAdvance,
+    isLinksAdvancing,
     handleChapterChange,
     handleRevalidatePhase5,
     handleTitleSelect,

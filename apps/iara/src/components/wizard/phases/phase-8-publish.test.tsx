@@ -89,6 +89,27 @@ describe('Phase8Publish', () => {
       expect(screen.getByText('Tags (1)')).toBeInTheDocument()
       expect(screen.getByText('unica')).toBeInTheDocument()
     })
+
+    it('displays the Links section with count and "na descrição" badge (Epic 26)', () => {
+      const videoWithLinks = {
+        ...mockVideoComplete,
+        links: [
+          { url: 'https://incluso.com', description: 'Link Incluso', includeInDescription: true },
+          { url: 'https://so-resumo.com', description: 'Só no Resumo', includeInDescription: false },
+        ],
+      } as Video
+      render(<Phase8Publish video={videoWithLinks} />)
+      expect(screen.getByText('Links (2)')).toBeInTheDocument()
+      expect(screen.getByText('Link Incluso')).toBeInTheDocument()
+      expect(screen.getByText('Só no Resumo')).toBeInTheDocument()
+      // Only the includeInDescription link gets the badge.
+      expect(screen.getAllByText('na descrição')).toHaveLength(1)
+    })
+
+    it('omits the Links section when there are no links', () => {
+      render(<Phase8Publish video={mockVideoComplete} />)
+      expect(screen.queryByText(/^Links \(/)).not.toBeInTheDocument()
+    })
   })
 
   describe('Send button', () => {

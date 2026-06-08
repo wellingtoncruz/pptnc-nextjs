@@ -30,6 +30,16 @@ export interface EditingIssue {
   timestamp: string
   /** Description of the editing issue */
   description: string
+  /**
+   * Issue category (Epic 26 Bloco D v2, ADR-26.8). Free-form string — mirrors
+   * `ComplianceRisk.risk`. ONE reserved value: `"link"`, used when the issue is
+   * a mention of leaving a link/info in the description or a card. Any other
+   * issue gets a free category of the model's choice (or empty). The Links phase
+   * badge derives from `category === 'link'` — single source of truth, no
+   * parallel field. The producer's editorial prompt already asks to flag link
+   * mentions; this only gives the output a typed slot.
+   */
+  category: string
 }
 
 /**
@@ -43,7 +53,7 @@ export interface EditingIssue {
 export interface Phase2Response {
   /** Whether issues were found */
   hasIssues: boolean
-  /** List of editing issues with timestamps */
+  /** List of editing issues with timestamps + category (Bloco D v2 — `link` is reserved) */
   issues: EditingIssue[]
 }
 

@@ -58,6 +58,13 @@ export interface GenerateTextOptions {
   debugContext?: DebugContext
   /** Timeout em ms. Default 120000. */
   timeoutMs?: number
+  /**
+   * Sampling temperature (0–1). Quando omitido, o provider usa seu próprio
+   * default (Gemini: 0.7; Claude: 1.0 nativo da API). Fases analíticas/extrativas
+   * (edit-check, risk, chapters) setam um valor baixo (0.3) pra reduzir
+   * não-determinismo e alucinação. @see PHASE_CONFIG em prompts.ts.
+   */
+  temperature?: number
 }
 
 export interface GenerateTextUsage {

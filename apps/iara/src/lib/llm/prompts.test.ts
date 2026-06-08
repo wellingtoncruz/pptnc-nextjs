@@ -139,6 +139,21 @@ describe('PHASE_CONFIG', () => {
     expect(PHASE_CONFIG['tags'].promptKey).toBe('tags')
     expect(PHASE_CONFIG['publish'].promptKey).toBe('')
   })
+
+  it('uses temperature 0.3 for analytical/extractive phases (edit-check, risk, chapters)', () => {
+    // Low temperature reduz não-determinismo/alucinação nessas fases imutáveis
+    // (ex.: issues genéricas de "ruído no áudio" no reprocess do edit-check).
+    expect(PHASE_CONFIG['edit-check'].temperature).toBe(0.3)
+    expect(PHASE_CONFIG['risk'].temperature).toBe(0.3)
+    expect(PHASE_CONFIG['chapters'].temperature).toBe(0.3)
+  })
+
+  it('leaves temperature unset for generative/other phases (provider default)', () => {
+    expect(PHASE_CONFIG['critique'].temperature).toBeUndefined()
+    expect(PHASE_CONFIG['title'].temperature).toBeUndefined()
+    expect(PHASE_CONFIG['description'].temperature).toBeUndefined()
+    expect(PHASE_CONFIG['tags'].temperature).toBeUndefined()
+  })
 })
 
 describe('PHASE_JSON_SCHEMAS', () => {

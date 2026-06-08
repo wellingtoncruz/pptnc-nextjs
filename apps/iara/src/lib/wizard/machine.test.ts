@@ -122,6 +122,16 @@ describe('wizardReducer', () => {
 
       expect(newState.currentPhase).toBe('critique') // Unchanged
     })
+
+    it('navigates directly to an extended phase with no state slot (links, Epic 26)', () => {
+      const state = createInitialWizardState('video-123')
+      state.currentPhase = 'publish'
+
+      // 'links' has no slot in state.phases — must navigate without throwing.
+      const newState = wizardReducer(state, { type: 'SET_PHASE', phase: 'links' })
+
+      expect(newState.currentPhase).toBe('links')
+    })
   })
 
   describe('SET_PHASE_STATUS', () => {
@@ -209,6 +219,21 @@ describe('wizardReducer', () => {
           expect(newState.phases[phase].status).toBe('pending')
           expect(newState.phases[phase].data).toBeNull()
         }
+      }
+    })
+
+    it("from the extended 'parent' phase invalidates every tracked phase (Epic 26)", () => {
+      // Re-selecting a parent re-derives guests/theme — all downstream tracked
+      // phases must reset. 'parent' is order 0, so all tracked phases follow it.
+      const state = createInitialWizardState('video-123', 'cut', 'parent-id')
+      for (const phase of TRACKED_PHASE_IDS) {
+        state.phases[phase].status = 'completed'
+      }
+
+      const newState = wizardReducer(state, { type: 'INVALIDATE_FROM_PHASE', phase: 'parent' })
+
+      for (const phase of TRACKED_PHASE_IDS) {
+        expect(newState.phases[phase].status).toBe('pending')
       }
     })
   })
@@ -1408,11 +1433,12 @@ describe('getNextPhase', () => {
 
 describe('getNextPhaseForType', () => {
   describe('episode video type', () => {
-    it('returns sequential phases 1->2->...->8', () => {
+    it('returns sequential phases 1->2->...->links->publish (Epic 26)', () => {
       expect(getNextPhaseForType('critique', 'episode')).toBe('edit-check')
       expect(getNextPhaseForType('edit-check', 'episode')).toBe('risk')
       expect(getNextPhaseForType('title', 'episode')).toBe('description')
-      expect(getNextPhaseForType('tags', 'episode')).toBe('publish')
+      expect(getNextPhaseForType('tags', 'episode')).toBe('links')
+      expect(getNextPhaseForType('links', 'episode')).toBe('publish')
     })
 
     it('returns null for last phase', () => {
@@ -1477,8 +1503,9 @@ describe('getNextPhaseForType', () => {
       expect(getNextPhaseForType('tags', 'episode', features)).toBe('thumbnail')
     })
 
-    it("routes 'THUMB' → 8 (Publicar) for episode", () => {
-      expect(getNextPhaseForType('thumbnail', 'episode', features)).toBe('publish')
+    it("routes 'THUMB' → links → publish for episode (Epic 26)", () => {
+      expect(getNextPhaseForType('thumbnail', 'episode', features)).toBe('links')
+      expect(getNextPhaseForType('links', 'episode', features)).toBe('publish')
     })
 
     it("routes Tags (7) → 'THUMB' for cut", () => {
@@ -1501,8 +1528,8 @@ describe('getNextPhaseForType', () => {
     })
 
     it('falls back to legacy sequence when features.thumbnailGeneration is false', () => {
-      // Same shape as omitting features — flag off must behave like before.
-      expect(getNextPhaseForType('tags', 'episode', { thumbnailGeneration: false })).toBe('publish')
+      // Same shape as omitting features — flag off routes tags → links (Epic 26).
+      expect(getNextPhaseForType('tags', 'episode', { thumbnailGeneration: false })).toBe('links')
     })
   })
 

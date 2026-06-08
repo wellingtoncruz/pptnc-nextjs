@@ -165,3 +165,54 @@ describe('buildCompleteYouTubeDescription with footer placeholders', () => {
     expect(result).toBe('Descrição')
   })
 })
+
+describe('buildCompleteYouTubeDescription — Links section (Epic 26)', () => {
+  it('appends only links flagged includeInDescription', () => {
+    const result = buildCompleteYouTubeDescription({
+      description: 'Descrição',
+      links: [
+        { url: 'https://incluso.com', description: 'Incluso', includeInDescription: true },
+        { url: 'https://oculto.com', description: 'Oculto', includeInDescription: false },
+      ],
+    })
+    expect(result).toContain('Links')
+    expect(result).toContain('Incluso: https://incluso.com')
+    expect(result).not.toContain('https://oculto.com')
+  })
+
+  it('omits the Links section when no link is flagged', () => {
+    const result = buildCompleteYouTubeDescription({
+      description: 'Descrição',
+      links: [{ url: 'https://x.com', description: 'X', includeInDescription: false }],
+    })
+    expect(result).toBe('Descrição')
+  })
+
+  it('omits the Links section when links is empty or undefined', () => {
+    expect(buildCompleteYouTubeDescription({ description: 'Só descrição', links: [] })).toBe('Só descrição')
+    expect(buildCompleteYouTubeDescription({ description: 'Só descrição' })).toBe('Só descrição')
+  })
+
+  it('places Links after chapters and before the footer', () => {
+    const result = buildCompleteYouTubeDescription({
+      description: 'Descrição',
+      chapters: [{ timestamp: '00:00', title: 'Intro' }],
+      links: [{ url: 'https://l.com', description: 'L', includeInDescription: true }],
+      youtubeFooter: 'Rodapé',
+    })
+    const chaptersIdx = result.indexOf('Intro')
+    const linksIdx = result.indexOf('Links')
+    const footerIdx = result.indexOf('Rodapé')
+    expect(chaptersIdx).toBeLessThan(linksIdx)
+    expect(linksIdx).toBeLessThan(footerIdx)
+  })
+
+  it('falls back to the bare URL when description is blank', () => {
+    const result = buildCompleteYouTubeDescription({
+      description: 'Descrição',
+      links: [{ url: 'https://nodesc.com', description: ' ', includeInDescription: true }],
+    })
+    expect(result).toContain('https://nodesc.com')
+    expect(result).not.toContain(' : https://nodesc.com')
+  })
+})

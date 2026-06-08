@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils'
 import { log } from '@/lib/logger'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { EpisodeContextFormSchema } from '@/lib/schemas/video'
-import { getNextPhaseName } from '@/lib/wizard'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video, Guest, EpisodeContextFormData } from '@/types/video'
 import type { Phase1Response } from '@/lib/llm'
@@ -613,7 +613,7 @@ export function Phase1Critique({
               </>
             ) : (
               <>
-                Avançar para {getNextPhaseName('critique')}
+                Avançar para {getNextPhaseNameForType('critique', video.videoType)}
                 <ArrowRightIcon className="size-4 ml-2" />
               </>
             )}

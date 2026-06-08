@@ -329,7 +329,7 @@ describe('Phase1Critique', () => {
       )
 
       // Button should be enabled initially
-      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      const button = screen.getByRole('button', { name: /avançar para edição/i })
       expect(button).toBeEnabled()
 
       // Change LinkedIn URL to a NEW one to trigger scraping
@@ -348,7 +348,7 @@ describe('Phase1Critique', () => {
       resolveScrape!()
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /avançar para an.?lise/i })).toBeEnabled()
+        expect(screen.getByRole('button', { name: /avançar para edição/i })).toBeEnabled()
       }, { timeout: 3000 })
     })
 
@@ -382,7 +382,7 @@ describe('Phase1Critique', () => {
       rejectScrape!()
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /avançar para an.?lise/i })).toBeEnabled()
+        expect(screen.getByRole('button', { name: /avançar para edição/i })).toBeEnabled()
       }, { timeout: 3000 })
     })
   })
@@ -419,7 +419,7 @@ describe('Phase1Critique', () => {
         <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
       )
 
-      expect(screen.getByRole('button', { name: /avançar para an.?lise/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /avançar para edição/i })).toBeInTheDocument()
     })
 
     it('disables button when critique is null', () => {
@@ -429,7 +429,7 @@ describe('Phase1Critique', () => {
         <Phase1Critique wizard={wizard} video={mockVideo} critique={null} />
       )
 
-      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      const button = screen.getByRole('button', { name: /avançar para edição/i })
       expect(button).toBeDisabled()
       expect(screen.getByText(/aguardando processamento da crítica/i)).toBeInTheDocument()
     })
@@ -441,7 +441,7 @@ describe('Phase1Critique', () => {
         <Phase1Critique wizard={wizard} video={mockVideoNoContext} critique={mockPhase1Response} />
       )
 
-      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      const button = screen.getByRole('button', { name: /avançar para edição/i })
       expect(button).toBeDisabled()
     })
 
@@ -452,7 +452,7 @@ describe('Phase1Critique', () => {
         <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
       )
 
-      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      const button = screen.getByRole('button', { name: /avançar para edição/i })
       expect(button).toBeEnabled()
     })
 
@@ -463,7 +463,7 @@ describe('Phase1Critique', () => {
         <Phase1Critique wizard={wizard} video={mockVideo} critique={mockPhase1Response} />
       )
 
-      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      const button = screen.getByRole('button', { name: /avançar para edição/i })
       fireEvent.click(button)
 
       // handleAdvance is now async (awaits useAutoSave.save() to flush pending
@@ -493,7 +493,7 @@ describe('Phase1Critique', () => {
       fireEvent.change(themeInput, { target: { value: 'Tema atualizado de última hora' } })
 
       // Click "Avançar" immediately (within debounce window — no waitFor)
-      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      const button = screen.getByRole('button', { name: /avançar para edição/i })
       fireEvent.click(button)
 
       // The flushed save must hit the PUT endpoint with the new theme value
@@ -874,7 +874,7 @@ describe('Phase1Critique', () => {
       const themeInput = screen.getByLabelText(/tema do episódio/i)
       fireEvent.change(themeInput, { target: { value: 'Tema que vai falhar no save' } })
 
-      const button = screen.getByRole('button', { name: /avançar para an.?lise/i })
+      const button = screen.getByRole('button', { name: /avançar para edição/i })
       fireEvent.click(button)
 
       // Wait for the failing PUT to actually be attempted

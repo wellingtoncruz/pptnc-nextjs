@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { log } from '@/lib/logger'
-import { getNextPhaseName } from '@/lib/wizard'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 import type { EditingIssue, Phase2Response } from '@/lib/llm'
@@ -36,6 +36,8 @@ interface Phase2EditCheckProps {
   error?: string | null
   /** Callback to retry processing after error */
   onRetry?: () => void
+  /** Callback to reprocess (regenerate) the result on demand (Epic 26). */
+  onReprocess?: () => void
   /** If true, data was loaded from cache (not fresh LLM call) */
   isFromCache?: boolean
   /** If true, producer has already confirmed review of cached data */
@@ -64,6 +66,7 @@ export function Phase2EditCheck({
   editCheckResult,
   error,
   onRetry,
+  onReprocess,
   isFromCache = false,
   isReviewed = false,
   onConfirmReview,
@@ -193,6 +196,17 @@ export function Phase2EditCheck({
           />
         )}
 
+        {/* Reprocess (regenerate) — Epic 26. Available once a result exists; the
+            fresh result must be re-reviewed (handled by the orchestrator). */}
+        {editCheckResult && !hasError && onReprocess && !isAdvancing && (
+          <div className="flex justify-end">
+            <Button variant="ghost" size="sm" onClick={onReprocess}>
+              <RefreshCwIcon className="size-4 mr-2" />
+              Reprocessar
+            </Button>
+          </div>
+        )}
+
         {/* Advancement button with confirmation if issues exist */}
         <div className="flex flex-col gap-2">
           {hasIssues ? (
@@ -210,7 +224,7 @@ export function Phase2EditCheck({
                     </>
                   ) : (
                     <>
-                      Avançar para {getNextPhaseName('edit-check')}
+                      Avançar para {getNextPhaseNameForType('edit-check', video.videoType)}
                       <ArrowRightIcon className="size-4 ml-2" />
                     </>
                   )}
@@ -246,7 +260,7 @@ export function Phase2EditCheck({
                 </>
               ) : (
                 <>
-                  Avançar para {getNextPhaseName('edit-check')}
+                  Avançar para {getNextPhaseNameForType('edit-check', video.videoType)}
                   <ArrowRightIcon className="size-4 ml-2" />
                 </>
               )}
@@ -299,7 +313,21 @@ function IssuesList({ issues, videoId }: { issues: EditingIssue[]; videoId: stri
             timestamp={issue.timestamp}
             className="shrink-0"
           />
-          <p className="text-sm text-muted-foreground">{issue.description}</p>
+          <div className="flex flex-1 flex-wrap items-center gap-2">
+            <p className="text-sm text-muted-foreground">{issue.description}</p>
+            {/* Bloco D v2: chip da categoria (link = menção a deixar link na descrição). */}
+            {issue.category && (
+              <span
+                className={
+                  issue.category === 'link'
+                    ? 'shrink-0 rounded-full border border-amber-500/50 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950/20 dark:text-amber-300'
+                    : 'shrink-0 rounded-full border px-2 py-0.5 text-xs text-muted-foreground'
+                }
+              >
+                {issue.category === 'link' ? '🔗 link' : issue.category}
+              </span>
+            )}
+          </div>
         </li>
       ))}
     </ul>

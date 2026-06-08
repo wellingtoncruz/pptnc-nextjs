@@ -27,12 +27,17 @@ import {
 
 /**
  * Schema for validating reviewed phase request body.
- * Phases 2, 3, and 4 require review confirmation.
+ * edit-check, risk and chapters require review confirmation; the Links phase
+ * (Epic 26) also uses this mechanism — zero links is a valid reviewed state,
+ * so completion comes from confirmation, not from data presence.
  */
 const ReviewedPhaseSchema = z.object({
-  phase: z.union([z.literal('edit-check'), z.literal('risk'), z.literal('chapters')], {
-    message: "Fase deve ser 'edit-check', 'risk' ou 'chapters'",
-  }),
+  phase: z.union(
+    [z.literal('edit-check'), z.literal('risk'), z.literal('chapters'), z.literal('links')],
+    {
+      message: "Fase deve ser 'edit-check', 'risk', 'chapters' ou 'links'",
+    }
+  ),
 })
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin
@@ -103,6 +108,50 @@ export async function POST(
         alreadyReviewed: false,
       },
     })
+  } catch (error) {
+    return handleVideoFieldError(error, 'fase revisada', videoId)
+  }
+}
+
+/**
+ * DELETE /api/videos/[videoId]/reviewed-phases
+ *
+ * Removes a phase from the reviewedPhases array using Firestore arrayRemove.
+ * Used when an immutable analysis phase (edit-check/risk/chapters) is
+ * reprocessed (Epic 26) — the freshly generated result must be re-reviewed.
+ * Idempotent: removing an absent phase is a no-op.
+ */
+export async function DELETE(
+  request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse> {
+  const session = await auth()
+  if (!session) {
+    return authExpiredResponse()
+  }
+
+  const { videoId } = await context.params
+
+  try {
+    const body = await request.json()
+    const { phase } = ReviewedPhaseSchema.parse(body)
+
+    const video = await getVideoAdmin(PODCAST_ID, videoId)
+    if (!video) {
+      return notFoundResponse('Video')
+    }
+
+    const db = getAdminDb()
+    const docRef = db.collection('podcasts').doc(PODCAST_ID).collection('videos').doc(videoId)
+
+    await docRef.update({
+      reviewedPhases: FieldValue.arrayRemove(phase),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+
+    log('INFO', 'Phase review cleared (reprocess)', { videoId, phase })
+
+    return NextResponse.json({ data: { videoId, phase, removed: true } })
   } catch (error) {
     return handleVideoFieldError(error, 'fase revisada', videoId)
   }

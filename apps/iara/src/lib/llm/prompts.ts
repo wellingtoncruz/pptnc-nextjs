@@ -324,21 +324,22 @@ Responda APENAS com JSON válido. A resposta será parseada diretamente como JSO
 NÃO use tags, NÃO use markdown, NÃO inclua texto fora do JSON.
 
 Estrutura obrigatória:
-{"hasIssues": boolean, "issues": [{"timestamp": "HH:MM:SS", "description": "string"}]}
+{"hasIssues": boolean, "issues": [{"timestamp": "HH:MM:SS", "category": "tipo", "description": "string"}]}
 
 ## REGRAS OBRIGATÓRIAS DE OUTPUT
 
 1. JSON COMPACTO: sem indentação, sem quebras de linha, uma única linha.
 2. DESCRIPTIONS CURTAS: máximo 80 caracteres. Descreva o tipo do problema, NÃO transcreva o diálogo.
 3. TIMESTAMPS válidos: formato "HH:MM:SS", dentro da duração do vídeo.
+4. CATEGORIA: use EXATAMENTE "link" quando alguém mencionar deixar um link/informação na descrição ou em um card. Para os demais problemas, use uma categoria curta à sua escolha (ex.: "edicao", "corte", "audio").
 
 ## EXEMPLOS
 
-CORRETO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"Pausa longa de 5s entre falas"},{"timestamp":"00:25:30","description":"Instrução de edição: apresentador pede corte"}]}
+CORRETO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","category":"audio","description":"Pausa longa de 5s entre falas"},{"timestamp":"00:25:30","category":"corte","description":"Instrução de edição: apresentador pede corte"},{"timestamp":"00:31:10","category":"link","description":"Convidado cita deixar relatório na descrição"}]}
 CORRETO: {"hasIssues":false,"issues":[]}
-ERRADO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","description":"O apresentador falou: \\"vamos cortar essa parte aqui porque ficou ruim e eu acho que a gente deveria regravar essa cena toda\\" - Remover imediatamente do corte final."}]}
+ERRADO: {"hasIssues":true,"issues":[{"timestamp":"00:12:45","category":"corte","description":"O apresentador falou: \\"vamos cortar essa parte aqui porque ficou ruim e eu acho que a gente deveria regravar essa cena toda\\" - Remover imediatamente do corte final."}]}
 
-IMPORTANTE: O campo "timestamp" DEVE ser STRING no formato "HH:MM:SS".`,
+IMPORTANTE: O campo "timestamp" DEVE ser STRING no formato "HH:MM:SS". O campo "category" DEVE ser STRING ("link" é reservado para menções a link/descrição).`,
 
   risk: `## FORMATO DE RESPOSTA
 
@@ -414,6 +415,14 @@ export interface PhaseConfig {
   attachmentType: 'TXT' | 'SRT'
   /** Key to access prompt in podcast.prompts.{videoType}.{promptKey} */
   promptKey: string
+  /**
+   * Sampling temperature opcional pra esta fase. Quando omitido, o provider usa
+   * seu default (Gemini 0.7 / Claude 1.0). Fases analíticas/extrativas
+   * (edit-check, risk, chapters) usam 0.3 pra reduzir não-determinismo e
+   * alucinação (ex.: issues genéricas de "ruído no áudio" no reprocess do
+   * edit-check, observado na homologação do Epic 26).
+   */
+  temperature?: number
 }
 
 /**
@@ -434,9 +443,9 @@ export interface PhaseConfig {
  */
 export const PHASE_CONFIG: Record<TrackedPhaseId, PhaseConfig> = {
   critique: { personaName: 'critic', attachmentType: 'TXT', promptKey: 'critique' },
-  'edit-check': { personaName: 'critic', attachmentType: 'SRT', promptKey: 'editing' },
-  risk: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'compliance' },
-  chapters: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'chapters' },
+  'edit-check': { personaName: 'critic', attachmentType: 'SRT', promptKey: 'editing', temperature: 0.3 },
+  risk: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'compliance', temperature: 0.3 },
+  chapters: { personaName: 'critic', attachmentType: 'SRT', promptKey: 'chapters', temperature: 0.3 },
   title: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'titles' },
   description: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'description' },
   tags: { personaName: 'writer', attachmentType: 'TXT', promptKey: 'tags' },

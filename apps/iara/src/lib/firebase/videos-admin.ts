@@ -73,8 +73,8 @@ export interface GetVideosForDisplayOptions {
   limit?: number
   /** Filter by video type (undefined means all) */
   videoType?: 'episode' | 'cut' | 'reel'
-  /** Filter by video status (undefined means all, 'not_sent' means all except 'sent') */
-  status?: 'new' | 'draft' | 'sent' | 'not_sent'
+  /** Filter by video status (undefined means all, 'not_sent' means all except 'sent', 'ready_sent' means only 'ready'+'sent') */
+  status?: 'new' | 'draft' | 'sent' | 'not_sent' | 'ready_sent'
   /**
    * Filter to only Vídeo Avulso (standalone=true, Epic 25). Orthogonal to
    * videoType — when set, videoType is ignored and status is applied in-memory
@@ -217,6 +217,10 @@ export async function getVideosForDisplayAdmin(
     if (status === 'not_sent') {
       // Show all videos except 'sent' - for "Só novos" switch
       query = query.where('status', '!=', 'sent')
+    } else if (status === 'ready_sent') {
+      // Only 'ready' + 'sent' — used by the Social tab (Epic 26 / TD-11) to scope
+      // to videos with finalized metadata, ready to prepare/publish posts.
+      query = query.where('status', 'in', ['ready', 'sent'])
     } else if (status) {
       query = query.where('status', '==', status)
     }
@@ -279,7 +283,14 @@ export async function getVideosForDisplayAdmin(
       // filter was skipped to avoid a composite index — see options.standalone).
       if (standalone && status) {
         const docStatus = rawData.status ?? 'new'
-        const excluded = status === 'not_sent' ? docStatus === 'sent' : docStatus !== status
+        let excluded: boolean
+        if (status === 'not_sent') {
+          excluded = docStatus === 'sent'
+        } else if (status === 'ready_sent') {
+          excluded = docStatus !== 'ready' && docStatus !== 'sent'
+        } else {
+          excluded = docStatus !== status
+        }
         if (excluded) {
           continue
         }
@@ -316,9 +327,10 @@ export async function getVideosForDisplayAdmin(
         parentEpisodeId: rawData.parentEpisodeId,
         // AI-generated fields - needed for wizard phase detection
         critique: rawData.critique,
-        editingIssues: rawData.editingIssues,
+        editingIssues: rawData.editingIssues, // Epic 26 Bloco D v2 — category 'link' alimenta o badge da fase Links
         riskAndCompliance: rawData.riskAndCompliance,
         chapters: rawData.chapters,
+        links: rawData.links, // Epic 26 — fase Links (TD-10: builder manual precisa listar o campo)
         suggestedTitles: rawData.suggestedTitles,
         description: rawData.description,
         tags: rawData.tags,

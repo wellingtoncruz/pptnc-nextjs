@@ -110,12 +110,30 @@ describe('ComplianceSchema', () => {
 })
 
 describe('EditingIssueSchema', () => {
-  it('accepts valid editing issue', () => {
+  it('accepts valid editing issue with category', () => {
+    const issue = {
+      timestamp: '00:05:30',
+      category: 'corte',
+      description: 'Corte abrupto na fala do entrevistado',
+    }
+    expect(EditingIssueSchema.parse(issue)).toEqual(issue)
+  })
+
+  it('defaults category to "" when absent (Bloco D v2 — tolera issues legados)', () => {
     const issue = {
       timestamp: '00:05:30',
       description: 'Corte abrupto na fala do entrevistado',
     }
-    expect(EditingIssueSchema.parse(issue)).toEqual(issue)
+    expect(EditingIssueSchema.parse(issue)).toEqual({ ...issue, category: '' })
+  })
+
+  it('preserves the reserved "link" category', () => {
+    const issue = {
+      timestamp: '00:08:10',
+      category: 'link',
+      description: 'Convidado cita deixar relatório na descrição',
+    }
+    expect(EditingIssueSchema.parse(issue).category).toBe('link')
   })
 
   it('rejects issue with empty timestamp', () => {

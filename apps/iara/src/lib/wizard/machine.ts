@@ -151,11 +151,19 @@ export function createInitialWizardState(
 export function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   switch (action.type) {
     case 'SET_PHASE': {
-      // Can only navigate to phases that are completed, pending, or needs_review
       const targetPhase = action.phase
-      const targetStatus = state.phases[targetPhase].status
 
-      // Allow navigation to completed, pending, or needs_review phases
+      // Extended phases (parent/short-title/thumbnail/links) have no slot in
+      // state.phases — navigate directly (the caller gates whether it's allowed).
+      if (!isTrackedPhaseId(targetPhase)) {
+        return {
+          ...state,
+          currentPhase: targetPhase,
+        }
+      }
+
+      // Tracked phases: only navigate to completed, pending, or needs_review.
+      const targetStatus = state.phases[targetPhase].status
       if (targetStatus === 'completed' || targetStatus === 'pending' || targetStatus === 'needs_review') {
         return {
           ...state,

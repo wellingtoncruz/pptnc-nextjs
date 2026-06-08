@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
       : undefined
 
     const statusParam = searchParams.get('status')
-    const status = statusParam && ['new', 'draft', 'sent', 'not_sent'].includes(statusParam)
-      ? (statusParam as 'new' | 'draft' | 'sent' | 'not_sent')
+    const status = statusParam && ['new', 'draft', 'sent', 'not_sent', 'ready_sent'].includes(statusParam)
+      ? (statusParam as 'new' | 'draft' | 'sent' | 'not_sent' | 'ready_sent')
       : undefined
 
     // Vídeo Avulso filter (Epic 25) — orthogonal to type.

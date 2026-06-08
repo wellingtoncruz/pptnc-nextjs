@@ -36,7 +36,8 @@ interface WizardBreadcrumbProps {
 const DEFAULT_PHASE_STATE = { status: 'pending' as const, data: null, error: null }
 
 /**
- * Determines the phase state for extended phases (0, 5B, THUMB) based on video data.
+ * Determines the phase state for extended phases (parent, short-title,
+ * thumbnail, links) based on video data.
  *
  * - Phase 0: completed if video.parentEpisodeId is defined
  * - Phase 5B: completed if video.shortTitle is defined
@@ -44,8 +45,10 @@ const DEFAULT_PHASE_STATE = { status: 'pending' as const, data: null, error: nul
  *   persiste a URL final aqui ao clicar Continuar). Aceita tanto Cloud Storage
  *   URLs novas quanto base64 legacy (TD-5) — qualquer thumbnail conta como
  *   "produtor decidiu" para fins de progresso visual no breadcrumb.
+ * - Phase links: completed if video.reviewedPhases includes 'links' (Epic 26 —
+ *   confirmação de revisão; zero links é estado válido).
  */
-function getExtendedPhaseState(
+export function getExtendedPhaseState(
   phase: WizardPhaseId,
   video?: Video
 ): { status: 'pending' | 'completed'; data: null; error: null } {
@@ -77,6 +80,15 @@ function getExtendedPhaseState(
     const url = video.storageThumbnailUrl
     const isFromWizard = typeof url === 'string' && url.startsWith('/api/wizard/thumbnail/select')
     return isFromWizard
+      ? { status: 'completed', data: null, error: null }
+      : DEFAULT_PHASE_STATE
+  }
+
+  if (phase === 'links') {
+    // Phase Links (Epic 26) é "completada" quando o produtor confirma a revisão
+    // (reviewedPhases inclui 'links'). Zero links é um estado válido de concluído
+    // — por isso a completude vem da confirmação, não da presença de links.
+    return video.reviewedPhases?.includes('links')
       ? { status: 'completed', data: null, error: null }
       : DEFAULT_PHASE_STATE
   }

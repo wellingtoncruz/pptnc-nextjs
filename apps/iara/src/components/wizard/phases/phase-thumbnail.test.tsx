@@ -112,6 +112,33 @@ describe('PhaseThumbnail (Story 22.3a..22.4)', () => {
     expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeEnabled()
   })
 
+  it('advance button targets Links for an episode when the thumbnail feature is on (Epic 26)', async () => {
+    mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
+
+    render(
+      <PhaseThumbnail
+        video={baseVideo}
+        features={{ thumbnailGeneration: true }}
+        selectedThumbnailUrl="https://storage.googleapis.com/bucket/thumb.png"
+      />
+    )
+    expect(screen.getByRole('button', { name: 'Continuar para Links' })).toBeInTheDocument()
+  })
+
+  it('advance button targets Publicar for a cut (cut has no Links phase)', async () => {
+    mockPodcastResponse({ prompts: { cut: { thumbnail: {} } } })
+    const cutVideo = { ...baseVideo, videoType: 'cut' } as Video
+
+    render(
+      <PhaseThumbnail
+        video={cutVideo}
+        features={{ thumbnailGeneration: true }}
+        selectedThumbnailUrl="https://storage.googleapis.com/bucket/thumb.png"
+      />
+    )
+    expect(screen.getByRole('button', { name: 'Continuar para Publicar' })).toBeInTheDocument()
+  })
+
   it('calls /select then onAdvance with the new storage URL when Continuar is clicked', async () => {
     mockPodcastResponse({ prompts: { episode: { thumbnail: {} } } })
     // Story 22.3g: o botão agora dispara POST /api/wizard/thumbnail/select

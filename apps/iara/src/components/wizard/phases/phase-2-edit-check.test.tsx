@@ -41,8 +41,8 @@ const mockVideo: Video = {
 const mockPhase2WithIssues: Phase2Response = {
   hasIssues: true,
   issues: [
-    { timestamp: '05:30', description: 'Corte abrupto na fala do entrevistado' },
-    { timestamp: '12:45', description: 'Silêncio prolongado de 3 segundos' },
+    { timestamp: '05:30', category: 'corte', description: 'Corte abrupto na fala do entrevistado' },
+    { timestamp: '12:45', category: 'audio', description: 'Silêncio prolongado de 3 segundos' },
   ],
 }
 
@@ -124,7 +124,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={null} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeDisabled()
     })
   })
@@ -143,7 +143,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2NoIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeEnabled()
     })
 
@@ -152,7 +152,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2NoIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(button)
       expect(wizard.completePhaseAndAdvance).toHaveBeenCalledWith('edit-check', mockPhase2NoIssues)
     })
@@ -195,7 +195,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeEnabled()
     })
   })
@@ -206,7 +206,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(button)
 
       expect(screen.getByText(/tem certeza que deseja continuar\?/i)).toBeInTheDocument()
@@ -218,7 +218,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const advanceButton = screen.getByRole('button', { name: /avançar para risco/i })
+      const advanceButton = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(advanceButton)
 
       const dialog = screen.getByRole('alertdialog')
@@ -233,7 +233,7 @@ describe('Phase2EditCheck', () => {
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={mockPhase2WithIssues} />
       )
-      const advanceButton = screen.getByRole('button', { name: /avançar para risco/i })
+      const advanceButton = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(advanceButton)
 
       const dialog = screen.getByRole('alertdialog')
@@ -302,7 +302,7 @@ describe('Phase2EditCheck', () => {
           error="Erro"
         />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       expect(button).toBeDisabled()
     })
 
@@ -338,7 +338,7 @@ describe('Phase2EditCheck', () => {
       const wizard = createMockWizard()
       const singleIssue: Phase2Response = {
         hasIssues: true,
-        issues: [{ timestamp: '05:30', description: 'Um problema' }],
+        issues: [{ timestamp: '05:30', category: 'edicao', description: 'Um problema' }],
       }
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={singleIssue} />
@@ -350,15 +350,58 @@ describe('Phase2EditCheck', () => {
       const wizard = createMockWizard()
       const singleIssue: Phase2Response = {
         hasIssues: true,
-        issues: [{ timestamp: '05:30', description: 'Um problema' }],
+        issues: [{ timestamp: '05:30', category: 'edicao', description: 'Um problema' }],
       }
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={singleIssue} />
       )
-      const button = screen.getByRole('button', { name: /avançar para risco/i })
+      const button = screen.getByRole('button', { name: /avançar para compliance/i })
       fireEvent.click(button)
 
       expect(screen.getByText(/foram identificadas 1 possível falha de edição/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Reprocess (Epic 26)', () => {
+    it('shows a "Reprocessar" button when a result exists and onReprocess is provided', () => {
+      const wizard = createMockWizard()
+      render(
+        <Phase2EditCheck
+          wizard={wizard}
+          video={mockVideo}
+          editCheckResult={mockPhase2WithIssues}
+          onReprocess={vi.fn()}
+        />
+      )
+      expect(screen.getByRole('button', { name: /reprocessar/i })).toBeInTheDocument()
+    })
+
+    it('does not show "Reprocessar" without a result', () => {
+      const wizard = createMockWizard()
+      render(
+        <Phase2EditCheck
+          wizard={wizard}
+          video={mockVideo}
+          editCheckResult={null}
+          onReprocess={vi.fn()}
+        />
+      )
+      expect(screen.queryByRole('button', { name: /reprocessar/i })).not.toBeInTheDocument()
+    })
+
+    it('calls onReprocess when clicked', () => {
+      const onReprocess = vi.fn()
+      const wizard = createMockWizard()
+      render(
+        <Phase2EditCheck
+          wizard={wizard}
+          video={mockVideo}
+          editCheckResult={mockPhase2WithIssues}
+          onReprocess={onReprocess}
+        />
+      )
+      fireEvent.click(screen.getByRole('button', { name: /reprocessar/i }))
+      expect(onReprocess).toHaveBeenCalledTimes(1)
     })
   })
 })

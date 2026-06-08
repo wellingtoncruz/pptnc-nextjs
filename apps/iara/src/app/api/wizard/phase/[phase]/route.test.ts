@@ -59,7 +59,7 @@ const mockPhase1Response = {
 
 const mockPhase2Response = {
   hasIssues: true,
-  issues: [{ timestamp: '00:05:30', description: 'Corte abrupto' }],
+  issues: [{ timestamp: '00:05:30', category: 'corte', description: 'Corte abrupto' }],
 }
 
 const mockPhase3Response = {
@@ -341,7 +341,34 @@ describe('POST /api/wizard/phase/[phase]', () => {
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
         'video-123',
-        { editingIssues: mockPhase2Response.issues }
+        {
+          // Epic 26 Bloco D v2 (ADR-26.8): issues persistidos com category; sem
+          // campo paralelo mentionedLinks. O badge da fase Links deriva daqui.
+          editingIssues: mockPhase2Response.issues,
+        }
+      )
+    })
+
+    it('persists issues with the reserved "link" category (Epic 26 Bloco D v2)', async () => {
+      const issues = [
+        { timestamp: '00:05:30', category: 'corte', description: 'Corte abrupto' },
+        { timestamp: '00:08:10', category: 'link', description: 'Cita deixar o link do projeto na descrição' },
+      ]
+      vi.mocked(callLLMQueued).mockResolvedValue({
+        success: true,
+        data: { hasIssues: true, issues },
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      })
+
+      const request = createRequest('edit-check', { videoId: 'video-123' })
+      const response = await POST(request, { params: Promise.resolve({ phase: 'edit-check' }) })
+
+      expect(response.status).toBe(200)
+      // category viaja embarcada nos próprios issues — fonte única.
+      expect(updateVideoAdmin).toHaveBeenCalledWith(
+        expect.any(String),
+        'video-123',
+        { editingIssues: issues }
       )
     })
 

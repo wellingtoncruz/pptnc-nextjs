@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { log } from '@/lib/logger'
-import { getNextPhaseName } from '@/lib/wizard'
+import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 import type { ComplianceRisk, Phase3Response } from '@/lib/llm'
@@ -37,6 +37,8 @@ interface Phase3ComplianceProps {
   error?: string | null
   /** Callback to retry processing after error */
   onRetry?: () => void
+  /** Callback to reprocess (regenerate) the result on demand (Epic 26). */
+  onReprocess?: () => void
   /** If true, data was loaded from cache (not fresh LLM call) */
   isFromCache?: boolean
   /** If true, producer has already confirmed review of cached data */
@@ -80,6 +82,7 @@ export function Phase3Compliance({
   complianceResult,
   error,
   onRetry,
+  onReprocess,
   isFromCache = false,
   isReviewed = false,
   onConfirmReview,
@@ -207,6 +210,17 @@ export function Phase3Compliance({
           />
         )}
 
+        {/* Reprocess (regenerate) — Epic 26. Available once a result exists; the
+            fresh result must be re-reviewed (handled by the orchestrator). */}
+        {complianceResult && !hasError && onReprocess && !isAdvancing && (
+          <div className="flex justify-end">
+            <Button variant="ghost" size="sm" onClick={onReprocess}>
+              <RefreshCwIcon className="size-4 mr-2" />
+              Reprocessar
+            </Button>
+          </div>
+        )}
+
         {/* Advancement button with confirmation if risks exist */}
         <div className="flex flex-col gap-2">
           {hasRisks ? (
@@ -224,7 +238,7 @@ export function Phase3Compliance({
                     </>
                   ) : (
                     <>
-                      Avançar para {getNextPhaseName('risk')}
+                      Avançar para {getNextPhaseNameForType('risk', video.videoType)}
                       <ArrowRightIcon className="size-4 ml-2" />
                     </>
                   )}
@@ -260,7 +274,7 @@ export function Phase3Compliance({
                 </>
               ) : (
                 <>
-                  Avançar para {getNextPhaseName('risk')}
+                  Avançar para {getNextPhaseNameForType('risk', video.videoType)}
                   <ArrowRightIcon className="size-4 ml-2" />
                 </>
               )}

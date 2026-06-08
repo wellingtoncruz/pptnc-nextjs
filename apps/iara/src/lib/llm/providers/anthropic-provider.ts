@@ -104,6 +104,9 @@ export class AnthropicProvider implements LLMProvider {
         max_tokens: 8192,
         system: opts.systemPrompt,
         messages: [{ role: 'user', content: userContent }],
+        // Só seta temperature quando o caller especifica. Omitido → default
+        // nativo da API (1.0). Fases analíticas passam 0.3 pra reduzir alucinação.
+        ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
       })
 
       const text = response.content
@@ -120,6 +123,7 @@ export class AnthropicProvider implements LLMProvider {
 
       log('INFO', 'AnthropicProvider.generateText completed', {
         model,
+        temperature: opts.temperature ?? 'default(1.0)',
         responseLength: text.length,
         ...usage,
         latencyMs,
@@ -152,6 +156,7 @@ export class AnthropicProvider implements LLMProvider {
         max_tokens: 8192,
         system: opts.systemPrompt,
         messages: [{ role: 'user', content: userContent }],
+        ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
       })
 
       for await (const event of stream) {

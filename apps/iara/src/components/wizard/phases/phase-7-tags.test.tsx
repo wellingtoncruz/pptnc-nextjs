@@ -94,7 +94,7 @@ describe('Phase7Tags', () => {
     it('disables advance button when loading', () => {
       const wizard = createMockWizard()
       render(<Phase7Tags wizard={wizard} video={mockVideo} tagsResult={null} />)
-      const button = screen.getByRole('button', { name: /avançar para publicar/i })
+      const button = screen.getByRole('button', { name: /avançar para links/i })
       expect(button).toBeDisabled()
     })
 
@@ -263,7 +263,7 @@ describe('Phase7Tags', () => {
       render(
         <Phase7Tags wizard={wizard} video={mockVideo} tagsResult={mockTagsWithData} />
       )
-      const button = screen.getByRole('button', { name: /avançar para publicar/i })
+      const button = screen.getByRole('button', { name: /avançar para links/i })
       expect(button).not.toBeDisabled()
     })
 
@@ -272,7 +272,7 @@ describe('Phase7Tags', () => {
       render(
         <Phase7Tags wizard={wizard} video={mockVideo} tagsResult={mockEmptyTags} />
       )
-      const button = screen.getByRole('button', { name: /avançar para publicar/i })
+      const button = screen.getByRole('button', { name: /avançar para links/i })
       expect(button).toBeDisabled()
     })
 
@@ -288,7 +288,7 @@ describe('Phase7Tags', () => {
         />
       )
 
-      const advanceButton = screen.getByRole('button', { name: /avançar para publicar/i })
+      const advanceButton = screen.getByRole('button', { name: /avançar para links/i })
       fireEvent.click(advanceButton)
 
       // Wait for async operations to complete
@@ -316,7 +316,7 @@ describe('Phase7Tags', () => {
         />
       )
 
-      const advanceButton = screen.getByRole('button', { name: /avançar para publicar/i })
+      const advanceButton = screen.getByRole('button', { name: /avançar para links/i })
       fireEvent.click(advanceButton)
 
       // Wait for async operations to complete
@@ -385,7 +385,7 @@ describe('Phase7Tags', () => {
       // sequence ('Publicar no YouTube') — partial match keeps the test robust
       // to the surrounding markup (icon, whitespace).
       expect(
-        screen.getByRole('button', { name: /avançar para publicar/i })
+        screen.getByRole('button', { name: /avançar para links/i })
       ).toBeInTheDocument()
     })
   })
@@ -478,7 +478,7 @@ describe('Phase7Tags', () => {
       render(
         <Phase7Tags wizard={wizard} video={mockVideo} tagsResult={null} error="Erro" />
       )
-      const button = screen.getByRole('button', { name: /avançar para publicar/i })
+      const button = screen.getByRole('button', { name: /avançar para links/i })
       expect(button).toBeDisabled()
     })
   })

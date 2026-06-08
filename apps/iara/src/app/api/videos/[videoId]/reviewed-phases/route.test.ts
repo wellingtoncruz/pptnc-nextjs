@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
-import { POST } from './route'
+import { POST, DELETE } from './route'
 
 // Mock dependencies
 vi.mock('@/lib/auth', () => ({
@@ -103,6 +103,23 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
       } as never)
 
       const request = createMockRequest({ phase: 'chapters' })
+      const response = await POST(request, createContext('test-video'))
+
+      expect(response.status).toBe(200)
+    })
+
+    it('accepts phase links (Epic 26)', async () => {
+      mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
+      mockGetVideoAdmin.mockResolvedValue({ id: 'test-video' } as never)
+
+      const mockUpdate = vi.fn().mockResolvedValue(undefined)
+      const mockDocRef = { update: mockUpdate }
+      const mockCollection = vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue(mockDocRef) })
+      mockGetAdminDb.mockReturnValue({
+        collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
+      } as never)
+
+      const request = createMockRequest({ phase: 'links' })
       const response = await POST(request, createContext('test-video'))
 
       expect(response.status).toBe(200)
@@ -240,5 +257,50 @@ describe('POST /api/videos/[videoId]/reviewed-phases', () => {
       expect(updateArg).toHaveProperty('reviewedPhases')
       expect(updateArg).toHaveProperty('updatedAt')
     })
+  })
+})
+
+describe('DELETE /api/videos/[videoId]/reviewed-phases (reprocess un-review, Epic 26)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  function createDeleteRequest(body: unknown): NextRequest {
+    return new NextRequest('http://localhost/api/videos/test-video/reviewed-phases', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  }
+
+  it('returns 401 when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null)
+    const response = await DELETE(createDeleteRequest({ phase: 'edit-check' }), createContext('test-video'))
+    expect(response.status).toBe(401)
+  })
+
+  it('removes the phase from reviewedPhases (arrayRemove) and returns 200', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
+    mockGetVideoAdmin.mockResolvedValue({ id: 'test-video', reviewedPhases: ['edit-check'] } as never)
+
+    const mockUpdate = vi.fn().mockResolvedValue(undefined)
+    const mockDocRef = { update: mockUpdate }
+    const mockCollection = vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue(mockDocRef) })
+    mockGetAdminDb.mockReturnValue({
+      collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
+    } as never)
+
+    const response = await DELETE(createDeleteRequest({ phase: 'edit-check' }), createContext('test-video'))
+
+    expect(response.status).toBe(200)
+    expect(mockUpdate).toHaveBeenCalledTimes(1)
+    expect(mockUpdate.mock.calls[0][0]).toHaveProperty('reviewedPhases')
+  })
+
+  it('returns 404 when the video does not exist', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
+    mockGetVideoAdmin.mockResolvedValue(null)
+    const response = await DELETE(createDeleteRequest({ phase: 'risk' }), createContext('test-video'))
+    expect(response.status).toBe(404)
   })
 })

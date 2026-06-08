@@ -109,6 +109,12 @@ export interface BuildYouTubeDescriptionOptions {
   guests?: Guest[]
   /** Array of chapters with timestamp and title */
   chapters?: Chapter[]
+  /**
+   * Episode reference links (Epic 26). Only those flagged includeInDescription
+   * are appended; the function filters internally so the caller can pass the
+   * full array.
+   */
+  links?: Array<{ url: string; description: string; includeInDescription?: boolean }>
   /** Footer text from podcast settings */
   youtubeFooter?: string
   /** Video data for resolving footer placeholders */
@@ -137,7 +143,7 @@ export interface BuildYouTubeDescriptionOptions {
 export function buildCompleteYouTubeDescription(
   options: BuildYouTubeDescriptionOptions
 ): string {
-  const { description, guests = [], chapters = [], youtubeFooter } = options
+  const { description, guests = [], chapters = [], links = [], youtubeFooter } = options
   const sections: string[] = []
 
   // 1. Main description
@@ -167,7 +173,18 @@ export function buildCompleteYouTubeDescription(
     sections.push(formatChaptersForYouTube(chapters))
   }
 
-  // 4. YouTube footer (with placeholder substitution)
+  // 4. Links section (Epic 26) — only links flagged includeInDescription.
+  const includedLinks = links.filter((l) => l.includeInDescription && l.url.trim())
+  if (includedLinks.length > 0) {
+    const linkLines = ['Links']
+    for (const link of includedLinks) {
+      const desc = link.description.trim()
+      linkLines.push(desc ? `${desc}: ${link.url.trim()}` : link.url.trim())
+    }
+    sections.push(linkLines.join('\n'))
+  }
+
+  // 5. YouTube footer (with placeholder substitution)
   if (youtubeFooter?.trim()) {
     const resolvedFooter = options.video
       ? resolveVideoPlaceholders(youtubeFooter.trim(), options.video)

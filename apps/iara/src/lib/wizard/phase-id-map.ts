@@ -18,7 +18,8 @@
  *
  * Historical numbering (for reference only): 0=parent, 1=critique, 2=edit-check,
  * 3=risk, 4=chapters, 5=title, 5B=short-title, 6=description, 7=tags,
- * THUMB=thumbnail, 8=publish.
+ * THUMB=thumbnail, 8=publish. `links` (Epic 26) is a new extended phase for
+ * episodes, between thumbnail and publish.
  */
 export type WizardPhaseId =
   | 'parent'
@@ -31,6 +32,7 @@ export type WizardPhaseId =
   | 'description'
   | 'tags'
   | 'thumbnail'
+  | 'links'
   | 'publish'
 
 /** All semantic phase IDs in canonical order (parent → publish). */
@@ -45,6 +47,7 @@ export const WIZARD_PHASE_IDS: readonly WizardPhaseId[] = [
   'description',
   'tags',
   'thumbnail',
+  'links',
   'publish',
 ]
 
@@ -58,9 +61,9 @@ export function isWizardPhaseId(value: string): value is WizardPhaseId {
 /**
  * The "tracked" phase IDs — the ones with a slot in `WizardState.phases`
  * (the former numeric phases 1-8). The "extended" phases (`parent`,
- * `short-title`, `thumbnail`) are NOT tracked in the state record; their
- * completion is derived from video data (parentEpisodeId / shortTitle /
- * storageThumbnailUrl).
+ * `short-title`, `thumbnail`, `links`) are NOT tracked in the state record;
+ * their completion is derived from video data (parentEpisodeId / shortTitle /
+ * storageThumbnailUrl / reviewedPhases.includes('links')).
  */
 export type TrackedPhaseId =
   | 'critique'

@@ -12,7 +12,7 @@ import { ConsoleArea } from './console-area'
 import { StandaloneToggle } from './standalone-toggle'
 import { VideoHeader, VideoMetadata, VideoShortTitle } from './video-header'
 import { VideoPreview } from './video-preview'
-import { WizardBreadcrumb } from './wizard-breadcrumb'
+import { WizardBreadcrumb, getExtendedPhaseState } from './wizard-breadcrumb'
 import { YouTubeProvider } from './youtube-context'
 
 interface WizardLayoutProps {
@@ -74,29 +74,34 @@ export function WizardLayout({
   // Wrapper to handle phase navigation.
   // Tracked phases use wizard.goToPhase; extended phases (parent/short-title/
   // thumbnail) are handled by phase-specific components.
+  // Unified navigation (Epic 26): every phase navigates via goToPhase. Extended
+  // phases (parent/short-title/thumbnail/links) have no state slot — goToPhase
+  // sets currentPhase directly; their interactive panels render on currentPhase.
   const handlePhaseClick = useCallback(
     (phase: WizardPhaseId) => {
-      if (isTrackedPhaseId(phase)) {
-        wizard.goToPhase(phase)
-      }
-      // Extended phase navigation is handled by their respective components
-      // (e.g., phase-0-parent-selection.tsx)
+      wizard.goToPhase(phase)
     },
     [wizard]
   )
 
-  // Wrapper to check if a phase can be navigated to.
-  // For tracked phases, delegates to wizard.canNavigateToPhase.
-  // Extended phases (parent/short-title/thumbnail) are only clickable when
-  // current — this prevents going back to parent selection after advancing.
+  // Wrapper to check if a phase can be navigated to. Unified rule (Epic 26):
+  // - tracked phases delegate to wizard.canNavigateToPhase (allows completed).
+  // - extended phases are clickable when current OR already completed — so the
+  //   producer can revisit them (e.g. change the thumbnail, add another link,
+  //   re-pick the parent). Completion is derived from video data via
+  //   getExtendedPhaseState (parentEpisodeId / shortTitle / storageThumbnailUrl
+  //   / reviewedPhases.includes('links')).
   const canNavigateToExtendedPhase = useCallback(
     (phase: WizardPhaseId): boolean => {
       if (isTrackedPhaseId(phase)) {
         return wizard.canNavigateToPhase(phase)
       }
-      return wizard.state.currentPhase === phase
+      return (
+        wizard.state.currentPhase === phase ||
+        getExtendedPhaseState(phase, video).status === 'completed'
+      )
     },
-    [wizard]
+    [wizard, video]
   )
 
   return (

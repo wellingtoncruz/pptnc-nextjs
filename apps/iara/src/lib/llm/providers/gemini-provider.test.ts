@@ -124,6 +124,34 @@ describe('GeminiProvider', () => {
       )
     })
 
+    it('uses temperature override when provided', async () => {
+      mockGenerateContentStream.mockResolvedValue(
+        makeStream([
+          { text: '{}', usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1, totalTokenCount: 2 } },
+        ])
+      )
+
+      const p = new GeminiProvider()
+      await p.generateText({ systemPrompt: 'x', userPrompt: 'y', temperature: 0.3 })
+
+      const call = mockGenerateContentStream.mock.calls[0][0]
+      expect(call.config.temperature).toBe(0.3)
+    })
+
+    it('defaults temperature to 0.7 when not provided', async () => {
+      mockGenerateContentStream.mockResolvedValue(
+        makeStream([
+          { text: '{}', usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1, totalTokenCount: 2 } },
+        ])
+      )
+
+      const p = new GeminiProvider()
+      await p.generateText({ systemPrompt: 'x', userPrompt: 'y' })
+
+      const call = mockGenerateContentStream.mock.calls[0][0]
+      expect(call.config.temperature).toBe(0.7)
+    })
+
     it('packs attachment as inlineData base64', async () => {
       mockGenerateContentStream.mockResolvedValue(
         makeStream([
