@@ -107,7 +107,8 @@ export class GeminiProvider implements LLMProvider {
         config: {
           systemInstruction: opts.systemPrompt,
           responseMimeType: 'application/json',
-          temperature: 0.7,
+          // Caller pode sobrescrever (fases analíticas usam 0.3); default 0.7.
+          temperature: opts.temperature ?? 0.7,
           maxOutputTokens: 65536,
           thinkingConfig: { thinkingBudget: 24576 },
         },
@@ -133,6 +134,7 @@ export class GeminiProvider implements LLMProvider {
 
       log('INFO', 'GeminiProvider.generateText completed', {
         model,
+        temperature: opts.temperature ?? 0.7,
         chunkCount,
         responseLength: fullText.length,
         ...usage,
@@ -167,7 +169,8 @@ export class GeminiProvider implements LLMProvider {
         config: {
           systemInstruction: opts.systemPrompt,
           responseMimeType: 'application/json',
-          temperature: 0.7,
+          // Caller pode sobrescrever (fases analíticas usam 0.3); default 0.7.
+          temperature: opts.temperature ?? 0.7,
           maxOutputTokens: 65536,
           thinkingConfig: { thinkingBudget: 24576 },
         },

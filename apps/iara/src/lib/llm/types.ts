@@ -30,21 +30,16 @@ export interface EditingIssue {
   timestamp: string
   /** Description of the editing issue */
   description: string
-}
-
-/**
- * Mentioned link/resource detected by the edit-check phase (Epic 26).
- *
- * When someone in the video says they'll leave a link/info in the description
- * or a card, the model records the moment + a short summary. Surfaced as a
- * non-actionable badge in the Links phase (Bloco D). The producer's editorial
- * prompt already asks to flag these — this only gives them a dedicated slot.
- */
-export interface MentionedLink {
-  /** Timestamp in format "HH:MM:SS" or "MM:SS" */
-  timestamp: string
-  /** Short summary of what was said (what link/resource was mentioned) */
-  context: string
+  /**
+   * Issue category (Epic 26 Bloco D v2, ADR-26.8). Free-form string — mirrors
+   * `ComplianceRisk.risk`. ONE reserved value: `"link"`, used when the issue is
+   * a mention of leaving a link/info in the description or a card. Any other
+   * issue gets a free category of the model's choice (or empty). The Links phase
+   * badge derives from `category === 'link'` — single source of truth, no
+   * parallel field. The producer's editorial prompt already asks to flag link
+   * mentions; this only gives the output a typed slot.
+   */
+  category: string
 }
 
 /**
@@ -58,13 +53,8 @@ export interface MentionedLink {
 export interface Phase2Response {
   /** Whether issues were found */
   hasIssues: boolean
-  /** List of editing issues with timestamps */
+  /** List of editing issues with timestamps + category (Bloco D v2 — `link` is reserved) */
   issues: EditingIssue[]
-  /**
-   * Mentions of links/resources to be left in the description or cards (Epic 26).
-   * Optional + additive — older responses without it parse fine.
-   */
-  mentionedLinks?: MentionedLink[]
 }
 
 /**

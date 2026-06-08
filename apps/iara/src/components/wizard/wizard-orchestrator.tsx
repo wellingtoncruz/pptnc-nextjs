@@ -879,10 +879,17 @@ export function WizardOrchestrator({
         'success'
       )
       setEditCheckResult(phase2Data)
+      // Mantém o videoData em sincronia com o que acabou de ser persistido, para
+      // consumidores cross-phase verem os issues novos NESTA sessão (sem precisar
+      // recarregar). Em especial o badge da fase Links (Epic 26 Bloco D v2), que
+      // deriva as menções de `editingIssues` com `category === 'link'`. Sem isto,
+      // a Edição mostra (lê editCheckResult) mas a fase Links fica stale.
+      setVideoData((prev) => ({ ...prev, editingIssues: phase2Data.issues }))
       log('INFO', 'Phase 2 edit check completed', {
         videoId: video.id,
         hasIssues: phase2Data.hasIssues,
         issueCount: phase2Data.issues.length,
+        linkMentionCount: phase2Data.issues.filter((i) => i.category === 'link').length,
       })
     } catch (error) {
       if (activeVideoIdRef.current !== video.id) {

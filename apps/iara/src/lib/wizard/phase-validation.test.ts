@@ -70,7 +70,7 @@ describe('validatePhaseCompletion', () => {
 
     it('returns incomplete when editingIssues exists but not reviewed', () => {
       const video = createVideo({
-        editingIssues: [{ timestamp: '00:05:30', description: 'Cut issue' }],
+        editingIssues: [{ timestamp: '00:05:30', category: 'corte', description: 'Cut issue' }],
       })
       const result = validatePhaseCompletion(video, 'edit-check')
 

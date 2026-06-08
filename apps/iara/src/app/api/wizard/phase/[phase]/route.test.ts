@@ -59,7 +59,7 @@ const mockPhase1Response = {
 
 const mockPhase2Response = {
   hasIssues: true,
-  issues: [{ timestamp: '00:05:30', description: 'Corte abrupto' }],
+  issues: [{ timestamp: '00:05:30', category: 'corte', description: 'Corte abrupto' }],
 }
 
 const mockPhase3Response = {
@@ -342,43 +342,21 @@ describe('POST /api/wizard/phase/[phase]', () => {
         expect.any(String),
         'video-123',
         {
+          // Epic 26 Bloco D v2 (ADR-26.8): issues persistidos com category; sem
+          // campo paralelo mentionedLinks. O badge da fase Links deriva daqui.
           editingIssues: mockPhase2Response.issues,
-          // Epic 26 Bloco D — defaults to [] when the model returns no mentions.
-          mentionedLinks: mockPhase2Response.mentionedLinks ?? [],
         }
       )
     })
 
-    it('persists mentionedLinks for Phase 2 when the model returns them (Epic 26 Bloco D)', async () => {
-      const mentions = [{ timestamp: '00:08:10', context: 'Vai deixar o link do projeto na descrição' }]
+    it('persists issues with the reserved "link" category (Epic 26 Bloco D v2)', async () => {
+      const issues = [
+        { timestamp: '00:05:30', category: 'corte', description: 'Corte abrupto' },
+        { timestamp: '00:08:10', category: 'link', description: 'Cita deixar o link do projeto na descrição' },
+      ]
       vi.mocked(callLLMQueued).mockResolvedValue({
         success: true,
-        data: { ...mockPhase2Response, mentionedLinks: mentions },
-        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
-      })
-
-      const request = createRequest('edit-check', { videoId: 'video-123' })
-      await POST(request, { params: Promise.resolve({ phase: 'edit-check' }) })
-
-      expect(updateVideoAdmin).toHaveBeenCalledWith(
-        expect.any(String),
-        'video-123',
-        { editingIssues: mockPhase2Response.issues, mentionedLinks: mentions }
-      )
-    })
-
-    it('drops incomplete mentions (missing context/timestamp) without failing the phase (Epic 26)', async () => {
-      const valid = { timestamp: '00:08:10', context: 'Vai deixar o link na descrição' }
-      vi.mocked(callLLMQueued).mockResolvedValue({
-        success: true,
-        data: {
-          ...mockPhase2Response,
-          mentionedLinks: [
-            valid,
-            { timestamp: '00:12:00' }, // missing context — must be dropped, not crash
-            { context: 'sem timestamp' }, // missing timestamp — dropped
-          ],
-        },
+        data: { hasIssues: true, issues },
         usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
       })
 
@@ -386,10 +364,11 @@ describe('POST /api/wizard/phase/[phase]', () => {
       const response = await POST(request, { params: Promise.resolve({ phase: 'edit-check' }) })
 
       expect(response.status).toBe(200)
+      // category viaja embarcada nos próprios issues — fonte única.
       expect(updateVideoAdmin).toHaveBeenCalledWith(
         expect.any(String),
         'video-123',
-        { editingIssues: mockPhase2Response.issues, mentionedLinks: [valid] }
+        { editingIssues: issues }
       )
     })
 

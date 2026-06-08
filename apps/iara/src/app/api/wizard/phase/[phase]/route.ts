@@ -75,22 +75,17 @@ async function persistPhaseResult(
 
   if (phase === 'edit-check') {
     const phase2Data = data as Phase2Response
-    // Epic 26 (Bloco D) — menções a links/descrição detectadas no vídeo, exibidas
-    // como badge não-acionável na fase Links. O modelo às vezes devolve itens
-    // incompletos (sem context/timestamp) — descartamos esses para não quebrar a
-    // fase imutável nem poluir o badge. Default [] quando não há nenhuma.
-    const mentionedLinks = (phase2Data.mentionedLinks ?? []).filter(
-      (m) => (m?.timestamp ?? '').trim().length > 0 && (m?.context ?? '').trim().length > 0
-    )
+    // Epic 26 Bloco D v2 (ADR-26.8) — os issues já carregam `category`; o valor
+    // reservado "link" sinaliza menção a link/descrição e alimenta o badge da
+    // fase Links (fonte única, sem campo paralelo).
     await updateVideoAdmin(PODCAST_ID, videoId, {
       editingIssues: phase2Data.issues,
-      mentionedLinks,
     })
     log('INFO', 'Phase 2 editing issues persisted to video', {
       videoId,
       hasIssues: phase2Data.hasIssues,
       issueCount: phase2Data.issues.length,
-      mentionedLinkCount: mentionedLinks.length,
+      linkMentionCount: phase2Data.issues.filter((i) => i.category === 'link').length,
     })
     return phase2Data
   }

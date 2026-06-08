@@ -41,8 +41,8 @@ const mockVideo: Video = {
 const mockPhase2WithIssues: Phase2Response = {
   hasIssues: true,
   issues: [
-    { timestamp: '05:30', description: 'Corte abrupto na fala do entrevistado' },
-    { timestamp: '12:45', description: 'Silêncio prolongado de 3 segundos' },
+    { timestamp: '05:30', category: 'corte', description: 'Corte abrupto na fala do entrevistado' },
+    { timestamp: '12:45', category: 'audio', description: 'Silêncio prolongado de 3 segundos' },
   ],
 }
 
@@ -338,7 +338,7 @@ describe('Phase2EditCheck', () => {
       const wizard = createMockWizard()
       const singleIssue: Phase2Response = {
         hasIssues: true,
-        issues: [{ timestamp: '05:30', description: 'Um problema' }],
+        issues: [{ timestamp: '05:30', category: 'edicao', description: 'Um problema' }],
       }
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={singleIssue} />
@@ -350,7 +350,7 @@ describe('Phase2EditCheck', () => {
       const wizard = createMockWizard()
       const singleIssue: Phase2Response = {
         hasIssues: true,
-        issues: [{ timestamp: '05:30', description: 'Um problema' }],
+        issues: [{ timestamp: '05:30', category: 'edicao', description: 'Um problema' }],
       }
       render(
         <Phase2EditCheck wizard={wizard} video={mockVideo} editCheckResult={singleIssue} />

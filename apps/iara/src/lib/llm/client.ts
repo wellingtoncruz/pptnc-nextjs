@@ -153,7 +153,8 @@ export async function callGenAI<T>(
   debugContext?: DebugContext,
   modelOverride?: string,
   providerOverride?: 'gemini' | 'claude',
-  fallbackProviderOverride?: 'gemini'
+  fallbackProviderOverride?: 'gemini',
+  temperature?: number
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   // Resolver provider e default model. Pra Gemini, default é VERTEX_AI_MODEL ou
   // DEFAULT_MODEL; pra Claude, fica a cargo do AnthropicProvider.defaultModel
@@ -193,7 +194,8 @@ export async function callGenAI<T>(
         userPrompt,
         attachment,
         attachmentInfo,
-        debugContext
+        debugContext,
+        temperature
       )
     } catch (error) {
       const llmError = error instanceof LLMError ? error : createLLMError(error)
@@ -293,7 +295,8 @@ export async function callGenAI<T>(
         debugContext,
         undefined,
         fallbackProviderOverride,
-        undefined
+        undefined,
+        temperature
       )
     }
     throw primaryError
@@ -313,7 +316,8 @@ async function _callGenAIInner<T>(
   userPrompt: string,
   attachment: ProviderAttachment | undefined,
   attachmentInfo: { sizeKB: number; estimatedTokens: number } | undefined,
-  debugContext: DebugContext | undefined
+  debugContext: DebugContext | undefined,
+  temperature: number | undefined
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
   // Parse retry loop - only for PARSE_ERROR. Retryable errors (RATE_LIMIT,
   // TIMEOUT...) propagam pra fora e ficam por conta do outer retry loop
@@ -326,6 +330,7 @@ async function _callGenAIInner<T>(
         attachment,
         model: modelName,
         debugContext,
+        temperature,
       })
       const text = result.text
       const usage = result.usage
@@ -583,7 +588,8 @@ export async function callLLM<P extends LLMPhaseId>(
       options?.debugContext,
       podcast?.llmConfig?.textModel,
       podcast?.llmConfig?.provider,
-      podcast?.llmConfig?.fallbackProvider
+      podcast?.llmConfig?.fallbackProvider,
+      phaseConfig.temperature
     )
 
     return {

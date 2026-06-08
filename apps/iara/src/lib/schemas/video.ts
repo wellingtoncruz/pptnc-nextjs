@@ -139,22 +139,10 @@ export const LinkSchema = z.object({
 export const EditingIssueSchema = z.object({
   timestamp: z.string().min(1, 'Timestamp is required'),
   description: z.string().min(1, 'Description is required'),
-})
-
-/**
- * Mentioned Link schema (Epic 26 — Bloco D).
- *
- * A moment where the video mentions a link/resource that will be left in the
- * description or a card, detected by the edit-check phase. Surfaced as a
- * non-actionable badge in the Links phase. Lenient (no .min) for robustness
- * against the immutable edit-check output.
- */
-export const MentionedLinkSchema = z.object({
-  // Tolerant: a malformed mention (missing timestamp/context) must NEVER break
-  // the immutable edit-check phase. Incomplete items are filtered out at persist
-  // time; defaults here keep VideoUpdateSchema.parse from throwing.
-  timestamp: z.string().optional().default(''),
-  context: z.string().optional().default(''),
+  // Epic 26 Bloco D v2 (ADR-26.8): categoria livre do issue; valor reservado
+  // "link" para menções a link/descrição. Tolerante — issues já persistidos sem
+  // categoria parseiam com default ''. O badge da fase Links filtra === 'link'.
+  category: z.string().optional().default(''),
 })
 
 /**
@@ -333,8 +321,7 @@ export const VideoSchema = z.object({
   // Phase 1 returns { critique, highlights, suggestions } but only 'critique' is persisted.
   // highlights and suggestions are displayed in UI during the wizard but not stored.
   critique: z.string().optional(), // Crítica do especialista (Phase 1) - string única com parágrafos
-  editingIssues: z.array(EditingIssueSchema).optional(), // Possíveis falhas de edição (Phase 2)
-  mentionedLinks: z.array(MentionedLinkSchema).optional(), // Menções a links/descrição (Epic 26 Bloco D)
+  editingIssues: z.array(EditingIssueSchema).optional(), // Possíveis falhas de edição (Phase 2); category 'link' sinaliza menção a link (Bloco D v2)
   riskAndCompliance: z.array(RiskAndComplianceItemSchema).optional(), // Riscos e compliance (Phase 3)
   tags: z.array(z.string()).optional(),
   chapters: z.array(ChapterSchema).optional(),
@@ -423,7 +410,6 @@ export const VideoUpdateSchema = z.object({
   visibilityUpdatedAt: TimestampSchema.optional(),
   critique: z.string().optional(),
   editingIssues: z.array(EditingIssueSchema).optional(),
-  mentionedLinks: z.array(MentionedLinkSchema).optional(), // Epic 26 Bloco D
   riskAndCompliance: z.array(RiskAndComplianceItemSchema).optional(),
   tags: z.array(z.string()).optional(),
   topics: z.array(z.string()).optional(),
@@ -475,8 +461,7 @@ export const VideoSummarySchema = z.object({
   spotifyUrl: z.string().optional(),
   // AI-generated fields - needed for wizard phase detection
   critique: z.string().optional(),
-  editingIssues: z.array(EditingIssueSchema).optional(),
-  mentionedLinks: z.array(MentionedLinkSchema).optional(), // Epic 26 Bloco D
+  editingIssues: z.array(EditingIssueSchema).optional(), // category 'link' sinaliza menção a link (Bloco D v2)
   riskAndCompliance: z.array(RiskAndComplianceItemSchema).optional(),
   chapters: z.array(ChapterSchema).optional(),
   links: z.array(LinkSchema).optional(), // Links de referência (Epic 26) — necessário no summary p/ hidratar a fase Links

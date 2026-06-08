@@ -140,6 +140,33 @@ describe('AnthropicProvider', () => {
       expect(call.messages[0].content).toContain('transcrição completa aqui')
     })
 
+    it('passes temperature to messages.create when provided', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        content: [{ type: 'text', text: '{}' }],
+        usage: { input_tokens: 1, output_tokens: 1 },
+      })
+
+      const p = new AnthropicProvider()
+      await p.generateText({ systemPrompt: 'sys', userPrompt: 'u', temperature: 0.3 })
+
+      expect(mockMessagesCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ temperature: 0.3 })
+      )
+    })
+
+    it('omits temperature (native default) when not provided', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        content: [{ type: 'text', text: '{}' }],
+        usage: { input_tokens: 1, output_tokens: 1 },
+      })
+
+      const p = new AnthropicProvider()
+      await p.generateText({ systemPrompt: 'sys', userPrompt: 'u' })
+
+      const call = mockMessagesCreate.mock.calls[0][0]
+      expect(call).not.toHaveProperty('temperature')
+    })
+
     it('throws INVALID_RESPONSE when content has no text', async () => {
       mockMessagesCreate.mockResolvedValue({
         content: [],

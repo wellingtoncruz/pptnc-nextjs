@@ -102,22 +102,27 @@ describe('PhaseLinks (Epic 26)', () => {
     )
   })
 
-  it('shows the non-actionable mentions badge when edit-check detected links (Bloco D)', () => {
+  it('shows the non-actionable mentions badge from edit-check issues with category "link" (Bloco D v2)', () => {
     const video = makeVideo({
-      mentionedLinks: [
-        { timestamp: '00:08:10', context: 'Vai deixar o link do projeto na descrição' },
-        { timestamp: '00:21:00', context: 'Cita um card com o site do convidado' },
+      editingIssues: [
+        { timestamp: '00:03:00', category: 'corte', description: 'Corte abrupto' }, // ignorado pelo badge
+        { timestamp: '00:08:10', category: 'link', description: 'Vai deixar o link do projeto na descrição' },
+        { timestamp: '00:21:00', category: 'link', description: 'Cita um card com o site do convidado' },
       ],
     })
     render(<PhaseLinks video={video} onLinksChange={onLinksChange} onAdvance={onAdvance} />)
 
+    // Só as 2 categorias 'link' contam; o issue 'corte' não.
     expect(screen.getByText('O vídeo menciona links em 2 pontos')).toBeInTheDocument()
     expect(screen.getByText('00:08:10')).toBeInTheDocument()
     expect(screen.getByText('Vai deixar o link do projeto na descrição')).toBeInTheDocument()
   })
 
-  it('does not show the mentions badge when there are no mentions', () => {
-    render(<PhaseLinks video={makeVideo()} onLinksChange={onLinksChange} onAdvance={onAdvance} />)
+  it('does not show the mentions badge when no issue has category "link"', () => {
+    const video = makeVideo({
+      editingIssues: [{ timestamp: '00:03:00', category: 'corte', description: 'Corte abrupto' }],
+    })
+    render(<PhaseLinks video={video} onLinksChange={onLinksChange} onAdvance={onAdvance} />)
     expect(screen.queryByText(/o vídeo menciona/i)).not.toBeInTheDocument()
   })
 

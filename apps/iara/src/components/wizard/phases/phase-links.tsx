@@ -70,7 +70,10 @@ export function PhaseLinks({
   const [isSaving, setIsSaving] = useState(false)
 
   const nextPhaseName = getNextPhaseNameForType('links', video.videoType, features)
-  const mentionedLinks = video.mentionedLinks ?? []
+  // Epic 26 Bloco D v2 (ADR-26.8): a sinalização de links citados deriva dos
+  // issues tipificados do edit-check — fonte única, sem campo paralelo. A fase
+  // de Edição marca menções a link/descrição com category 'link'.
+  const mentionedLinks = (video.editingIssues ?? []).filter((issue) => issue.category === 'link')
 
   /** Optimistically apply the new array, then persist it. */
   const persist = async (next: Link[]) => {
@@ -147,7 +150,7 @@ export function PhaseLinks({
                     <span className="font-mono text-xs text-amber-700 dark:text-amber-300 shrink-0">
                       {mention.timestamp}
                     </span>
-                    <span className="text-amber-900 dark:text-amber-100">{mention.context}</span>
+                    <span className="text-amber-900 dark:text-amber-100">{mention.description}</span>
                   </li>
                 ))}
               </ul>

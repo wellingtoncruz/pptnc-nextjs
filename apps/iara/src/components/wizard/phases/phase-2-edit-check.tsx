@@ -313,7 +313,21 @@ function IssuesList({ issues, videoId }: { issues: EditingIssue[]; videoId: stri
             timestamp={issue.timestamp}
             className="shrink-0"
           />
-          <p className="text-sm text-muted-foreground">{issue.description}</p>
+          <div className="flex flex-1 flex-wrap items-center gap-2">
+            <p className="text-sm text-muted-foreground">{issue.description}</p>
+            {/* Bloco D v2: chip da categoria (link = menção a deixar link na descrição). */}
+            {issue.category && (
+              <span
+                className={
+                  issue.category === 'link'
+                    ? 'shrink-0 rounded-full border border-amber-500/50 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950/20 dark:text-amber-300'
+                    : 'shrink-0 rounded-full border px-2 py-0.5 text-xs text-muted-foreground'
+                }
+              >
+                {issue.category === 'link' ? '🔗 link' : issue.category}
+              </span>
+            )}
+          </div>
         </li>
       ))}
     </ul>
