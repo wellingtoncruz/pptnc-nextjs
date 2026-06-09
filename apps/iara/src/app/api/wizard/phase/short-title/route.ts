@@ -31,7 +31,8 @@ import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
-import { createWizardJob, updateWizardJob } from '@/lib/firebase/wizard-jobs-admin'
+import { createJob } from '@/lib/firebase/jobs-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import {
   callGenAI,
   createTranscriptionFile,
@@ -191,64 +192,6 @@ ${video.guests?.map(g => `- ${g.name} (${g.role || 'Convidado'})`).join('\n') ||
 }
 
 /**
- * Background worker for the async path. Mirrors the sync flow but writes the
- * result/error to a wizard job document instead of the HTTP response. Never
- * throws — failures are recorded on the job for the polling client to read.
- */
-async function processPhase5BInBackground(params: {
-  jobId: string
-  video: Video
-  podcast: Podcast | null
-  additionalContext: string | undefined
-}): Promise<void> {
-  const { jobId, video, podcast, additionalContext } = params
-  const videoId = video.id
-
-  try {
-    await updateWizardJob(PODCAST_ID, videoId, jobId, { status: 'processing' })
-
-    const { data, usage } = await executePhase5B(video, podcast, additionalContext)
-
-    await updateWizardJob(PODCAST_ID, videoId, jobId, {
-      status: 'complete',
-      result: data,
-      usage,
-    })
-
-    log('INFO', 'Async phase 5B job completed', {
-      jobId,
-      videoId,
-      tokensUsed: usage.totalTokens,
-    })
-  } catch (error) {
-    const llmError = error instanceof LLMError ? error : createLLMError(error)
-    log('WARN', 'Async phase 5B job failed', {
-      jobId,
-      videoId,
-      errorCode: llmError.code,
-      errorMessage: llmError.message,
-    })
-
-    try {
-      await updateWizardJob(PODCAST_ID, videoId, jobId, {
-        status: 'failed',
-        error: {
-          code: llmError.code,
-          message: llmError.message,
-          retryable: llmError.retryable,
-        },
-      })
-    } catch (updateError) {
-      log('ERROR', 'Failed to record phase 5B job failure', {
-        jobId,
-        videoId,
-        updateError: updateError instanceof Error ? updateError.message : String(updateError),
-      })
-    }
-  }
-}
-
-/**
  * POST /api/wizard/phase/5b
  *
  * Processes phase 5B (Short Title) for cut videos.
@@ -302,17 +245,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     })
 
     if (isAsync) {
-      const jobId = await createWizardJob(PODCAST_ID, {
-        videoId,
-        phase: 'short-title',
-        ...(additionalContext ? { additionalContext } : {}),
+      const jobId = await createJob(PODCAST_ID, {
+        type: 'wizard:short-title',
+        context: { videoId, phase: 'short-title' },
       })
 
-      void processPhase5BInBackground({
-        jobId,
-        video,
-        podcast: podcast ?? null,
-        additionalContext,
+      // Fire-and-forget — runJobInBackground faz status + erro (Epic 27).
+      // executePhase5B já persiste (suggestedShortTitles) e lança em falha.
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const { data, usage } = await executePhase5B(video, podcast ?? null, additionalContext)
+        return { result: data, usage }
       })
 
       return NextResponse.json(
