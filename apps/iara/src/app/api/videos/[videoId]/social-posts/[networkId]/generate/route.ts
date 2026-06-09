@@ -4,9 +4,11 @@ import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { authExpiredResponse, createErrorResponse, notFoundResponse } from '@/lib/api/video-field-handler'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { createJob } from '@/lib/firebase/jobs-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { saveSocialPostFromLLM } from '@/lib/firebase/social-admin'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import { callGenAI, cleanupTranscriptionFile, createTranscriptionFile } from '@/lib/llm/client'
 import { LLMError } from '@/lib/llm/errors'
 import { llmQueue } from '@/lib/llm/queue'
@@ -32,6 +34,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
   }
 
   const { videoId, networkId } = await context.params
+  const isAsync = request.nextUrl.searchParams.get('mode') === 'async'
 
   try {
     // Parse optional body
@@ -103,51 +106,60 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       ? { component: `social/generate/${networkId}`, videoId, videoType: (video.videoType || 'episode') as 'episode' | 'cut' | 'reel', podcastId: PODCAST_ID }
       : undefined
 
-    // Handle transcription attachment for cut/reel
-    let attachmentPath: string | undefined
-    try {
-      if (shouldAttachTranscription(video)) {
-        attachmentPath = await createTranscriptionFile(video.transcriptionTXT!, 0)
-      }
+    // Trabalho LLM + persistência, compartilhado entre os caminhos sync e async
+    // (Epic 27). Retorna o MESMO payload que o caminho síncrono devolvia ao
+    // cliente. Lança LLMError/ZodError em falha (mapeados abaixo no sync; no
+    // async, runJobInBackground grava a falha no job).
+    const runGeneration = async (): Promise<{
+      payload: { networkId: string; cta: string; body: string; hashtags: string[]; processedBy: 'llm' }
+      usage: { promptTokens: number; completionTokens: number; totalTokens: number }
+    }> => {
+      let attachmentPath: string | undefined
+      try {
+        if (shouldAttachTranscription(video)) {
+          attachmentPath = await createTranscriptionFile(video.transcriptionTXT!, 0)
+        }
 
-      // Call LLM via queue for sequential processing
-      const { data } = await llmQueue.enqueue(() =>
-        callGenAI<{ cta: string; body: string; hashtags: string[] }>(
-          systemPrompt,
-          userPrompt,
-          60000,
-          attachmentPath,
-          debugContext,
-          podcast?.llmConfig?.textModel,
-          podcast?.llmConfig?.provider,
-          podcast?.llmConfig?.fallbackProvider
+        const { data, usage } = await llmQueue.enqueue(() =>
+          callGenAI<{ cta: string; body: string; hashtags: string[] }>(
+            systemPrompt,
+            userPrompt,
+            60000,
+            attachmentPath,
+            debugContext,
+            podcast?.llmConfig?.textModel,
+            podcast?.llmConfig?.provider,
+            podcast?.llmConfig?.fallbackProvider
+          )
         )
-      )
 
-      // Validate LLM response
-      const validated = SocialPostUpdateSchema.parse(data)
+        const validated = SocialPostUpdateSchema.parse(data)
+        await saveSocialPostFromLLM(videoId, networkId, validated, additionalContext)
 
-      // Persist
-      await saveSocialPostFromLLM(videoId, networkId, validated, additionalContext)
+        log('INFO', 'Social post generated via LLM', { videoId, networkId, videoType, mode: isAsync ? 'async' : 'sync' })
 
-      log('INFO', 'Social post generated via LLM', {
-        videoId,
-        networkId,
-        videoType,
-      })
-
-      return NextResponse.json({
-        data: {
-          networkId,
-          ...validated,
-          processedBy: 'llm',
-        },
-      })
-    } finally {
-      if (attachmentPath) {
-        await cleanupTranscriptionFile(attachmentPath)
+        return { payload: { networkId, ...validated, processedBy: 'llm' }, usage }
+      } finally {
+        if (attachmentPath) {
+          await cleanupTranscriptionFile(attachmentPath)
+        }
       }
     }
+
+    if (isAsync) {
+      const jobId = await createJob(PODCAST_ID, {
+        type: 'social-post',
+        context: { videoId, networkId },
+      })
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const { payload, usage } = await runGeneration()
+        return { result: payload, usage }
+      })
+      return NextResponse.json({ jobId, podcastId: PODCAST_ID, status: 'pending' }, { status: 202 })
+    }
+
+    const { payload } = await runGeneration()
+    return NextResponse.json({ data: payload })
   } catch (error) {
     if (error instanceof LLMError) {
       const status = error.code === 'RATE_LIMIT' ? 429 : 500

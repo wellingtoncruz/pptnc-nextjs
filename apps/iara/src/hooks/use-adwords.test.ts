@@ -6,8 +6,16 @@ import type { AdwordsData } from '@/types/adwords'
 
 import { useAdwords } from './use-adwords'
 
+// Epic 27: generate/reprocess agora usam runAsyncJob (job + polling). O GET de
+// listagem continua em fetch. Mockamos runAsyncJob — ele retorna o payload
+// diretamente (o mesmo `data` que o caminho síncrono devolvia).
+vi.mock('@/lib/jobs/run-async-job', () => ({ runAsyncJob: vi.fn() }))
+
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
+
 const mockFetch = vi.fn()
 global.fetch = mockFetch
+const mockRunAsyncJob = vi.mocked(runAsyncJob)
 
 const mockAdwordsData: AdwordsData = {
   guide: '# Guia AdWords\n\nConteúdo do guia...',
@@ -51,26 +59,23 @@ describe('useAdwords', () => {
       '/api/videos/video-1/adwords',
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     )
-    // Apenas GET chamado, sem POST
+    // Apenas GET de listagem; nenhum job disparado
     expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockRunAsyncJob).not.toHaveBeenCalled()
   })
 
-  it('auto-gera via POST quando GET retorna null e hasPrerequisites é true', async () => {
+  it('auto-gera via job quando GET retorna null e hasPrerequisites é true', async () => {
     const generatedData = {
       guide: 'Guia gerado',
       keywords: ['kw1'],
       generatedAt: '2026-02-26T01:00:00Z',
     }
 
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: null }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: generatedData }),
-      })
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: null }),
+    })
+    mockRunAsyncJob.mockResolvedValueOnce(generatedData)
 
     const { result } = renderHook(() => useAdwords('video-1', true))
 
@@ -82,24 +87,20 @@ describe('useAdwords', () => {
     expect(result.current.isGenerating).toBe(false)
     expect(result.current.error).toBeNull()
 
-    // GET + POST generate
-    expect(mockFetch).toHaveBeenCalledTimes(2)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/adwords/generate',
-      expect.objectContaining({ method: 'POST', signal: expect.any(AbortSignal) })
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/api/videos/video-1/adwords/generate' })
     )
   })
 
   it('isGenerating fica true durante auto-geração', async () => {
-    let resolveGenerate: (value: unknown) => void
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: null }),
-      })
-      .mockImplementationOnce(() =>
-        new Promise(resolve => { resolveGenerate = resolve })
-      )
+    let resolveGenerate: (value: AdwordsData) => void
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: null }),
+    })
+    mockRunAsyncJob.mockImplementationOnce(
+      () => new Promise(resolve => { resolveGenerate = resolve })
+    )
 
     const { result } = renderHook(() => useAdwords('video-1', true))
 
@@ -109,12 +110,8 @@ describe('useAdwords', () => {
 
     expect(result.current.isLoading).toBe(false)
 
-    // Resolver o generate
     await act(async () => {
-      resolveGenerate!({
-        ok: true,
-        json: () => Promise.resolve({ data: mockAdwordsData }),
-      })
+      resolveGenerate!(mockAdwordsData)
     })
 
     await waitFor(() => {
@@ -137,8 +134,8 @@ describe('useAdwords', () => {
     expect(result.current.data).toBeNull()
     expect(result.current.error).toBe('ineligible')
     expect(result.current.isGenerating).toBe(false)
-    // Apenas GET, sem POST
     expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockRunAsyncJob).not.toHaveBeenCalled()
   })
 
   it('lida com erro no GET', async () => {
@@ -158,16 +155,12 @@ describe('useAdwords', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 
-  it('lida com erro no POST generate', async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: null }),
-      })
-      .mockResolvedValueOnce({
-        ok: false,
-        json: () => Promise.resolve({ error: { message: 'Rate limit exceeded' } }),
-      })
+  it('lida com erro no job de geração', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: null }),
+    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Rate limit exceeded'))
 
     const { result } = renderHook(() => useAdwords('video-1', true))
 
@@ -181,7 +174,6 @@ describe('useAdwords', () => {
   })
 
   it('cancela request via AbortController ao trocar videoId', async () => {
-    // Primeiro render: fetch lento que não resolve antes do rerender
     let resolveFirst: (value: unknown) => void
     mockFetch.mockImplementationOnce(() =>
       new Promise(resolve => { resolveFirst = resolve })
@@ -194,7 +186,6 @@ describe('useAdwords', () => {
 
     expect(result.current.isLoading).toBe(true)
 
-    // Trocar videoId — deve abortar o primeiro request
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ data: mockAdwordsData }),
@@ -206,33 +197,25 @@ describe('useAdwords', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    // Verificar que GET foi chamado para video-2
     expect(mockFetch).toHaveBeenCalledWith(
       '/api/videos/video-2/adwords',
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     )
 
-    // Resolver o primeiro fetch (deve ser ignorado)
     resolveFirst!({
       ok: true,
       json: () => Promise.resolve({ data: null }),
     })
 
-    // Dados devem ser do video-2
     expect(result.current.data).toEqual(mockAdwordsData)
   })
 
-  it('retry re-dispara POST generate', async () => {
-    // GET retorna null, POST falha
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: null }),
-      })
-      .mockResolvedValueOnce({
-        ok: false,
-        json: () => Promise.resolve({ error: { message: 'Timeout' } }),
-      })
+  it('retry re-dispara o job de geração', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: null }),
+    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Timeout'))
 
     const { result } = renderHook(() => useAdwords('video-1', true))
 
@@ -240,11 +223,7 @@ describe('useAdwords', () => {
       expect(result.current.error).toBe('Timeout')
     })
 
-    // Retry
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: mockAdwordsData }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(mockAdwordsData)
 
     await act(async () => {
       result.current.retry()
@@ -258,8 +237,7 @@ describe('useAdwords', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it('reprocess envia POST com additionalContext', async () => {
-    // GET retorna dados existentes
+  it('reprocess dispara job com additionalContext', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ data: mockAdwordsData }),
@@ -276,11 +254,7 @@ describe('useAdwords', () => {
       keywords: ['nova-kw'],
       generatedAt: '2026-02-26T02:00:00Z',
     }
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: newData }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(newData)
 
     await act(async () => {
       await result.current.reprocess('Foque mais no convidado')
@@ -288,19 +262,15 @@ describe('useAdwords', () => {
 
     expect(result.current.data).toEqual(newData)
     expect(result.current.error).toBeNull()
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/adwords/generate',
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ additionalContext: 'Foque mais no convidado' }),
-        signal: expect.any(AbortSignal),
+        url: '/api/videos/video-1/adwords/generate',
+        body: { additionalContext: 'Foque mais no convidado' },
       })
     )
   })
 
   it('reprocess seta isGenerating=true durante chamada', async () => {
-    // GET retorna dados existentes
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ data: mockAdwordsData }),
@@ -312,26 +282,19 @@ describe('useAdwords', () => {
       expect(result.current.data).toEqual(mockAdwordsData)
     })
 
-    // Reprocess com Promise pendente para capturar estado intermediário
-    let resolveReprocess: (value: unknown) => void
-    mockFetch.mockImplementationOnce(() =>
-      new Promise(resolve => { resolveReprocess = resolve })
+    let resolveReprocess: (value: AdwordsData) => void
+    mockRunAsyncJob.mockImplementationOnce(
+      () => new Promise(resolve => { resolveReprocess = resolve })
     )
 
-    // Inicia reprocess sem await
     act(() => {
       result.current.reprocess('contexto')
     })
 
-    // Estado intermediário: isGenerating deve ser true
     expect(result.current.isGenerating).toBe(true)
 
-    // Resolver para limpar
     await act(async () => {
-      resolveReprocess!({
-        ok: true,
-        json: () => Promise.resolve({ data: mockAdwordsData }),
-      })
+      resolveReprocess!(mockAdwordsData)
     })
 
     expect(result.current.isGenerating).toBe(false)
@@ -349,16 +312,12 @@ describe('useAdwords', () => {
       expect(result.current.data).toEqual(mockAdwordsData)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: { message: 'Erro de reprocessamento' } }),
-    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Erro de reprocessamento'))
 
     await act(async () => {
       await expect(result.current.reprocess('contexto')).rejects.toThrow('Erro de reprocessamento')
     })
 
-    // Dados originais mantidos após erro
     expect(result.current.data).toEqual(mockAdwordsData)
   })
 })

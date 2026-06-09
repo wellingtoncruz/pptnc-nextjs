@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { log } from '@/lib/logger'
 import type { SocialPost } from '@/types/social'
 
@@ -50,16 +51,11 @@ export function useSocialPosts(
     networkId: string,
     signal: AbortSignal
   ): Promise<SocialPost> => {
-    const response = await fetch(
-      `/api/videos/${videoId}/social-posts/${networkId}/generate`,
-      { method: 'POST', signal }
-    )
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}))
-      throw new Error(err.error?.message || 'Erro ao gerar post')
-    }
-    const { data } = await response.json()
-    return data
+    // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+    return runAsyncJob<SocialPost>({
+      url: `/api/videos/${videoId}/social-posts/${networkId}/generate`,
+      signal,
+    })
   }, [videoId])
 
   // Main effect: fetch + auto-generate
@@ -161,20 +157,12 @@ export function useSocialPosts(
       return next
     })
     try {
-      const response = await fetch(
-        `/api/videos/${videoId}/social-posts/${networkId}/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ additionalContext }),
-          signal: abortControllerRef.current?.signal,
-        }
-      )
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error?.message || 'Erro ao reprocessar post')
-      }
-      const { data } = await response.json()
+      // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+      const data = await runAsyncJob<SocialPost>({
+        url: `/api/videos/${videoId}/social-posts/${networkId}/generate`,
+        body: { additionalContext },
+        signal: abortControllerRef.current?.signal,
+      })
       setPosts(prev => prev.map(p => p.networkId === networkId ? data : p))
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return
