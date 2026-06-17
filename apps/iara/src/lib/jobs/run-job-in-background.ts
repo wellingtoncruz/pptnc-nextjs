@@ -32,7 +32,13 @@ export async function runJobInBackground(
 
     const { result, usage } = await work()
 
-    await updateJob(podcastId, jobId, { status: 'complete', result, usage })
+    // Firestore rejeita `undefined` em qualquer field — só inclui `usage` quando
+    // a feature de fato tem (ex.: thumbnail/imagem não retornam usage).
+    await updateJob(podcastId, jobId, {
+      status: 'complete',
+      result,
+      ...(usage !== undefined ? { usage } : {}),
+    })
     log('INFO', 'Job completed', { jobId })
   } catch (error) {
     const llmError = error instanceof LLMError ? error : createLLMError(error)

@@ -111,6 +111,14 @@ describe('updateJob', () => {
     }))
   })
 
+  it('strips undefined fields before writing (Firestore rejeita undefined)', async () => {
+    await updateJob('podcast-1', 'job-xyz', { status: 'complete', result: { thumbnailUrl: 'u' }, usage: undefined })
+
+    const written = mockUpdate.mock.calls[0][0]
+    expect(written).not.toHaveProperty('usage')
+    expect(written).toEqual({ status: 'complete', result: { thumbnailUrl: 'u' }, updatedAt: mockNow })
+  })
+
   it('rejects invalid status', async () => {
     await expect(updateJob('podcast-1', 'job-xyz', { status: 'unknown' as never })).rejects.toThrow()
   })

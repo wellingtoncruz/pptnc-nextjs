@@ -28,6 +28,14 @@ describe('runJobInBackground', () => {
     })
   })
 
+  it('omits usage on complete when the work returns none (thumbnail/image)', async () => {
+    await runJobInBackground('podcast-1', 'job-1', async () => ({ result: { thumbnailUrl: 'u' } }))
+
+    const completeCall = mockUpdateJob.mock.calls.find((c) => c[2]?.status === 'complete')
+    expect(completeCall?.[2]).toEqual({ status: 'complete', result: { thumbnailUrl: 'u' } })
+    expect(completeCall?.[2]).not.toHaveProperty('usage')
+  })
+
   it('maps a thrown LLMError to the job failed state', async () => {
     await runJobInBackground('podcast-1', 'job-1', async () => {
       throw new LLMError('RATE_LIMIT', 'Limite excedido', true)

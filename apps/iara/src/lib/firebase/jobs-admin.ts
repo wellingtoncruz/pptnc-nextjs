@@ -55,8 +55,14 @@ export async function updateJob(
 ): Promise<void> {
   const validated = JobUpdateSchema.parse(patch)
 
+  // Firestore .update() rejeita `undefined` em qualquer field. Remove chaves
+  // undefined (ex.: `usage` ausente em jobs de imagem/thumbnail) antes de gravar.
+  const sanitized = Object.fromEntries(
+    Object.entries(validated).filter(([, v]) => v !== undefined)
+  )
+
   await getJobsCollection(podcastId).doc(jobId).update({
-    ...validated,
+    ...sanitized,
     updatedAt: Timestamp.now(),
   })
 
