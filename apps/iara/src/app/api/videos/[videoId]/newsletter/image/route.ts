@@ -229,6 +229,17 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`))
       }
 
+      // Heartbeat SSE (Epic 27 / ADR-27.3): comentário ': ping' a cada 20s
+      // mantém a conexão viva sob o edge timeout (~60s) do Cloud Run durante a
+      // geração de imagem (longa). Comentário é ignorado pelo cliente (SSE padrão).
+      const heartbeat = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(': ping\n\n'))
+        } catch {
+          clearInterval(heartbeat)
+        }
+      }, 20_000)
+
       let imagePromptText: string | undefined
 
       try {
@@ -312,6 +323,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
           ...(imagePromptText ? { imagePrompt: imagePromptText } : {}),
         })
       } finally {
+        clearInterval(heartbeat)
         controller.close()
       }
     },

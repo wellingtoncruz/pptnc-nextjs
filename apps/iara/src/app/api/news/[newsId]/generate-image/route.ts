@@ -127,6 +127,17 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`))
       }
 
+      // Heartbeat SSE (Epic 27 / ADR-27.3): comentário ': ping' a cada 20s
+      // mantém a conexão viva sob o edge timeout (~60s) do Cloud Run durante a
+      // geração de imagem. Comentário é ignorado pelo cliente (SSE padrão).
+      const heartbeat = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(': ping\n\n'))
+        } catch {
+          clearInterval(heartbeat)
+        }
+      }, 20_000)
+
       try {
         // === Generate image via Gemini Image (1 direct call) ===
         send('progress', { step: 'generating_image' })
@@ -188,6 +199,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
           message: errorMessage,
         })
       } finally {
+        clearInterval(heartbeat)
         controller.close()
       }
     },
