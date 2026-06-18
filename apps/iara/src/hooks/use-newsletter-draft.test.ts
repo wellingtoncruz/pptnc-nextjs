@@ -2,8 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { act, renderHook, waitFor } from '@/test-utils'
 
+// Epic 27: generate usa runAsyncJob (job+polling); GET/PATCH seguem em fetch.
+vi.mock('@/lib/jobs/run-async-job', () => ({ runAsyncJob: vi.fn() }))
+
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { useNewsletterDraft } from './use-newsletter-draft'
 
+const mockRunAsyncJob = vi.mocked(runAsyncJob)
 const mockFetch = vi.fn()
 
 const existingNewsletter = {
@@ -89,11 +94,7 @@ describe('useNewsletterDraft', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    const generatedDraft = { draft: '# Draft Gerado\n\nConteúdo novo...' }
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: generatedDraft }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce({ draft: '# Draft Gerado\n\nConteúdo novo...' })
 
     await act(async () => {
       await result.current.generate()
@@ -102,9 +103,8 @@ describe('useNewsletterDraft', () => {
     expect(result.current.draft).toBe('# Draft Gerado\n\nConteúdo novo...')
     expect(result.current.newsletterStatus).toBe('draft')
     expect(result.current.isGenerating).toBe(false)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/newsletter/draft',
-      expect.objectContaining({ method: 'POST', signal: expect.any(AbortSignal) })
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/api/videos/video-1/newsletter/draft' })
     )
   })
 
@@ -120,21 +120,16 @@ describe('useNewsletterDraft', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: { draft: 'draft' } }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce({ draft: 'draft' })
 
     await act(async () => {
       await result.current.generate('Foque nos highlights')
     })
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/newsletter/draft',
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ additionalContext: 'Foque nos highlights' }),
+        url: '/api/videos/video-1/newsletter/draft',
+        body: { additionalContext: 'Foque nos highlights' },
       })
     )
   })
@@ -199,10 +194,7 @@ describe('useNewsletterDraft', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: { message: 'Rate limit exceeded' } }),
-    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Rate limit exceeded'))
 
     await act(async () => {
       await result.current.generate()
@@ -225,10 +217,7 @@ describe('useNewsletterDraft', () => {
     })
 
     // First generate fails
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: { message: 'Timeout' } }),
-    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Timeout'))
 
     await act(async () => {
       await result.current.generate('Contexto específico')
@@ -237,10 +226,7 @@ describe('useNewsletterDraft', () => {
     expect(result.current.error).toBe('Timeout')
 
     // Retry
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: { draft: 'Retry draft' } }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce({ draft: 'Retry draft' })
 
     await act(async () => {
       result.current.retry()

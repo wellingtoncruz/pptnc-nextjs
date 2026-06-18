@@ -296,7 +296,8 @@ describe('POST /api/videos/[videoId]/newsletter/news', () => {
     const json = await response.json()
 
     expect(response.status).toBe(422)
-    expect(json.error.code).toBe('CONFIG_MISSING')
+    // Epic 27: config-missing virou LLMError('MISSING_CONTEXT') (mapeado p/ 422).
+    expect(json.error.code).toBe('MISSING_CONTEXT')
     expect(mockCallGenAI).not.toHaveBeenCalled()
   })
 

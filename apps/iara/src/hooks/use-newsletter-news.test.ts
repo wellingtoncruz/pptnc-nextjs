@@ -2,8 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { act, renderHook, waitFor } from '@/test-utils'
 
+// Epic 27: fetchNews usa runAsyncJob (job+polling); GET/PATCH seguem em fetch.
+vi.mock('@/lib/jobs/run-async-job', () => ({ runAsyncJob: vi.fn() }))
+
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { useNewsletterNews } from './use-newsletter-news'
 
+const mockRunAsyncJob = vi.mocked(runAsyncJob)
 const mockFetch = vi.fn()
 
 const existingConfirmedNewsletter = {
@@ -107,10 +112,7 @@ describe('useNewsletterNews', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: candidatesResponse }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(candidatesResponse)
 
     await act(async () => {
       await result.current.fetchNews()
@@ -120,9 +122,8 @@ describe('useNewsletterNews', () => {
     expect(result.current.totalFound).toBe(5)
     expect(result.current.llmFiltered).toBe(false)
     expect(result.current.isFetching).toBe(false)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/newsletter/news',
-      expect.objectContaining({ method: 'POST', signal: expect.any(AbortSignal) })
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/api/videos/video-1/newsletter/news' })
     )
   })
 
@@ -138,10 +139,7 @@ describe('useNewsletterNews', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: { items: [], totalFound: 0, llmFiltered: false } }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce({ items: [], totalFound: 0, llmFiltered: false })
 
     await act(async () => {
       await result.current.fetchNews()
@@ -204,10 +202,7 @@ describe('useNewsletterNews', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: { message: 'Rate limit exceeded' } }),
-    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Rate limit exceeded'))
 
     await act(async () => {
       await result.current.fetchNews()
@@ -270,10 +265,7 @@ describe('useNewsletterNews', () => {
 
     expect(result.current.confirmedNews).toHaveLength(3)
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: candidatesResponse }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(candidatesResponse)
 
     await act(async () => {
       await result.current.fetchNews()
@@ -296,10 +288,7 @@ describe('useNewsletterNews', () => {
     })
 
     // First fetch
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: candidatesResponse }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(candidatesResponse)
 
     await act(async () => {
       await result.current.fetchNews()
@@ -313,10 +302,7 @@ describe('useNewsletterNews', () => {
       totalFound: 1,
       llmFiltered: false,
     }
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: newCandidates }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(newCandidates)
 
     await act(async () => {
       await result.current.fetchNews()

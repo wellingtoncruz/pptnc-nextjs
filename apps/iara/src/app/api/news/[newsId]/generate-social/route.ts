@@ -18,9 +18,11 @@ import { z } from 'zod'
 
 import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { createJob } from '@/lib/firebase/jobs-admin'
 import { getNewsById, updateNewsFields } from '@/lib/firebase/news-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import { callGenAI } from '@/lib/llm/client'
 import { LLMError } from '@/lib/llm/errors'
 import { buildNewsSocialSystemPrompt, buildNewsSocialUserPrompt } from '@/lib/llm/news-prompts'
@@ -52,6 +54,7 @@ export async function POST(
   }
 
   const { newsId } = await context.params
+  const isAsync = request.nextUrl.searchParams.get('mode') === 'async'
 
   try {
     // Parse optional additionalContext from request body
@@ -115,19 +118,33 @@ export async function POST(
       additionalContext
     )
 
-    // 5. Call LLM via queue
-    const { data } = await llmQueue.enqueue(() =>
-      callGenAI<{ social: string }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider, podcast?.llmConfig?.fallbackProvider)
-    )
+    // Trabalho LLM + persistência, compartilhado entre sync e async (Epic 27).
+    const runGeneration = async (): Promise<{
+      payload: { social: string }
+      usage: { promptTokens: number; completionTokens: number; totalTokens: number }
+    }> => {
+      const { data, usage } = await llmQueue.enqueue(() =>
+        callGenAI<{ social: string }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider, podcast?.llmConfig?.fallbackProvider)
+      )
 
-    // 6. Persist social text
-    await updateNewsFields(PODCAST_ID, newsId, { social: data.social })
+      await updateNewsFields(PODCAST_ID, newsId, { social: data.social })
 
-    log('INFO', 'News social post generated via LLM', { newsId, hasAdditionalContext: !!additionalContext })
+      log('INFO', 'News social post generated via LLM', { newsId, hasAdditionalContext: !!additionalContext, mode: isAsync ? 'async' : 'sync' })
 
-    return NextResponse.json({
-      data: { social: data.social },
-    })
+      return { payload: { social: data.social }, usage }
+    }
+
+    if (isAsync) {
+      const jobId = await createJob(PODCAST_ID, { type: 'news-social', context: { newsId } })
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const { payload, usage } = await runGeneration()
+        return { result: payload, usage }
+      })
+      return NextResponse.json({ jobId, podcastId: PODCAST_ID, status: 'pending' }, { status: 202 })
+    }
+
+    const { payload } = await runGeneration()
+    return NextResponse.json({ data: payload })
   } catch (error) {
     if (error instanceof LLMError) {
       const status = error.code === 'RATE_LIMIT' ? 429 : 500

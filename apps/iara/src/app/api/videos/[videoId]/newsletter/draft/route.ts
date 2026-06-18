@@ -21,9 +21,11 @@ import {
   notFoundResponse,
 } from '@/lib/api/video-field-handler'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { createJob } from '@/lib/firebase/jobs-admin'
 import { getNewsletterData, saveNewsletterData } from '@/lib/firebase/newsletter-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import { callGenAI, cleanupTranscriptionFile, createTranscriptionFile } from '@/lib/llm/client'
 import { LLMError } from '@/lib/llm/errors'
 import { buildNewsletterDraftSystemPrompt, buildNewsletterDraftUserPrompt } from '@/lib/llm/newsletter-prompts'
@@ -49,6 +51,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   }
 
   const { videoId } = await context.params
+  const isAsync = new URL(request.url).searchParams.get('mode') === 'async'
 
   try {
     // Parse optional body
@@ -116,61 +119,70 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
       ? { component: 'newsletter/draft', videoId, videoType: (video.videoType || 'episode') as 'episode' | 'cut' | 'reel', podcastId: PODCAST_ID }
       : undefined
 
-    // Create transcription file and call LLM
-    let attachmentPath: string | undefined
-    try {
-      attachmentPath = await createTranscriptionFile(video.transcriptionTXT!, 0)
+    // Trabalho LLM + persistência, compartilhado entre sync e async (Epic 27).
+    // Retorna o MESMO payload do caminho síncrono. Lança em falha.
+    const runGeneration = async (): Promise<{
+      payload: { draft: string }
+      usage: { promptTokens: number; completionTokens: number; totalTokens: number }
+    }> => {
+      let attachmentPath: string | undefined
+      try {
+        attachmentPath = await createTranscriptionFile(video.transcriptionTXT!, 0)
 
-      // Call LLM via queue for sequential processing
-      const { data } = await llmQueue.enqueue(() =>
-        callGenAI<{ draft: string }>(
-          systemPrompt,
-          userPrompt,
-          60000,
-          attachmentPath,
-          debugContext,
-          podcast?.llmConfig?.textModel,
-          podcast?.llmConfig?.provider,
-          podcast?.llmConfig?.fallbackProvider
+        const { data, usage } = await llmQueue.enqueue(() =>
+          callGenAI<{ draft: string }>(
+            systemPrompt,
+            userPrompt,
+            60000,
+            attachmentPath,
+            debugContext,
+            podcast?.llmConfig?.textModel,
+            podcast?.llmConfig?.provider,
+            podcast?.llmConfig?.fallbackProvider
+          )
         )
-      )
 
-      // Validate LLM response with Zod
-      const validated = NewsletterDraftLLMResponseSchema.parse(data)
+        const validated = NewsletterDraftLLMResponseSchema.parse(data)
 
-      // Check existing newsletter data for invalidation
-      const existingData = await getNewsletterData(videoId)
-      const needsInvalidation = existingData && existingData.status !== 'idle' && existingData.status !== 'draft'
+        // Invalidação downstream se regenerando a partir de status avançado
+        const existingData = await getNewsletterData(videoId)
+        const needsInvalidation = existingData && existingData.status !== 'idle' && existingData.status !== 'draft'
 
-      // Build save payload — invalidate downstream if regenerating from advanced status
-      const savePayload: { status: 'draft'; draft: string; additionalContext?: string } = {
-        status: 'draft',
-        draft: validated.draft,
-      }
-
-      if (additionalContext) {
-        savePayload.additionalContext = additionalContext
-      }
-
-      // Atomic dot-notation: clear downstream fields when regenerating from advanced status
-      const clearFields = needsInvalidation
-        ? ['news', 'imagePrompt', 'imageUrl', 'report'] as string[]
-        : undefined
-
-      await saveNewsletterData(videoId, savePayload, clearFields)
-
-      log('INFO', 'Newsletter draft generated via LLM', { videoId })
-
-      return NextResponse.json({
-        data: {
+        const savePayload: { status: 'draft'; draft: string; additionalContext?: string } = {
+          status: 'draft',
           draft: validated.draft,
-        },
-      })
-    } finally {
-      if (attachmentPath) {
-        await cleanupTranscriptionFile(attachmentPath)
+        }
+        if (additionalContext) {
+          savePayload.additionalContext = additionalContext
+        }
+
+        const clearFields = needsInvalidation
+          ? ['news', 'imagePrompt', 'imageUrl', 'report'] as string[]
+          : undefined
+
+        await saveNewsletterData(videoId, savePayload, clearFields)
+
+        log('INFO', 'Newsletter draft generated via LLM', { videoId, mode: isAsync ? 'async' : 'sync' })
+
+        return { payload: { draft: validated.draft }, usage }
+      } finally {
+        if (attachmentPath) {
+          await cleanupTranscriptionFile(attachmentPath)
+        }
       }
     }
+
+    if (isAsync) {
+      const jobId = await createJob(PODCAST_ID, { type: 'newsletter-draft', context: { videoId } })
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const { payload, usage } = await runGeneration()
+        return { result: payload, usage }
+      })
+      return NextResponse.json({ jobId, podcastId: PODCAST_ID, status: 'pending' }, { status: 202 })
+    }
+
+    const { payload } = await runGeneration()
+    return NextResponse.json({ data: payload })
   } catch (error) {
     if (error instanceof LLMError) {
       const status = error.code === 'RATE_LIMIT' ? 429 : 500

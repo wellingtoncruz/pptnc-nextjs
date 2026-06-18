@@ -6,6 +6,7 @@ import { AlertCircle, Check, Copy, ImageIcon, Loader2, RefreshCw } from 'lucide-
 import { Button } from '@/components/ui/button'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { useNewsImage } from '@/hooks/use-news-image'
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import type { News } from '@/types/news'
 
 interface NewsSocialPhaseProps {
@@ -59,23 +60,13 @@ export function NewsSocialPhase({ news, onDataUpdate }: NewsSocialPhaseProps) {
     setError(null)
 
     try {
-      const fetchOptions: RequestInit = context
-        ? {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ additionalContext: context }),
-          }
-        : { method: 'POST' }
+      // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+      const data = await runAsyncJob<{ social: string }>({
+        url: `/api/news/${news.id}/generate-social`,
+        body: context ? { additionalContext: context } : undefined,
+      })
 
-      const response = await fetch(`/api/news/${news.id}/generate-social`, fetchOptions)
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error?.message || 'Erro ao gerar redação')
-      }
-
-      const data = await response.json()
-      const generatedText = data.data?.social ?? ''
+      const generatedText = data?.social ?? ''
       setLocalText(generatedText)
       resetValue(generatedText)
 
