@@ -32,13 +32,12 @@ import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
-import { createWizardJob, updateWizardJob } from '@/lib/firebase/wizard-jobs-admin'
+import { createJob } from '@/lib/firebase/jobs-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import type { Phase1Response, Phase2Response, Phase3Response, Phase4Response, Phase5Response, Phase6Response, Phase7Response } from '@/lib/llm'
 import { callLLMQueued, type PhaseResponse } from '@/lib/llm'
-import type { LLMResult } from '@/lib/llm/types'
+import { LLMError } from '@/lib/llm/errors'
 import { log } from '@/lib/logger'
-import type { Podcast } from '@/types/podcast'
-import type { Video } from '@/types/video'
 import { isLLMPhaseId, type LLMPhaseId } from '@/lib/wizard'
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin and Vertex AI
@@ -181,88 +180,6 @@ async function persistPhaseResult(
   return data
 }
 
-/**
- * Background worker for the async path. Runs the LLM call and persists
- * results, updating the wizard job document along the way. Never throws —
- * errors are written to the job document so the frontend can react.
- */
-async function processWizardJobInBackground(params: {
-  jobId: string
-  phase: LLMPhase
-  video: Video
-  podcast: Podcast | null
-  options: {
-    promptOverride?: string
-    additionalContext?: string
-    previousPhaseData?: Record<string, unknown>
-    debugContext?: { component: string; videoId: string; videoType: 'episode' | 'cut' | 'reel'; podcastId: string }
-  }
-}): Promise<void> {
-  const { jobId, phase, video, podcast, options } = params
-  const videoId = video.id
-
-  try {
-    await updateWizardJob(PODCAST_ID, videoId, jobId, { status: 'processing' })
-
-    const result: LLMResult<PhaseResponse> = await callLLMQueued(
-      phase,
-      video,
-      podcast ?? undefined,
-      options
-    )
-
-    if (!result.success) {
-      log('WARN', 'Async LLM call failed', {
-        jobId,
-        videoId,
-        phase,
-        errorCode: result.error.code,
-        errorMessage: result.error.message,
-      })
-      await updateWizardJob(PODCAST_ID, videoId, jobId, {
-        status: 'failed',
-        error: {
-          code: result.error.code,
-          message: result.error.message,
-          retryable: result.error.retryable,
-        },
-      })
-      return
-    }
-
-    const persisted = await persistPhaseResult(phase, videoId, result.data)
-
-    await updateWizardJob(PODCAST_ID, videoId, jobId, {
-      status: 'complete',
-      result: persisted,
-      usage: result.usage,
-    })
-
-    log('INFO', 'Async wizard job completed', {
-      jobId,
-      videoId,
-      phase,
-      tokensUsed: result.usage.totalTokens,
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro desconhecido'
-    log('ERROR', 'Async wizard job crashed', { jobId, videoId, phase, error: message })
-
-    try {
-      await updateWizardJob(PODCAST_ID, videoId, jobId, {
-        status: 'failed',
-        error: { code: 'UNKNOWN', message, retryable: false },
-      })
-    } catch (updateError) {
-      log('ERROR', 'Failed to record job failure', {
-        jobId,
-        videoId,
-        updateError: updateError instanceof Error ? updateError.message : String(updateError),
-      })
-    }
-  }
-}
-
 export async function POST(
   request: NextRequest,
   context: RouteContext
@@ -320,23 +237,22 @@ export async function POST(
     const callOptions = { promptOverride, additionalContext, previousPhaseData, debugContext }
 
     if (isAsync) {
-      const jobId = await createWizardJob(PODCAST_ID, {
-        videoId,
-        phase,
-        ...(additionalContext ? { additionalContext } : {}),
-        ...(promptOverride ? { promptOverride } : {}),
+      const jobId = await createJob(PODCAST_ID, {
+        type: `wizard:${phase}`,
+        context: { videoId, phase },
       })
 
-      // Fire-and-forget. Cloud Run with --no-cpu-throttling keeps the
-      // instance alive while the Promise is pending, until --timeout (1800s)
-      // or the worker resolves. Errors are captured inside the worker and
-      // written to the job document.
-      void processWizardJobInBackground({
-        jobId,
-        phase,
-        video,
-        podcast: podcast ?? null,
-        options: callOptions,
+      // Fire-and-forget. Cloud Run with --no-cpu-throttling keeps the instance
+      // alive while the Promise is pending, until --timeout (1800s) or the
+      // worker resolves. runJobInBackground faz as transições de status e
+      // captura erros no doc do job (Epic 27 — infra de jobs genérica).
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const result = await callLLMQueued(phase, video, podcast ?? undefined, callOptions)
+        if (!result.success) {
+          throw new LLMError(result.error.code, result.error.message, result.error.retryable)
+        }
+        const persisted = await persistPhaseResult(phase, videoId, result.data)
+        return { result: persisted, usage: result.usage }
       })
 
       return NextResponse.json(

@@ -504,7 +504,7 @@ function GeneratePathCard({ videoId, videoType, guestPhotoUrl, onGuestPhotoChang
         }
         let jobResponse: Response
         try {
-          jobResponse = await fetch(`/api/wizard/jobs/${jobId}?videoId=${encodeURIComponent(videoId)}`)
+          jobResponse = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`)
         } catch (err) {
           log('WARN', 'Thumbnail polling fetch threw, retrying', {
             videoId,

@@ -19,9 +19,11 @@ import {
   notFoundResponse,
 } from '@/lib/api/video-field-handler'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { createJob } from '@/lib/firebase/jobs-admin'
 import { getNewsletterData, saveNewsletterData } from '@/lib/firebase/newsletter-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import { callGenAI } from '@/lib/llm/client'
 import { LLMError } from '@/lib/llm/errors'
 import { llmQueue } from '@/lib/llm/queue'
@@ -51,6 +53,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   }
 
   const { videoId } = await context.params
+  const isAsync = new URL(request.url).searchParams.get('mode') === 'async'
 
   try {
     // Parse body
@@ -143,26 +146,40 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
       imageProxyUrl
     )
 
-    // Call LLM via queue (no attachment)
-    const { data } = await llmQueue.enqueue(() =>
-      callGenAI<{ report: string }>(systemPrompt, userPrompt, 60000, undefined, debugContext, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider, podcast?.llmConfig?.fallbackProvider)
-    )
+    // Trabalho LLM + persistência, compartilhado entre sync e async (Epic 27).
+    const runGeneration = async (): Promise<{
+      payload: { report: string }
+      usage: { promptTokens: number; completionTokens: number; totalTokens: number }
+    }> => {
+      const { data, usage } = await llmQueue.enqueue(() =>
+        callGenAI<{ report: string }>(systemPrompt, userPrompt, 60000, undefined, debugContext, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider, podcast?.llmConfig?.fallbackProvider)
+      )
 
-    // Validate LLM response
-    const validated = NewsletterFormatLLMResponseSchema.parse(data)
+      const validated = NewsletterFormatLLMResponseSchema.parse(data)
 
-    // Save to Firestore — preserve all existing data, add report, set completed
-    await saveNewsletterData(videoId, {
-      ...newsletterData,
-      status: 'completed',
-      report: validated.report,
-    })
+      // Preserva todos os dados existentes, adiciona report, status completed
+      await saveNewsletterData(videoId, {
+        ...newsletterData,
+        status: 'completed',
+        report: validated.report,
+      })
 
-    log('INFO', 'Newsletter report generated via LLM', { videoId })
+      log('INFO', 'Newsletter report generated via LLM', { videoId, mode: isAsync ? 'async' : 'sync' })
 
-    return NextResponse.json({
-      data: { report: validated.report },
-    })
+      return { payload: { report: validated.report }, usage }
+    }
+
+    if (isAsync) {
+      const jobId = await createJob(PODCAST_ID, { type: 'newsletter-format', context: { videoId } })
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const { payload, usage } = await runGeneration()
+        return { result: payload, usage }
+      })
+      return NextResponse.json({ jobId, podcastId: PODCAST_ID, status: 'pending' }, { status: 202 })
+    }
+
+    const { payload } = await runGeneration()
+    return NextResponse.json({ data: payload })
   } catch (error) {
     if (error instanceof LLMError) {
       const status = error.code === 'RATE_LIMIT' ? 429 : 500

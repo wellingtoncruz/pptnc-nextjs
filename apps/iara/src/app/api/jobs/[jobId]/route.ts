@@ -1,21 +1,22 @@
 /**
- * GET /api/wizard/jobs/[jobId]?videoId=...
+ * GET /api/jobs/[jobId]
  *
- * Polled by the wizard orchestrator after starting an async phase
- * (POST /api/wizard/phase/[phase]?mode=async). Each request reads the job
- * doc once via Firebase Admin and returns the current status snapshot.
+ * Polled pelo cliente após iniciar um job assíncrono genérico
+ * (POST `…?mode=async`). Cada request lê o doc do job uma vez via Firebase
+ * Admin e retorna o snapshot do status atual.
  *
- * Polling — rather than the Firestore client SDK + onSnapshot — keeps the
- * frontend free of the Firebase Web SDK + NEXT_PUBLIC_FIREBASE_* env vars
- * that would otherwise need to be baked into the build.
+ * Coleção top-level (`podcasts/{podcastId}/jobs/{jobId}`), então o read precisa
+ * só do jobId — sem parent. Polling (em vez de onSnapshot) mantém o frontend
+ * livre do Firebase Web SDK + NEXT_PUBLIC_FIREBASE_* (que exigiriam build-time).
  *
- * @see lib/firebase/wizard-jobs-admin.ts for the job model
+ * @see lib/firebase/jobs-admin.ts (modelo do job)
+ * @see app/api/wizard/jobs/[jobId]/route.ts (predecessor específico do Wizard)
  */
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
-import { getWizardJob } from '@/lib/firebase/wizard-jobs-admin'
+import { getJob } from '@/lib/firebase/jobs-admin'
 
 export const runtime = 'nodejs' // REQUIRED for firebase-admin
 
@@ -36,16 +37,14 @@ export async function GET(
   }
 
   const { jobId } = await context.params
-  const videoId = request.nextUrl.searchParams.get('videoId')
-
-  if (!jobId || !videoId) {
+  if (!jobId) {
     return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'jobId e videoId são obrigatórios' } },
+      { error: { code: 'VALIDATION_ERROR', message: 'jobId é obrigatório' } },
       { status: 400 }
     )
   }
 
-  const job = await getWizardJob(PODCAST_ID, videoId, jobId)
+  const job = await getJob(PODCAST_ID, jobId)
   if (!job) {
     return NextResponse.json(
       { error: { code: 'NOT_FOUND', message: 'Job não encontrado' } },
@@ -54,9 +53,6 @@ export async function GET(
   }
 
   return NextResponse.json({
-    id: job.id,
-    videoId: job.videoId,
-    phase: job.phase,
     status: job.status,
     result: job.result,
     error: job.error,

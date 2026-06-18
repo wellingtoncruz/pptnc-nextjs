@@ -26,8 +26,8 @@ import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
-import { createWizardJob, updateWizardJob } from '@/lib/firebase/wizard-jobs-admin'
-import { LLMError, createLLMError } from '@/lib/llm'
+import { createJob } from '@/lib/firebase/jobs-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import { log } from '@/lib/logger'
 import { generateThumbnail } from '@/lib/wizard/thumbnail-generator'
 import type { Podcast } from '@/types/podcast'
@@ -46,19 +46,18 @@ const RequestSchema = z.object({
 })
 
 /**
- * Worker em background — nunca lança. Toda falha é persistida no job pra
- * polling do cliente. Não usar `await` no caller; deve ser fire-and-forget.
+ * Constrói o `work()` do job de thumbnail (Epic 27). `runJobInBackground` cuida
+ * das transições de status e do mapeamento de erro; aqui só geramos + montamos o
+ * result (mesmo payload do caminho síncrono). `generateThumbnail` lança em falha.
  */
-async function processThumbnailJob(params: {
-  jobId: string
+function buildThumbnailWork(params: {
   video: Video
   podcast: Podcast
   observation: string | undefined
   guestPhotoUrl: string | undefined
-}): Promise<void> {
-  const { jobId, video, podcast, observation, guestPhotoUrl } = params
-  try {
-    await updateWizardJob(PODCAST_ID, video.id, jobId, { status: 'processing' })
+}): () => Promise<{ result: { thumbnailUrl: string; observation?: string } }> {
+  const { video, podcast, observation, guestPhotoUrl } = params
+  return async () => {
     const result = await generateThumbnail({ video, podcast, observation, guestPhotoUrl })
     // Firestore rejeita `undefined` em qualquer field — só inclui observation
     // no result quando o produtor de fato digitou algo.
@@ -69,35 +68,7 @@ async function processThumbnailJob(params: {
     if (trimmedObservation) {
       jobResult.observation = trimmedObservation
     }
-    await updateWizardJob(PODCAST_ID, video.id, jobId, {
-      status: 'complete',
-      result: jobResult,
-    })
-    log('INFO', 'Async thumbnail job completed', { jobId, videoId: video.id })
-  } catch (error) {
-    const llmError = error instanceof LLMError ? error : createLLMError(error)
-    log('WARN', 'Async thumbnail job failed', {
-      jobId,
-      videoId: video.id,
-      errorCode: llmError.code,
-      errorMessage: llmError.message,
-    })
-    try {
-      await updateWizardJob(PODCAST_ID, video.id, jobId, {
-        status: 'failed',
-        error: {
-          code: llmError.code,
-          message: llmError.message,
-          retryable: llmError.retryable,
-        },
-      })
-    } catch (updateError) {
-      log('ERROR', 'Failed to record thumbnail job failure', {
-        jobId,
-        videoId: video.id,
-        updateError: updateError instanceof Error ? updateError.message : String(updateError),
-      })
-    }
+    return { result: jobResult }
   }
 }
 
@@ -164,20 +135,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     hasGuestPhoto: Boolean(guestPhotoUrl),
   })
 
-  const jobId = await createWizardJob(PODCAST_ID, {
-    videoId,
-    phase: 'thumbnail',
-    ...(observation ? { additionalContext: observation } : {}),
+  const jobId = await createJob(PODCAST_ID, {
+    type: 'wizard:thumbnail',
+    context: { videoId, phase: 'thumbnail' },
   })
 
-  // Fire-and-forget — worker grava status/result no job pro polling.
-  void processThumbnailJob({
+  // Fire-and-forget — runJobInBackground grava status/result/erro no job (Epic 27).
+  void runJobInBackground(
+    PODCAST_ID,
     jobId,
-    video,
-    podcast,
-    observation,
-    guestPhotoUrl,
-  })
+    buildThumbnailWork({ video, podcast, observation, guestPhotoUrl })
+  )
 
   return NextResponse.json(
     { jobId, podcastId: PODCAST_ID, status: 'pending' },

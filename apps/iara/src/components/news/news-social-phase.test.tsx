@@ -17,8 +17,13 @@ vi.mock('@/hooks/use-news-image', () => ({
   }),
 }))
 
+// Epic 27: generateSocial usa runAsyncJob (job+polling) em vez de fetch.
+vi.mock('@/lib/jobs/run-async-job', () => ({ runAsyncJob: vi.fn() }))
+
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { NewsSocialPhase } from './news-social-phase'
 
+const mockRunAsyncJob = vi.mocked(runAsyncJob)
 const mockTimestamp = { toDate: () => new Date(), toMillis: () => 0, seconds: 0, nanoseconds: 0 }
 
 const baseNews = {
@@ -50,10 +55,7 @@ describe('NewsSocialPhase', () => {
   })
 
   function mockGenerateSuccess(social = 'Texto social gerado pela IA') {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ data: { social } }),
-    } as never)
+    mockRunAsyncJob.mockResolvedValueOnce({ social })
   }
 
   it('auto-generates social when social is null', async () => {
@@ -84,9 +86,8 @@ describe('NewsSocialPhase', () => {
       expect(screen.getByTestId('news-social-phase')).toBeInTheDocument()
     })
 
-    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-      '/api/news/news-1/generate-social',
-      { method: 'POST' }
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/api/news/news-1/generate-social' })
     )
   })
 
@@ -103,10 +104,7 @@ describe('NewsSocialPhase', () => {
 
   it('shows error state when generation fails', async () => {
     const news = { ...baseNews, social: null }
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockResolvedValue({ error: { message: 'Erro ao gerar' } }),
-    } as never)
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Erro ao gerar'))
     const onDataUpdate = vi.fn().mockResolvedValue(undefined)
 
     render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
@@ -120,10 +118,7 @@ describe('NewsSocialPhase', () => {
 
   it('retries generation when retry button is clicked', async () => {
     const news = { ...baseNews, social: null }
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockResolvedValue({}),
-    } as never)
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('falha inicial'))
     const onDataUpdate = vi.fn().mockResolvedValue(undefined)
     const user = userEvent.setup()
 
@@ -204,10 +199,7 @@ describe('NewsSocialPhase', () => {
     const onDataUpdate = vi.fn().mockResolvedValue(undefined)
     const user = userEvent.setup()
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockResolvedValue({ error: { message: 'Erro na regeneração' } }),
-    } as never)
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Erro na regeneração'))
 
     render(<NewsSocialPhase news={news} onDataUpdate={onDataUpdate} />)
 
@@ -281,12 +273,10 @@ describe('NewsSocialPhase', () => {
     await user.click(screen.getByTestId('confirm-regenerate-button'))
 
     await waitFor(() => {
-      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-        '/api/news/news-1/generate-social',
+      expect(mockRunAsyncJob).toHaveBeenCalledWith(
         expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ additionalContext: 'Foque no impacto econômico' }),
+          url: '/api/news/news-1/generate-social',
+          body: { additionalContext: 'Foque no impacto econômico' },
         })
       )
     })
@@ -306,9 +296,8 @@ describe('NewsSocialPhase', () => {
     await user.click(screen.getByTestId('confirm-regenerate-button'))
 
     await waitFor(() => {
-      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-        '/api/news/news-1/generate-social',
-        { method: 'POST' }
+      expect(mockRunAsyncJob).toHaveBeenCalledWith(
+        expect.objectContaining({ url: '/api/news/news-1/generate-social', body: undefined })
       )
     })
   })

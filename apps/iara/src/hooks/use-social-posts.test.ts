@@ -7,8 +7,16 @@ import type { SocialPost } from '@/types/social'
 import { useSocialPosts } from './use-social-posts'
 import type { EnabledNetworkInfo } from './use-social-posts'
 
+// Epic 27: generate/retry/reprocess agora usam runAsyncJob (job + polling). O GET
+// de listagem continua em fetch. runAsyncJob retorna o post diretamente (mesmo
+// payload do caminho síncrono).
+vi.mock('@/lib/jobs/run-async-job', () => ({ runAsyncJob: vi.fn() }))
+
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
+
 const mockFetch = vi.fn()
 global.fetch = mockFetch
+const mockRunAsyncJob = vi.mocked(runAsyncJob)
 
 const enabledNetworks: EnabledNetworkInfo[] = [
   { id: 'instagram', name: 'Instagram', icon: '📸' },
@@ -30,7 +38,7 @@ describe('useSocialPosts', () => {
   })
 
   it('fetches posts on videoId change', async () => {
-    const existingPosts = [mockPost('instagram')]
+    const existingPosts = [mockPost('instagram'), mockPost('linkedin')]
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ data: existingPosts }),
@@ -68,15 +76,11 @@ describe('useSocialPosts', () => {
     const existingPosts = [mockPost('instagram')]
     const generatedPost = mockPost('linkedin')
 
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: existingPosts }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: generatedPost }),
-      })
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: existingPosts }),
+    })
+    mockRunAsyncJob.mockResolvedValueOnce(generatedPost)
 
     const { result } = renderHook(() =>
       useSocialPosts('video-1', enabledNetworks, true)
@@ -88,13 +92,11 @@ describe('useSocialPosts', () => {
 
     expect(result.current.isGenerating).toBe(false)
     expect(result.current.generatingNetworkId).toBeNull()
-    // Verify POST was called for linkedin
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/social-posts/linkedin/generate',
-      expect.objectContaining({ method: 'POST' })
+    // Job disparado para o linkedin (faltante)
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/api/videos/video-1/social-posts/linkedin/generate' })
     )
-    // Verify GET was called first
-    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(mockRunAsyncJob).toHaveBeenCalledTimes(1)
   })
 
   it('skips generation when hasPrerequisites is false', async () => {
@@ -111,14 +113,13 @@ describe('useSocialPosts', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    // Only GET was called, no POST
     expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockRunAsyncJob).not.toHaveBeenCalled()
     expect(result.current.posts).toEqual([])
     expect(result.current.isGenerating).toBe(false)
   })
 
   it('cancels in-flight requests when videoId changes', async () => {
-    // First render: slow fetch that won't resolve before re-render
     let resolveFirst: (value: unknown) => void
     mockFetch.mockImplementationOnce(() =>
       new Promise(resolve => { resolveFirst = resolve })
@@ -131,7 +132,6 @@ describe('useSocialPosts', () => {
 
     expect(result.current.isLoading).toBe(true)
 
-    // Change videoId — should abort the first request
     // Return both posts so no auto-generation triggers
     const video2Posts = [mockPost('instagram'), mockPost('linkedin')]
     mockFetch.mockResolvedValueOnce({
@@ -145,58 +145,42 @@ describe('useSocialPosts', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    // Verify GET was called for video-2
     expect(mockFetch).toHaveBeenCalledWith(
       '/api/videos/video-2/social-posts',
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     )
 
-    // Resolve the first fetch after abort (should be ignored)
     resolveFirst!({
       ok: true,
       json: () => Promise.resolve({ data: [] }),
     })
 
-    // Posts should be from video-2's fetch, not video-1's
     expect(result.current.posts).toEqual(video2Posts)
   })
 
   it('handles error per network and allows retry', async () => {
-    // GET returns no posts
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: [] }),
-      })
-      // instagram generate fails
-      .mockResolvedValueOnce({
-        ok: false,
-        json: () => Promise.resolve({ error: { message: 'Rate limit' } }),
-      })
-      // linkedin generate succeeds
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: mockPost('linkedin') }),
-      })
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: [] }),
+    })
+    // instagram generate fails, linkedin succeeds (ordem dos enabledNetworks)
+    mockRunAsyncJob
+      .mockRejectedValueOnce(new Error('Rate limit'))
+      .mockResolvedValueOnce(mockPost('linkedin'))
 
     const { result } = renderHook(() =>
       useSocialPosts('video-1', enabledNetworks, true)
     )
 
-    // Wait for linkedin post to appear (confirms sequential processing completed)
     await waitFor(() => {
       expect(result.current.posts).toContainEqual(mockPost('linkedin'))
     })
 
-    // Instagram has error, linkedin succeeded
     expect(result.current.errors.get('instagram')).toBe('Rate limit')
     expect(result.current.isGenerating).toBe(false)
 
     // Retry instagram
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: mockPost('instagram') }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(mockPost('instagram'))
 
     await act(async () => {
       result.current.retryNetwork('instagram')
@@ -214,19 +198,13 @@ describe('useSocialPosts', () => {
     const generatedInstagram = mockPost('instagram')
     const generatedLinkedin = mockPost('linkedin')
 
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: generatedInstagram }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ data: generatedLinkedin }),
-      })
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: [] }),
+    })
+    mockRunAsyncJob
+      .mockResolvedValueOnce(generatedInstagram)
+      .mockResolvedValueOnce(generatedLinkedin)
 
     const { result } = renderHook(() =>
       useSocialPosts('video-1', enabledNetworks, true)
@@ -256,17 +234,16 @@ describe('useSocialPosts', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    // No posts loaded, no generation triggered
     expect(result.current.posts).toEqual([])
     expect(result.current.isGenerating).toBe(false)
     expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockRunAsyncJob).not.toHaveBeenCalled()
   })
 
   it('reprocesses a specific network with additionalContext', async () => {
     const existingPosts = [mockPost('instagram'), mockPost('linkedin')]
     const reprocessedPost = { ...mockPost('instagram'), cta: 'Reprocessed CTA', processedBy: 'llm' as const }
 
-    // Initial fetch
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ data: existingPosts }),
@@ -280,11 +257,7 @@ describe('useSocialPosts', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    // Reprocess instagram
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: reprocessedPost }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(reprocessedPost)
 
     await act(async () => {
       await result.current.reprocessNetwork('instagram', 'Foque no convidado')
@@ -292,18 +265,17 @@ describe('useSocialPosts', () => {
 
     expect(result.current.reprocessingNetworkId).toBeNull()
     expect(result.current.posts.find(p => p.networkId === 'instagram')?.cta).toBe('Reprocessed CTA')
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/social-posts/instagram/generate',
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ additionalContext: 'Foque no convidado' }),
-        signal: expect.any(AbortSignal),
+        url: '/api/videos/video-1/social-posts/instagram/generate',
+        body: { additionalContext: 'Foque no convidado' },
       })
     )
   })
 
   it('updates post after successful reprocess', async () => {
-    const existingPosts = [mockPost('instagram')]
+    // Ambas as redes já existem → nenhuma auto-geração interfere.
+    const existingPosts = [mockPost('instagram'), mockPost('linkedin')]
     const reprocessedPost = { ...mockPost('instagram'), body: 'New body' }
 
     mockFetch.mockResolvedValueOnce({
@@ -316,21 +288,17 @@ describe('useSocialPosts', () => {
     )
 
     await waitFor(() => {
-      expect(result.current.posts).toHaveLength(1)
+      expect(result.current.posts).toHaveLength(2)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: reprocessedPost }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce(reprocessedPost)
 
     await act(async () => {
       await result.current.reprocessNetwork('instagram')
     })
 
-    // Post should be replaced in-place
-    expect(result.current.posts).toHaveLength(1)
-    expect(result.current.posts[0].body).toBe('New body')
+    expect(result.current.posts).toHaveLength(2)
+    expect(result.current.posts.find(p => p.networkId === 'instagram')?.body).toBe('New body')
   })
 
   it('re-throws reprocess error for caller handling', async () => {
@@ -349,19 +317,14 @@ describe('useSocialPosts', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: { message: 'Parse error' } }),
-    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Parse error'))
 
     await act(async () => {
       await expect(result.current.reprocessNetwork('instagram')).rejects.toThrow('Parse error')
     })
 
     expect(result.current.reprocessingNetworkId).toBeNull()
-    // Error NOT stored in errors map — caller (SocialPostColumn) handles display
     expect(result.current.errors.has('instagram')).toBe(false)
-    // Original post should still be there
     expect(result.current.posts).toContainEqual(existingPosts[0])
   })
 

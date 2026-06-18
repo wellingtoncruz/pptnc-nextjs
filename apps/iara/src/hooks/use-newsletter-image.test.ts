@@ -40,6 +40,29 @@ function createSSEResponse(events: Array<{ event: string; data: Record<string, u
   }
 }
 
+/** SSE response a partir de chunks brutos (p/ testar heartbeats ': ping'). */
+function createRawSSEResponse(chunks: string[]) {
+  const encoder = new TextEncoder()
+  let i = 0
+  const body = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (i < chunks.length) {
+        controller.enqueue(encoder.encode(chunks[i]))
+        i++
+      } else {
+        controller.close()
+      }
+    },
+  })
+  return {
+    ok: true,
+    status: 200,
+    headers: new Headers({ 'Content-Type': 'text/event-stream' }),
+    body,
+    json: () => Promise.reject(new Error('SSE stream, not JSON')),
+  }
+}
+
 describe('useNewsletterImage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -134,6 +157,37 @@ describe('useNewsletterImage', () => {
         body: JSON.stringify({ additionalContext: 'Use blue tones' }),
       })
     )
+  })
+
+  it('ignores SSE heartbeat comments interleaved with events (Epic 27 / ADR-27.3)', async () => {
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: { status: 'news_selected' } }),
+      })
+      .mockResolvedValueOnce(createRawSSEResponse([
+        ': ping\n\n',
+        'event: progress\ndata: {"step":"generating_image"}\n\n',
+        ': ping\n\n',
+        'event: complete\ndata: {"imagePath":"newsletters/pptnc/video-1/789.png","imagePrompt":"P"}\n\n',
+      ]))
+    global.fetch = mockFetch
+
+    const { result } = renderHook(() => useNewsletterImage('video-1'))
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    let success: boolean | undefined
+    await act(async () => {
+      success = await result.current.generate()
+    })
+
+    // Heartbeats não quebram o parser; o complete é processado normalmente.
+    expect(success).toBe(true)
+    expect(result.current.imagePrompt).toBe('P')
+    expect(result.current.newsletterStatus).toBe('image_ready')
   })
 
   it('returns false when generation fails via SSE error event', async () => {

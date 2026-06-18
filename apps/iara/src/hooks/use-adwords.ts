@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { log } from '@/lib/logger'
 import type { AdwordsData } from '@/types/adwords'
 
@@ -38,24 +39,12 @@ export function useAdwords(
     signal: AbortSignal,
     additionalContext?: string
   ): Promise<AdwordsData> => {
-    const options: RequestInit = {
-      method: 'POST',
+    // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+    return runAsyncJob<AdwordsData>({
+      url: `/api/videos/${videoId}/adwords/generate`,
+      body: additionalContext ? { additionalContext } : undefined,
       signal,
-    }
-    if (additionalContext) {
-      options.headers = { 'Content-Type': 'application/json' }
-      options.body = JSON.stringify({ additionalContext })
-    }
-    const response = await fetch(
-      `/api/videos/${videoId}/adwords/generate`,
-      options
-    )
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}))
-      throw new Error(err.error?.message || 'Erro ao gerar guia AdWords')
-    }
-    const { data } = await response.json()
-    return data
+    })
   }, [videoId])
 
   // Main effect: fetch + auto-generate
@@ -144,20 +133,12 @@ export function useAdwords(
     setError(null)
 
     try {
-      const response = await fetch(
-        `/api/videos/${videoId}/adwords/generate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ additionalContext }),
-          signal: abortControllerRef.current?.signal,
-        }
-      )
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error?.message || 'Erro ao reprocessar guia')
-      }
-      const { data: newData } = await response.json()
+      // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+      const newData = await runAsyncJob<AdwordsData>({
+        url: `/api/videos/${videoId}/adwords/generate`,
+        body: { additionalContext },
+        signal: abortControllerRef.current?.signal,
+      })
       setData(newData)
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return

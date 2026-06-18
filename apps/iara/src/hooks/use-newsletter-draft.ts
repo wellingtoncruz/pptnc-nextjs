@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { log } from '@/lib/logger'
 import type { NewsletterStatus } from '@/lib/newsletter/types'
 
@@ -39,24 +40,12 @@ export function useNewsletterDraft(videoId: string | null): UseNewsletterDraftRe
     signal: AbortSignal,
     additionalContext?: string
   ) => {
-    const options: RequestInit = {
-      method: 'POST',
+    // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+    return runAsyncJob<{ draft: string }>({
+      url: `/api/videos/${videoId}/newsletter/draft`,
+      body: additionalContext ? { additionalContext } : undefined,
       signal,
-    }
-    if (additionalContext) {
-      options.headers = { 'Content-Type': 'application/json' }
-      options.body = JSON.stringify({ additionalContext })
-    }
-    const response = await fetch(
-      `/api/videos/${videoId}/newsletter/draft`,
-      options
-    )
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}))
-      throw new Error(err.error?.message || 'Erro ao gerar draft da newsletter')
-    }
-    const { data } = await response.json()
-    return data
+    })
   }, [videoId])
 
   // Main effect: fetch existing data (does NOT auto-generate)

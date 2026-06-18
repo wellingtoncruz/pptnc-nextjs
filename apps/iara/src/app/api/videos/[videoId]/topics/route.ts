@@ -17,6 +17,8 @@ import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { listTopicNames } from '@/lib/firebase/topics-admin'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { createJob } from '@/lib/firebase/jobs-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import { callGenAI } from '@/lib/llm/client'
 import { LLMError } from '@/lib/llm/errors'
 import { llmQueue } from '@/lib/llm/queue'
@@ -92,6 +94,7 @@ export async function POST(
   }
 
   const { videoId } = await context.params
+  const isAsync = request.nextUrl.searchParams.get('mode') === 'async'
 
   try {
     // Load video, podcast settings, and topic names in parallel
@@ -108,45 +111,57 @@ export async function POST(
       )
     }
 
-    if (topicNames.length === 0) {
-      log('WARN', 'No topics configured, skipping categorization', { videoId })
-      return NextResponse.json({
-        data: { videoId, topics: [], skipped: true },
+    // Categorização (catálogo vazio = atalho rápido sem LLM). Compartilhada
+    // entre sync e async (Epic 27).
+    const runCategorization = async (): Promise<{
+      payload: { videoId: string; topics: string[]; skipped?: boolean }
+      usage?: { promptTokens: number; completionTokens: number; totalTokens: number }
+    }> => {
+      if (topicNames.length === 0) {
+        log('WARN', 'No topics configured, skipping categorization', { videoId })
+        return { payload: { videoId, topics: [], skipped: true } }
+      }
+
+      const persona = podcast?.personas?.writer
+      const videoType = video.videoType || 'episode'
+      const promptConfig = (podcast?.prompts as Record<string, Record<string, unknown>>)?.[videoType]?.topics as
+        | { description: string; expectedOutput: string }
+        | undefined
+
+      const systemPrompt = buildTopicsSystemPrompt(persona, promptConfig)
+      const userPrompt = buildTopicsUserPrompt(video, topicNames)
+
+      const { data, usage } = await llmQueue.enqueue(() =>
+        callGenAI<{ topics: string[] }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider, podcast?.llmConfig?.fallbackProvider)
+      )
+
+      const validTopics = (data.topics || []).filter((t: string) =>
+        topicNames.some((name) => name.toLowerCase() === t.toLowerCase())
+      )
+
+      await updateVideoAdmin(PODCAST_ID, videoId, { topics: validTopics })
+
+      log('INFO', 'Video topics generated via LLM', {
+        videoId,
+        topicCount: validTopics.length,
+        discarded: data.topics.length - validTopics.length,
+        mode: isAsync ? 'async' : 'sync',
       })
+
+      return { payload: { videoId, topics: validTopics }, usage }
     }
 
-    // Build prompts
-    const persona = podcast?.personas?.writer
-    const videoType = video.videoType || 'episode'
-    const promptConfig = (podcast?.prompts as Record<string, Record<string, unknown>>)?.[videoType]?.topics as
-      | { description: string; expectedOutput: string }
-      | undefined
+    if (isAsync) {
+      const jobId = await createJob(PODCAST_ID, { type: 'topics', context: { videoId } })
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const { payload, usage } = await runCategorization()
+        return { result: payload, usage }
+      })
+      return NextResponse.json({ jobId, podcastId: PODCAST_ID, status: 'pending' }, { status: 202 })
+    }
 
-    const systemPrompt = buildTopicsSystemPrompt(persona, promptConfig)
-    const userPrompt = buildTopicsUserPrompt(video, topicNames)
-
-    // Call LLM via queue
-    const { data } = await llmQueue.enqueue(() =>
-      callGenAI<{ topics: string[] }>(systemPrompt, userPrompt, 30000, undefined, undefined, podcast?.llmConfig?.textModel, podcast?.llmConfig?.provider, podcast?.llmConfig?.fallbackProvider)
-    )
-
-    // Filter: only keep topics that exist in the catalog
-    const validTopics = (data.topics || []).filter((t: string) =>
-      topicNames.some((name) => name.toLowerCase() === t.toLowerCase())
-    )
-
-    // Persist topics
-    await updateVideoAdmin(PODCAST_ID, videoId, { topics: validTopics })
-
-    log('INFO', 'Video topics generated via LLM', {
-      videoId,
-      topicCount: validTopics.length,
-      discarded: data.topics.length - validTopics.length,
-    })
-
-    return NextResponse.json({
-      data: { videoId, topics: validTopics },
-    })
+    const { payload } = await runCategorization()
+    return NextResponse.json({ data: payload })
   } catch (error) {
     if (error instanceof LLMError) {
       const status = error.code === 'RATE_LIMIT' ? 429 : 500

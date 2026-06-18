@@ -17,10 +17,12 @@ import {
   notFoundResponse,
 } from '@/lib/api/video-field-handler'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { createJob } from '@/lib/firebase/jobs-admin'
 import { listNewsByDate } from '@/lib/firebase/news-admin'
 import { getNewsletterData, saveNewsletterData } from '@/lib/firebase/newsletter-admin'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
+import { runJobInBackground } from '@/lib/jobs/run-job-in-background'
 import { callGenAI } from '@/lib/llm/client'
 import { LLMError } from '@/lib/llm/errors'
 import { buildNewsletterNewsSystemPrompt, buildNewsletterNewsUserPrompt } from '@/lib/llm/newsletter-prompts'
@@ -49,13 +51,14 @@ function mapNewsToNewsletterItem(news: News) {
   }
 }
 
-export async function POST(_request: Request, context: RouteContext): Promise<NextResponse> {
+export async function POST(request: Request, context: RouteContext): Promise<NextResponse> {
   const session = await auth()
   if (!session) {
     return authExpiredResponse()
   }
 
   const { videoId } = await context.params
+  const isAsync = new URL(request.url).searchParams.get('mode') === 'async'
 
   try {
     const video = await getVideoAdmin(PODCAST_ID, videoId)
@@ -72,6 +75,11 @@ export async function POST(_request: Request, context: RouteContext): Promise<Ne
       )
     }
 
+    // Seleção (fetch D-2 + filtro LLM quando >=10). Compartilhada entre sync e
+    // async (Epic 27). O LLM (parte lenta) só roda com >=10 candidatos.
+    const runSelection = async (): Promise<{
+      payload: { items: ReturnType<typeof mapNewsToNewsletterItem>[]; totalFound: number; llmFiltered: boolean }
+    }> => {
     // Fetch news from the last 48 hours (D-2 range from current time)
     const now = new Date()
     const rangeStart = new Date(now.getTime() - 48 * 60 * 60 * 1000)
@@ -107,10 +115,10 @@ export async function POST(_request: Request, context: RouteContext): Promise<Ne
           hasDescription: !!promptConfig?.description,
           hasExpectedOutput: !!promptConfig?.expectedOutput,
         })
-        return createErrorResponse(
-          'CONFIG_MISSING',
+        throw new LLMError(
+          'MISSING_CONTEXT',
           'Configuração de prompt para seleção de notícias não encontrada. Configure prompts.episode.newsletter.news no painel de settings.',
-          422
+          false
         )
       }
 
@@ -164,14 +172,28 @@ export async function POST(_request: Request, context: RouteContext): Promise<Ne
       totalFound,
       returned: candidates.length,
       llmFiltered,
+      mode: isAsync ? 'async' : 'sync',
     })
 
-    return NextResponse.json({
-      data: { items: candidates, totalFound, llmFiltered },
-    })
+      return { payload: { items: candidates, totalFound, llmFiltered } }
+    }
+
+    if (isAsync) {
+      const jobId = await createJob(PODCAST_ID, { type: 'newsletter-news', context: { videoId } })
+      void runJobInBackground(PODCAST_ID, jobId, async () => {
+        const { payload } = await runSelection()
+        return { result: payload }
+      })
+      return NextResponse.json({ jobId, podcastId: PODCAST_ID, status: 'pending' }, { status: 202 })
+    }
+
+    const { payload } = await runSelection()
+    return NextResponse.json({ data: payload })
   } catch (error) {
     if (error instanceof LLMError) {
-      const status = error.code === 'RATE_LIMIT' ? 429 : 500
+      // MISSING_CONTEXT = config de prompt ausente (era 422 CONFIG_MISSING antes
+      // do Epic 27; preserva o status para o caminho sync).
+      const status = error.code === 'RATE_LIMIT' ? 429 : error.code === 'MISSING_CONTEXT' ? 422 : 500
       log('WARN', 'LLM error during newsletter news selection', {
         videoId,
         code: error.code,

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { log } from '@/lib/logger'
 import type { NewsletterStatus } from '@/lib/newsletter/types'
 import type { NewsletterNewsItem } from '@/types/newsletter'
@@ -115,19 +116,12 @@ export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResu
     setConfirmedNews(null)
 
     try {
-      const response = await fetch(`/api/videos/${videoId}/newsletter/news`, {
-        method: 'POST',
+      // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+      const data = await runAsyncJob<{ items: NewsletterNewsItem[]; totalFound: number; llmFiltered: boolean }>({
+        url: `/api/videos/${videoId}/newsletter/news`,
         signal: controller.signal,
       })
 
-      if (controller.signal.aborted) return
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error?.message || 'Erro ao buscar notícias')
-      }
-
-      const { data } = await response.json()
       if (controller.signal.aborted) return
 
       setCandidates(data.items)

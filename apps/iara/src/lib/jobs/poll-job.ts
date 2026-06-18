@@ -1,32 +1,32 @@
 /**
- * Polls GET /api/wizard/jobs/[jobId] until the job reaches a terminal status
- * (`complete` or `failed`), or until the AbortSignal fires.
+ * Faz polling em `GET /api/jobs/[jobId]` até o job atingir status terminal
+ * (`complete` ou `failed`), ou até o AbortSignal disparar (Epic 27, fecha TD-14).
  *
- * Used by the wizard orchestrator after starting an async phase. Polling is
- * deliberately preferred over Firestore onSnapshot to avoid pulling the
- * Firebase Web SDK + NEXT_PUBLIC_FIREBASE_* env vars into the production build.
+ * Coleção top-level → o read precisa só do jobId (sem parent). Polling é
+ * deliberadamente preferido a onSnapshot p/ não puxar o Firebase Web SDK +
+ * NEXT_PUBLIC_FIREBASE_* pro bundle de produção.
  *
- * @see app/api/wizard/jobs/[jobId]/route.ts for the polled endpoint
+ * @see app/api/jobs/[jobId]/route.ts (endpoint polled)
+ * @see lib/wizard/poll-job.ts (predecessor específico do Wizard)
  */
 
-export type WizardJobPollResult =
+export type JobPollResult =
   | { status: 'complete'; result: unknown; usage?: { promptTokens: number; completionTokens: number; totalTokens: number } }
   | { status: 'failed'; error: { code: string; message: string; retryable?: boolean } }
 
 interface PollOptions {
   jobId: string
-  videoId: string
-  /** Polling interval in ms. Defaults to 5000. */
+  /** Intervalo de polling em ms. Default 5000. */
   intervalMs?: number
-  /** Aborts the polling loop. The returned promise rejects with `AbortError`. */
+  /** Aborta o loop. A promise rejeita com `AbortError`. */
   signal?: AbortSignal
 }
 
 const DEFAULT_INTERVAL_MS = 5000
 
 /**
- * Cancellable sleep — resolves after `ms`, or rejects with `AbortError` if
- * the signal fires before then.
+ * Sleep cancelável — resolve após `ms`, ou rejeita com `AbortError` se o signal
+ * disparar antes.
  */
 function delay(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -46,16 +46,15 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
   })
 }
 
-export async function pollWizardJob({
+export async function pollJob({
   jobId,
-  videoId,
   intervalMs = DEFAULT_INTERVAL_MS,
   signal,
-}: PollOptions): Promise<WizardJobPollResult> {
-  const url = `/api/wizard/jobs/${encodeURIComponent(jobId)}?videoId=${encodeURIComponent(videoId)}`
+}: PollOptions): Promise<JobPollResult> {
+  const url = `/api/jobs/${encodeURIComponent(jobId)}`
 
-  // The first poll fires immediately to catch jobs that completed before the
-  // first interval (rare but possible for very short LLM calls).
+  // O primeiro poll dispara imediatamente p/ pegar jobs que completaram antes do
+  // primeiro intervalo (raro, mas possível em chamadas LLM curtas).
   while (true) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 

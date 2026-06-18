@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 
 import { log } from '@/lib/logger'
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -94,18 +95,12 @@ function TopicsSection({ videoId, initialTopics }: TopicsSectionProps) {
     setTopicError(null)
 
     try {
-      const response = await fetch(`/api/videos/${videoId}/topics`, {
-        method: 'POST',
+      // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+      const result = await runAsyncJob<{ videoId: string; topics: string[]; skipped?: boolean }>({
+        url: `/api/videos/${videoId}/topics`,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error?.message || 'Erro ao categorizar tópicos')
-      }
-
-      const result = await response.json()
-      const newTopics = result.data?.topics ?? []
-      setTopics(newTopics)
+      setTopics(result?.topics ?? [])
       setHasGenerated(true)
     } catch (err) {
       setTopicError(err instanceof Error ? err.message : 'Erro desconhecido')

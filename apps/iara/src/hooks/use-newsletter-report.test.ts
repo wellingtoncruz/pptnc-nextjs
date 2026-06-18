@@ -2,9 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { act, renderHook, waitFor } from '@/test-utils'
 
+// Epic 27: generate usa runAsyncJob (job+polling); saveReport (PATCH) segue em fetch.
+vi.mock('@/lib/jobs/run-async-job', () => ({ runAsyncJob: vi.fn() }))
+
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { useNewsletterReport } from './use-newsletter-report'
 import type { NewsletterData } from '@/types/newsletter'
 
+const mockRunAsyncJob = vi.mocked(runAsyncJob)
 const mockFetch = vi.fn()
 global.fetch = mockFetch
 
@@ -57,10 +62,7 @@ describe('useNewsletterReport', () => {
   })
 
   it('gera report via generate()', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: { report: 'Relatório gerado' } }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce({ report: 'Relatório gerado' })
 
     const { result } = renderHook(() =>
       useNewsletterReport('video-1', existingNewsletterData, 'Default prompt')
@@ -74,21 +76,16 @@ describe('useNewsletterReport', () => {
     expect(generateResult).toBe(true)
     expect(result.current.report).toBe('Relatório gerado')
     expect(result.current.isGenerating).toBe(false)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/videos/video-1/newsletter/format',
+    expect(mockRunAsyncJob).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formatPrompt: 'Formate a newsletter' }),
+        url: '/api/videos/video-1/newsletter/format',
+        body: { formatPrompt: 'Formate a newsletter' },
       })
     )
   })
 
   it('retorna false quando generate falha', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: { message: 'Rate limit' } }),
-    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Rate limit'))
 
     const { result } = renderHook(() =>
       useNewsletterReport('video-1', existingNewsletterData, 'Default prompt')
@@ -147,10 +144,7 @@ describe('useNewsletterReport', () => {
 
   it('retry re-dispara generate com último formatPrompt', async () => {
     // First generate fails
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ error: { message: 'Timeout' } }),
-    })
+    mockRunAsyncJob.mockRejectedValueOnce(new Error('Timeout'))
 
     const { result } = renderHook(() =>
       useNewsletterReport('video-1', existingNewsletterData, 'Default prompt')
@@ -163,10 +157,7 @@ describe('useNewsletterReport', () => {
     expect(result.current.error).toBe('Timeout')
 
     // Retry
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: { report: 'Retry report' } }),
-    })
+    mockRunAsyncJob.mockResolvedValueOnce({ report: 'Retry report' })
 
     await act(async () => {
       result.current.retry()
@@ -179,10 +170,9 @@ describe('useNewsletterReport', () => {
     expect(result.current.report).toBe('Retry report')
     expect(result.current.error).toBeNull()
     // Second call should use the same formatPrompt
-    expect(mockFetch).toHaveBeenLastCalledWith(
-      '/api/videos/video-1/newsletter/format',
+    expect(mockRunAsyncJob).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        body: JSON.stringify({ formatPrompt: 'Meu prompt editado' }),
+        body: { formatPrompt: 'Meu prompt editado' },
       })
     )
   })

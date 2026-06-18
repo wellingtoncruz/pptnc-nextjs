@@ -89,10 +89,5 @@ export {
 
 export { LlmLogSchema, LlmLogCreateSchema } from './llm-log'
 
-export {
-  WizardJobSchema,
-  WizardJobCreateSchema,
-  WizardJobUpdateSchema,
-  WizardJobStatusSchema,
-  WizardJobPhaseSchema,
-} from './wizard-job'
+// Jobs LLM assíncronos genéricos (Epic 27) — substitui o WizardJob específico.
+export { JobSchema, JobCreateSchema, JobUpdateSchema, JobStatusSchema } from './job'

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { runAsyncJob } from '@/lib/jobs/run-async-job'
 import { log } from '@/lib/logger'
 import type { NewsletterData } from '@/types/newsletter'
 
@@ -55,19 +56,13 @@ export function useNewsletterReport(
     setIsGenerating(true)
 
     try {
-      const response = await fetch(`/api/videos/${videoId}/newsletter/format`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formatPrompt: prompt }),
+      // Async job (Epic 27) — escapa do edge timeout (~60s) do Cloud Run.
+      const data = await runAsyncJob<{ report: string }>({
+        url: `/api/videos/${videoId}/newsletter/format`,
+        body: { formatPrompt: prompt },
         signal: controller.signal,
       })
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error?.message || 'Erro ao gerar relatório da newsletter')
-      }
-
-      const { data } = await response.json()
       if (controller.signal.aborted) return false
       setReport(data.report)
       return true
