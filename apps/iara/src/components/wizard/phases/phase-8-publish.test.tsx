@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@/test-utils'
+import { render, screen, fireEvent, waitFor } from '@/test-utils'
 
 import { Phase8Publish } from './phase-8-publish'
 import type { Video } from '@/types/video'
@@ -47,6 +47,11 @@ const mockVideoIncomplete: Video = {
 describe('Phase8Publish', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default: produção (publishAllowed=true) — cobre /api/podcast e /api/environment.
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { publishAllowed: true, youtubeFooter: '' } }),
+    }))
   })
 
   describe('Metadata summary display', () => {
@@ -157,6 +162,33 @@ describe('Phase8Publish', () => {
       fireEvent.click(button)
 
       expect(onSend).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('Trava de ambiente de testes (Epic 27)', () => {
+    it('desabilita o botão e mostra a mensagem fora de produção', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: { publishAllowed: false } }),
+      }))
+
+      render(<Phase8Publish video={mockVideoComplete} onSend={vi.fn()} />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-env-lock')).toBeInTheDocument()
+      })
+      expect(screen.getByText(/ambiente de testes, publicação final não autorizada/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /enviar para o youtube/i })).toBeDisabled()
+    })
+
+    it('mantém o botão habilitado em produção (publishAllowed=true)', async () => {
+      render(<Phase8Publish video={mockVideoComplete} onSend={vi.fn()} />)
+
+      // Confirma que a trava NÃO aparece e o botão segue habilitado.
+      await waitFor(() => {
+        expect(screen.queryByTestId('publish-env-lock')).not.toBeInTheDocument()
+      })
+      expect(screen.getByRole('button', { name: /enviar para o youtube/i })).not.toBeDisabled()
     })
   })
 

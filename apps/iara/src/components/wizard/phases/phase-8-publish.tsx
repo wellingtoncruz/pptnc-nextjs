@@ -87,6 +87,21 @@ export function Phase8Publish({
   const guests = video.guests || []
   const links = video.links || []
 
+  // Trava de segurança (Epic 27 append): a publicação final só é liberada em
+  // produção (ENVIRONMENT=PRD). A trava REAL é server-side (a rota retorna 403);
+  // este botão é só UX. Default otimista `true` → em prod não há flash; em
+  // ambiente de testes o fetch desabilita o botão (e, se clicarem no intervalo,
+  // o server bloqueia mesmo assim).
+  const [publishAllowed, setPublishAllowed] = useState<boolean>(true)
+  useEffect(() => {
+    let active = true
+    fetch('/api/environment')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (active) setPublishAllowed(d?.data?.publishAllowed ?? false) })
+      .catch(() => { if (active) setPublishAllowed(false) })
+    return () => { active = false }
+  }, [])
+
   // Fetch youtubeFooter from podcast settings
   const [youtubeFooter, setYoutubeFooter] = useState<string>('')
   // For cuts/reels, fetch parent episode data for placeholder resolution
@@ -441,11 +456,21 @@ export function Phase8Publish({
           </CardContent>
         </Card>
 
+        {/* Trava de segurança: ambiente de testes não autoriza publicação final */}
+        {!publishAllowed && !isSent && (
+          <div
+            data-testid="publish-env-lock"
+            className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950/20 dark:text-amber-200"
+          >
+            <span>⚠️ Ambiente de testes, publicação final não autorizada</span>
+          </div>
+        )}
+
         {/* Send button */}
         <div className="flex justify-end pt-4">
           <Button
             onClick={handleClick}
-            disabled={!isValid || isSending || isSent}
+            disabled={!isValid || isSending || isSent || !publishAllowed}
             variant={isSent ? 'outline' : 'default'}
             size="lg"
           >

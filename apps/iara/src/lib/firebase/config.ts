@@ -35,6 +35,23 @@ export const VERTEX_AI_LOCATION = process.env.VERTEX_AI_LOCATION || 'global'
 export const FIRESTORE_DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'pptnc-stage'
 
 /**
+ * Ambiente de deploy. **Trava de segurança da publicação final no YouTube.**
+ *
+ * - `PRD` → produção: publicação real liberada.
+ * - qualquer outro valor (default `DEV`) → ambiente de testes: a publicação
+ *   final é **bloqueada** (botão desabilitado no Wizard + guard 403 na rota),
+ *   evitando que dados de teste subam ao YouTube por engano.
+ *
+ * **Fail-safe:** se a var não estiver setada, assume DEV (bloqueia). Só é PRD
+ * quando explicitamente `ENVIRONMENT=PRD` (setado no deploy de produção via
+ * Cloud Run env — mesmo caminho do FIRESTORE_DATABASE_ID). Epic 27 (append).
+ */
+export const ENVIRONMENT: 'PRD' | 'DEV' = process.env.ENVIRONMENT === 'PRD' ? 'PRD' : 'DEV'
+
+/** True somente em produção. Libera a publicação final no YouTube. */
+export const IS_PRODUCTION = ENVIRONMENT === 'PRD'
+
+/**
  * Gemini model for LLM calls.
  * If not defined, defaults to 'gemini-2.5-flash' in the LLM client.
  *
@@ -72,7 +89,7 @@ if (!FIRESTORE_DATABASE_ID) {
 if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
   console.log(JSON.stringify({
     severity: 'INFO',
-    message: `[STARTUP] Tenant: ${PODCAST_ID} | Project: ${PROJECT_ID} | Region: ${GCP_REGION} | Vertex: ${VERTEX_AI_LOCATION} | DB: ${FIRESTORE_DATABASE_ID}`,
+    message: `[STARTUP] Tenant: ${PODCAST_ID} | Project: ${PROJECT_ID} | Region: ${GCP_REGION} | Vertex: ${VERTEX_AI_LOCATION} | DB: ${FIRESTORE_DATABASE_ID} | Env: ${ENVIRONMENT}`,
     timestamp: new Date().toISOString(),
     podcastId: PODCAST_ID,
   }))

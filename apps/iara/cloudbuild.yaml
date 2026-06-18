@@ -79,7 +79,10 @@ steps:
       - '1800'
       - '--no-cpu-throttling'
       - '--update-env-vars'
-      - 'PODCAST_ID=${_PODCAST_ID},GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=${_REGION},FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID},NEWSLETTER_IMAGES_BUCKET=${_NEWSLETTER_IMAGES_BUCKET}'
+      # ENVIRONMENT=PRD: este cloudbuild é prod-only → libera a publicação final
+      # no YouTube. Hardcoded (não via substitution) p/ não poder ser flipado por
+      # trigger. Ausência/qualquer outro valor = DEV (publicação bloqueada). Epic 27.
+      - 'PODCAST_ID=${_PODCAST_ID},GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=${_REGION},FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID},NEWSLETTER_IMAGES_BUCKET=${_NEWSLETTER_IMAGES_BUCKET},ENVIRONMENT=PRD'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$TAG_NAME'
