@@ -100,6 +100,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Ao entrar, você autoriza acesso ao seu canal do YouTube para gerenciar metadados de
             vídeos.
           </p>
+          <p className="text-center text-xs text-muted-foreground">
+            <a href="/privacy" className="hover:text-foreground transition-colors">
+              Política de Privacidade
+            </a>
+            {' · '}
+            <a href="/terms" className="hover:text-foreground transition-colors">
+              Termos de Serviço
+            </a>
+          </p>
         </CardContent>
       </Card>
     </div>
