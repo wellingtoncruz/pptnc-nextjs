@@ -64,6 +64,15 @@ export const proxy = auth((req) => {
     return NextResponse.next()
   }
 
+  // Public homepage — the root '/' is a public landing page (logo, what the
+  // app does, sign-in button, and links to Privacy Policy / Terms). It must be
+  // reachable without auth so the OAuth consent screen homepage requirement
+  // (visible Privacy Policy link on the homepage) is satisfied. Authenticated
+  // users are redirected to /videos by the page itself.
+  if (pathname === '/') {
+    return NextResponse.next()
+  }
+
   // Protected page routes
   if (!isAuthenticated) {
     log('INFO', 'Page route auth failed, redirecting to login', { pathname, reason: 'unauthenticated' })

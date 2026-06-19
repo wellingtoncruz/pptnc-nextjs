@@ -55,6 +55,15 @@ describe('proxy', () => {
       expect(location).toContain('callbackUrl=%2Fsettings')
     })
 
+    it('allows the public homepage / without redirecting to login', async () => {
+      const req = createRequest('/')
+      const response = await proxy(req)
+
+      expect(response?.status).toBe(200)
+      expect(response?.headers.get('x-middleware-next')).toBe('1')
+      expect(response?.headers.get('location')).toBeNull()
+    })
+
     it('returns 401 for protected API routes', async () => {
       const req = createRequest('/api/youtube/videos')
       const response = await proxy(req)
