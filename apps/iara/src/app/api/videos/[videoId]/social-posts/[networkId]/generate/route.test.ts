@@ -195,6 +195,41 @@ describe('POST /api/videos/[videoId]/social-posts/[networkId]/generate', () => {
     expect(json.error.code).toBe('MISSING_PREREQUISITES')
   })
 
+  it('does not require theme for standalone videos (vídeo avulso)', async () => {
+    // Standalone cut/reel videos have no parent episode, so theme is empty by
+    // design. Generation must still succeed without it.
+    mockGetVideoAdmin.mockResolvedValue({
+      ...baseVideo,
+      videoType: 'cut',
+      theme: '',
+      standalone: true,
+    })
+
+    const response = await POST(createRequest(), createContext('video-1', 'instagram'))
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.error).toBeUndefined()
+  })
+
+  it('still requires title/description for standalone videos', async () => {
+    mockGetVideoAdmin.mockResolvedValue({
+      ...baseVideo,
+      videoType: 'cut',
+      theme: '',
+      standalone: true,
+      description: undefined,
+    })
+
+    const response = await POST(createRequest(), createContext('video-1', 'instagram'))
+    const json = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(json.error.code).toBe('MISSING_PREREQUISITES')
+    expect(json.error.message).toContain('descrição')
+    expect(json.error.message).not.toContain('tema')
+  })
+
   it('returns 400 when prompt is not configured for networkId', async () => {
     const response = await POST(createRequest(), createContext('video-1', 'tiktok'))
     const json = await response.json()
