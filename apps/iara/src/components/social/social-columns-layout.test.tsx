@@ -103,6 +103,33 @@ describe('SocialColumnsLayout', () => {
     expect(msg.textContent).not.toContain('descrição')
   })
 
+  it('does not require theme for standalone videos (vídeo avulso)', () => {
+    render(
+      <SocialColumnsLayout
+        video={createVideo({ theme: '', standalone: true })}
+        enabledNetworks={enabledNetworks}
+      />
+    )
+
+    // Standalone videos have no parent episode → theme is intentionally empty;
+    // it must not block social generation.
+    expect(screen.queryByTestId('social-columns-prerequisites')).not.toBeInTheDocument()
+    expect(screen.getByTestId('social-columns-layout')).toBeInTheDocument()
+  })
+
+  it('still requires title/description even for standalone videos', () => {
+    render(
+      <SocialColumnsLayout
+        video={createVideo({ theme: '', standalone: true, description: undefined })}
+        enabledNetworks={enabledNetworks}
+      />
+    )
+
+    const msg = screen.getByText(/campos processados/)
+    expect(msg.textContent).toContain('descrição')
+    expect(msg.textContent).not.toContain('tema')
+  })
+
   it('shows loading state while fetching posts', () => {
     mockUseSocialPosts.mockReturnValue({
       posts: [],

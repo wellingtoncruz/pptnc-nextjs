@@ -64,11 +64,17 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       return notFoundResponse('Podcast')
     }
 
-    // Validate video prerequisites
-    if (!video.title || !video.theme || !video.description) {
+    // Validate video prerequisites. Theme is only context for the prompt and is
+    // intentionally empty for standalone videos (vídeo avulso has no parent
+    // episode), so it is not required when video.standalone is true.
+    const missingPrerequisites: string[] = []
+    if (!video.title) missingPrerequisites.push('título')
+    if (!video.theme && !video.standalone) missingPrerequisites.push('tema')
+    if (!video.description) missingPrerequisites.push('descrição')
+    if (missingPrerequisites.length > 0) {
       return createErrorResponse(
         'MISSING_PREREQUISITES',
-        'Video precisa ter título, tema e descrição otimizados antes de gerar post social',
+        `Video precisa ter ${missingPrerequisites.join(', ')} otimizado(s) antes de gerar post social`,
         400
       )
     }

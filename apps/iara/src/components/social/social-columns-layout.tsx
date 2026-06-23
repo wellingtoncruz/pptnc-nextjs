@@ -16,7 +16,10 @@ interface SocialColumnsLayoutProps {
 export function SocialColumnsLayout({ video, enabledNetworks }: SocialColumnsLayoutProps) {
   const missingFields: string[] = []
   if (!video.title) missingFields.push('título')
-  if (!video.theme) missingFields.push('tema')
+  // Standalone videos (vídeo avulso) have no parent episode, so theme is
+  // intentionally empty (cleared on standalone toggle). Theme is only context
+  // for the prompt — don't gate social generation on it for standalone videos.
+  if (!video.theme && !video.standalone) missingFields.push('tema')
   if (!video.description) missingFields.push('descrição')
   const hasPrerequisites = missingFields.length === 0
 
