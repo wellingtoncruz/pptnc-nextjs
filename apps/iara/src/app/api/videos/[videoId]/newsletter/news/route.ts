@@ -218,10 +218,17 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   }
 }
 
-/** Validation schema for PATCH body. */
-const PatchBodySchema = z.object({
-  news: z.array(NewsletterNewsItemSchema).min(3).max(5),
-})
+/**
+ * Validation schema for PATCH body.
+ *
+ * Dois caminhos mutuamente exclusivos:
+ *   - seleção: `{ news: [3..5 itens] }`
+ *   - skip:    `{ skipNews: true }` — a edição segue sem seção de notícias.
+ */
+const PatchBodySchema = z.union([
+  z.object({ news: z.array(NewsletterNewsItemSchema).min(3).max(5) }),
+  z.object({ skipNews: z.literal(true) }),
+])
 
 export async function PATCH(request: Request, context: RouteContext): Promise<NextResponse> {
   const session = await auth()
@@ -243,29 +250,34 @@ export async function PATCH(request: Request, context: RouteContext): Promise<Ne
       )
     }
 
+    const selectedNews = 'news' in bodyResult.data ? bodyResult.data.news : []
+    const isSkip = 'skipNews' in bodyResult.data
+
     // Fetch existing newsletter data
     const existingData = await getNewsletterData(videoId)
     if (!existingData) {
       return notFoundResponse('Newsletter')
     }
 
-    // Validate state transition: draft → news_selected
-    const newStatus = transition(existingData.status, 'selectNews')
+    // Validate state transition: draft → news_selected (por selectNews ou skipNews)
+    const newStatus = transition(existingData.status, isSkip ? 'skipNews' : 'selectNews')
 
-    // Save with updated news and status
+    // Save with updated news and status. `newsSkipped` é sempre escrito: selecionar
+    // notícias depois de um skip desfaz a decisão.
     await saveNewsletterData(videoId, {
       ...existingData,
       status: newStatus,
-      news: bodyResult.data.news,
+      news: selectedNews,
+      newsSkipped: isSkip,
     })
 
-    log('INFO', 'Newsletter news selection confirmed', {
+    log('INFO', isSkip ? 'Newsletter news skipped' : 'Newsletter news selection confirmed', {
       videoId,
-      count: bodyResult.data.news.length,
+      count: selectedNews.length,
     })
 
     return NextResponse.json({
-      data: { status: newStatus },
+      data: { status: newStatus, newsSkipped: isSkip },
     })
   } catch (error) {
     if (error instanceof InvalidNewsletterTransitionError) {

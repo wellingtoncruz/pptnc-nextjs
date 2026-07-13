@@ -157,7 +157,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
         }
 
         const clearFields = needsInvalidation
-          ? ['news', 'imagePrompt', 'imageUrl', 'report'] as string[]
+          ? ['news', 'newsSkipped', 'imagePrompt', 'imageUrl', 'report'] as string[]
           : undefined
 
         await saveNewsletterData(videoId, savePayload, clearFields)

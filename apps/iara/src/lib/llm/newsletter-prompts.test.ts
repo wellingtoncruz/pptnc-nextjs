@@ -399,6 +399,32 @@ describe('buildNewsletterFormatUserPrompt', () => {
     expect(result).toContain('Nenhuma notícia selecionada')
   })
 
+  it('omite a seção de notícias quando o produtor pulou a Fase 2', () => {
+    const result = buildNewsletterFormatUserPrompt('Draft text', [], undefined, true)
+
+    expect(result).not.toContain('## NOTÍCIAS SELECIONADAS')
+    expect(result).not.toContain('Nenhuma notícia selecionada')
+    expect(result).toContain('NÃO terá seção de notícias')
+    expect(result).toContain('Não invente notícias')
+  })
+
+  it('descarta notícias residuais quando newsSkipped está ligado', () => {
+    const news = [{ id: 'n1', title: 'OpenAI lança GPT-5', source: 'TechCrunch' }]
+
+    const result = buildNewsletterFormatUserPrompt('Draft text', news, undefined, true)
+
+    expect(result).not.toContain('OpenAI lança GPT-5')
+    expect(result).not.toContain('## NOTÍCIAS SELECIONADAS')
+  })
+
+  it('mantém a capa mesmo sem notícias', () => {
+    const result = buildNewsletterFormatUserPrompt('Draft', [], '/api/videos/v1/newsletter/image', true)
+
+    expect(result).toContain('## IMAGEM DE CAPA')
+    expect(result).toContain('/api/videos/v1/newsletter/image')
+    expect(result).toContain('## DRAFT DA NEWSLETTER')
+  })
+
   it('includes imageUrl when provided', () => {
     const result = buildNewsletterFormatUserPrompt('Draft', undefined, 'newsletters/video-1/cover.png')
 

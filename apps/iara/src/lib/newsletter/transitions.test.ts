@@ -21,8 +21,21 @@ describe('newsletter transitions', () => {
       ['image_ready', 'generateReport', 'completed'],
       ['completed', 'generateDraft', 'draft'],
       ['completed', 'selectNews', 'news_selected'],
+      ['draft', 'skipNews', 'news_selected'],
+      ['news_selected', 'skipNews', 'news_selected'],
+      ['image_ready', 'skipNews', 'news_selected'],
+      ['completed', 'skipNews', 'news_selected'],
     ])('transitions %s + %s → %s', (from, action, expected) => {
       expect(transition(from, action)).toBe(expected)
+    })
+
+    it('rejeita skipNews antes do rascunho existir (idle)', () => {
+      expect(() => transition('idle', 'skipNews')).toThrow(InvalidNewsletterTransitionError)
+    })
+
+    it('skip é reversível: selectNews continua válido depois de pular', () => {
+      const afterSkip = transition('draft', 'skipNews')
+      expect(transition(afterSkip, 'selectNews')).toBe('news_selected')
     })
 
     it.each<[NewsletterStatus, NewsletterAction]>([
@@ -77,10 +90,10 @@ describe('newsletter transitions', () => {
   describe('getValidActions()', () => {
     it.each<[NewsletterStatus, NewsletterAction[]]>([
       ['idle', ['generateDraft']],
-      ['draft', ['generateDraft', 'selectNews']],
-      ['news_selected', ['generateDraft', 'selectNews', 'generateImage']],
-      ['image_ready', ['generateDraft', 'selectNews', 'generateReport']],
-      ['completed', ['generateDraft', 'selectNews']],
+      ['draft', ['generateDraft', 'selectNews', 'skipNews']],
+      ['news_selected', ['generateDraft', 'selectNews', 'skipNews', 'generateImage']],
+      ['image_ready', ['generateDraft', 'selectNews', 'skipNews', 'generateReport']],
+      ['completed', ['generateDraft', 'selectNews', 'skipNews']],
     ])('getValidActions(%s) → %j', (status, expected) => {
       expect(getValidActions(status)).toEqual(expected)
     })

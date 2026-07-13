@@ -6,16 +6,20 @@ import { InvalidNewsletterTransitionError } from './types'
  *
  * State flow:
  *   idle → draft (via generateDraft)
- *   draft → news_selected (via selectNews)
+ *   draft → news_selected (via selectNews ou skipNews)
  *   news_selected → image_ready (via generateImage)
  *   image_ready → completed (via generateReport)
+ *
+ * `skipNews` leva ao mesmo status de `selectNews`: a edição segue sem seção de
+ * notícias (marcada por `newsSkipped` em NewsletterData) e a Fase 3 é liberada.
+ * A decisão é reversível — `selectNews` continua válido depois de um skip.
  */
 const transitions: Record<NewsletterStatus, Partial<Record<NewsletterAction, NewsletterStatus>>> = {
   idle: { generateDraft: 'draft' },
-  draft: { generateDraft: 'draft', selectNews: 'news_selected' },
-  news_selected: { generateDraft: 'draft', selectNews: 'news_selected', generateImage: 'image_ready' },
-  image_ready: { generateDraft: 'draft', selectNews: 'news_selected', generateReport: 'completed' },
-  completed: { generateDraft: 'draft', selectNews: 'news_selected' },
+  draft: { generateDraft: 'draft', selectNews: 'news_selected', skipNews: 'news_selected' },
+  news_selected: { generateDraft: 'draft', selectNews: 'news_selected', skipNews: 'news_selected', generateImage: 'image_ready' },
+  image_ready: { generateDraft: 'draft', selectNews: 'news_selected', skipNews: 'news_selected', generateReport: 'completed' },
+  completed: { generateDraft: 'draft', selectNews: 'news_selected', skipNews: 'news_selected' },
 }
 
 /**

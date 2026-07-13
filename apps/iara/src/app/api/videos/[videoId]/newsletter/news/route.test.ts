@@ -541,4 +541,108 @@ describe('PATCH /api/videos/[videoId]/newsletter/news', () => {
       news: expect.arrayContaining([expect.objectContaining({ id: 'n1' })]),
     }))
   })
+
+  it('marca newsSkipped=false ao confirmar uma seleção (caminho normal)', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetNewsletterData.mockResolvedValue({ status: 'draft', draft: 'Some draft' })
+
+    const news = Array.from({ length: 3 }, (_, i) => ({ id: `n${i + 1}`, title: `News ${i + 1}` }))
+
+    const response = await PATCH(createPatchRequest({ news }), createContext('video-1'))
+
+    expect(response.status).toBe(200)
+    expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', expect.objectContaining({
+      newsSkipped: false,
+    }))
+  })
+
+  it('aceita skipNews e avança para news_selected sem notícias', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetNewsletterData.mockResolvedValue({ status: 'draft', draft: 'Some draft' })
+
+    const response = await PATCH(
+      createPatchRequest({ skipNews: true }),
+      createContext('video-1')
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.data.status).toBe('news_selected')
+    expect(json.data.newsSkipped).toBe(true)
+    expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', expect.objectContaining({
+      status: 'news_selected',
+      news: [],
+      newsSkipped: true,
+    }))
+  })
+
+  it('limpa notícias já selecionadas ao pular a fase', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetNewsletterData.mockResolvedValue({
+      status: 'news_selected',
+      draft: 'Some draft',
+      news: [{ id: 'old-1', title: 'Old' }],
+    })
+
+    const response = await PATCH(
+      createPatchRequest({ skipNews: true }),
+      createContext('video-1')
+    )
+
+    expect(response.status).toBe(200)
+    expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', expect.objectContaining({
+      news: [],
+      newsSkipped: true,
+    }))
+  })
+
+  it('desfaz o skip quando o produtor volta e seleciona notícias', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetNewsletterData.mockResolvedValue({
+      status: 'news_selected',
+      draft: 'Some draft',
+      news: [],
+      newsSkipped: true,
+    })
+
+    const news = Array.from({ length: 3 }, (_, i) => ({ id: `n${i + 1}`, title: `News ${i + 1}` }))
+
+    const response = await PATCH(createPatchRequest({ news }), createContext('video-1'))
+
+    expect(response.status).toBe(200)
+    expect(mockSaveNewsletterData).toHaveBeenCalledWith('video-1', expect.objectContaining({
+      newsSkipped: false,
+      news: expect.arrayContaining([expect.objectContaining({ id: 'n1' })]),
+    }))
+  })
+
+  it('returns 409 ao pular a fase com status idle (draft ainda não gerado)', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetNewsletterData.mockResolvedValue({ status: 'idle' })
+
+    const response = await PATCH(
+      createPatchRequest({ skipNews: true }),
+      createContext('video-1')
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(json.error.code).toBe('INVALID_TRANSITION')
+    expect(mockSaveNewsletterData).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 quando skipNews vem como false (corpo inválido)', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetNewsletterData.mockResolvedValue({ status: 'draft', draft: 'Some draft' })
+
+    const response = await PATCH(
+      createPatchRequest({ skipNews: false }),
+      createContext('video-1')
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(json.error.code).toBe('VALIDATION_ERROR')
+    expect(mockSaveNewsletterData).not.toHaveBeenCalled()
+  })
 })

@@ -34,6 +34,8 @@ export const NewsletterDataSchema = z.object({
   status: NewsletterStatusSchema,
   draft: z.string().optional(),
   news: z.array(NewsletterNewsItemSchema).optional(),
+  /** Producer chose to publish this edition without a news section (Fase 2 skipped). */
+  newsSkipped: z.boolean().optional(),
   imagePrompt: z.string().optional(),
   imageUrl: z.string().optional(),
   report: z.string().optional(),

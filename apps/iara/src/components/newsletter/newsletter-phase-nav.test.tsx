@@ -57,4 +57,27 @@ describe('NewsletterPhaseNav', () => {
     await user.click(screen.getByTestId('phase-4'))
     expect(onPhaseChange).toHaveBeenCalledWith(4)
   })
+
+  it('marca a Fase 2 como pulada quando newsSkipped', () => {
+    render(<NewsletterPhaseNav currentPhase={3} maxReachablePhase={4} newsSkipped onPhaseChange={vi.fn()} />)
+
+    expect(screen.getByTestId('phase-2-skipped')).toBeInTheDocument()
+    expect(screen.getByTestId('phase-2')).toHaveTextContent('(pulada)')
+  })
+
+  it('Fase 2 pulada continua acessível (skip é reversível)', async () => {
+    const user = userEvent.setup()
+    const onPhaseChange = vi.fn()
+    render(<NewsletterPhaseNav currentPhase={3} maxReachablePhase={4} newsSkipped onPhaseChange={onPhaseChange} />)
+
+    expect(screen.getByTestId('phase-2')).not.toBeDisabled()
+    await user.click(screen.getByTestId('phase-2'))
+    expect(onPhaseChange).toHaveBeenCalledWith(2)
+  })
+
+  it('não marca nada como pulado quando newsSkipped é falso', () => {
+    render(<NewsletterPhaseNav currentPhase={2} maxReachablePhase={4} onPhaseChange={vi.fn()} />)
+
+    expect(screen.queryByTestId('phase-2-skipped')).not.toBeInTheDocument()
+  })
 })
