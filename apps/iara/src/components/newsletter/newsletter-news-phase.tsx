@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, Newspaper } from 'lucide-react'
 
 import { useNewsletterNews } from '@/hooks/use-newsletter-news'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ export function NewsletterNewsPhase({ videoId, newsletterStatus: externalStatus,
   const {
     candidates,
     confirmedNews,
+    newsSkipped,
     newsletterStatus: hookStatus,
     isLoading,
     isFetching,
@@ -26,6 +27,7 @@ export function NewsletterNewsPhase({ videoId, newsletterStatus: externalStatus,
     error,
     fetchNews,
     confirmSelection,
+    skipNews,
   } = useNewsletterNews(videoId)
 
   const effectiveStatus = hookStatus ?? externalStatus
@@ -52,6 +54,11 @@ export function NewsletterNewsPhase({ videoId, newsletterStatus: externalStatus,
     if (ok) onStatusChange?.('news_selected')
   }, [candidates, selectedIds, confirmSelection, onStatusChange])
 
+  const handleSkip = useCallback(async () => {
+    const ok = await skipNews()
+    if (ok) onStatusChange?.('news_selected')
+  }, [skipNews, onStatusChange])
+
   const handleRefetch = useCallback(() => {
     setSelectedIds(new Set())
     fetchNews()
@@ -69,13 +76,14 @@ export function NewsletterNewsPhase({ videoId, newsletterStatus: externalStatus,
     if (
       !isLoading && !isFetching && !error
       && effectiveStatus && effectiveStatus !== 'idle'
+      && !newsSkipped // edição já marcada como sem notícias: não buscar por conta própria
       && candidates === null && (confirmedNews === null || confirmedNews.length === 0)
       && !autoFetchTriggeredRef.current
     ) {
       autoFetchTriggeredRef.current = true
       fetchNews()
     }
-  }, [isLoading, isFetching, error, effectiveStatus, candidates, confirmedNews, fetchNews])
+  }, [isLoading, isFetching, error, effectiveStatus, newsSkipped, candidates, confirmedNews, fetchNews])
 
   // Loading state
   if (isLoading) {
@@ -158,6 +166,35 @@ export function NewsletterNewsPhase({ videoId, newsletterStatus: externalStatus,
     )
   }
 
+  // Skipped state: producer chose to publish this edition without news
+  if (newsSkipped && (candidates === null || candidates.length === 0)) {
+    return (
+      <div data-testid="newsletter-news-skipped" className="flex flex-col h-full">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+          <div className="text-sm text-muted-foreground">
+            Esta edição seguirá sem notícias
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={handleRefetch} disabled={isConfirming}>
+              Buscar Notícias
+            </Button>
+            <Button size="sm" onClick={() => onStatusChange?.('news_selected')}>
+              Continuar
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
+          <Newspaper className="size-8 text-muted-foreground opacity-40" />
+          <p className="text-sm text-muted-foreground">
+            A newsletter será gerada sem seção de notícias.
+            <br />
+            Você ainda pode voltar atrás: busque notícias e confirme uma seleção.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   // Candidates state: list with checkboxes
   if (candidates && candidates.length > 0) {
     const selectedCount = selectedIds.size
@@ -171,7 +208,10 @@ export function NewsletterNewsPhase({ videoId, newsletterStatus: externalStatus,
             {selectedCount} de 3-5 selecionadas
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={handleRefetch}>
+            <Button size="sm" variant="ghost" onClick={handleSkip} disabled={isConfirming}>
+              Seguir sem Notícias
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleRefetch} disabled={isConfirming}>
               Buscar Novamente
             </Button>
             <Button size="sm" onClick={handleConfirm} disabled={!canConfirm || isConfirming}>
@@ -220,9 +260,14 @@ export function NewsletterNewsPhase({ videoId, newsletterStatus: externalStatus,
         <p className="text-sm text-muted-foreground">
           Nenhuma notícia encontrada para este período
         </p>
-        <Button variant="outline" size="sm" onClick={handleRefetch}>
-          Buscar Novamente
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefetch} disabled={isConfirming}>
+            Buscar Novamente
+          </Button>
+          <Button size="sm" onClick={handleSkip} disabled={isConfirming}>
+            Seguir sem Notícias
+          </Button>
+        </div>
       </div>
     )
   }

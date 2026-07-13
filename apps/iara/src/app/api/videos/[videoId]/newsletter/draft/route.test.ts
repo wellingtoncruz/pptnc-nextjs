@@ -355,7 +355,7 @@ describe('POST /api/videos/[videoId]/newsletter/draft', () => {
     expect(mockSaveNewsletterData).toHaveBeenCalledWith(
       'video-1',
       { status: 'draft', draft: '# Newsletter\n\nConteúdo gerado sobre IA...' },
-      ['news', 'imagePrompt', 'imageUrl', 'report']
+      ['news', 'newsSkipped', 'imagePrompt', 'imageUrl', 'report']
     )
   })
 

@@ -260,6 +260,54 @@ describe('POST /api/videos/[videoId]/newsletter/format', () => {
     expect(json.data.report).toBe('# Relatório Final\n\nConteúdo formatado da newsletter...')
   })
 
+  it('gera o relatório sem seção de notícias quando newsSkipped está ligado', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetVideoAdmin.mockResolvedValue(validEpisode)
+    mockGetPodcastAdmin.mockResolvedValue(validPodcast)
+    mockGetNewsletterData.mockResolvedValue({
+      ...validNewsletterData,
+      news: [],
+      newsSkipped: true,
+    })
+    mockCallGenAI.mockResolvedValue(validLLMResponse)
+    mockSaveNewsletterData.mockResolvedValue(undefined)
+
+    const response = await POST(
+      createRequest({ formatPrompt: 'Formate a newsletter' }),
+      createContext('video-1')
+    )
+
+    expect(response.status).toBe(200)
+
+    // Segundo argumento de callGenAI é o user prompt
+    const userPrompt = mockCallGenAI.mock.calls[0][1] as string
+    expect(userPrompt).not.toContain('## NOTÍCIAS SELECIONADAS')
+    expect(userPrompt).toContain('NÃO terá seção de notícias')
+    // A capa continua no prompt: pular notícias não pula a imagem
+    expect(userPrompt).toContain('## IMAGEM DE CAPA')
+  })
+
+  it('mantém a seção de notícias no prompt quando newsSkipped está desligado', async () => {
+    mockAuthFn.mockResolvedValue(validSession)
+    mockGetVideoAdmin.mockResolvedValue(validEpisode)
+    mockGetPodcastAdmin.mockResolvedValue(validPodcast)
+    mockGetNewsletterData.mockResolvedValue(validNewsletterData)
+    mockCallGenAI.mockResolvedValue(validLLMResponse)
+    mockSaveNewsletterData.mockResolvedValue(undefined)
+
+    const response = await POST(
+      createRequest({ formatPrompt: 'Formate a newsletter' }),
+      createContext('video-1')
+    )
+
+    expect(response.status).toBe(200)
+
+    const userPrompt = mockCallGenAI.mock.calls[0][1] as string
+    expect(userPrompt).toContain('## NOTÍCIAS SELECIONADAS')
+    expect(userPrompt).toContain('Notícia 1 (Fonte A)')
+    expect(userPrompt).not.toContain('NÃO terá seção de notícias')
+  })
+
   it('generates report successfully with status completed (regeneration)', async () => {
     mockAuthFn.mockResolvedValue(validSession)
     mockGetVideoAdmin.mockResolvedValue(validEpisode)

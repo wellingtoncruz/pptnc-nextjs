@@ -18,13 +18,14 @@ export function invalidateFromDraft(data: NewsletterData): NewsletterData {
  * Invalidates from image phase — regenerate report.
  *
  * Returns data with status 'image_ready', clearing only the report field.
- * Preserves draft, news, imagePrompt, imageUrl.
+ * Preserves draft, news, newsSkipped, imagePrompt, imageUrl.
  */
 export function invalidateFromImage(data: NewsletterData): NewsletterData {
   return {
     status: 'image_ready',
     draft: data.draft,
     news: data.news,
+    newsSkipped: data.newsSkipped,
     imagePrompt: data.imagePrompt,
     imageUrl: data.imageUrl,
   }

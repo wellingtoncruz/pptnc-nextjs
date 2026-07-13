@@ -143,7 +143,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     const userPrompt = buildNewsletterFormatUserPrompt(
       newsletterData.draft,
       newsletterData.news,
-      imageProxyUrl
+      imageProxyUrl,
+      newsletterData.newsSkipped
     )
 
     // Trabalho LLM + persistência, compartilhado entre sync e async (Epic 27).

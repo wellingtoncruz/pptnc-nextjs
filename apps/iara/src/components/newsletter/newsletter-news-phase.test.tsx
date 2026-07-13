@@ -14,6 +14,7 @@ function createDefaultHookReturn(overrides = {}) {
   return {
     candidates: null,
     confirmedNews: null,
+    newsSkipped: false,
     newsletterStatus: null,
     isLoading: false,
     isFetching: false,
@@ -23,6 +24,7 @@ function createDefaultHookReturn(overrides = {}) {
     llmFiltered: false,
     fetchNews: vi.fn(),
     confirmSelection: vi.fn(),
+    skipNews: vi.fn(),
     ...overrides,
   }
 }
@@ -379,5 +381,126 @@ describe('NewsletterNewsPhase', () => {
     })
 
     expect(onStatusChange).not.toHaveBeenCalled()
+  })
+
+  describe('seguir sem notícias', () => {
+    it('botão na lista de candidatas pula a fase e avança', async () => {
+      const user = userEvent.setup()
+      const skipNews = vi.fn().mockResolvedValue(true)
+      const onStatusChange = vi.fn()
+      mockUseNewsletterNews.mockReturnValue(createDefaultHookReturn({
+        newsletterStatus: 'draft',
+        candidates: candidateItems,
+        skipNews,
+      }))
+
+      render(<NewsletterNewsPhase videoId="video-1" newsletterStatus="draft" onStatusChange={onStatusChange} />)
+
+      await user.click(screen.getByText('Seguir sem Notícias'))
+
+      await waitFor(() => {
+        expect(skipNews).toHaveBeenCalled()
+      })
+      expect(onStatusChange).toHaveBeenCalledWith('news_selected')
+    })
+
+    it('não avança quando o skip falha', async () => {
+      const user = userEvent.setup()
+      const skipNews = vi.fn().mockResolvedValue(false)
+      const onStatusChange = vi.fn()
+      mockUseNewsletterNews.mockReturnValue(createDefaultHookReturn({
+        newsletterStatus: 'draft',
+        candidates: candidateItems,
+        skipNews,
+      }))
+
+      render(<NewsletterNewsPhase videoId="video-1" newsletterStatus="draft" onStatusChange={onStatusChange} />)
+
+      await user.click(screen.getByText('Seguir sem Notícias'))
+
+      await waitFor(() => {
+        expect(skipNews).toHaveBeenCalled()
+      })
+      expect(onStatusChange).not.toHaveBeenCalled()
+    })
+
+    it('oferece o skip quando nenhuma notícia é encontrada', async () => {
+      const user = userEvent.setup()
+      const skipNews = vi.fn().mockResolvedValue(true)
+      mockUseNewsletterNews.mockReturnValue(createDefaultHookReturn({
+        newsletterStatus: 'draft',
+        candidates: [],
+        skipNews,
+      }))
+
+      render(<NewsletterNewsPhase videoId="video-1" newsletterStatus="draft" />)
+
+      expect(screen.getByTestId('newsletter-news-empty')).toBeInTheDocument()
+      await user.click(screen.getByText('Seguir sem Notícias'))
+
+      await waitFor(() => {
+        expect(skipNews).toHaveBeenCalled()
+      })
+    })
+
+    it('exibe o estado de fase pulada quando newsSkipped', () => {
+      mockUseNewsletterNews.mockReturnValue(createDefaultHookReturn({
+        newsletterStatus: 'news_selected',
+        newsSkipped: true,
+        confirmedNews: [],
+      }))
+
+      render(<NewsletterNewsPhase videoId="video-1" newsletterStatus="news_selected" />)
+
+      expect(screen.getByTestId('newsletter-news-skipped')).toBeInTheDocument()
+      expect(screen.getByText('Esta edição seguirá sem notícias')).toBeInTheDocument()
+    })
+
+    it('não auto-busca notícias quando a fase foi pulada', () => {
+      const fetchNews = vi.fn()
+      mockUseNewsletterNews.mockReturnValue(createDefaultHookReturn({
+        newsletterStatus: 'news_selected',
+        newsSkipped: true,
+        confirmedNews: [],
+        fetchNews,
+      }))
+
+      render(<NewsletterNewsPhase videoId="video-1" newsletterStatus="news_selected" />)
+
+      expect(fetchNews).not.toHaveBeenCalled()
+    })
+
+    it('permite voltar atrás buscando notícias a partir do estado pulado', async () => {
+      const user = userEvent.setup()
+      const fetchNews = vi.fn()
+      mockUseNewsletterNews.mockReturnValue(createDefaultHookReturn({
+        newsletterStatus: 'news_selected',
+        newsSkipped: true,
+        confirmedNews: [],
+        fetchNews,
+      }))
+
+      render(<NewsletterNewsPhase videoId="video-1" newsletterStatus="news_selected" />)
+
+      await user.click(screen.getByText('Buscar Notícias'))
+
+      expect(fetchNews).toHaveBeenCalled()
+    })
+
+    it('avança para a Fase 3 pelo botão Continuar do estado pulado', async () => {
+      const user = userEvent.setup()
+      const onStatusChange = vi.fn()
+      mockUseNewsletterNews.mockReturnValue(createDefaultHookReturn({
+        newsletterStatus: 'news_selected',
+        newsSkipped: true,
+        confirmedNews: [],
+      }))
+
+      render(<NewsletterNewsPhase videoId="video-1" newsletterStatus="news_selected" onStatusChange={onStatusChange} />)
+
+      await user.click(screen.getByText('Continuar'))
+
+      expect(onStatusChange).toHaveBeenCalledWith('news_selected')
+    })
   })
 })

@@ -184,6 +184,7 @@ export function NewsletterWorkPanel({ videoId, video }: NewsletterWorkPanelProps
       <NewsletterPhaseNav
         currentPhase={activePhase}
         maxReachablePhase={maxReachablePhase}
+        newsSkipped={newsletterData?.newsSkipped === true}
         onPhaseChange={handlePhaseChange}
       />
 

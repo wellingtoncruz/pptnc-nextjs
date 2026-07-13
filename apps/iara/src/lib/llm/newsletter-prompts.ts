@@ -245,29 +245,47 @@ ${NEWSLETTER_FORMAT_JSON_SCHEMA}`
  * Includes the full newsletter draft, selected news items with details,
  * and the cover image URL for reference.
  *
+ * Quando o produtor pula a Fase 2 (`newsSkipped`), a seção de notícias sai do prompt
+ * e é substituída por uma instrução explícita de não gerar seção de notícias — a
+ * instrução de formato do produtor normalmente pede uma, e sem essa contra-ordem o
+ * LLM tende a inventar notícias ou a deixar uma seção vazia no relatório.
+ *
  * @param draft - The newsletter draft text
  * @param news - Selected news items (optional)
  * @param imageUrl - The cover image URL for the report markdown (optional)
+ * @param newsSkipped - Producer chose to publish this edition without news (optional)
  */
 export function buildNewsletterFormatUserPrompt(
   draft: string,
   news?: NewsletterNewsItem[],
-  imageUrl?: string
+  imageUrl?: string,
+  newsSkipped?: boolean
 ): string {
-  const newsSection = news && news.length > 0
-    ? news.map((n) => {
-        const parts = [`- ${n.title}`]
-        if (n.source) parts[0] += ` (${n.source})`
-        if (n.url) parts[0] += ` — ${n.url}`
-        return parts[0]
-      }).join('\n')
-    : 'Nenhuma notícia selecionada'
-
   let prompt = `## DRAFT DA NEWSLETTER
-${draft}
+${draft}`
+
+  if (newsSkipped) {
+    prompt += `
+
+## NOTÍCIAS
+Esta edição da newsletter NÃO terá seção de notícias — decisão editorial do produtor.
+Não inclua seção, título, lista ou qualquer menção a notícias no relatório final, mesmo
+que as instruções de formato peçam. Não invente notícias.`
+  } else {
+    const newsSection = news && news.length > 0
+      ? news.map((n) => {
+          const parts = [`- ${n.title}`]
+          if (n.source) parts[0] += ` (${n.source})`
+          if (n.url) parts[0] += ` — ${n.url}`
+          return parts[0]
+        }).join('\n')
+      : 'Nenhuma notícia selecionada'
+
+    prompt += `
 
 ## NOTÍCIAS SELECIONADAS
 ${newsSection}`
+  }
 
   if (imageUrl) {
     prompt += `\n\n## IMAGEM DE CAPA\nURL: ${imageUrl}`

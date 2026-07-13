@@ -12,6 +12,8 @@ interface UseNewsletterNewsResult {
   candidates: NewsletterNewsItem[] | null
   /** Already confirmed news (from existing newsletter data). */
   confirmedNews: NewsletterNewsItem[] | null
+  /** Producer chose to publish this edition without a news section. */
+  newsSkipped: boolean
   /** Current newsletter status. */
   newsletterStatus: NewsletterStatus | null
   isLoading: boolean
@@ -28,11 +30,14 @@ interface UseNewsletterNewsResult {
   fetchNews: () => Promise<void>
   /** Confirm selection via PATCH. Returns true on success, false on error. */
   confirmSelection: (news: NewsletterNewsItem[]) => Promise<boolean>
+  /** Skip the news phase via PATCH. Returns true on success, false on error. */
+  skipNews: () => Promise<boolean>
 }
 
 export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResult {
   const [candidates, setCandidates] = useState<NewsletterNewsItem[] | null>(null)
   const [confirmedNews, setConfirmedNews] = useState<NewsletterNewsItem[] | null>(null)
+  const [newsSkipped, setNewsSkipped] = useState(false)
   const [newsletterStatus, setNewsletterStatus] = useState<NewsletterStatus | null>(null)
   const [isLoading, setIsLoading] = useState(() => videoId !== null)
   const [isFetching, setIsFetching] = useState(false)
@@ -47,6 +52,7 @@ export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResu
     if (!videoId) {
       setCandidates(null)
       setConfirmedNews(null)
+      setNewsSkipped(false)
       setNewsletterStatus(null)
       setIsLoading(false)
       setIsFetching(false)
@@ -66,6 +72,7 @@ export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResu
       setError(null)
       setCandidates(null)
       setConfirmedNews(null)
+      setNewsSkipped(false)
       setNewsletterStatus(null)
 
       try {
@@ -83,6 +90,7 @@ export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResu
 
         if (data) {
           setNewsletterStatus(data.status ?? null)
+          setNewsSkipped(data.newsSkipped === true)
           // If news already confirmed (status >= news_selected), show them
           if (data.news && data.status && data.status !== 'idle' && data.status !== 'draft') {
             setConfirmedNews(data.news)
@@ -160,6 +168,40 @@ export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResu
 
       const { data } = await response.json()
       setConfirmedNews(news)
+      setNewsSkipped(false)
+      setNewsletterStatus(data.status)
+      setCandidates(null)
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      return false
+    } finally {
+      setIsConfirming(false)
+    }
+  }, [videoId])
+
+  // Skip the news phase via PATCH — a edição segue sem seção de notícias
+  const skipNews = useCallback(async (): Promise<boolean> => {
+    if (!videoId) return false
+
+    setError(null)
+    setIsConfirming(true)
+
+    try {
+      const response = await fetch(`/api/videos/${videoId}/newsletter/news`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skipNews: true }),
+      })
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error?.message || 'Erro ao seguir sem notícias')
+      }
+
+      const { data } = await response.json()
+      setConfirmedNews([])
+      setNewsSkipped(true)
       setNewsletterStatus(data.status)
       setCandidates(null)
       return true
@@ -174,6 +216,7 @@ export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResu
   return {
     candidates,
     confirmedNews,
+    newsSkipped,
     newsletterStatus,
     isLoading,
     isFetching,
@@ -183,5 +226,6 @@ export function useNewsletterNews(videoId: string | null): UseNewsletterNewsResu
     llmFiltered,
     fetchNews,
     confirmSelection,
+    skipNews,
   }
 }
