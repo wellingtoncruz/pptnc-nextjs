@@ -7,23 +7,42 @@ import { TimestampSchema } from './podcast'
 // ============================================================================
 
 /**
+ * BrightData represents "no value" as `null`, not as an absent key — for ANY
+ * field, scalar or nested. A plain `.optional()` accepts `undefined` but bounces
+ * on `null`, and because the parse is all-or-nothing a single null field
+ * discards the whole (already paid for) profile.
+ *
+ * Verified in production: `position: null` alone killed 9 scrapes between
+ * 2026-06-23 and 2026-07-21 (8 distinct guests), plus `about: null` on one of
+ * them. The Epic 24 fix (`1a24ee1`) had covered only the nested
+ * `current_company` / `experience` and left every flat field exposed.
+ *
+ * We accept null on input and normalize it back to `undefined` on output, so
+ * the inferred type stays `string | undefined` and no consumer changes —
+ * `GuestDocCreateSchema` rejects null, and `upsertGuest` strips only undefined
+ * before writing to Firestore.
+ */
+const nullableString = () => z.string().nullish().transform((v) => v ?? undefined)
+const nullableUrl = () => z.string().url().nullish().transform((v) => v ?? undefined)
+
+/**
  * Schema for the LinkedIn profile data returned by BrightData API.
  * Only validates the fields we actually use — `raw` stores the full response.
  *
  * @see https://docs.brightdata.com/api-reference/web-scraper-api/social-media-apis/linkedin/profiles
  */
 export const LinkedInGuestSchema = z.object({
-  name: z.string().optional(),
-  url: z.string().url().optional(),
-  avatar: z.string().url().optional(),
+  name: nullableString(),
+  url: nullableUrl(),
+  avatar: nullableUrl(),
   /**
    * `position` is the title we use to populate "Cargo" in Phase 1. The
    * BrightData payload may surface it as a flat string OR nested inside
    * `current_company.title` / `experience[0].title` — `parseProfileData`
    * derives a single normalized value before returning.
    */
-  position: z.string().optional(),
-  current_company_name: z.string().optional(),
+  position: nullableString(),
+  current_company_name: nullableString(),
   /**
    * Optional nested object alongside current_company_name. BrightData may omit
    * the field entirely OR send `null` (e.g., when the profile has no current
@@ -53,12 +72,15 @@ export const LinkedInGuestSchema = z.object({
         .passthrough()
     )
     .nullish(),
-  about: z.string().optional(),
-  city: z.string().optional(),
-  country_code: z.string().optional(),
-  linkedin_id: z.string().optional(),
+  about: nullableString(),
+  city: nullableString(),
+  country_code: nullableString(),
+  linkedin_id: nullableString(),
   /** Numeric LinkedIn member ID — usable as urn:li:person:{linkedin_num_id} for API mentions */
-  linkedin_num_id: z.union([z.string(), z.number()]).optional(),
+  linkedin_num_id: z
+    .union([z.string(), z.number()])
+    .nullish()
+    .transform((v) => v ?? undefined),
 })
 
 // ============================================================================

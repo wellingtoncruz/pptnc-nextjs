@@ -339,6 +339,95 @@ describe('scrapeLinkedInProfile', () => {
         expect.any(Object)
       )
     })
+
+    /**
+     * Production regression (2026-07-21): BrightData sends `null` — not an
+     * absent key — for any field the profile leaves empty. Because the parse is
+     * all-or-nothing, a single null scalar discarded the entire (paid for)
+     * profile. `position: null` alone killed 9 scrapes across 8 guests between
+     * 2026-06-23 and 2026-07-21; `about: null` hit one of them too.
+     *
+     * The Epic 24 fix (`1a24ee1`) had tolerated null on the nested
+     * `current_company` / `experience` and left every flat field exposed, so
+     * these cover ALL of them — one null must never sink the profile.
+     */
+    it.each([
+      'name',
+      'url',
+      'avatar',
+      'position',
+      'current_company_name',
+      'about',
+      'city',
+      'country_code',
+      'linkedin_id',
+      'linkedin_num_id',
+    ])('accepts null in `%s` instead of discarding the whole profile', async (field) => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce([{ ...validProfile, [field]: null }]),
+      } as any)
+
+      const result = await runWithTimerAdvance(linkedinUrl)
+
+      expect(result).not.toBeNull()
+      // null is normalized to undefined so downstream consumers (upsertGuest,
+      // which validates with GuestDocCreateSchema and strips only undefined)
+      // never see a null.
+      expect(result?.[field as keyof typeof result]).toBeUndefined()
+      expect(vi.mocked(log)).not.toHaveBeenCalledWith(
+        'WARN',
+        'BrightData response failed Zod validation',
+        expect.any(Object)
+      )
+    })
+
+    it('keeps the profile when every optional scalar is null at once', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce([
+          {
+            name: 'Bruno Campos',
+            url: null,
+            avatar: null,
+            position: null,
+            current_company_name: null,
+            about: null,
+            city: null,
+            country_code: null,
+            linkedin_id: null,
+            linkedin_num_id: null,
+            current_company: null,
+            experience: null,
+          },
+        ]),
+      } as any)
+
+      const result = await runWithTimerAdvance(linkedinUrl)
+
+      expect(result?.name).toBe('Bruno Campos')
+      expect(result?.position).toBeUndefined()
+    })
+
+    it('still derives position from current_company when the flat field is null', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValueOnce([
+          {
+            name: 'Bruno Campos',
+            position: null,
+            current_company: { title: 'Head of Engineering', name: 'Acme' },
+          },
+        ]),
+      } as any)
+
+      const result = await runWithTimerAdvance(linkedinUrl)
+
+      expect(result?.position).toBe('Head of Engineering')
+    })
   })
 
   describe('Network and timeout errors', () => {
