@@ -7,6 +7,7 @@ import { log } from '@/lib/logger'
 import {
   AVAILABLE_IMAGE_MODELS,
   getTextModelsForProvider,
+  resolveImageModelId,
   type LLMProviderId,
   type ModelOption,
 } from '@/lib/llm/models'
@@ -69,9 +70,14 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
   const [provider, setProvider] = useState<LLMProviderId>(inferProvider(llmConfig))
   const availableTextModels = useMemo(() => getTextModelsForProvider(provider), [provider])
   const [textModel, setTextModel] = useState(sanitizeModelValue(llmConfig?.textModel, availableTextModels))
-  const [imageModel, setImageModel] = useState(sanitizeModelValue(llmConfig?.imageModel, AVAILABLE_IMAGE_MODELS))
+  // `resolveImageModelId` traduz IDs preview aposentados antes da sanitização,
+  // senão o select apareceria vazio ("padrão do sistema") para quem tem o ID
+  // legado salvo — sugerindo que a escolha foi perdida quando ela só mudou de nome.
+  const [imageModel, setImageModel] = useState(
+    sanitizeModelValue(resolveImageModelId(llmConfig?.imageModel), AVAILABLE_IMAGE_MODELS)
+  )
   const [thumbnailImageModel, setThumbnailImageModel] = useState(
-    sanitizeModelValue(llmConfig?.thumbnailImageModel, AVAILABLE_IMAGE_MODELS)
+    sanitizeModelValue(resolveImageModelId(llmConfig?.thumbnailImageModel), AVAILABLE_IMAGE_MODELS)
   )
   const [fallbackEnabled, setFallbackEnabled] = useState(llmConfig?.fallbackProvider === 'gemini')
   const [saving, setSaving] = useState(false)

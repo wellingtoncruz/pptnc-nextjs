@@ -559,12 +559,41 @@ describe('LlmConfigSchema (Epic 22 / Story 22.2-bis)', () => {
       ...validPodcast,
       llmConfig: {
         imageModel: 'gemini-2.5-flash-image',
-        thumbnailImageModel: 'gemini-3.1-flash-image-preview',
+        thumbnailImageModel: 'gemini-3.1-flash-image',
       },
     }
     const result = PodcastSchema.parse(withThumbModel)
     expect(result.llmConfig?.imageModel).toBe('gemini-2.5-flash-image')
-    expect(result.llmConfig?.thumbnailImageModel).toBe('gemini-3.1-flash-image-preview')
+    expect(result.llmConfig?.thumbnailImageModel).toBe('gemini-3.1-flash-image')
+  })
+
+  /**
+   * Incidente de produção 2026-07-21: o Google aposentou os IDs `-preview` da
+   * família de imagem 3.x e o Vertex passou a devolver 404. Os docs no Firestore
+   * seguem com o ID antigo — sem a normalização, o `.catch(undefined)` os
+   * descartaria em silêncio e a geração cairia no DEFAULT_IMAGE_MODEL, trocando
+   * o modelo do produtor sem nenhum sinal.
+   */
+  it('normaliza IDs de imagem preview aposentados para o sucessor GA', () => {
+    const legacyDoc = {
+      ...validPodcast,
+      llmConfig: {
+        imageModel: 'gemini-3.1-flash-image-preview',
+        thumbnailImageModel: 'gemini-3-pro-image-preview',
+      },
+    }
+    const result = PodcastSchema.parse(legacyDoc)
+    expect(result.llmConfig?.imageModel).toBe('gemini-3.1-flash-image')
+    expect(result.llmConfig?.thumbnailImageModel).toBe('gemini-3-pro-image')
+  })
+
+  it('mantém o fallback silencioso para IDs realmente desconhecidos', () => {
+    const unknownDoc = {
+      ...validPodcast,
+      llmConfig: { imageModel: 'gemini-que-nunca-existiu' },
+    }
+    const result = PodcastSchema.parse(unknownDoc)
+    expect(result.llmConfig?.imageModel).toBeUndefined()
   })
 
   it('accepts llmConfig without thumbnailImageModel (backward compat)', () => {
