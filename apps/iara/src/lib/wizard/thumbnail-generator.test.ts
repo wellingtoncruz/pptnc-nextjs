@@ -349,10 +349,10 @@ describe('generateThumbnail', () => {
       video: baseVideo,
       podcast: {
         ...basePodcast,
-        llmConfig: { thumbnailImageModel: 'gemini-3.1-flash-image-preview' },
+        llmConfig: { thumbnailImageModel: 'gemini-3.1-flash-image' },
       } as never,
       observation: undefined,
     })
-    expect(mockCallGenAIImage.mock.calls[0][2]).toBe('gemini-3.1-flash-image-preview')
+    expect(mockCallGenAIImage.mock.calls[0][2]).toBe('gemini-3.1-flash-image')
   })
 })

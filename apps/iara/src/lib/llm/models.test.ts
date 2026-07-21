@@ -7,6 +7,9 @@ import {
   IMAGE_MODEL_IDS,
   DEFAULT_TEXT_MODEL,
   DEFAULT_IMAGE_MODEL,
+  DEFAULT_THUMBNAIL_IMAGE_MODEL,
+  LEGACY_IMAGE_MODEL_ALIASES,
+  resolveImageModelId,
 } from './models'
 
 describe('LLM Models constants', () => {
@@ -58,11 +61,48 @@ describe('LLM Models constants', () => {
 
   it('includes expected image model IDs', () => {
     const ids = AVAILABLE_IMAGE_MODELS.map(m => m.id)
-    // GA
+    // Todos GA desde 2026-07 — o Google removeu os aliases `-preview` ao promover
+    // a família 3.x, derrubando thumbnail/newsletter/notícias com 404 (2026-07-21).
     expect(ids).toContain('gemini-2.5-flash-image')
-    // Preview (Epic 22 + add-on 2026-05-14)
-    expect(ids).toContain('gemini-3.1-flash-image-preview')
-    expect(ids).toContain('gemini-3-pro-image-preview')
+    expect(ids).toContain('gemini-3.1-flash-image')
+    expect(ids).toContain('gemini-3-pro-image')
+  })
+
+  it('no longer offers the retired `-preview` image models', () => {
+    const ids = AVAILABLE_IMAGE_MODELS.map(m => m.id)
+    expect(ids).not.toContain('gemini-3.1-flash-image-preview')
+    expect(ids).not.toContain('gemini-3-pro-image-preview')
+  })
+
+  describe('LEGACY_IMAGE_MODEL_ALIASES / resolveImageModelId', () => {
+    it('maps every retired preview ID to a model that is still offered', () => {
+      const ids = AVAILABLE_IMAGE_MODELS.map(m => m.id)
+      for (const [legacy, target] of Object.entries(LEGACY_IMAGE_MODEL_ALIASES)) {
+        expect(legacy).toMatch(/-preview$/)
+        expect(ids).toContain(target)
+      }
+    })
+
+    it('resolves the retired thumbnail model to its GA successor', () => {
+      expect(resolveImageModelId('gemini-3.1-flash-image-preview')).toBe('gemini-3.1-flash-image')
+      expect(resolveImageModelId('gemini-3-pro-image-preview')).toBe('gemini-3-pro-image')
+    })
+
+    it('passes through IDs that have no alias', () => {
+      expect(resolveImageModelId('gemini-2.5-flash-image')).toBe('gemini-2.5-flash-image')
+      expect(resolveImageModelId('gemini-3.1-flash-image')).toBe('gemini-3.1-flash-image')
+      expect(resolveImageModelId('modelo-desconhecido')).toBe('modelo-desconhecido')
+    })
+
+    it('passes undefined through untouched', () => {
+      expect(resolveImageModelId(undefined)).toBeUndefined()
+    })
+  })
+
+  it('DEFAULT_THUMBNAIL_IMAGE_MODEL points at a live model', () => {
+    const ids = AVAILABLE_IMAGE_MODELS.map(m => m.id)
+    expect(ids).toContain(DEFAULT_THUMBNAIL_IMAGE_MODEL)
+    expect(DEFAULT_THUMBNAIL_IMAGE_MODEL).not.toMatch(/-preview$/)
   })
 
   it('TEXT_MODEL_IDS matches AVAILABLE_TEXT_MODELS ids', () => {

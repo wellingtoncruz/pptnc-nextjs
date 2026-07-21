@@ -55,9 +55,8 @@ describe('LlmConfigSettingsForm', () => {
   it('lists all available image models plus system default', () => {
     render(<LlmConfigSettingsForm />)
     const imageSelect = screen.getByLabelText('Modelo de Imagem (Newsletter)')
-    // 1 GA (gemini-2.5-flash-image)
-    // + 2 preview (3.1-flash-image-preview do Epic 22 + 3-pro-image-preview adicionado 2026-05-14)
-    // + 1 "Padrão do sistema" option
+    // 3 modelos GA (2.5-flash-image, 3.1-flash-image, 3-pro-image — a família 3.x
+    // saiu de preview em 2026-07) + 1 "Padrão do sistema" option
     expect(imageSelect.querySelectorAll('option')).toHaveLength(4)
   })
 
@@ -224,12 +223,32 @@ describe('LlmConfigSettingsForm', () => {
 
     it('hydrates from llmConfig.thumbnailImageModel when provided', () => {
       render(
-        <LlmConfigSettingsForm
-          llmConfig={{ thumbnailImageModel: 'gemini-3.1-flash-image-preview' }}
-        />
+        <LlmConfigSettingsForm llmConfig={{ thumbnailImageModel: 'gemini-3.1-flash-image' }} />
       )
       expect(screen.getByLabelText('Modelo de Imagem (Thumbnail)')).toHaveValue(
-        'gemini-3.1-flash-image-preview'
+        'gemini-3.1-flash-image'
+      )
+    })
+
+    /**
+     * Incidente 2026-07-21: docs no Firestore ainda guardam o ID `-preview`
+     * aposentado pelo Google. O select precisa mostrar o sucessor GA — exibir
+     * "padrão do sistema" sugeriria que a escolha do produtor foi perdida.
+     */
+    it('hydrates the GA successor when the stored ID is a retired preview', () => {
+      render(
+        <LlmConfigSettingsForm
+          llmConfig={{
+            imageModel: 'gemini-3.1-flash-image-preview',
+            thumbnailImageModel: 'gemini-3-pro-image-preview',
+          }}
+        />
+      )
+      expect(screen.getByLabelText('Modelo de Imagem (Newsletter)')).toHaveValue(
+        'gemini-3.1-flash-image'
+      )
+      expect(screen.getByLabelText('Modelo de Imagem (Thumbnail)')).toHaveValue(
+        'gemini-3-pro-image'
       )
     })
 
@@ -250,7 +269,7 @@ describe('LlmConfigSettingsForm', () => {
 
       await user.selectOptions(
         screen.getByLabelText('Modelo de Imagem (Thumbnail)'),
-        'gemini-3.1-flash-image-preview'
+        'gemini-3.1-flash-image'
       )
 
       await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
@@ -259,7 +278,7 @@ describe('LlmConfigSettingsForm', () => {
         llmConfig: {
           textModel: 'gemini-2.5-pro',
           imageModel: 'gemini-2.5-flash-image',
-          thumbnailImageModel: 'gemini-3.1-flash-image-preview',
+          thumbnailImageModel: 'gemini-3.1-flash-image',
         },
       })
     })
@@ -268,7 +287,7 @@ describe('LlmConfigSettingsForm', () => {
       const user = userEvent.setup()
       render(
         <LlmConfigSettingsForm
-          llmConfig={{ thumbnailImageModel: 'gemini-3.1-flash-image-preview' }}
+          llmConfig={{ thumbnailImageModel: 'gemini-3.1-flash-image' }}
         />
       )
 

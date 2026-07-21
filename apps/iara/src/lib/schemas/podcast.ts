@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { ALL_TEXT_MODEL_IDS, IMAGE_MODEL_IDS } from '@/lib/llm/models'
+import { ALL_TEXT_MODEL_IDS, IMAGE_MODEL_IDS, resolveImageModelId } from '@/lib/llm/models'
 
 import { VideoTypeConfigSchema } from './video-type-config'
 
@@ -382,13 +382,24 @@ export const LlmConfigSchema = z.object({
     .enum(ALL_TEXT_MODEL_IDS as [string, ...string[]])
     .optional()
     .catch(undefined),
+  /**
+   * Modelos de imagem. O `preprocess` roda ANTES do enum e traduz IDs preview
+   * aposentados para o sucessor GA (`LEGACY_IMAGE_MODEL_ALIASES`). Sem ele o
+   * `.catch(undefined)` engoliria o valor legado em silêncio e a geração cairia
+   * no `DEFAULT_IMAGE_MODEL` — troca invisível de modelo, que para o Thumbnail
+   * significa perder a qualidade de reference image que motivou o Epic 22.
+   */
   imageModel: z
-    .enum(IMAGE_MODEL_IDS as [string, ...string[]])
-    .optional()
+    .preprocess(
+      (v) => (typeof v === 'string' ? resolveImageModelId(v) : v),
+      z.enum(IMAGE_MODEL_IDS as [string, ...string[]]).optional()
+    )
     .catch(undefined),
   thumbnailImageModel: z
-    .enum(IMAGE_MODEL_IDS as [string, ...string[]])
-    .optional()
+    .preprocess(
+      (v) => (typeof v === 'string' ? resolveImageModelId(v) : v),
+      z.enum(IMAGE_MODEL_IDS as [string, ...string[]]).optional()
+    )
     .catch(undefined),
   /**
    * Fallback automático quando o provider primário falhar persistentemente.
@@ -435,10 +446,10 @@ export const PodcastSchema = z.object({
     /** Enable scheduled publishing to social networks. Default: false. */
     socialPublish: z.boolean().default(false),
     /**
-     * Enable LLM-assisted thumbnail generation (Epic 22). Default: false because
-     * the only viable model today (`gemini-3.1-flash-image-preview`) is still
-     * in preview — flag stays off until ops accepts the preview risks (no SLA,
-     * aggressive quota).
+     * Enable LLM-assisted thumbnail generation (Epic 22). Default: false — a
+     * justificativa original era o risco de preview do modelo, que deixou de
+     * valer quando a família de imagem 3.x virou GA (2026-07). O default segue
+     * `false` por ser opt-in explícito; rever se virar padrão do produto.
      */
     thumbnailGeneration: z.boolean().default(false),
   }).optional(),

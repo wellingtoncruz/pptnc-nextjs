@@ -71,31 +71,54 @@ export const AVAILABLE_TEXT_MODELS: ModelOption[] = [
 /**
  * Available image generation models on Vertex AI.
  *
- * Notes:
- * - `gemini-2.5-flash-image` is GA — current default for Newsletter cover images.
- * - `gemini-3.1-flash-image-preview` (Nano Banana 2) is PREVIEW — added in
- *   Epic 22 / Story 22.2-bis specifically for the Thumbnail wizard phase, which
- *   requires reference image support that the GA model can't deliver at the
- *   required quality. See spike-image-generation-models.md for the evaluation,
- *   accepted risks (no SLA, aggressive quota), and migration plan when GA.
+ * **Família 3.x promovida a GA em 2026-07 (incidente de produção 2026-07-21).**
+ * O Google removeu os aliases `-preview` do publisher ao promover os modelos:
+ * `gemini-3.1-flash-image-preview` e `gemini-3-pro-image-preview` passaram a
+ * responder **404 NOT_FOUND**, derrubando a geração de thumbnail, a capa da
+ * newsletter e a imagem de notícias de uma vez. Era o risco aceito por escrito
+ * no Epic 22 / Story 22.2-bis ao adotar um modelo preview (sem SLA), com plano
+ * de migração previsto justamente para quando fosse GA — este é o momento.
+ * Ver `spike-image-generation-models.md` e `LEGACY_IMAGE_MODEL_ALIASES` abaixo.
  */
 export const AVAILABLE_IMAGE_MODELS: ModelOption[] = [
   {
     id: 'gemini-2.5-flash-image',
     label: 'Gemini 2.5 Flash Image',
-    description: 'GA — usado pela Newsletter',
+    description: 'GA — mais econômico. Reference images com qualidade inferior (rejeitado p/ Thumbnail no Epic 22).',
   },
   {
-    id: 'gemini-3.1-flash-image-preview',
+    id: 'gemini-3.1-flash-image',
     label: 'Gemini 3.1 Flash Image (Nano Banana 2)',
-    description: 'Preview — qualidade superior com reference images. Para Thumbnail (Epic 22). Sem SLA, quota agressiva.',
+    description: 'GA — qualidade superior com reference images. Sucessor direto do preview usado no Thumbnail.',
   },
   {
-    id: 'gemini-3-pro-image-preview',
-    label: 'Gemini 3 Pro Image (Preview)',
-    description: 'Preview — Nano Banana com reasoning. Melhor para gerações multi-turn e edições complexas. Sem SLA.',
+    id: 'gemini-3-pro-image',
+    label: 'Gemini 3 Pro Image',
+    description: 'GA — Nano Banana com reasoning. Melhor para gerações multi-turn e edições complexas. Custo maior.',
   },
 ]
+
+/**
+ * IDs preview aposentados pelo Google → sucessor GA.
+ *
+ * Existe para os valores **já gravados** em `podcast.llmConfig` no Firestore:
+ * como os campos de modelo usam `.catch(undefined)` no `LlmConfigSchema`, um ID
+ * fora do allowlist seria descartado em SILÊNCIO e a geração cairia no default
+ * (`gemini-2.5-flash-image`) — a feature voltaria a funcionar aparentando
+ * normalidade, mas com o modelo que o Epic 22 rejeitou por qualidade. O mapa
+ * normaliza o valor legado antes da validação, então o produtor continua no
+ * mesmo modelo que escolheu, apenas sob o ID novo.
+ */
+export const LEGACY_IMAGE_MODEL_ALIASES: Record<string, string> = {
+  'gemini-3.1-flash-image-preview': 'gemini-3.1-flash-image',
+  'gemini-3-pro-image-preview': 'gemini-3-pro-image',
+}
+
+/** Resolve um ID de modelo de imagem legado para o sucessor GA. Passthrough se não houver alias. */
+export function resolveImageModelId<T extends string | undefined>(modelId: T): T {
+  if (!modelId) return modelId
+  return (LEGACY_IMAGE_MODEL_ALIASES[modelId] ?? modelId) as T
+}
 
 /**
  * Available Claude models (Anthropic API direta) — Epic 23 / Story 23.4.
@@ -156,7 +179,8 @@ export const DEFAULT_IMAGE_MODEL = 'gemini-2.5-flash-image'
 
 /**
  * Default image model for Thumbnail wizard phase (Epic 22).
- * Separated from DEFAULT_IMAGE_MODEL because Newsletter uses GA models and
- * Thumbnail accepts preview models for the quality/feature trade-off.
+ * Separado do DEFAULT_IMAGE_MODEL porque o Thumbnail depende de reference
+ * images com qualidade que o 2.5 não entrega. GA desde 2026-07 — antes disso
+ * apontava para `gemini-3.1-flash-image-preview`, que passou a dar 404.
  */
-export const DEFAULT_THUMBNAIL_IMAGE_MODEL = 'gemini-3.1-flash-image-preview'
+export const DEFAULT_THUMBNAIL_IMAGE_MODEL = 'gemini-3.1-flash-image'
