@@ -11,6 +11,7 @@ vi.mock('./cost-estimate-badge', () => ({
 }))
 
 import { LlmConfigSettingsForm } from './llm-config-settings-form'
+import { AVAILABLE_TEXT_MODELS, AVAILABLE_CLAUDE_MODELS } from '@/lib/llm/models'
 
 const mockFetch = vi.fn()
 
@@ -46,10 +47,18 @@ describe('LlmConfigSettingsForm', () => {
   it('lists all available text models plus system default', () => {
     render(<LlmConfigSettingsForm />)
     const textSelect = screen.getByLabelText('Modelo de Texto')
-    // 5 GA (2.0-flash, 2.0-flash-lite, 2.5-flash, 2.5-flash-lite, 2.5-pro)
-    // + 3 preview 3.x (3.1-pro-preview, 3-flash, 3.1-flash-lite — adicionados 2026-05-14)
-    // + 1 "Padrão do sistema" option
-    expect(textSelect.querySelectorAll('option')).toHaveLength(9)
+    // Derivado do catálogo (+1 pela opção "Padrão do sistema"), em vez de um
+    // número fixo: a contagem literal quebrava a cada modelo adicionado ou
+    // aposentado sem sinalizar nada de útil.
+    expect(textSelect.querySelectorAll('option')).toHaveLength(AVAILABLE_TEXT_MODELS.length + 1)
+  })
+
+  it('does not offer the retired gemini-3.1-flash-lite-preview', () => {
+    render(<LlmConfigSettingsForm />)
+    const textSelect = screen.getByLabelText('Modelo de Texto')
+    const values = Array.from(textSelect.querySelectorAll('option')).map(o => o.getAttribute('value'))
+    expect(values).not.toContain('gemini-3.1-flash-lite-preview')
+    expect(values).toContain('gemini-3.1-flash-lite')
   })
 
   it('lists all available image models plus system default', () => {
@@ -62,8 +71,11 @@ describe('LlmConfigSettingsForm', () => {
 
   it('displays model label and description in option text', () => {
     render(<LlmConfigSettingsForm />)
-    expect(screen.getByText('Gemini 2.5 Flash — Padrão atual — melhor custo-benefício')).toBeInTheDocument()
-    expect(screen.getByText('Gemini 2.5 Pro — Maior qualidade, custo maior')).toBeInTheDocument()
+    // Monta o texto esperado a partir do catálogo — hardcodar a descrição
+    // completa fazia o teste quebrar em toda revisão de copy.
+    for (const model of [AVAILABLE_TEXT_MODELS[0], AVAILABLE_TEXT_MODELS[2]]) {
+      expect(screen.getByText(`${model.label} — ${model.description}`)).toBeInTheDocument()
+    }
   })
 
   it('saves text model selection via PATCH /api/podcast', async () => {
@@ -296,6 +308,47 @@ describe('LlmConfigSettingsForm', () => {
       await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1))
       const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
       expect(body).toEqual({ llmConfig: {} })
+    })
+  })
+
+  describe('aviso de temperature não suportada', () => {
+    const WARNING = 'temperature-unsupported-warning'
+
+    it('avisa quando o modelo escolhido rejeita sampling params', () => {
+      render(<LlmConfigSettingsForm llmConfig={{ provider: 'claude', textModel: 'claude-opus-5' }} />)
+      const warning = screen.getByTestId(WARNING)
+      expect(warning).toBeInTheDocument()
+      // O aviso precisa nomear as fases afetadas — um "modelo incompatível"
+      // genérico não diria ao produtor o que muda no produto dele.
+      expect(warning.textContent).toMatch(/Verificação de Edição/)
+      expect(warning.textContent).toMatch(/Risco/)
+      expect(warning.textContent).toMatch(/Capítulos/)
+    })
+
+    it('não avisa nos modelos que aceitam temperature', () => {
+      render(<LlmConfigSettingsForm llmConfig={{ provider: 'claude', textModel: 'claude-sonnet-4-6' }} />)
+      expect(screen.queryByTestId(WARNING)).not.toBeInTheDocument()
+    })
+
+    it('não avisa quando nenhum modelo está selecionado (padrão do sistema)', () => {
+      render(<LlmConfigSettingsForm />)
+      expect(screen.queryByTestId(WARNING)).not.toBeInTheDocument()
+    })
+
+    it('cobre todos os modelos Claude sem suporte a temperature', () => {
+      // Percorre o catálogo real: se um modelo novo entrar sem suporte a
+      // temperature, este teste falha até o aviso cobri-lo.
+      const unsupported = AVAILABLE_CLAUDE_MODELS.filter(m =>
+        ['claude-opus-4-7', 'claude-opus-4-8', 'claude-opus-5', 'claude-sonnet-5'].includes(m.id)
+      )
+      expect(unsupported.length).toBeGreaterThan(0)
+      for (const model of unsupported) {
+        const { unmount } = render(
+          <LlmConfigSettingsForm llmConfig={{ provider: 'claude', textModel: model.id }} />
+        )
+        expect(screen.getByTestId(WARNING)).toBeInTheDocument()
+        unmount()
+      }
     })
   })
 })

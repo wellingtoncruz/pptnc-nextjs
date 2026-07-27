@@ -1,8 +1,8 @@
 /**
  * AnthropicProvider — Claude via Anthropic API direta.
  *
- * Implementação do `LLMProvider` para a família Claude (Sonnet 4.6, Opus 4.7,
- * Haiku 4.5). Encapsula:
+ * Implementação do `LLMProvider` para a família Claude (Sonnet 4.6/5, Opus
+ * 4.7/4.8/5, Haiku 4.5). Encapsula:
  * - Cliente `Anthropic` SDK (singleton, API key Bearer)
  * - Request shape específico (`messages.create`, `system` inline)
  * - Stream consumption (Anthropic stream events)
@@ -28,6 +28,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { log } from '@/lib/logger'
 
 import { LLMError, createLLMError } from '../errors'
+import { supportsTemperature } from '../models'
 
 import type {
   GenerateTextOptions,
@@ -40,16 +41,66 @@ import type {
 } from './types'
 
 /**
- * Pricing por modelo (USD por 1M tokens). Numbers conforme [Anthropic pricing
- * 2026-05-14]. Pricing parity com Vertex global; Vertex regional adicionaria +10%.
+ * Pricing por modelo (USD por 1M tokens). Auditado em 2026-07-27 contra a doc
+ * oficial da Anthropic. O `claude-opus-4-7` estava a $15/$75 — preço do Opus
+ * **4.1** (depreciado), não do 4.7. Manter em sincronia com a tabela gêmea em
+ * `cost-estimator.ts`.
  */
 const PRICING_USD_PER_M: Record<string, { input: number; output: number }> = {
-  'claude-opus-4-7': { input: 15, output: 75 },
+  'claude-opus-5': { input: 5, output: 25 },
+  'claude-opus-4-8': { input: 5, output: 25 },
+  'claude-opus-4-7': { input: 5, output: 25 },
+  'claude-sonnet-5': { input: 3, output: 15 },
   'claude-sonnet-4-6': { input: 3, output: 15 },
   'claude-haiku-4-5-20251001': { input: 1, output: 5 },
 }
 
 const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-6'
+
+/**
+ * Teto de tokens de saída por request.
+ *
+ * Era 8192. Subiu para 16000 em 2026-07-27 ao adicionar Opus 5 e Sonnet 5 ao
+ * catálogo: nesses modelos o *adaptive thinking* vem **ligado por padrão** e o
+ * raciocínio consome o MESMO `max_tokens` da resposta. Com o teto antigo, uma
+ * fase que gerasse bastante raciocínio poderia estourar o limite antes de
+ * fechar o JSON — o resultado seria `stop_reason: 'max_tokens'` e um payload
+ * truncado no meio, que quebra o parse da fase.
+ *
+ * É um teto, não um alvo: não altera o tamanho típico das respostas nem o custo
+ * das fases que já cabiam em 8192. 16000 mantém a request abaixo do limite de
+ * timeout HTTP do SDK no caminho não-streaming (`generateText`).
+ */
+const MAX_OUTPUT_TOKENS = 16000
+
+/**
+ * Monta o bloco de sampling da request, omitindo `temperature` nos modelos que
+ * a rejeitam.
+ *
+ * A Anthropic removeu os parâmetros de sampling a partir do Opus 4.7 — mandar
+ * `temperature` para Opus 4.7/4.8/5 ou Sonnet 5 devolve **HTTP 400**, o que
+ * quebraria as fases `edit-check`, `risk` e `chapters` (as três mandam 0.3).
+ * Omitir é a única saída sem tirar esses modelos do catálogo; a contenção de
+ * alucinação nessas fases passa a depender só do prompt, e o produtor é avisado
+ * disso na tela de Configuração (`llm-config-settings-form`).
+ *
+ * O log registra a omissão para que a mudança de comportamento seja auditável
+ * — um parâmetro que some em silêncio é exatamente o tipo de troca invisível
+ * que já nos custou um incidente (ver `lesson_preview_model_retirement`).
+ */
+function buildSamplingParams(
+  model: string,
+  temperature: number | undefined
+): { temperature?: number } {
+  if (temperature === undefined) return {}
+  if (supportsTemperature(model)) return { temperature }
+
+  log('INFO', 'AnthropicProvider: temperature omitida (modelo não suporta sampling params)', {
+    model,
+    requestedTemperature: temperature,
+  })
+  return {}
+}
 
 function calculateCost(model: string, usage: GenerateTextUsage): number {
   const tier = PRICING_USD_PER_M[model]
@@ -101,12 +152,13 @@ export class AnthropicProvider implements LLMProvider {
     try {
       const response = await this.client.messages.create({
         model,
-        max_tokens: 8192,
+        max_tokens: MAX_OUTPUT_TOKENS,
         system: opts.systemPrompt,
         messages: [{ role: 'user', content: userContent }],
-        // Só seta temperature quando o caller especifica. Omitido → default
-        // nativo da API (1.0). Fases analíticas passam 0.3 pra reduzir alucinação.
-        ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
+        // Só seta temperature quando o caller especifica E o modelo aceita.
+        // Omitido → default nativo da API (1.0). Fases analíticas passam 0.3
+        // pra reduzir alucinação — ver `buildSamplingParams`.
+        ...buildSamplingParams(model, opts.temperature),
       })
 
       const text = response.content
@@ -123,7 +175,12 @@ export class AnthropicProvider implements LLMProvider {
 
       log('INFO', 'AnthropicProvider.generateText completed', {
         model,
-        temperature: opts.temperature ?? 'default(1.0)',
+        temperature:
+          opts.temperature === undefined
+            ? 'default(1.0)'
+            : supportsTemperature(model)
+              ? opts.temperature
+              : `omitida (pedida ${opts.temperature}; modelo não suporta)`,
         responseLength: text.length,
         ...usage,
         latencyMs,
@@ -153,10 +210,10 @@ export class AnthropicProvider implements LLMProvider {
     try {
       const stream = await this.client.messages.stream({
         model,
-        max_tokens: 8192,
+        max_tokens: MAX_OUTPUT_TOKENS,
         system: opts.systemPrompt,
         messages: [{ role: 'user', content: userContent }],
-        ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
+        ...buildSamplingParams(model, opts.temperature),
       })
 
       for await (const event of stream) {

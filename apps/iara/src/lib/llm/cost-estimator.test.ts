@@ -64,11 +64,56 @@ describe('estimateMonthlyCostFromDefaults', () => {
     expect(estimate.monthlyUsd).toBeGreaterThan(0)
   })
 
-  it('flags Claude Opus 4.7 as warning threshold (PPTNC volumes ~$57/mo)', () => {
-    const estimate = estimateMonthlyCostFromDefaults('claude', 'claude-opus-4-7')
-    expect(estimate.threshold).toBe('warning')
-    expect(estimate.monthlyUsd).toBeGreaterThanOrEqual(20)
-    expect(estimate.monthlyUsd).toBeLessThan(100)
+  /**
+   * Regressão 2026-07-27 — a tabela de pricing tinha 7 de 11 modelos errados e
+   * o painel de Configuração exibia estimativas mensais incorretas. Estes
+   * valores ancoram os preços auditados: volume PPTNC = 2,05M tokens de input
+   * + 346k de output por mês.
+   */
+  describe('preços auditados (2026-07-27)', () => {
+    const cases: Array<[string, number]> = [
+      // Opus tier — $5/$25. Estava catalogado a $15/$75 (preço do Opus 4.1,
+      // depreciado), o que inflava a estimativa em 3x: $56,70 em vez de $18,90.
+      ['claude-opus-5', 18.9],
+      ['claude-opus-4-8', 18.9],
+      ['claude-opus-4-7', 18.9],
+      // Sonnet tier — $3/$15. Sonnet 5 usa preço de tabela, não o promocional.
+      ['claude-sonnet-5', 11.34],
+      ['claude-sonnet-4-6', 11.34],
+      // Haiku — $1/$5.
+      ['claude-haiku-4-5-20251001', 3.78],
+      // Gemini padrão — $0,30/$2,50. Estava a $0,075/$0,30: 5,7x subestimado.
+      ['gemini-2.5-flash', 1.48],
+      ['gemini-2.5-pro', 6.02],
+      ['gemini-3.1-flash-lite', 1.03],
+    ]
+
+    for (const [model, expectedUsd] of cases) {
+      it(`${model} custa ~$${expectedUsd}/mês nos volumes PPTNC`, () => {
+        const provider = model.startsWith('claude-') ? 'claude' : 'gemini'
+        const estimate = estimateMonthlyCostFromDefaults(provider, model)
+        expect(estimate.monthlyUsd).toBeCloseTo(expectedUsd, 2)
+      })
+    }
+
+    it('Opus tier fica abaixo do limiar de warning com o preço correto', () => {
+      // Com o preço errado ($15/$75) o Opus caía em 'warning' ($56,70). Com o
+      // preço real ($5/$25 → $18,90) ele é 'safe'. Se este teste voltar a
+      // 'warning' sem mudança de volume, o pricing regrediu.
+      const estimate = estimateMonthlyCostFromDefaults('claude', 'claude-opus-5')
+      expect(estimate.threshold).toBe('safe')
+      expect(estimate.monthlyUsd).toBeLessThan(20)
+    })
+  })
+
+  it('resolve IDs de texto legados antes do lookup de preço', () => {
+    // Sem o resolve, um `textModel` preview salvo antes da promoção a GA cairia
+    // no ramo "pricing desconhecido" e o badge mostraria $0,00/mês — pior que
+    // um número errado, porque parece custo zero.
+    const legacy = estimateMonthlyCostFromDefaults('gemini', 'gemini-3.1-flash-lite-preview')
+    const current = estimateMonthlyCostFromDefaults('gemini', 'gemini-3.1-flash-lite')
+    expect(legacy.monthlyUsd).toBeGreaterThan(0)
+    expect(legacy.monthlyUsd).toBeCloseTo(current.monthlyUsd, 6)
   })
 
   it('returns zero cost for unknown model and logs warning', () => {

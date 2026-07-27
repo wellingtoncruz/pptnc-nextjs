@@ -167,6 +167,48 @@ describe('AnthropicProvider', () => {
       expect(call).not.toHaveProperty('temperature')
     })
 
+    /**
+     * A Anthropic removeu os sampling params a partir do Opus 4.7 — mandar
+     * `temperature` para esses modelos devolve HTTP 400 e quebraria as fases
+     * edit-check / risk / chapters, que passam 0.3.
+     */
+    describe('modelos que rejeitam sampling params', () => {
+      for (const model of ['claude-opus-4-7', 'claude-opus-4-8', 'claude-opus-5', 'claude-sonnet-5']) {
+        it(`omite temperature em ${model} mesmo quando a fase pede 0.3`, async () => {
+          mockMessagesCreate.mockResolvedValue({
+            content: [{ type: 'text', text: '{}' }],
+            usage: { input_tokens: 1, output_tokens: 1 },
+          })
+
+          const p = new AnthropicProvider()
+          await p.generateText({ systemPrompt: 'sys', userPrompt: 'u', model, temperature: 0.3 })
+
+          const call = mockMessagesCreate.mock.calls[0][0]
+          expect(call.model).toBe(model)
+          expect(call).not.toHaveProperty('temperature')
+        })
+      }
+
+      it('mantém temperature nos modelos que ainda a aceitam', async () => {
+        mockMessagesCreate.mockResolvedValue({
+          content: [{ type: 'text', text: '{}' }],
+          usage: { input_tokens: 1, output_tokens: 1 },
+        })
+
+        const p = new AnthropicProvider()
+        await p.generateText({
+          systemPrompt: 'sys',
+          userPrompt: 'u',
+          model: 'claude-sonnet-4-6',
+          temperature: 0.3,
+        })
+
+        expect(mockMessagesCreate).toHaveBeenCalledWith(
+          expect.objectContaining({ temperature: 0.3 })
+        )
+      })
+    })
+
     it('throws INVALID_RESPONSE when content has no text', async () => {
       mockMessagesCreate.mockResolvedValue({
         content: [],
