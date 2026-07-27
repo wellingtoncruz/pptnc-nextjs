@@ -1,6 +1,11 @@
 import { z } from 'zod'
 
-import { ALL_TEXT_MODEL_IDS, IMAGE_MODEL_IDS, resolveImageModelId } from '@/lib/llm/models'
+import {
+  ALL_TEXT_MODEL_IDS,
+  IMAGE_MODEL_IDS,
+  resolveImageModelId,
+  resolveTextModelId,
+} from '@/lib/llm/models'
 
 import { VideoTypeConfigSchema } from './video-type-config'
 
@@ -377,10 +382,17 @@ export const LlmConfigSchema = z.object({
    * Validação de consistência provider × textModel fica na camada de
    * factory (Story 23.5), não no schema — permite trocas independentes
    * via UI sem deadlock.
+   *
+   * O `preprocess` traduz IDs preview aposentados (`LEGACY_TEXT_MODEL_ALIASES`)
+   * antes do enum, pelo mesmo motivo dos campos de imagem abaixo: sem ele o
+   * `.catch(undefined)` engoliria o valor legado em silêncio e a geração cairia
+   * no `DEFAULT_TEXT_MODEL`, trocando o modelo do produtor sem avisar.
    */
   textModel: z
-    .enum(ALL_TEXT_MODEL_IDS as [string, ...string[]])
-    .optional()
+    .preprocess(
+      (v) => (typeof v === 'string' ? resolveTextModelId(v) : v),
+      z.enum(ALL_TEXT_MODEL_IDS as [string, ...string[]]).optional()
+    )
     .catch(undefined),
   /**
    * Modelos de imagem. O `preprocess` roda ANTES do enum e traduz IDs preview

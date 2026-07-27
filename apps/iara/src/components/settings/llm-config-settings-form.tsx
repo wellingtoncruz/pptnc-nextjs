@@ -8,6 +8,8 @@ import {
   AVAILABLE_IMAGE_MODELS,
   getTextModelsForProvider,
   resolveImageModelId,
+  resolveTextModelId,
+  supportsTemperature,
   type LLMProviderId,
   type ModelOption,
 } from '@/lib/llm/models'
@@ -69,7 +71,13 @@ async function updateLlmConfigViaApi(llmConfig: LlmConfig): Promise<void> {
 export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps) {
   const [provider, setProvider] = useState<LLMProviderId>(inferProvider(llmConfig))
   const availableTextModels = useMemo(() => getTextModelsForProvider(provider), [provider])
-  const [textModel, setTextModel] = useState(sanitizeModelValue(llmConfig?.textModel, availableTextModels))
+  // `resolveTextModelId` traduz IDs preview aposentados (ex.: o
+  // `gemini-3.1-flash-lite-preview`, que passou a dar 404 quando virou GA) antes
+  // da sanitização — senão o select apareceria vazio ("padrão do sistema") para
+  // quem tem o ID legado salvo, sugerindo que a escolha se perdeu.
+  const [textModel, setTextModel] = useState(
+    sanitizeModelValue(resolveTextModelId(llmConfig?.textModel), availableTextModels)
+  )
   // `resolveImageModelId` traduz IDs preview aposentados antes da sanitização,
   // senão o select apareceria vazio ("padrão do sistema") para quem tem o ID
   // legado salvo — sugerindo que a escolha foi perdida quando ela só mudou de nome.
@@ -181,6 +189,16 @@ export function LlmConfigSettingsForm({ llmConfig }: LlmConfigSettingsFormProps)
               </option>
             ))}
           </select>
+          {textModel && !supportsTemperature(textModel) && (
+            <p
+              data-testid="temperature-unsupported-warning"
+              className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-xs text-amber-400"
+            >
+              Este modelo não aceita controle de temperatura. As fases analíticas
+              (Verificação de Edição, Risco e Capítulos) rodam com o padrão do modelo em vez de
+              0.3 — a contenção de alucinação nelas passa a depender apenas do prompt.
+            </p>
+          )}
           {textModel && (
             <CostEstimateBadge provider={provider} model={textModel} />
           )}
