@@ -8,6 +8,7 @@ import type {
   PromptsSchema,
   PromptFieldSchema,
   ThumbnailPromptFieldSchema,
+  ExtraImagesPromptsSchema,
   EpisodePromptsSchema,
   CutPromptsSchema,
   ReelPromptsSchema,
@@ -53,6 +54,12 @@ export type PromptField = z.infer<typeof PromptFieldSchema>
  * Thumbnail prompt field — description/expectedOutput + Base/Reference image URLs (Epic 22).
  */
 export type ThumbnailPromptField = z.infer<typeof ThumbnailPromptFieldSchema>
+
+/**
+ * Config das imagens extras do episódio — Story, Vitrine e Feed (Epic 28).
+ * Cada uma tem a mesma forma do Thumbnail.
+ */
+export type ExtraImagesPrompts = z.infer<typeof ExtraImagesPromptsSchema>
 
 /**
  * Episode-specific prompts.

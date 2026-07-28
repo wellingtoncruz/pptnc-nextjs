@@ -16,6 +16,7 @@ interface PodcastFeatures {
   llmDebugMode: boolean
   socialPublish: boolean
   thumbnailGeneration: boolean
+  extraImagesGeneration: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -49,10 +50,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [llmDebugMode, setLlmDebugMode] = useState(features.llmDebugMode)
   const [socialPublish, setSocialPublish] = useState(features.socialPublish)
   const [thumbnailGeneration, setThumbnailGeneration] = useState(features.thumbnailGeneration)
+  const [extraImagesGeneration, setExtraImagesGeneration] = useState(features.extraImagesGeneration)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish' | 'thumbnailGeneration'
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish' | 'thumbnailGeneration' | 'extraImagesGeneration'
   const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
@@ -63,10 +65,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
     llmDebugMode: setLlmDebugMode,
     socialPublish: setSocialPublish,
     thumbnailGeneration: setThumbnailGeneration,
+    extraImagesGeneration: setExtraImagesGeneration,
   }
 
   async function handleToggle(key: FeatureKey, value: boolean) {
-    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, thumbnailGeneration, [key]: value }
+    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, thumbnailGeneration, extraImagesGeneration, [key]: value }
 
     setters[key](value)
 
@@ -224,6 +227,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-thumbnailGeneration"
             checked={thumbnailGeneration}
             onCheckedChange={(value) => handleToggle('thumbnailGeneration', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-extraImagesGeneration">Imagens Extras do Episódio</Label>
+            <p className="text-xs text-muted-foreground">
+              Habilita a fase Imagens Extras no wizard de episódios (Epic 28): Story, Vitrine e Feed, geradas nos mesmos moldes da thumbnail e disponibilizadas para download.
+            </p>
+          </div>
+          <Switch
+            id="feature-extraImagesGeneration"
+            checked={extraImagesGeneration}
+            onCheckedChange={(value) => handleToggle('extraImagesGeneration', value)}
             disabled={saving}
           />
         </div>

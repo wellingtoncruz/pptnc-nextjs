@@ -374,6 +374,19 @@ type ThumbnailConfigVideoType = (typeof THUMBNAIL_CONFIG_VIDEO_TYPES)[number]
 const THUMBNAIL_CONFIG_ROLES = ['base', 'reference'] as const
 type ThumbnailConfigRole = (typeof THUMBNAIL_CONFIG_ROLES)[number]
 
+/**
+ * Imagens extras do episódio (Epic 28). Quando informado, o `kind` vira um
+ * segmento extra do path, isolando Base/Referência de cada imagem:
+ *
+ *   thumbnail-config/{podcast}/episode/{kind}/{role}-{ts}.{ext}
+ *
+ * Ficam sob o MESMO prefixo `thumbnail-config/` de propósito: o proxy GET
+ * (`downloadThumbnailConfigImage`) valida só o prefixo, então as imagens extras
+ * são servidas sem rota nova nem mudança na validação de path.
+ */
+const EXTRA_IMAGE_CONFIG_KINDS = ['story', 'vitrine', 'feed'] as const
+type ExtraImageConfigKind = (typeof EXTRA_IMAGE_CONFIG_KINDS)[number]
+
 /** MIME → extension mapping for thumbnail config uploads. */
 const MIME_TO_EXT: Record<string, string> = {
   'image/png': 'png',
@@ -398,13 +411,24 @@ export async function uploadThumbnailConfigImage(
   videoType: ThumbnailConfigVideoType,
   role: ThumbnailConfigRole,
   imageBuffer: Buffer,
-  mimeType: string
+  mimeType: string,
+  kind?: ExtraImageConfigKind
 ): Promise<{ filePath: string; mimeType: string }> {
   if (!THUMBNAIL_CONFIG_VIDEO_TYPES.includes(videoType)) {
     throw new CloudStorageError('Invalid video type for thumbnail config', 'UPLOAD_FAILED')
   }
   if (!THUMBNAIL_CONFIG_ROLES.includes(role)) {
     throw new CloudStorageError('Invalid role for thumbnail config', 'UPLOAD_FAILED')
+  }
+  if (kind !== undefined) {
+    if (!EXTRA_IMAGE_CONFIG_KINDS.includes(kind)) {
+      throw new CloudStorageError('Invalid kind for extra image config', 'UPLOAD_FAILED')
+    }
+    // Imagens extras são episode-only (Epic 28). Aceitar outro videoType criaria
+    // um path que nenhum leitor consulta — falha silenciosa de configuração.
+    if (videoType !== 'episode') {
+      throw new CloudStorageError('Extra images are available only for episodes', 'UPLOAD_FAILED')
+    }
   }
   const ext = MIME_TO_EXT[mimeType]
   if (!ext) {
@@ -414,7 +438,10 @@ export async function uploadThumbnailConfigImage(
     throw new CloudStorageError('Empty image buffer for thumbnail config', 'UPLOAD_FAILED')
   }
 
-  const filePath = `thumbnail-config/${PODCAST_ID}/${videoType}/${role}-${Date.now()}.${ext}`
+  // Sem `kind` o path fica idêntico ao do Epic 22 — configs de thumbnail já
+  // gravadas continuam válidas e legíveis.
+  const scope = kind ? `${videoType}/${kind}` : videoType
+  const filePath = `thumbnail-config/${PODCAST_ID}/${scope}/${role}-${Date.now()}.${ext}`
 
   try {
     const bucket = getBucket()
@@ -427,6 +454,7 @@ export async function uploadThumbnailConfigImage(
     log('INFO', 'Thumbnail config image uploaded', {
       podcastId: PODCAST_ID,
       videoType,
+      kind,
       role,
       filePath,
       size: imageBuffer.length,
@@ -440,6 +468,7 @@ export async function uploadThumbnailConfigImage(
     log('ERROR', 'Thumbnail config image upload failed', {
       podcastId: PODCAST_ID,
       videoType,
+      kind,
       role,
       filePath,
       error: error instanceof Error ? error.message : 'Unknown error',

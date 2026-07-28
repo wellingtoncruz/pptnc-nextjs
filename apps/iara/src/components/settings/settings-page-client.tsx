@@ -23,6 +23,7 @@ import { PromptFieldEditor } from './prompt-field-editor'
 import { useAccordionState } from '@/hooks/use-accordion-state'
 import { log } from '@/lib/logger'
 import { DEFAULT_PROMPT_FIELD, DEFAULT_EPISODE_PROMPTS } from '@/lib/schemas'
+import type { ExtraImageKind } from '@/lib/schemas/podcast'
 import type { SerializedPodcast, PromptField, ThumbnailPromptField, Persona, PersonaKey, Prompts, Personas } from '@/types/podcast'
 
 const DEFAULT_NEWSLETTER_PROMPTS = DEFAULT_EPISODE_PROMPTS.newsletter
@@ -186,6 +187,47 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
     []
   )
 
+  /**
+   * Salva a config de UMA imagem extra do episódio (Epic 28).
+   *
+   * Faz merge sobre `episode.extraImages` em vez de substituir o objeto: os três
+   * editores salvam de forma independente (auto-save por debounce), e sobrescrever
+   * o bucket inteiro apagaria a config das outras duas se dois auto-saves caíssem
+   * próximos. `promptsRef` mantém o estado acumulado entre saves.
+   */
+  const handleSaveExtraImagePromptField = useCallback(
+    async (kind: ExtraImageKind, value: ThumbnailPromptField) => {
+      const currentPrompts = promptsRef.current
+      const updatedPrompts = {
+        ...currentPrompts,
+        episode: {
+          ...currentPrompts.episode,
+          extraImages: {
+            ...currentPrompts.episode?.extraImages,
+            [kind]: value,
+          },
+        },
+      }
+      promptsRef.current = updatedPrompts
+
+      const response = await fetch('/api/podcast', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompts: updatedPrompts,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        const message = error?.error?.message || 'Erro ao salvar configuração da imagem extra'
+        log('ERROR', 'Failed to save extra image prompt field', { kind, error: message })
+        throw new Error(message)
+      }
+    },
+    []
+  )
+
   const handleSaveNewsPrompt = useCallback(
     async (fieldName: string, value: PromptField) => {
       const currentPrompts = promptsRef.current
@@ -322,6 +364,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             llmDebugMode: podcast.features?.llmDebugMode ?? false,
             socialPublish: podcast.features?.socialPublish ?? false,
             thumbnailGeneration: podcast.features?.thumbnailGeneration ?? false,
+            extraImagesGeneration: podcast.features?.extraImagesGeneration ?? false,
           }} />
         </AccordionContent>
       </AccordionItem>
@@ -427,6 +470,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             socialNetworks={socialNetworks ?? []}
             onSavePromptField={handleSavePromptField}
             onSaveThumbnailPromptField={handleSaveThumbnailPromptField}
+            onSaveExtraImagePromptField={handleSaveExtraImagePromptField}
           />
         </AccordionContent>
       </AccordionItem>

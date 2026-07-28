@@ -35,6 +35,13 @@ const ROLES = new Set(['base', 'reference'])
 /** Allowed values for the `videoType` form field ('standalone' = Vídeo Avulso, Epic 25). */
 const VIDEO_TYPES = new Set(['episode', 'cut', 'standalone'])
 
+/**
+ * Imagens extras do episódio (Epic 28). Campo `kind` OPCIONAL no multipart:
+ * ausente = config da thumbnail (comportamento do Epic 22, inalterado);
+ * presente = config de Story/Vitrine/Feed, que ganha um segmento a mais no path.
+ */
+const EXTRA_IMAGE_KINDS = new Set(['story', 'vitrine', 'feed'])
+
 export async function POST(request: Request) {
   const session = await auth()
   if (!session) {
@@ -53,6 +60,7 @@ export async function POST(request: Request) {
 
   const videoType = formData.get('videoType')
   const role = formData.get('role')
+  const kindEntry = formData.get('kind')
   const fileEntry = formData.get('file')
 
   if (typeof videoType !== 'string' || !VIDEO_TYPES.has(videoType)) {
@@ -66,6 +74,23 @@ export async function POST(request: Request) {
       { error: { message: 'role inválido (use base ou reference)' } },
       { status: 400 }
     )
+  }
+
+  // `kind` ausente (ou string vazia) = upload de thumbnail, caminho do Epic 22.
+  const kind = typeof kindEntry === 'string' && kindEntry !== '' ? kindEntry : undefined
+  if (kind !== undefined) {
+    if (!EXTRA_IMAGE_KINDS.has(kind)) {
+      return NextResponse.json(
+        { error: { message: 'kind inválido (use story, vitrine ou feed)' } },
+        { status: 400 }
+      )
+    }
+    if (videoType !== 'episode') {
+      return NextResponse.json(
+        { error: { message: 'Imagens extras existem apenas para episódios' } },
+        { status: 400 }
+      )
+    }
   }
 
   // Duck-typing instead of `instanceof File` because the runtime File class
@@ -102,7 +127,8 @@ export async function POST(request: Request) {
       videoType as 'episode' | 'cut' | 'standalone',
       role as 'base' | 'reference',
       buffer,
-      file.type
+      file.type,
+      kind as 'story' | 'vitrine' | 'feed' | undefined
     )
 
     const url = `/api/settings/thumbnail-config?path=${encodeURIComponent(filePath)}`

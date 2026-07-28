@@ -16,6 +16,7 @@ import {
   StatisticsSchema,
   GuestSchema,
   EpisodeContextFormSchema,
+  ExtraImagesSchema,
 } from './video'
 
 // Helper to create a valid Firestore-like Timestamp
@@ -711,5 +712,79 @@ describe('EpisodeContextFormSchema (UI form validation)', () => {
         guests: [validGuest],
       })
     ).toThrow()
+  })
+})
+
+// ============================================================================
+// Epic 28 — imagens extras do episódio (Story, Vitrine, Feed)
+// ============================================================================
+
+describe('ExtraImagesSchema (Epic 28)', () => {
+  const url = (kind: string) =>
+    `/api/wizard/extra-images/select?path=extra-images/pptnc/vid1/${kind}-123.png`
+
+  it('accepts an empty object — nenhuma das três é obrigatória', () => {
+    expect(() => ExtraImagesSchema.parse({})).not.toThrow()
+  })
+
+  it('accepts the three proxy URLs', () => {
+    const parsed = ExtraImagesSchema.parse({
+      story: url('story'),
+      vitrine: url('vitrine'),
+      feed: url('feed'),
+    })
+    expect(parsed.story).toBe(url('story'))
+    expect(parsed.vitrine).toBe(url('vitrine'))
+    expect(parsed.feed).toBe(url('feed'))
+  })
+
+  /**
+   * A fase não exige as três (decisão Wellington 2026-07-28), então um vídeo
+   * com só uma imagem selecionada é estado válido — não um doc corrompido.
+   */
+  it('accepts a partially filled set', () => {
+    const parsed = ExtraImagesSchema.parse({ feed: url('feed') })
+    expect(parsed.feed).toBeDefined()
+    expect(parsed.story).toBeUndefined()
+    expect(parsed.vitrine).toBeUndefined()
+  })
+
+  it('rejects a non-string value', () => {
+    expect(() => ExtraImagesSchema.parse({ story: 42 })).toThrow()
+  })
+})
+
+describe('VideoSchema / VideoUpdateSchema extraImages (Epic 28)', () => {
+  const validVideo = {
+    id: 'dQw4w9WgXcQ',
+    podcastId: 'pptnc',
+    title: 'Test Video',
+    description: 'A test video description',
+    thumbnails: { high: { url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg' } },
+    duration: 1200,
+    publishedAt: createMockTimestamp(),
+    status: 'new',
+    videoType: 'episode',
+    deleted: false,
+  }
+
+  it('accepts a video without extraImages (backward-compat com docs existentes)', () => {
+    const result = VideoSchema.parse(validVideo)
+    expect(result.extraImages).toBeUndefined()
+  })
+
+  it('parses extraImages when present', () => {
+    const result = VideoSchema.parse({
+      ...validVideo,
+      extraImages: { story: '/api/wizard/extra-images/select?path=extra-images/pptnc/v/story-1.png' },
+    })
+    expect(result.extraImages?.story).toContain('story-1.png')
+  })
+
+  it('VideoUpdateSchema accepts a partial extraImages update', () => {
+    const result = VideoUpdateSchema.parse({
+      extraImages: { feed: '/api/wizard/extra-images/select?path=extra-images/pptnc/v/feed-9.png' },
+    })
+    expect(result.extraImages?.feed).toContain('feed-9.png')
   })
 })

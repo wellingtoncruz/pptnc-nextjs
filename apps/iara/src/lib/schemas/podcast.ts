@@ -105,9 +105,36 @@ export const ThumbnailPromptFieldSchema = z.object({
 })
 
 /**
+ * Imagens extras do episódio (Epic 28) — Story, Vitrine e Feed.
+ *
+ * Cada uma tem a MESMA forma do Thumbnail (prompt + Base + Referência próprias),
+ * então reusam `ThumbnailPromptFieldSchema` sem alteração. São exclusivas de
+ * `episode`: cortes e reels não têm imagens extras.
+ *
+ * A proporção de cada imagem NÃO é modelada aqui — igual ao Thumbnail, é
+ * assunto do prompt (`expectedOutput`) e das imagens de referência.
+ */
+export const EXTRA_IMAGE_KINDS = ['story', 'vitrine', 'feed'] as const
+
+export type ExtraImageKind = (typeof EXTRA_IMAGE_KINDS)[number]
+
+/** Rótulos PT-BR exibidos em Settings e no wizard. */
+export const EXTRA_IMAGE_LABELS: Record<ExtraImageKind, string> = {
+  story: 'Story',
+  vitrine: 'Vitrine',
+  feed: 'Feed',
+}
+
+export const ExtraImagesPromptsSchema = z.object({
+  story: ThumbnailPromptFieldSchema.optional(),
+  vitrine: ThumbnailPromptFieldSchema.optional(),
+  feed: ThumbnailPromptFieldSchema.optional(),
+})
+
+/**
  * Episode prompts - prompts specific to full episodes.
  *
- * Includes: critique, editing, compliance, chapters, titles, description, tags, social (optional), adwords (optional), newsletter (optional), thumbnail (optional, Epic 22)
+ * Includes: critique, editing, compliance, chapters, titles, description, tags, social (optional), adwords (optional), newsletter (optional), thumbnail (optional, Epic 22), extraImages (optional, Epic 28)
  */
 export const EpisodePromptsSchema = z.object({
   critique: PromptFieldSchema,
@@ -132,6 +159,8 @@ export const EpisodePromptsSchema = z.object({
   }).optional(),
   /** Thumbnail generation config (Epic 22). Optional for backward-compat with existing podcasts. */
   thumbnail: ThumbnailPromptFieldSchema.optional(),
+  /** Imagens extras do episódio (Epic 28): Story, Vitrine, Feed. Episode-only. */
+  extraImages: ExtraImagesPromptsSchema.optional(),
 })
 
 /**
@@ -284,6 +313,11 @@ export const DEFAULT_EPISODE_PROMPTS = {
     format: { ...DEFAULT_PROMPT_FIELD },
   },
   thumbnail: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
+  extraImages: {
+    story: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
+    vitrine: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
+    feed: { ...DEFAULT_THUMBNAIL_PROMPT_FIELD },
+  },
 }
 
 /**
@@ -464,6 +498,12 @@ export const PodcastSchema = z.object({
      * `false` por ser opt-in explícito; rever se virar padrão do produto.
      */
     thumbnailGeneration: z.boolean().default(false),
+    /**
+     * Habilita a fase Imagens Extras (Epic 28) — Story, Vitrine e Feed, só para
+     * episódios. **Independente** de `thumbnailGeneration`: pode ser ligada
+     * sozinha, e nesse caso o step ancora antes de `links` do mesmo jeito.
+     */
+    extraImagesGeneration: z.boolean().default(false),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

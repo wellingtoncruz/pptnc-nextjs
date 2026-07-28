@@ -266,6 +266,22 @@ export const EpisodeContextFormSchema = z.object({
 // ============================================================================
 
 /**
+ * Imagens extras do episódio (Epic 28) — Story, Vitrine e Feed.
+ *
+ * Cada campo guarda o proxy URL da imagem FINAL no Cloud Storage
+ * (`/api/wizard/extra-images/select?path=...`), gravado quando o produtor
+ * seleciona aquele quadro na fase Imagens Extras.
+ *
+ * Todos opcionais e independentes entre si: a fase não exige as três, então um
+ * episódio pode ter só Feed, ou nenhuma. Ausência = nunca gerada/selecionada.
+ */
+export const ExtraImagesSchema = z.object({
+  story: z.string().optional(),
+  vitrine: z.string().optional(),
+  feed: z.string().optional(),
+})
+
+/**
  * Video Schema - Full video document schema for reading from Firestore.
  *
  * Campos do YouTube (title, description, etc.) são valores iniciais do sync.
@@ -351,6 +367,10 @@ export const VideoSchema = z.object({
   // Thumbnail stored in Firebase Storage (works for draft/private videos)
   storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)
 
+  // Epic 28 — imagens extras do episódio (Story, Vitrine, Feed). Proxy URLs do
+  // Cloud Storage, mesma convenção de storageThumbnailUrl. Episode-only.
+  extraImages: ExtraImagesSchema.optional(),
+
   // Embedding control flag (Epic 17 — Video Embeddings)
   hasEmbedding: z.boolean().optional(),
 }).passthrough() // Allow additional legacy fields
@@ -433,6 +453,10 @@ export const VideoUpdateSchema = z.object({
   // Epic 22 / Story 22.3g — proxy URL da thumbnail final no Cloud Storage.
   // Atualizado quando o produtor clica Continuar na fase Thumbnail.
   storageThumbnailUrl: z.string().optional(),
+
+  // Epic 28 — imagens extras. Gravadas uma a uma conforme o produtor seleciona
+  // cada quadro na fase Imagens Extras (não exige as três).
+  extraImages: ExtraImagesSchema.optional(),
 })
 
 /**

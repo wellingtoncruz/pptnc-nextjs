@@ -35,6 +35,7 @@ import {
   uploadNewsImage,
   downloadNewsImage,
   deleteNewsImage,
+  uploadThumbnailConfigImage,
   CloudStorageError,
 } from './cloud-storage'
 
@@ -407,5 +408,89 @@ describe('deleteNewsImage (Story 18.8)', () => {
 
     expect(mockFile).not.toHaveBeenCalled()
     expect(mockDelete).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// Epic 28 — segmento `kind` no path da config (imagens extras do episódio)
+// ============================================================================
+
+describe('uploadThumbnailConfigImage — kind (Epic 28)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockSave.mockResolvedValue(undefined)
+  })
+
+  /**
+   * Sem `kind` o path tem que ser byte-a-byte o do Epic 22 — configs de
+   * thumbnail já gravadas em produção continuam legíveis.
+   */
+  it('mantém o path do thumbnail quando kind é omitido', async () => {
+    const { filePath } = await uploadThumbnailConfigImage(
+      'episode',
+      'base',
+      Buffer.from('img'),
+      'image/png'
+    )
+    expect(filePath).toMatch(/^thumbnail-config\/pptnc\/episode\/base-\d+\.png$/)
+  })
+
+  it('insere o kind como segmento extra quando informado', async () => {
+    const { filePath } = await uploadThumbnailConfigImage(
+      'episode',
+      'reference',
+      Buffer.from('img'),
+      'image/jpeg',
+      'vitrine'
+    )
+    expect(filePath).toMatch(/^thumbnail-config\/pptnc\/episode\/vitrine\/reference-\d+\.jpg$/)
+  })
+
+  it('isola os três kinds em paths distintos', async () => {
+    const paths: string[] = []
+    for (const kind of ['story', 'vitrine', 'feed'] as const) {
+      const { filePath } = await uploadThumbnailConfigImage(
+        'episode',
+        'base',
+        Buffer.from('img'),
+        'image/png',
+        kind
+      )
+      paths.push(filePath.replace(/-\d+\.png$/, ''))
+    }
+    expect(new Set(paths).size).toBe(3)
+  })
+
+  /**
+   * Continua sob `thumbnail-config/` de propósito: é o prefixo que o proxy GET
+   * valida, então as imagens extras são servidas sem rota nem validação nova.
+   */
+  it('mantém o prefixo thumbnail-config/ (o proxy GET valida por ele)', async () => {
+    const { filePath } = await uploadThumbnailConfigImage(
+      'episode',
+      'base',
+      Buffer.from('img'),
+      'image/png',
+      'feed'
+    )
+    expect(filePath.startsWith('thumbnail-config/')).toBe(true)
+  })
+
+  it('rejeita kind desconhecido', async () => {
+    await expect(
+      uploadThumbnailConfigImage(
+        'episode',
+        'base',
+        Buffer.from('img'),
+        'image/png',
+        'carrossel' as 'story'
+      )
+    ).rejects.toBeInstanceOf(CloudStorageError)
+  })
+
+  it('rejeita kind combinado com videoType que não é episode', async () => {
+    await expect(
+      uploadThumbnailConfigImage('cut', 'base', Buffer.from('img'), 'image/png', 'story')
+    ).rejects.toThrow(/only for episodes/)
   })
 })

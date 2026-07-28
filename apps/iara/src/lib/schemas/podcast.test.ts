@@ -8,6 +8,9 @@ import {
   PromptsSchema,
   PromptFieldSchema,
   ThumbnailPromptFieldSchema,
+  ExtraImagesPromptsSchema,
+  EXTRA_IMAGE_KINDS,
+  EXTRA_IMAGE_LABELS,
   EpisodePromptsSchema,
   CutPromptsSchema,
   ReelPromptsSchema,
@@ -551,6 +554,31 @@ describe('PodcastSchema features defaults', () => {
     const result = PodcastSchema.parse(withThumb)
     expect(result.features?.thumbnailGeneration).toBe(true)
   })
+
+  // ===========================================================================
+  // Epic 28 — extraImagesGeneration feature flag
+  // ===========================================================================
+
+  it('defaults extraImagesGeneration to false when not provided (Epic 28)', () => {
+    const withFeatures = { ...validPodcast, features: { editorial: true, news: true, includeLivestreams: false } }
+    const result = PodcastSchema.parse(withFeatures)
+    expect(result.features?.extraImagesGeneration).toBe(false)
+  })
+
+  /**
+   * As duas flags são independentes por decisão de produto: o produtor pode
+   * querer as imagens extras sem a fase Thumbnail (ou o contrário). Se alguém
+   * acoplar uma na outra, este teste quebra.
+   */
+  it('accepts extraImagesGeneration on with thumbnailGeneration off (Epic 28)', () => {
+    const withExtras = {
+      ...validPodcast,
+      features: { editorial: true, news: true, includeLivestreams: false, extraImagesGeneration: true },
+    }
+    const result = PodcastSchema.parse(withExtras)
+    expect(result.features?.extraImagesGeneration).toBe(true)
+    expect(result.features?.thumbnailGeneration).toBe(false)
+  })
 })
 
 describe('LlmConfigSchema (Epic 22 / Story 22.2-bis)', () => {
@@ -938,5 +966,100 @@ describe('DEFAULT_PROMPTS — Epic 22 thumbnail defaults', () => {
 
   it('reel default does NOT include thumbnail (Epic 22 covers only episode and cut)', () => {
     expect((DEFAULT_PROMPTS.reel as Record<string, unknown>).thumbnail).toBeUndefined()
+  })
+})
+
+// ============================================================================
+// Epic 28 — Imagens extras do episódio (Story, Vitrine, Feed)
+// ============================================================================
+
+describe('ExtraImagesPromptsSchema (Epic 28)', () => {
+  const filled = {
+    description: 'gere a imagem',
+    expectedOutput: 'PNG vertical',
+    baseImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config/p/episode/story/base-1.png',
+    baseImageMimeType: 'image/png',
+    referenceImageUrl: '/api/settings/thumbnail-config?path=thumbnail-config/p/episode/story/reference-1.png',
+    referenceImageMimeType: 'image/png',
+  }
+
+  it('accepts an empty object — nenhuma das três é obrigatória', () => {
+    expect(() => ExtraImagesPromptsSchema.parse({})).not.toThrow()
+  })
+
+  it('accepts each kind with the full thumbnail shape (Base + Referência próprias)', () => {
+    const parsed = ExtraImagesPromptsSchema.parse({ story: filled, vitrine: filled, feed: filled })
+    expect(parsed.story?.baseImageUrl).toBe(filled.baseImageUrl)
+    expect(parsed.vitrine?.referenceImageUrl).toBe(filled.referenceImageUrl)
+    expect(parsed.feed?.expectedOutput).toBe('PNG vertical')
+  })
+
+  it('accepts a partial config — só Feed preenchido', () => {
+    const parsed = ExtraImagesPromptsSchema.parse({ feed: filled })
+    expect(parsed.feed).toBeDefined()
+    expect(parsed.story).toBeUndefined()
+  })
+
+  it('rejects a description over MAX_PROMPT_LENGTH', () => {
+    const tooLong = { description: 'x'.repeat(10001), expectedOutput: '' }
+    expect(() => ExtraImagesPromptsSchema.parse({ story: tooLong })).toThrow()
+  })
+
+  it('EXTRA_IMAGE_KINDS matches the schema keys', () => {
+    expect([...EXTRA_IMAGE_KINDS]).toEqual(['story', 'vitrine', 'feed'])
+    expect(Object.keys(ExtraImagesPromptsSchema.shape).sort()).toEqual([...EXTRA_IMAGE_KINDS].sort())
+  })
+
+  it('has a PT-BR label for every kind', () => {
+    for (const kind of EXTRA_IMAGE_KINDS) {
+      expect(EXTRA_IMAGE_LABELS[kind]).toBeTruthy()
+    }
+  })
+})
+
+describe('EpisodePromptsSchema extraImages (Epic 28)', () => {
+  const promptField = { description: '', expectedOutput: '' }
+  const baseEpisode = {
+    critique: promptField,
+    editing: promptField,
+    compliance: promptField,
+    chapters: promptField,
+    titles: promptField,
+    description: promptField,
+    tags: promptField,
+  }
+
+  it('accepts an episode without extraImages (backward-compat)', () => {
+    expect(() => EpisodePromptsSchema.parse(baseEpisode)).not.toThrow()
+  })
+
+  it('accepts an episode with extraImages', () => {
+    const withExtras = {
+      ...baseEpisode,
+      extraImages: { story: { description: 'a', expectedOutput: 'b' } },
+    }
+    const parsed = EpisodePromptsSchema.parse(withExtras)
+    expect(parsed.extraImages?.story?.description).toBe('a')
+  })
+
+  /** Imagens extras são episode-only — cortes e reels não têm o campo. */
+  it('CutPromptsSchema does not carry extraImages through', () => {
+    const cut = {
+      titles: promptField,
+      thumbs: promptField,
+      description: promptField,
+      tags: promptField,
+      extraImages: { story: { description: 'a', expectedOutput: 'b' } },
+    }
+    const parsed = CutPromptsSchema.parse(cut) as Record<string, unknown>
+    expect(parsed.extraImages).toBeUndefined()
+  })
+
+  it('DEFAULT_PROMPTS.episode ships the three empty kinds', () => {
+    expect(DEFAULT_PROMPTS.episode.extraImages).toEqual({
+      story: { description: '', expectedOutput: '' },
+      vitrine: { description: '', expectedOutput: '' },
+      feed: { description: '', expectedOutput: '' },
+    })
   })
 })
