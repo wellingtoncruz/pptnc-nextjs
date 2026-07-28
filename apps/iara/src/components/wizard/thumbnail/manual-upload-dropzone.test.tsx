@@ -139,3 +139,34 @@ describe('ManualUploadDropzone (Story 22.3e)', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
+
+/**
+ * Epic 28 — regressão de rolagem global.
+ *
+ * O input do arquivo é `sr-only`, ou seja `position: absolute`. Sem um ancestral
+ * posicionado o containing block vira o <body>, e um absoluto ancorado no body
+ * NÃO é clipado pelo `overflow-auto` do painel do wizard: ele estica o documento
+ * até a posição em que estiver, criando barra de rolagem na página inteira.
+ *
+ * Passou despercebido no Epic 22 porque a fase Thumbnail tem um único dropzone e
+ * é curta — o input nunca chegava além da viewport. Na fase Imagens Extras, com
+ * três dropzones, o terceiro caía em y=2544 numa viewport de 871 (medido no
+ * browser em 2026-07-28).
+ */
+describe('ManualUploadDropzone — containing block do input (Epic 28)', () => {
+  it('mantém o root posicionado para o input sr-only não ancorar no body', () => {
+    render(<ManualUploadDropzone videoId="vid1" onUploaded={vi.fn()} />)
+
+    const root = screen.getByTestId('path-upload')
+    expect(root.className).toContain('relative')
+  })
+
+  it('mantém o input dentro do root posicionado', () => {
+    const { container } = render(<ManualUploadDropzone videoId="vid1" onUploaded={vi.fn()} />)
+
+    const root = screen.getByTestId('path-upload')
+    const input = container.querySelector('input[type="file"]')
+    expect(input).not.toBeNull()
+    expect(root.contains(input!)).toBe(true)
+  })
+})

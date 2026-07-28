@@ -138,7 +138,18 @@ export function ManualUploadDropzone({ videoId, onUploaded, className }: ManualU
   )
 
   return (
-    <div className={cn('rounded-md border p-4 flex flex-col gap-3', className)} data-testid="path-upload">
+    // `relative` existe por um motivo específico: o input do arquivo é `sr-only`,
+    // que é `position: absolute`. Sem um ancestral posicionado, o containing
+    // block dele vira o <body> — e um absoluto ancorado no body NÃO é clipado
+    // pelo `overflow-auto` do painel do wizard. O input então estica o
+    // documento até a posição em que estiver, criando uma barra de rolagem
+    // global (Epic 28, homologação de 2026-07-28: a fase Imagens Extras tem
+    // três dropzones e o terceiro caía em y=2544 numa viewport de 871).
+    // Com `relative`, o input fica ancorado aqui dentro e é clipado normalmente.
+    <div
+      className={cn('relative rounded-md border p-4 flex flex-col gap-3', className)}
+      data-testid="path-upload"
+    >
       <div className="flex items-center gap-2 font-medium">
         <Upload className="h-4 w-4" />
         Upload próprio
