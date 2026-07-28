@@ -447,3 +447,105 @@ describe('WizardLayout Integration Tests', () => {
     })
   })
 })
+
+/**
+ * Epic 28 — navegação do breadcrumb para a fase Imagens Extras.
+ *
+ * A regra geral das fases estendidas ("atual ou concluída") torna qualquer fase
+ * NOVA inalcançável em vídeos processados antes dela existir. `extra-images`
+ * abre exceção: é clicável quando tudo antes dela está concluído.
+ */
+describe('WizardLayout — navegação para Imagens Extras (Epic 28)', () => {
+  const features = { thumbnailGeneration: true, extraImagesGeneration: true }
+
+  /** Estado com todas as fases tracked concluídas — o vídeo já processado. */
+  function completedState(currentPhase: WizardState['currentPhase'] = 'publish'): WizardState {
+    const done = { status: 'completed' as const, data: null, error: null }
+    return {
+      videoId: 'test-video-123',
+      videoType: 'episode',
+      currentPhase,
+      phases: {
+        critique: done,
+        'edit-check': done,
+        risk: done,
+        chapters: done,
+        title: done,
+        description: done,
+        tags: done,
+        publish: done,
+      },
+    }
+  }
+
+  function renderWith(state: WizardState, video: Video) {
+    const wizard = createMockWizard({ state, currentPhase: state.currentPhase })
+    render(
+      <WizardLayout
+        wizard={wizard}
+        video={video}
+        interactivePanel={<div>painel</div>}
+        features={features}
+      />
+    )
+    return wizard
+  }
+
+  function extraImagesButton() {
+    return screen.getByRole('button', { name: /Imagens Extras/i })
+  }
+
+  /**
+   * O caso reportado na homologação: episódio antigo, sem nunca ter visitado a
+   * fase. Antes da correção o botão ficava desabilitado para sempre.
+   */
+  it('é clicável em vídeo já processado que nunca visitou a fase', () => {
+    renderWith(completedState(), {
+      ...mockVideo,
+      storageThumbnailUrl: '/api/wizard/thumbnail/select?path=thumbnails/p/v/final-1.png',
+      reviewedPhases: ['links'],
+    } as Video)
+
+    expect(extraImagesButton()).not.toBeDisabled()
+  })
+
+  it('dispara a navegação ao clicar', () => {
+    const wizard = renderWith(completedState(), {
+      ...mockVideo,
+      storageThumbnailUrl: '/api/wizard/thumbnail/select?path=thumbnails/p/v/final-1.png',
+      reviewedPhases: ['links'],
+    } as Video)
+
+    fireEvent.click(extraImagesButton())
+    expect(wizard.goToPhase).toHaveBeenCalledWith('extra-images')
+  })
+
+  /** Sem concluir o que vem antes, a fase segue bloqueada — o progresso importa. */
+  it('permanece bloqueada quando as fases anteriores não estão concluídas', () => {
+    renderWith(createMockWizardState('critique'), mockVideo)
+    expect(extraImagesButton()).toBeDisabled()
+  })
+
+  it('é clicável quando já tem imagem persistida, mesmo sem a marca de revisão', () => {
+    renderWith(createMockWizardState('critique'), {
+      ...mockVideo,
+      extraImages: { feed: '/api/wizard/extra-images/select?path=extra-images/p/v/feed-1.png' },
+    } as Video)
+
+    expect(extraImagesButton()).not.toBeDisabled()
+  })
+
+  /**
+   * A exceção é restrita a extra-images (decisão Wellington, 2026-07-28):
+   * thumbnail e links mantêm o comportamento homologado.
+   */
+  it('não afeta a Thumbnail — segue bloqueada em vídeo sem thumbnail do wizard', () => {
+    renderWith(completedState(), mockVideo)
+    expect(screen.getByRole('button', { name: /Thumbnail/i })).toBeDisabled()
+  })
+
+  it('não afeta Links — segue bloqueada sem a marca de revisão', () => {
+    renderWith(completedState(), mockVideo)
+    expect(screen.getByRole('button', { name: /Links/i })).toBeDisabled()
+  })
+})
