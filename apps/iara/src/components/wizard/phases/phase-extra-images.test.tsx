@@ -114,7 +114,7 @@ describe('PhaseExtraImages', () => {
     expect(link).toHaveAttribute('download', 'story.png')
   })
 
-  it('marks a persisted image as saved and disables re-saving it', async () => {
+  it('marks an already persisted image as saved', async () => {
     render(
       <PhaseExtraImages
         video={episode}
@@ -125,16 +125,73 @@ describe('PhaseExtraImages', () => {
     await waitFor(() => {
       expect(screen.getByTestId('story-saved-badge')).toBeInTheDocument()
     })
-    expect(screen.getByTestId('save-story-button')).toBeDisabled()
   })
 
-  it('cannot save a kind with nothing selected', async () => {
+  /**
+   * Selecionada = salva: não há botão de salvar por quadro (o Thumbnail também
+   * não tem). A persistência acontece no Continuar.
+   */
+  it('has no per-kind save button', async () => {
     render(<PhaseExtraImages video={episode} />)
 
     await waitFor(() => {
-      expect(screen.getByTestId('save-story-button')).toBeInTheDocument()
+      expect(screen.getByTestId('extra-image-story')).toBeInTheDocument()
     })
-    expect(screen.getByTestId('save-story-button')).toBeDisabled()
+    for (const kind of ['story', 'vitrine', 'feed']) {
+      expect(screen.queryByTestId(`save-${kind}-button`)).not.toBeInTheDocument()
+    }
+  })
+
+  /**
+   * Reclicar Continuar sem trocar nada não pode gerar cópia nova no bucket nem
+   * escrita no Firestore. O caminho de persistência em si (seleção nova → POST
+   * → URL final) é coberto pelos tests da rota `/extra-images/select`, que
+   * exercitam a mesma chamada sem precisar simular o job de geração aqui.
+   */
+  it('does not re-send an unchanged selection on advance', async () => {
+    const user = userEvent.setup()
+    const onAdvance = vi.fn()
+    const savedUrl = '/api/wizard/extra-images/select?path=extra-images/p/v/feed-9.png'
+
+    mockFetch.mockImplementation((url: string, init?: RequestInit) => {
+      if (typeof url === 'string' && url.startsWith('/api/podcast')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            data: { prompts: { episode: { extraImages: { story: filled, vitrine: filled, feed: filled } } } },
+          }),
+        })
+      }
+      if (typeof url === 'string' && url.includes('/extra-images/select')) {
+        const body = JSON.parse(String(init?.body))
+        return Promise.resolve({ ok: true, json: async () => ({ imageUrl: savedUrl, kind: body.kind }) })
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) })
+    })
+
+    render(
+      <PhaseExtraImages
+        video={episode}
+        onAdvance={onAdvance}
+        selectedExtraImages={{ story: '/api/already-saved-story.png' }}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('continuar-extra-images')).toBeInTheDocument()
+    })
+    await user.click(screen.getByTestId('continuar-extra-images'))
+
+    // Story já estava persistida e não mudou — não deve ser reenviada.
+    await waitFor(() => {
+      expect(onAdvance).toHaveBeenCalledWith({
+        extraImages: { story: '/api/already-saved-story.png' },
+      })
+    })
+    const selectCalls = mockFetch.mock.calls.filter(
+      (c: unknown[]) => typeof c[0] === 'string' && (c[0] as string).includes('/extra-images/select')
+    )
+    expect(selectCalls).toHaveLength(0)
   })
 
   /**

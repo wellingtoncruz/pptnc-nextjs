@@ -30,26 +30,36 @@ export function ExtraImagesDownloads({ extraImages, className }: ExtraImagesDown
   if (available.length === 0) return null
 
   return (
-    <div className={cn('rounded-md border p-3', className)} data-testid="extra-images-downloads">
+    <div
+      className={cn('shrink-0 rounded-md border p-3', className)}
+      data-testid="extra-images-downloads"
+    >
       <p className="text-xs font-medium mb-2">Imagens extras</p>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         {available.map((kind) => {
           const url = extraImages?.[kind] as string
           return (
-            <div key={kind} className="flex flex-col items-center gap-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={url}
-                alt={EXTRA_IMAGE_LABELS[kind]}
-                className="h-16 w-auto rounded border bg-muted object-cover"
-              />
-              <Button asChild size="sm" variant="ghost" className="h-6 px-2 text-[11px]">
-                <a href={url} download={`${kind}.png`} data-testid={`download-panel-${kind}`}>
-                  <Download className="h-3 w-3 mr-1" />
-                  {EXTRA_IMAGE_LABELS[kind]}
-                </a>
-              </Button>
-            </div>
+            <Button
+              key={kind}
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-auto py-1.5 px-2 gap-2"
+            >
+              <a href={url} download={`${kind}.png`} data-testid={`download-panel-${kind}`}>
+                {/* Caixa de tamanho FIXO com `object-contain`: as três têm
+                    proporções diferentes (Story é vertical), e deixar a altura
+                    seguir a imagem esticava a linha e estourava a coluna. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={EXTRA_IMAGE_LABELS[kind]}
+                  className="h-8 w-8 rounded border bg-muted object-contain"
+                />
+                <span className="text-[11px]">{EXTRA_IMAGE_LABELS[kind]}</span>
+                <Download className="h-3 w-3" />
+              </a>
+            </Button>
           )
         })}
       </div>

@@ -35,13 +35,18 @@ interface PhaseExtraImagesProps {
 /**
  * Fase Imagens Extras — Epic 28 / Story 28.5.
  *
- * Três quadros independentes (Story, Vitrine, Feed) com a mesma dinâmica da
- * fase Thumbnail: gerar via IAra, galeria de versões da sessão, upload manual,
- * lightbox e download. Cada quadro persiste sozinho, ao ser selecionado.
+ * Três quadros (Story, Vitrine, Feed) com a mesma dinâmica da fase Thumbnail:
+ * gerar via IAra, galeria de versões da sessão, upload manual, lightbox e
+ * download.
  *
- * **Não bloqueia o avanço** (decisão Wellington, 2026-07-28): as três são
- * acessórias e nada nelas é pré-requisito da publicação no YouTube, então
- * travar o botão só criaria atrito em episódio que não precisa delas.
+ * **Selecionada = salva**, igual ao Thumbnail: não há botão de salvar por
+ * quadro. O que estiver selecionado em cada um é persistido ao clicar
+ * Continuar, numa tacada só. A primeira versão tinha um "Salvar" por imagem —
+ * invenção que não existia no Thumbnail e que o produtor rejeitou na
+ * homologação de 2026-07-28.
+ *
+ * **Não bloqueia o avanço**: as três são acessórias e nada nelas é
+ * pré-requisito da publicação no YouTube. Avançar sem nenhuma é válido.
  *
  * Gated por `podcast.features.extraImagesGeneration` e renderizada apenas para
  * `episode` (ver `getPhaseIdsForVideoTypeWithFeatures`).
@@ -55,8 +60,13 @@ export function PhaseExtraImages({
 }: PhaseExtraImagesProps) {
   const [configs, setConfigs] = useState<Partial<Record<ExtraImageKind, ThumbnailPromptField>>>({})
   const [configLoaded, setConfigLoaded] = useState(false)
-  const [persisted, setPersisted] = useState<ExtraImages>(selectedExtraImages ?? {})
+  /** URL selecionada por kind. Hidrata do que já está persistido no vídeo. */
+  const [selected, setSelected] = useState<Partial<Record<ExtraImageKind, string>>>(
+    () => ({ ...(selectedExtraImages ?? {}) })
+  )
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -82,13 +92,75 @@ export function PhaseExtraImages({
     }
   }, [])
 
-  const handlePersisted = useCallback((kind: ExtraImageKind, url: string) => {
-    setPersisted((prev) => ({ ...prev, [kind]: url }))
+  const handleSelect = useCallback((kind: ExtraImageKind, url: string) => {
+    setSelected((prev) => ({ ...prev, [kind]: url }))
   }, [])
 
-  const handleAdvance = useCallback(() => {
+  /**
+   * Persiste as imagens que mudaram e avança.
+   *
+   * Só manda ao servidor o que difere do já persistido — reclicar Continuar sem
+   * trocar nada não gera cópia nova no bucket nem escrita no Firestore.
+   *
+   * Uma falha em um kind não impede os outros nem trava o avanço: as imagens
+   * são acessórias, e prender o produtor na fase por causa de uma delas seria
+   * pior. O que falhou fica registrado na mensagem e a seleção continua ali.
+   */
+  const handleAdvance = useCallback(async () => {
+    if (isSaving) return
+    setSaveError(null)
+
+    const pending = EXTRA_IMAGE_KINDS.filter(
+      (kind) => selected[kind] && selected[kind] !== selectedExtraImages?.[kind]
+    )
+
+    if (pending.length === 0) {
+      onAdvance?.({ extraImages: { ...(selectedExtraImages ?? {}) } })
+      return
+    }
+
+    setIsSaving(true)
+    const persisted: ExtraImages = { ...(selectedExtraImages ?? {}) }
+    const failed: string[] = []
+
+    for (const kind of pending) {
+      try {
+        const response = await fetch('/api/wizard/extra-images/select', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videoId: video.id, kind, selectedImageUrl: selected[kind] }),
+        })
+        if (!response.ok) {
+          failed.push(EXTRA_IMAGE_LABELS[kind])
+          log('WARN', 'Extra image select failed', { videoId: video.id, kind, status: response.status })
+          continue
+        }
+        const data = (await response.json()) as { imageUrl?: string }
+        if (data?.imageUrl) {
+          persisted[kind] = data.imageUrl
+        } else {
+          failed.push(EXTRA_IMAGE_LABELS[kind])
+        }
+      } catch (err) {
+        failed.push(EXTRA_IMAGE_LABELS[kind])
+        log('WARN', 'Extra image select threw', {
+          videoId: video.id,
+          kind,
+          error: err instanceof Error ? err.message : String(err),
+        })
+      }
+    }
+
+    setIsSaving(false)
+
+    if (failed.length > 0) {
+      setSaveError(
+        `Não foi possível salvar: ${failed.join(', ')}. As demais foram salvas — tente novamente ou siga em frente.`
+      )
+    }
+
     onAdvance?.({ extraImages: persisted })
-  }, [onAdvance, persisted])
+  }, [isSaving, onAdvance, selected, selectedExtraImages, video.id])
 
   return (
     <div className={className} data-testid="phase-extra-images" data-video-id={video.id}>
@@ -99,9 +171,9 @@ export function PhaseExtraImages({
             Imagens Extras
           </CardTitle>
           <CardDescription>
-            Gere as imagens de Story, Vitrine e Feed do episódio. Todas são opcionais — você
-            pode seguir sem gerar nenhuma. Elas não vão para o YouTube: ficam disponíveis
-            para download aqui e no painel do vídeo.
+            Gere as imagens de Story, Vitrine e Feed do episódio. A imagem selecionada em cada
+            quadro é salva ao continuar. Todas são opcionais — você pode seguir sem gerar
+            nenhuma. Elas não vão para o YouTube: ficam disponíveis para download.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -112,15 +184,32 @@ export function PhaseExtraImages({
               videoId={video.id}
               config={configs[kind]}
               configLoaded={configLoaded}
-              persistedUrl={persisted[kind]}
-              onPersisted={handlePersisted}
+              selectedUrl={selected[kind]}
+              persistedUrl={selectedExtraImages?.[kind]}
+              onSelect={handleSelect}
               onPreview={setLightboxUrl}
             />
           ))}
 
+          {saveError && (
+            <div
+              className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive"
+              data-testid="extra-images-save-error"
+            >
+              <AlertTriangleIcon className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{saveError}</span>
+            </div>
+          )}
+
           <div className="flex justify-end">
-            <Button onClick={handleAdvance} data-testid="continuar-extra-images">
-              {`Continuar para ${getNextPhaseNameForType('extra-images', video.videoType, features) ?? 'Publicar'}`}
+            <Button
+              onClick={() => void handleAdvance()}
+              disabled={isSaving}
+              data-testid="continuar-extra-images"
+            >
+              {isSaving
+                ? 'Salvando imagens...'
+                : `Continuar para ${getNextPhaseNameForType('extra-images', video.videoType, features) ?? 'Publicar'}`}
             </Button>
           </div>
         </CardContent>
@@ -136,35 +225,31 @@ interface ExtraImageSectionProps {
   videoId: string
   config: ThumbnailPromptField | undefined
   configLoaded: boolean
+  /** URL escolhida nesta sessão (ou hidratada do vídeo). */
+  selectedUrl: string | undefined
+  /** URL já persistida no vídeo, para distinguir "salva" de "a salvar". */
   persistedUrl: string | undefined
-  onPersisted: (kind: ExtraImageKind, url: string) => void
+  onSelect: (kind: ExtraImageKind, url: string) => void
   onPreview: (url: string) => void
 }
 
 /**
- * Um quadro. Mantém seu próprio histórico de versões da sessão e persiste a
- * seleção de forma independente dos outros dois — salvar Story não mexe em
- * Vitrine nem em Feed.
+ * Um quadro. Mantém o histórico de versões da sessão; a seleção sobe para o pai,
+ * que persiste tudo ao avançar.
  */
 function ExtraImageSection({
   kind,
   videoId,
   config,
   configLoaded,
+  selectedUrl,
   persistedUrl,
-  onPersisted,
+  onSelect,
   onPreview,
 }: ExtraImageSectionProps) {
   const label = EXTRA_IMAGE_LABELS[kind]
   const [versions, setVersions] = useState<GeneratedThumbnailVersion[]>([])
-  const [selectedUrl, setSelectedUrl] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
-
-  // Seleção local vence a hidratada, pelo mesmo motivo da fase Thumbnail:
-  // sem isso, uma imagem já persistida mascararia a recém-gerada.
-  const effectiveUrl = selectedUrl ?? persistedUrl ?? undefined
-  const isPersisted = Boolean(effectiveUrl && effectiveUrl === persistedUrl)
+  const isPersisted = Boolean(selectedUrl && selectedUrl === persistedUrl)
 
   const handleGenerated = useCallback(
     (payload: { url: string; observation: string | undefined }) => {
@@ -176,9 +261,9 @@ function ExtraImageSection({
         source: 'generated',
       }
       setVersions((prev) => [...prev, version])
-      setSelectedUrl(version.url)
+      onSelect(kind, version.url)
     },
-    [kind]
+    [kind, onSelect]
   )
 
   const handleUploaded = useCallback(
@@ -191,57 +276,28 @@ function ExtraImageSection({
         source: 'upload',
       }
       setVersions((prev) => [...prev, version])
-      setSelectedUrl(version.url)
+      onSelect(kind, version.url)
     },
-    [kind]
+    [kind, onSelect]
   )
 
-  const handleSave = useCallback(async () => {
-    if (!effectiveUrl || isSaving) return
-    setSaveError(null)
-    setIsSaving(true)
-    try {
-      const response = await fetch('/api/wizard/extra-images/select', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId, kind, selectedImageUrl: effectiveUrl }),
-      })
-      if (!response.ok) {
-        let message = `Falha ao salvar a imagem ${label}. Tente novamente.`
-        try {
-          const payload = await response.json()
-          if (payload?.error?.message) message = payload.error.message
-        } catch {
-          // ignore parse error
-        }
-        setSaveError(message)
-        log('WARN', 'Extra image select failed', { videoId, kind, status: response.status })
-        return
-      }
-      const data = (await response.json()) as { imageUrl?: string }
-      if (!data?.imageUrl) {
-        setSaveError('Resposta inválida do servidor. Tente novamente.')
-        return
-      }
-      onPersisted(kind, data.imageUrl)
-      setSelectedUrl(data.imageUrl)
-      log('INFO', 'Extra image selected and persisted', { videoId, kind })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro inesperado.'
-      setSaveError(`Erro inesperado: ${message}`)
-      log('WARN', 'Extra image select threw', { videoId, kind, message })
-    } finally {
-      setIsSaving(false)
-    }
-  }, [effectiveUrl, isSaving, kind, label, onPersisted, videoId])
+  const handleSelectVersion = useCallback(
+    (url: string) => {
+      onSelect(kind, url)
+    },
+    [kind, onSelect]
+  )
 
   return (
     <div className="rounded-md border p-4 space-y-4" data-testid={`extra-image-${kind}`}>
       <div className="flex items-center justify-between">
         <h3 className="font-medium">{label}</h3>
-        {isPersisted && (
-          <span className="text-xs text-muted-foreground" data-testid={`${kind}-saved-badge`}>
-            Salva
+        {selectedUrl && (
+          <span
+            className="text-xs text-muted-foreground"
+            data-testid={isPersisted ? `${kind}-saved-badge` : `${kind}-pending-badge`}
+          >
+            {isPersisted ? 'Salva' : 'Será salva ao continuar'}
           </span>
         )}
       </div>
@@ -268,41 +324,14 @@ function ExtraImageSection({
 
       <GeneratedVersionsGallery
         versions={versions}
-        selectedUrl={effectiveUrl}
-        onSelect={setSelectedUrl}
+        selectedUrl={selectedUrl}
+        onSelect={handleSelectVersion}
         onPreview={onPreview}
       />
 
       <ManualUploadDropzone videoId={videoId} onUploaded={handleUploaded} />
 
-      <SelectedImageSummary
-        kind={kind}
-        label={label}
-        url={effectiveUrl}
-        onPreview={onPreview}
-      />
-
-      {saveError && (
-        <div
-          className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive"
-          data-testid={`${kind}-save-error`}
-        >
-          <AlertTriangleIcon className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>{saveError}</span>
-        </div>
-      )}
-
-      <div className="flex justify-end">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleSave}
-          disabled={!effectiveUrl || isSaving || isPersisted}
-          data-testid={`save-${kind}-button`}
-        >
-          {isSaving ? 'Salvando...' : isPersisted ? 'Salva' : `Salvar ${label}`}
-        </Button>
-      </div>
+      <SelectedImageSummary kind={kind} label={label} url={selectedUrl} onPreview={onPreview} />
     </div>
   )
 }
@@ -349,7 +378,7 @@ function ReferenceSlot({ label, url }: { label: string; url: string | undefined 
         <img
           src={url}
           alt={`Preview ${label}`}
-          className="h-16 w-auto rounded border bg-muted object-cover"
+          className="h-16 w-16 rounded border bg-muted object-contain"
         />
       ) : (
         <div className="h-16 w-16 rounded border bg-muted flex items-center justify-center text-xs text-muted-foreground">
@@ -366,6 +395,9 @@ function ReferenceSlot({ label, url }: { label: string; url: string | undefined 
 
 /**
  * Resumo da imagem escolhida + download.
+ *
+ * `object-contain` numa caixa de altura fixa: as três têm proporções diferentes
+ * (Story é vertical), e deixar a altura seguir a imagem quebrava o layout.
  *
  * O `download` funciona porque o proxy é same-origin e responde com
  * `Content-Type` de imagem — o browser salva em vez de navegar.
@@ -400,7 +432,7 @@ function SelectedImageSummary({
         <img
           src={url}
           alt={`${label} selecionada`}
-          className="h-24 w-auto rounded border bg-muted object-cover"
+          className="h-24 w-24 rounded border bg-muted object-contain"
         />
       </button>
       <Button asChild size="sm" variant="outline">

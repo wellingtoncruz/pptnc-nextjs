@@ -156,8 +156,12 @@ export function WizardLayout({
 
         {/* Top half: Video + Interactive Panel */}
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
-          {/* Video Preview (left) */}
-          <div className="lg:w-1/2 p-4 flex flex-col">
+          {/* Video Preview (left)
+              `min-h-0 overflow-auto` espelha o que a coluna direita já fazia. Sem
+              isso a coluna transborda quando o conteúdo abaixo do player não cabe:
+              o embed tem proporção fixa e não cede o espaço que o `flex-1` promete,
+              então o excedente vazava por cima do painel (Epic 28, homologação). */}
+          <div className="lg:w-1/2 p-4 flex flex-col min-h-0 overflow-auto">
             <VideoHeader video={video} onTitleChange={onTitleChange} className="mb-2" />
             {onStandaloneToggle && (
               <StandaloneToggle video={video} onToggle={onStandaloneToggle} className="mb-3" />
@@ -165,7 +169,7 @@ export function WizardLayout({
             <VideoPreview
               videoId={wizard.state.videoId}
               thumbnailUrl={video.storageThumbnailUrl || getBestThumbnailUrl(video.thumbnails)}
-              className="max-w-2xl w-full flex-1"
+              className="max-w-2xl w-full flex-1 shrink-0"
             />
             {/* Short title display for cut videos - Story 4.3 AC2 */}
             <VideoShortTitle video={video} onShortTitleChange={onShortTitleChange} className="mt-2" />
