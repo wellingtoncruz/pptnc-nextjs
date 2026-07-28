@@ -102,6 +102,55 @@ describe('PhaseExtraImages', () => {
     expect(screen.getByTestId('vitrine-empty')).toBeInTheDocument()
   })
 
+  /**
+   * O caso que escapou na homologação de 2026-07-28: o orquestrador monta a fase
+   * com `videoData` ainda vazio e só depois hidrata do Firestore. Inicializar o
+   * estado com o prop congelava `undefined` e a fase abria sem as imagens
+   * salvas. Os outros testes não pegavam isso porque já passam o prop no
+   * primeiro render.
+   */
+  it('shows images that arrive only after the first render', async () => {
+    const { rerender } = render(<PhaseExtraImages video={episode} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('story-empty')).toBeInTheDocument()
+    })
+
+    rerender(
+      <PhaseExtraImages
+        video={episode}
+        selectedExtraImages={{
+          story: '/api/wizard/extra-images/select?path=extra-images/p/v/story-1.png',
+          vitrine: '/api/wizard/extra-images/select?path=extra-images/p/v/vitrine-1.png',
+          feed: '/api/wizard/extra-images/select?path=extra-images/p/v/feed-1.png',
+        }}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('story-selected')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('vitrine-selected')).toBeInTheDocument()
+    expect(screen.getByTestId('feed-selected')).toBeInTheDocument()
+    expect(screen.queryByTestId('story-empty')).not.toBeInTheDocument()
+  })
+
+  it('keeps a session selection over a later hydration of the same kind', async () => {
+    const hydrated = '/api/wizard/extra-images/select?path=extra-images/p/v/story-old.png'
+    const { rerender } = render(<PhaseExtraImages video={episode} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('story-empty')).toBeInTheDocument()
+    })
+
+    rerender(<PhaseExtraImages video={episode} selectedExtraImages={{ story: hydrated }} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('story-selected')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('download-story')).toHaveAttribute('href', hydrated)
+  })
+
   it('offers a download link for a persisted image', async () => {
     const url = '/api/wizard/extra-images/select?path=extra-images/p/v/story-1.png'
     render(<PhaseExtraImages video={episode} selectedExtraImages={{ story: url }} />)

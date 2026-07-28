@@ -60,9 +60,23 @@ export function PhaseExtraImages({
 }: PhaseExtraImagesProps) {
   const [configs, setConfigs] = useState<Partial<Record<ExtraImageKind, ThumbnailPromptField>>>({})
   const [configLoaded, setConfigLoaded] = useState(false)
-  /** URL selecionada por kind. Hidrata do que já está persistido no vídeo. */
-  const [selected, setSelected] = useState<Partial<Record<ExtraImageKind, string>>>(
-    () => ({ ...(selectedExtraImages ?? {}) })
+  /**
+   * Escolhas feitas NESTA sessão. As imagens já persistidas NÃO entram aqui —
+   * são lidas direto do prop na hora de resolver o que exibir.
+   *
+   * Inicializar o estado com o prop não funciona: `videoData` chega vazio no
+   * primeiro render e só é hidratado do Firestore depois, então o inicializador
+   * capturaria `undefined` para sempre e a fase abriria sem as imagens salvas
+   * (bug da homologação de 2026-07-28). O Thumbnail nunca teve isso porque lê
+   * `selectedThumbnailUrl` direto do prop — mesmo padrão aplicado aqui.
+   */
+  const [sessionSelected, setSessionSelected] = useState<Partial<Record<ExtraImageKind, string>>>({})
+
+  /** Seleção da sessão vence a persistida — igual ao Thumbnail. */
+  const resolveSelected = useCallback(
+    (kind: ExtraImageKind): string | undefined =>
+      sessionSelected[kind] ?? selectedExtraImages?.[kind],
+    [sessionSelected, selectedExtraImages]
   )
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -93,7 +107,7 @@ export function PhaseExtraImages({
   }, [])
 
   const handleSelect = useCallback((kind: ExtraImageKind, url: string) => {
-    setSelected((prev) => ({ ...prev, [kind]: url }))
+    setSessionSelected((prev) => ({ ...prev, [kind]: url }))
   }, [])
 
   /**
@@ -111,7 +125,7 @@ export function PhaseExtraImages({
     setSaveError(null)
 
     const pending = EXTRA_IMAGE_KINDS.filter(
-      (kind) => selected[kind] && selected[kind] !== selectedExtraImages?.[kind]
+      (kind) => sessionSelected[kind] && sessionSelected[kind] !== selectedExtraImages?.[kind]
     )
 
     if (pending.length === 0) {
@@ -128,7 +142,7 @@ export function PhaseExtraImages({
         const response = await fetch('/api/wizard/extra-images/select', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId: video.id, kind, selectedImageUrl: selected[kind] }),
+          body: JSON.stringify({ videoId: video.id, kind, selectedImageUrl: sessionSelected[kind] }),
         })
         if (!response.ok) {
           failed.push(EXTRA_IMAGE_LABELS[kind])
@@ -160,7 +174,7 @@ export function PhaseExtraImages({
     }
 
     onAdvance?.({ extraImages: persisted })
-  }, [isSaving, onAdvance, selected, selectedExtraImages, video.id])
+  }, [isSaving, onAdvance, sessionSelected, selectedExtraImages, video.id])
 
   return (
     <div className={className} data-testid="phase-extra-images" data-video-id={video.id}>
@@ -184,7 +198,7 @@ export function PhaseExtraImages({
               videoId={video.id}
               config={configs[kind]}
               configLoaded={configLoaded}
-              selectedUrl={selected[kind]}
+              selectedUrl={resolveSelected(kind)}
               persistedUrl={selectedExtraImages?.[kind]}
               onSelect={handleSelect}
               onPreview={setLightboxUrl}
