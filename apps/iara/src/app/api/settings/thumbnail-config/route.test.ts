@@ -155,12 +155,102 @@ describe('POST /api/settings/thumbnail-config (Epic 22, Story 22.1)', () => {
         encodeURIComponent('thumbnail-config/pptnc/cut/base-123.png')
     )
     expect(body.mimeType).toBe('image/png')
+    // `kind` undefined = upload de thumbnail (Epic 22), sem segmento extra no path.
     expect(mockUploadThumbnailConfigImage).toHaveBeenCalledWith(
       'cut',
       'base',
       expect.any(Buffer),
-      'image/png'
+      'image/png',
+      undefined
     )
+  })
+
+  /**
+   * Epic 28 — o mesmo endpoint serve as imagens extras do episódio via campo
+   * opcional `kind`. Reusa a rota (e o proxy GET, que valida só o prefixo
+   * `thumbnail-config/`) em vez de duplicar upload + download + validação.
+   */
+  describe('campo kind (imagens extras — Epic 28)', () => {
+    it('repassa o kind ao storage quando informado', async () => {
+      mockUploadThumbnailConfigImage.mockResolvedValueOnce({
+        filePath: 'thumbnail-config/pptnc/episode/story/base-123.png',
+        mimeType: 'image/png',
+      })
+
+      const file = new File(['fake-binary'], 'story.png', { type: 'image/png' })
+      const response = await POST(
+        buildMultipartRequest({ videoType: 'episode', role: 'base', kind: 'story', file })
+      )
+
+      expect(response.status).toBe(200)
+      expect(mockUploadThumbnailConfigImage).toHaveBeenCalledWith(
+        'episode',
+        'base',
+        expect.any(Buffer),
+        'image/png',
+        'story'
+      )
+    })
+
+    it('aceita os três kinds', async () => {
+      for (const kind of ['story', 'vitrine', 'feed']) {
+        mockUploadThumbnailConfigImage.mockResolvedValueOnce({
+          filePath: `thumbnail-config/pptnc/episode/${kind}/reference-1.png`,
+          mimeType: 'image/png',
+        })
+        const file = new File(['x'], `${kind}.png`, { type: 'image/png' })
+        const response = await POST(
+          buildMultipartRequest({ videoType: 'episode', role: 'reference', kind, file })
+        )
+        expect(response.status).toBe(200)
+      }
+    })
+
+    it('rejeita kind desconhecido com 400', async () => {
+      const file = new File(['x'], 'x.png', { type: 'image/png' })
+      const response = await POST(
+        buildMultipartRequest({ videoType: 'episode', role: 'base', kind: 'carrossel', file })
+      )
+      expect(response.status).toBe(400)
+      const body = await response.json()
+      expect(body.error.message).toMatch(/kind inválido/)
+      expect(mockUploadThumbnailConfigImage).not.toHaveBeenCalled()
+    })
+
+    /**
+     * Imagens extras são episode-only. Sem esta guarda o upload gravaria em
+     * `thumbnail-config/{podcast}/cut/story/...`, path que nenhum leitor
+     * consulta — o produtor veria "salvo" e a geração nunca usaria a imagem.
+     */
+    it('rejeita kind com videoType diferente de episode', async () => {
+      const file = new File(['x'], 'x.png', { type: 'image/png' })
+      const response = await POST(
+        buildMultipartRequest({ videoType: 'cut', role: 'base', kind: 'story', file })
+      )
+      expect(response.status).toBe(400)
+      const body = await response.json()
+      expect(body.error.message).toMatch(/apenas para episódios/)
+      expect(mockUploadThumbnailConfigImage).not.toHaveBeenCalled()
+    })
+
+    it('trata kind vazio como ausente (caminho thumbnail)', async () => {
+      mockUploadThumbnailConfigImage.mockResolvedValueOnce({
+        filePath: 'thumbnail-config/pptnc/episode/base-1.png',
+        mimeType: 'image/png',
+      })
+      const file = new File(['x'], 'x.png', { type: 'image/png' })
+      const response = await POST(
+        buildMultipartRequest({ videoType: 'episode', role: 'base', kind: '', file })
+      )
+      expect(response.status).toBe(200)
+      expect(mockUploadThumbnailConfigImage).toHaveBeenCalledWith(
+        'episode',
+        'base',
+        expect.any(Buffer),
+        'image/png',
+        undefined
+      )
+    })
   })
 
   it('propagates CloudStorageError as 500 with message', async () => {

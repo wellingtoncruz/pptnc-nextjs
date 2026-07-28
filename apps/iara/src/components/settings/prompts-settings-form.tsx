@@ -8,13 +8,21 @@ import {
 } from '@/components/ui/accordion'
 import { PromptFieldEditor } from './prompt-field-editor'
 import { ThumbnailPromptFieldEditor } from './thumbnail-prompt-field-editor'
-import { DEFAULT_PROMPT_FIELD, DEFAULT_THUMBNAIL_PROMPT_FIELD } from '@/lib/schemas/podcast'
+import {
+  DEFAULT_PROMPT_FIELD,
+  DEFAULT_THUMBNAIL_PROMPT_FIELD,
+  EXTRA_IMAGE_KINDS,
+  EXTRA_IMAGE_LABELS,
+  type ExtraImageKind,
+} from '@/lib/schemas/podcast'
 import type { Prompts, PromptField, ThumbnailPromptField, EpisodePrompts, CutPrompts, ReelPrompts } from '@/types/podcast'
 
 /**
  * Type-safe field keys for each video type.
  */
-type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social' | 'adwords' | 'newsletter' | 'thumbnail'>
+// `extraImages` (Epic 28) sai da lista pelo mesmo motivo de `thumbnail`: não é
+// um PromptField simples, tem editor próprio com uploads de imagem.
+type EpisodeFieldKey = Exclude<keyof EpisodePrompts, 'social' | 'adwords' | 'newsletter' | 'thumbnail' | 'extraImages'>
 type CutFieldKey = Exclude<keyof CutPrompts, 'social' | 'thumbnail'>
 type ReelFieldKey = Exclude<keyof ReelPrompts, 'social'>
 
@@ -33,6 +41,14 @@ interface PromptsSettingsFormProps {
    */
   onSaveThumbnailPromptField?: (
     videoType: 'episode' | 'cut' | 'standalone',
+    value: ThumbnailPromptField
+  ) => Promise<void>
+  /**
+   * Save handler das imagens extras do episódio (Epic 28). Ausente = a seção
+   * não é renderizada, mesmo comportamento do handler de thumbnail.
+   */
+  onSaveExtraImagePromptField?: (
+    kind: ExtraImageKind,
     value: ThumbnailPromptField
   ) => Promise<void>
 }
@@ -77,7 +93,7 @@ const STANDALONE_FIELDS: CutFieldKey[] = ['titles', 'thumbs', 'description', 'ta
  * Note: Title is rendered by parent AccordionTrigger.
  * @see docs/stories/8-2-secoes-colapsaveis.md
  */
-export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetworks, onSavePromptField, onSaveThumbnailPromptField }: PromptsSettingsFormProps) {
+export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetworks, onSavePromptField, onSaveThumbnailPromptField, onSaveExtraImagePromptField }: PromptsSettingsFormProps) {
   function renderSocialPrompts(videoType: 'episode' | 'cut' | 'reel') {
     if (enabledSocialNetworks.length === 0) return null
 
@@ -170,6 +186,44 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
     )
   }
 
+  /**
+   * Imagens extras do episódio (Epic 28) — Story, Vitrine e Feed.
+   *
+   * Cada uma tem prompt e par Base/Referência próprios, então são três blocos
+   * completos do mesmo editor do Thumbnail, distinguidos pelo `kind` (que vira
+   * segmento de path no upload). Episode-only: cortes, reels e avulsos não
+   * chamam esta função.
+   */
+  function renderExtraImagePrompts() {
+    if (!onSaveExtraImagePromptField) return null
+
+    return (
+      <div key="episode-extra-images-section" className="mt-6 pt-4 border-t">
+        <h4 className="text-sm font-medium text-muted-foreground mb-4">Imagens Extras (imagem)</h4>
+        <p className="text-xs text-muted-foreground mb-4">
+          Imagens adicionais geradas na fase <strong>Imagens Extras</strong> do wizard, logo
+          após a Thumbnail. Valem apenas para episódios e ficam disponíveis para download —
+          não são enviadas ao YouTube. Cada uma tem <strong>Base</strong> e{' '}
+          <strong>Referência</strong> próprias, com a mesma semântica da thumbnail. Descreva
+          o formato desejado (proporção, enquadramento) na <strong>Saída Esperada</strong>.
+        </p>
+        <div className="space-y-4">
+          {EXTRA_IMAGE_KINDS.map((kind) => (
+            <ThumbnailPromptFieldEditor
+              key={`episode-extra-${kind}`}
+              fieldKey={`episode-extra-${kind}`}
+              videoType="episode"
+              kind={kind}
+              title={EXTRA_IMAGE_LABELS[kind]}
+              initialValue={prompts.episode?.extraImages?.[kind] ?? DEFAULT_THUMBNAIL_PROMPT_FIELD}
+              onSave={(value) => onSaveExtraImagePromptField(kind, value)}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Accordion type="single" collapsible className="w-full">
       {/* Episode prompts */}
@@ -189,9 +243,12 @@ export function PromptsSettingsForm({ prompts, enabledSocialNetworks, socialNetw
               )
               // Thumbnail (Epic 22) is a wizard phase between Tags and Publicar,
               // so it renders immediately after the `tags` field in Settings.
+              // Thumbnail (Epic 22) e Imagens Extras (Epic 28) são fases do
+              // wizard entre Tags e Publicar, nesta ordem — refletida aqui.
               if (fieldName === 'tags') {
-                const thumbnail = renderThumbnailPrompt('episode')
-                return thumbnail ? [editor, thumbnail] : [editor]
+                return [editor, renderThumbnailPrompt('episode'), renderExtraImagePrompts()].filter(
+                  Boolean
+                )
               }
               return [editor]
             })}

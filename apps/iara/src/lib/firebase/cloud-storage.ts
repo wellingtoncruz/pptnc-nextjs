@@ -374,6 +374,19 @@ type ThumbnailConfigVideoType = (typeof THUMBNAIL_CONFIG_VIDEO_TYPES)[number]
 const THUMBNAIL_CONFIG_ROLES = ['base', 'reference'] as const
 type ThumbnailConfigRole = (typeof THUMBNAIL_CONFIG_ROLES)[number]
 
+/**
+ * Imagens extras do episódio (Epic 28). Quando informado, o `kind` vira um
+ * segmento extra do path, isolando Base/Referência de cada imagem:
+ *
+ *   thumbnail-config/{podcast}/episode/{kind}/{role}-{ts}.{ext}
+ *
+ * Ficam sob o MESMO prefixo `thumbnail-config/` de propósito: o proxy GET
+ * (`downloadThumbnailConfigImage`) valida só o prefixo, então as imagens extras
+ * são servidas sem rota nova nem mudança na validação de path.
+ */
+const EXTRA_IMAGE_CONFIG_KINDS = ['story', 'vitrine', 'feed'] as const
+type ExtraImageConfigKind = (typeof EXTRA_IMAGE_CONFIG_KINDS)[number]
+
 /** MIME → extension mapping for thumbnail config uploads. */
 const MIME_TO_EXT: Record<string, string> = {
   'image/png': 'png',
@@ -398,13 +411,24 @@ export async function uploadThumbnailConfigImage(
   videoType: ThumbnailConfigVideoType,
   role: ThumbnailConfigRole,
   imageBuffer: Buffer,
-  mimeType: string
+  mimeType: string,
+  kind?: ExtraImageConfigKind
 ): Promise<{ filePath: string; mimeType: string }> {
   if (!THUMBNAIL_CONFIG_VIDEO_TYPES.includes(videoType)) {
     throw new CloudStorageError('Invalid video type for thumbnail config', 'UPLOAD_FAILED')
   }
   if (!THUMBNAIL_CONFIG_ROLES.includes(role)) {
     throw new CloudStorageError('Invalid role for thumbnail config', 'UPLOAD_FAILED')
+  }
+  if (kind !== undefined) {
+    if (!EXTRA_IMAGE_CONFIG_KINDS.includes(kind)) {
+      throw new CloudStorageError('Invalid kind for extra image config', 'UPLOAD_FAILED')
+    }
+    // Imagens extras são episode-only (Epic 28). Aceitar outro videoType criaria
+    // um path que nenhum leitor consulta — falha silenciosa de configuração.
+    if (videoType !== 'episode') {
+      throw new CloudStorageError('Extra images are available only for episodes', 'UPLOAD_FAILED')
+    }
   }
   const ext = MIME_TO_EXT[mimeType]
   if (!ext) {
@@ -414,7 +438,10 @@ export async function uploadThumbnailConfigImage(
     throw new CloudStorageError('Empty image buffer for thumbnail config', 'UPLOAD_FAILED')
   }
 
-  const filePath = `thumbnail-config/${PODCAST_ID}/${videoType}/${role}-${Date.now()}.${ext}`
+  // Sem `kind` o path fica idêntico ao do Epic 22 — configs de thumbnail já
+  // gravadas continuam válidas e legíveis.
+  const scope = kind ? `${videoType}/${kind}` : videoType
+  const filePath = `thumbnail-config/${PODCAST_ID}/${scope}/${role}-${Date.now()}.${ext}`
 
   try {
     const bucket = getBucket()
@@ -427,6 +454,7 @@ export async function uploadThumbnailConfigImage(
     log('INFO', 'Thumbnail config image uploaded', {
       podcastId: PODCAST_ID,
       videoType,
+      kind,
       role,
       filePath,
       size: imageBuffer.length,
@@ -440,6 +468,7 @@ export async function uploadThumbnailConfigImage(
     log('ERROR', 'Thumbnail config image upload failed', {
       podcastId: PODCAST_ID,
       videoType,
+      kind,
       role,
       filePath,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -671,6 +700,105 @@ export async function downloadThumbnailConfigImage(filePath: string): Promise<Bu
 
     throw new CloudStorageError(
       `Failed to download thumbnail config image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DOWNLOAD_FAILED'
+    )
+  }
+}
+
+// ==========================================================================
+// Epic 28 — imagens extras do episódio (Story, Vitrine, Feed)
+//
+// O STAGING é compartilhado com o thumbnail (`thumbnail-staging/...`): tanto a
+// geração quanto o upload manual passam pelos helpers já existentes, e o proxy
+// GET de `/api/wizard/thumbnail/upload` os serve sem mudança. O que diverge é o
+// destino FINAL — cada imagem extra tem seu próprio arquivo por `kind`, para
+// que as três coexistam no mesmo vídeo.
+// ==========================================================================
+
+const EXTRA_IMAGE_FINAL_KINDS = ['story', 'vitrine', 'feed'] as const
+type ExtraImageFinalKind = (typeof EXTRA_IMAGE_FINAL_KINDS)[number]
+
+/**
+ * Copia uma imagem extra de staging para o path final canônico.
+ *
+ * Path final: `extra-images/{PODCAST_ID}/{videoId}/{kind}-{timestamp}.{ext}`.
+ * O `kind` no nome mantém as três independentes; o **timestamp invalida cache**
+ * de browser/CDN pelo mesmo motivo documentado em `copyThumbnailStagingToFinal`
+ * (bug de 2026-05-14 — sem ele o produtor via a imagem antiga após regerar).
+ *
+ * Idempotente: se `stagingPath` já for um final path deste kind, devolve o
+ * próprio sem copiar — cobre reabrir a fase e reconfirmar sem trocar a seleção.
+ */
+export async function copyExtraImageStagingToFinal(
+  stagingPath: string,
+  videoId: string,
+  kind: ExtraImageFinalKind
+): Promise<{ filePath: string }> {
+  if (!SAFE_VIDEO_ID.test(videoId)) {
+    throw new CloudStorageError('Invalid video ID for extra image final path', 'UPLOAD_FAILED')
+  }
+  if (!EXTRA_IMAGE_FINAL_KINDS.includes(kind)) {
+    throw new CloudStorageError('Invalid kind for extra image final path', 'UPLOAD_FAILED')
+  }
+  const finalPrefix = `extra-images/${PODCAST_ID}/${videoId}/`
+  if (stagingPath.startsWith(`${finalPrefix}${kind}-`)) {
+    return { filePath: stagingPath }
+  }
+  if (!stagingPath.startsWith('thumbnail-staging/') || stagingPath.includes('..')) {
+    throw new CloudStorageError('Invalid staging path for extra image copy', 'UPLOAD_FAILED')
+  }
+  const ext = stagingPath.split('.').pop() ?? 'png'
+  const destPath = `${finalPrefix}${kind}-${Date.now()}.${ext}`
+
+  try {
+    const bucket = getBucket()
+    await bucket.file(stagingPath).copy(bucket.file(destPath))
+    log('INFO', 'Extra image copied staging → final', {
+      podcastId: PODCAST_ID,
+      videoId,
+      kind,
+      stagingPath,
+      destPath,
+    })
+    return { filePath: destPath }
+  } catch (error) {
+    log('ERROR', 'Extra image staging → final copy failed', {
+      podcastId: PODCAST_ID,
+      videoId,
+      kind,
+      stagingPath,
+      destPath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to copy extra image to final: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'UPLOAD_FAILED'
+    )
+  }
+}
+
+/**
+ * Baixa uma imagem extra final. Path-validated — só serve arquivos sob
+ * `extra-images/{PODCAST_ID}/`.
+ */
+export async function downloadExtraImageFinal(filePath: string): Promise<Buffer> {
+  const prefix = `extra-images/${PODCAST_ID}/`
+  if (!filePath.startsWith(prefix) || filePath.includes('..')) {
+    throw new CloudStorageError('Invalid file path for extra image download', 'DOWNLOAD_FAILED')
+  }
+  try {
+    const bucket = getBucket()
+    const [contents] = await bucket.file(filePath).download()
+    log('INFO', 'Extra image downloaded', { podcastId: PODCAST_ID, filePath })
+    return contents
+  } catch (error) {
+    log('ERROR', 'Extra image download failed', {
+      podcastId: PODCAST_ID,
+      filePath,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError(
+      `Failed to download extra image: ${error instanceof Error ? error.message : 'Unknown error'}`,
       'DOWNLOAD_FAILED'
     )
   }

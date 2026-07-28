@@ -286,7 +286,7 @@ export function useWizard(videoId: string, videoData?: VideoDataForSync) {
     (
       phase: WizardPhaseId,
       data: unknown,
-      features?: { thumbnailGeneration?: boolean },
+      features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean },
       standalone?: boolean
     ) => {
       dispatch({ type: 'COMPLETE_PHASE_AND_ADVANCE', phase, data, features, standalone })

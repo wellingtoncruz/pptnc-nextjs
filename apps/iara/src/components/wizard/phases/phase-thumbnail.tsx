@@ -1,12 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertTriangleIcon, ImageIcon, ImageOff, Loader2, Sparkles } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { AlertTriangleIcon, ImageIcon, ImageOff, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
   GeneratedVersionsGallery,
   type GeneratedThumbnailVersion,
@@ -14,20 +12,20 @@ import {
 import { GuestPhotoUploader } from '@/components/wizard/thumbnail/guest-photo-uploader'
 import { ManualUploadDropzone } from '@/components/wizard/thumbnail/manual-upload-dropzone'
 import { ThumbnailLightbox } from '@/components/wizard/thumbnail/thumbnail-lightbox'
+import {
+  GenerateImageCard,
+  __setImagePollIntervalForTesting,
+} from '@/components/wizard/images/generate-image-card'
 import { log } from '@/lib/logger'
 import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { VideoTypeForWizard } from '@/lib/wizard/types'
 
 /**
- * Intervalo entre polls do job de geração (Story 22.4). Mutável só pra
- * permitir que a suíte reduza pra ~10ms — produção sempre usa 3s.
+ * @internal — usado apenas em testes. Re-exportado do card de geração, que
+ * passou a ser o dono do polling na Story 28.3; o nome antigo continua válido
+ * para não tocar na suíte do Epic 22.
  */
-let thumbnailPollIntervalMs = 3000
-
-/** @internal — usado apenas em testes; não chamar de código de produção. */
-export function __setThumbnailPollIntervalForTesting(ms: number): void {
-  thumbnailPollIntervalMs = ms
-}
+export const __setThumbnailPollIntervalForTesting = __setImagePollIntervalForTesting
 import type { ThumbnailPromptField } from '@/types/podcast'
 import type { Video } from '@/types/video'
 
@@ -37,7 +35,7 @@ interface PhaseThumbnailProps {
    * Podcast features — used to compute the next-phase label on the advance
    * button (episode: Thumbnail → Links; cut: Thumbnail → Publicar). Epic 26.
    */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   /**
    * Disparado após persistir com sucesso a thumbnail selecionada em
    * `video.storageThumbnailUrl`. Recebe o novo URL final pra que o
@@ -380,213 +378,20 @@ interface GeneratePathCardProps {
 }
 
 /**
- * Gerar com IAra (Story 22.3c + 22.3d).
+ * Gerar com IAra (Story 22.3c + 22.3d; extraído na Story 28.3).
  *
- * Renderiza textarea de observações e botão Gerar Thumbnail. Durante a chamada
- * ao stub, mantém um timer de tempo decorrido que troca a mensagem do spinner
- * em 30s e 60s (mesmo padrão das fases LLM). Em sucesso, repassa URL + observação
- * via `onGenerated` — o pai adiciona ao histórico de versões. Em erro, mostra a
- * mensagem com botão de tentar novamente; upload manual permanece disponível
- * como alternativa quando 22.3e entrar.
+ * Wrapper fino sobre `GenerateImageCard`, que passou a ser o dono do fluxo
+ * POST → job → polling. Aqui sobra só o que é específico do thumbnail: o
+ * uploader da foto do convidado (cortes) e o `guestPhotoUrl` no body.
  */
 function GeneratePathCard({ videoId, videoType, guestPhotoUrl, onGuestPhotoChange, onGenerated }: GeneratePathCardProps) {
-  const [observation, setObservation] = useState('')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  /**
-   * Quando o produtor desmonta o componente (troca de fase, fecha o wizard,
-   * navega pra outro vídeo) durante uma geração, abortamos o polling pra
-   * não disparar `onGenerated` num pai já desmontado nem consumir mocks
-   * de fetch em testes subsequentes.
-   */
-  const abortedRef = useRef(false)
-  useEffect(() => {
-    abortedRef.current = false
-    return () => {
-      abortedRef.current = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (isGenerating) {
-      setElapsedSeconds(0)
-      timerRef.current = setInterval(() => {
-        setElapsedSeconds((s) => s + 1)
-      }, 1000)
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
-  }, [isGenerating])
-
-  const spinnerText =
-    elapsedSeconds >= 60
-      ? 'Geração em andamento. Aguarde, não feche a página.'
-      : elapsedSeconds >= 30
-        ? 'Gerando thumbnail — modelos preview podem demorar um pouco mais...'
-        : 'Gerando thumbnail com IAra...'
-
-  /**
-   * Story 22.4 — geração agora é async via wizard jobs.
-   *
-   * Fluxo:
-   * 1. POST `/api/wizard/thumbnail/generate` retorna 202 + `jobId`.
-   * 2. Polling em `/api/wizard/jobs/{jobId}?videoId=...` a cada `POLL_INTERVAL_MS`.
-   * 3. Quando status='complete', extrai `result.thumbnailUrl` e dispara onGenerated.
-   * 4. Em status='failed', mostra erro.
-   *
-   * O cleanup do polling (timeout, AbortController) é feito no useEffect que
-   * observa `isGenerating` — sair da fase enquanto está rodando para o timer.
-   */
-  const handleGenerate = useCallback(async () => {
-    setError(null)
-    setIsGenerating(true)
-    const observationForVersion = observation.trim() || undefined
-    try {
-      const body: { videoId: string; observation?: string; guestPhotoUrl?: string } = { videoId }
-      if (observationForVersion) body.observation = observationForVersion
-      if (guestPhotoUrl) body.guestPhotoUrl = guestPhotoUrl
-
-      const startResponse = await fetch('/api/wizard/thumbnail/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!startResponse.ok) {
-        let message = 'Falha ao iniciar a geração. Tente novamente.'
-        try {
-          const payload = await startResponse.json()
-          if (payload?.error?.message) message = payload.error.message
-        } catch {
-          // ignore
-        }
-        setError(message)
-        setIsGenerating(false)
-        log('WARN', 'Thumbnail generation start failed', { videoId, status: startResponse.status })
-        return
-      }
-      const startData = (await startResponse.json()) as { jobId?: string }
-      if (!startData?.jobId) {
-        setError('Resposta inválida do servidor. Tente novamente.')
-        setIsGenerating(false)
-        return
-      }
-
-      // Polling loop — segue até status='complete' ou 'failed' (ou aborto).
-      const jobId = startData.jobId
-      const POLL_INTERVAL_MS = thumbnailPollIntervalMs
-      const POLL_TIMEOUT_MS = 5 * 60 * 1000 // 5 min (cobertura pra retry/backoff 30+60+120s)
-      const startedAt = Date.now()
-
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        if (abortedRef.current) {
-          log('INFO', 'Thumbnail polling aborted (unmount)', { videoId, jobId })
-          return
-        }
-        if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
-          setError('Geração demorou demais. Tente novamente.')
-          log('WARN', 'Thumbnail polling timed out', { videoId, jobId })
-          break
-        }
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
-        if (abortedRef.current) {
-          return
-        }
-        let jobResponse: Response
-        try {
-          jobResponse = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`)
-        } catch (err) {
-          log('WARN', 'Thumbnail polling fetch threw, retrying', {
-            videoId,
-            jobId,
-            error: err instanceof Error ? err.message : String(err),
-          })
-          continue
-        }
-        if (abortedRef.current) {
-          return
-        }
-        if (!jobResponse.ok) {
-          // Job não encontrado ou auth — desiste.
-          setError('Não foi possível acompanhar a geração. Tente novamente.')
-          log('WARN', 'Thumbnail polling got non-ok', { videoId, jobId, status: jobResponse.status })
-          break
-        }
-        const job = (await jobResponse.json()) as {
-          status?: 'pending' | 'processing' | 'complete' | 'failed'
-          result?: { thumbnailUrl?: string }
-          error?: { message?: string }
-        }
-        if (job.status === 'complete') {
-          const url = job.result?.thumbnailUrl
-          if (!url) {
-            setError('Geração concluiu sem URL — tente novamente.')
-            log('WARN', 'Thumbnail job complete but no URL', { videoId, jobId })
-            break
-          }
-          onGenerated({ url, observation: observationForVersion })
-          log('INFO', 'Thumbnail generated', { videoId, jobId })
-          break
-        }
-        if (job.status === 'failed') {
-          const message = job.error?.message ?? 'Falha na geração. Tente novamente.'
-          setError(message)
-          log('WARN', 'Thumbnail job failed', { videoId, jobId, message })
-          break
-        }
-        // pending or processing — continue polling
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro inesperado.'
-      setError(`Erro inesperado ao gerar thumbnail: ${message}`)
-      log('WARN', 'Thumbnail generation threw', {
-        videoId,
-        error: err instanceof Error ? err.message : String(err),
-      })
-    } finally {
-      setIsGenerating(false)
-    }
-  }, [guestPhotoUrl, observation, onGenerated, videoId])
-
   return (
-    <div className="rounded-md border p-4 flex flex-col gap-3" data-testid="path-generate">
-      <div className="flex items-center gap-2 font-medium">
-        <Sparkles className="h-4 w-4" />
-        Gerar com IAra
-      </div>
-      <p className="text-sm text-muted-foreground">
-        Use Base + Referência configuradas + observações suas para o modelo gerar a thumbnail.
-      </p>
-
-      <div className="flex flex-col gap-1">
-        <Label htmlFor={`thumbnail-observation-${videoId}`} className="text-xs">
-          Observações para a IAra (opcional)
-        </Label>
-        <Textarea
-          id={`thumbnail-observation-${videoId}`}
-          data-testid="thumbnail-observation"
-          value={observation}
-          onChange={(e) => setObservation(e.target.value)}
-          placeholder="Ex.: destaque o convidado, fundo escuro, sem texto..."
-          rows={3}
-          maxLength={2000}
-          disabled={isGenerating}
-        />
-        <p className="text-[11px] text-muted-foreground">
-          Pode gerar direto sem digitar nada — a IAra usa Base + Referência como contexto. Use a observação para refinar pontualmente.
-        </p>
-      </div>
-
+    <GenerateImageCard
+      videoId={videoId}
+      endpoint="/api/wizard/thumbnail/generate"
+      extraBody={{ guestPhotoUrl: guestPhotoUrl ?? undefined }}
+      onGenerated={onGenerated}
+    >
       {videoType === 'cut' && (
         <GuestPhotoUploader
           videoId={videoId}
@@ -594,42 +399,7 @@ function GeneratePathCard({ videoId, videoType, guestPhotoUrl, onGuestPhotoChang
           onChange={onGuestPhotoChange}
         />
       )}
-
-      <Button
-        onClick={handleGenerate}
-        disabled={isGenerating}
-        data-testid="generate-thumbnail-button"
-        className="self-start"
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            {spinnerText}
-          </>
-        ) : (
-          <>
-            <Sparkles className="h-4 w-4 mr-2" />
-            Gerar Thumbnail
-          </>
-        )}
-      </Button>
-
-      {isGenerating && (
-        <p className="text-xs text-muted-foreground" data-testid="thumbnail-elapsed">
-          Tempo decorrido: {elapsedSeconds}s
-        </p>
-      )}
-
-      {error && (
-        <div
-          className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive"
-          data-testid="thumbnail-error"
-        >
-          <AlertTriangleIcon className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-    </div>
+    </GenerateImageCard>
   )
 }
 

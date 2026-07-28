@@ -11,7 +11,22 @@ vi.mock('@/lib/logger', () => ({
 
 import { FeaturesSettingsForm } from './features-settings-form'
 
-const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false }
+const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false, extraImagesGeneration: false }
+
+/**
+ * Body PATCH esperado, derivado de `defaultFeatures` + o toggle sob teste.
+ *
+ * Antes cada caso repetia o objeto inteiro em string literal, então **toda**
+ * flag nova quebrava os oito testes de toggle de uma vez (aconteceu no Epic 28).
+ * Derivar preserva a asserção — o body continua sendo comparado por igualdade
+ * exata, incluindo a ordem das chaves — sem o custo de manutenção.
+ *
+ * A ordem bate porque o componente monta `{ ...todas as flags, [key]: value }`
+ * na mesma sequência: reatribuir uma chave existente não muda sua posição.
+ */
+function expectedFeaturesBody(overrides: Partial<typeof defaultFeatures>): string {
+  return JSON.stringify({ features: { ...defaultFeatures, ...overrides } })
+}
 
 describe('FeaturesSettingsForm', () => {
   beforeEach(() => {
@@ -65,7 +80,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: false, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ editorial: false }),
       }))
     })
   })
@@ -81,7 +96,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: false, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ news: false }),
       }))
     })
   })
@@ -97,7 +112,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: true, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ includeLivestreams: true }),
       }))
     })
   })
@@ -113,7 +128,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: true, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ socialMedia: true }),
       }))
     })
   })
@@ -218,7 +233,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: true, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ adwords: true }),
       }))
     })
   })
@@ -254,7 +269,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: true, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ newsletter: true }),
       }))
     })
   })
@@ -311,7 +326,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: true, socialPublish: false, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ llmDebugMode: true }),
       }))
     })
   })
@@ -347,7 +362,7 @@ describe('FeaturesSettingsForm', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: true, thumbnailGeneration: false } }),
+        body: expectedFeaturesBody({ socialPublish: true }),
       }))
     })
   })
@@ -386,7 +401,7 @@ describe('FeaturesSettingsForm', () => {
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
           method: 'PATCH',
-          body: JSON.stringify({ features: { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: true } }),
+          body: expectedFeaturesBody({ thumbnailGeneration: true }),
         }))
       })
     })
@@ -394,6 +409,56 @@ describe('FeaturesSettingsForm', () => {
     it('shows description warning about preview model risks', () => {
       render(<FeaturesSettingsForm features={defaultFeatures} />)
       expect(screen.getByText(/preview na Vertex AI/)).toBeInTheDocument()
+    })
+  })
+
+  /**
+   * Epic 28 — o toggle de Imagens Extras é INDEPENDENTE do de Thumbnail.
+   * Ligar um não pode mexer no outro: são fases distintas do wizard e o
+   * produtor precisa poder usar uma sem a outra.
+   */
+  describe('extraImagesGeneration toggle', () => {
+    it('renders the toggle as unchecked by default', () => {
+      render(<FeaturesSettingsForm features={defaultFeatures} />)
+      const extraSwitch = screen.getByLabelText('Imagens Extras do Episódio')
+      expect(extraSwitch).toHaveAttribute('data-state', 'unchecked')
+    })
+
+    it('renders the toggle as checked when feature is enabled', () => {
+      render(<FeaturesSettingsForm features={{ ...defaultFeatures, extraImagesGeneration: true }} />)
+      const extraSwitch = screen.getByLabelText('Imagens Extras do Episódio')
+      expect(extraSwitch).toHaveAttribute('data-state', 'checked')
+    })
+
+    it('calls API with extraImagesGeneration:true without touching thumbnailGeneration', async () => {
+      render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+      const extraSwitch = screen.getByLabelText('Imagens Extras do Episódio')
+      await act(async () => {
+        extraSwitch.click()
+      })
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+          method: 'PATCH',
+          body: expectedFeaturesBody({ extraImagesGeneration: true }),
+        }))
+      })
+    })
+
+    it('keeps extraImagesGeneration on when thumbnailGeneration is toggled', async () => {
+      render(<FeaturesSettingsForm features={{ ...defaultFeatures, extraImagesGeneration: true }} />)
+
+      const thumbSwitch = screen.getByLabelText('Geração de Thumbnails (preview)')
+      await act(async () => {
+        thumbSwitch.click()
+      })
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+          body: expect.stringContaining('"extraImagesGeneration":true'),
+        }))
+      })
     })
   })
 })

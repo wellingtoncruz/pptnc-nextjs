@@ -13,7 +13,7 @@ interface VideoDetailPanelProps {
    * Optional podcast features. Propagated to the wizard so phases gated by
    * feature flags (Epic 22: Thumbnail) appear at the right moment in the flow.
    */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
   onVideoStatusChange?: () => void
 }

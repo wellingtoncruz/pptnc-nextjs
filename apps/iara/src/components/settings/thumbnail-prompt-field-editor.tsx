@@ -10,6 +10,7 @@ import { useAutoSave } from '@/hooks/use-auto-save'
 import { log } from '@/lib/logger'
 import { MAX_PROMPT_LENGTH } from '@/lib/schemas/podcast'
 import { SaveStatusIndicator } from './save-status-indicator'
+import type { ExtraImageKind } from '@/lib/schemas/podcast'
 import type { ThumbnailPromptField } from '@/types/podcast'
 
 const FieldSchema = z.string().max(MAX_PROMPT_LENGTH, 'Campo deve ter no máximo 10000 caracteres')
@@ -25,7 +26,24 @@ interface ThumbnailPromptFieldEditorProps {
   videoType: 'episode' | 'cut' | 'standalone'
   initialValue: ThumbnailPromptField
   onSave: (value: ThumbnailPromptField) => Promise<void>
+  /**
+   * Imagem extra do episódio (Epic 28) que este editor configura. Ausente =
+   * config da thumbnail (Epic 22). Presente, vai como campo `kind` no multipart
+   * e isola os uploads de Base/Referência desta imagem das demais.
+   */
+  kind?: ExtraImageKind
+  /** Cabeçalho do bloco. Default "Thumbnail". */
+  title?: string
+  /** Texto de ajuda da imagem Base. Default = o do thumbnail. */
+  baseHelperText?: string
+  /** Texto de ajuda da imagem Referência. Default = o do thumbnail. */
+  referenceHelperText?: string
 }
+
+const DEFAULT_BASE_HELPER =
+  'Imagem que define a arte/composição que o modelo usa como ponto de partida.'
+const DEFAULT_REFERENCE_HELPER =
+  'Imagem cujas características o modelo reproduz adaptando para o novo contexto, mantendo as características.'
 
 type ImageRole = 'base' | 'reference'
 
@@ -44,6 +62,10 @@ export function ThumbnailPromptFieldEditor({
   videoType,
   initialValue,
   onSave,
+  kind,
+  title = 'Thumbnail',
+  baseHelperText = DEFAULT_BASE_HELPER,
+  referenceHelperText = DEFAULT_REFERENCE_HELPER,
 }: ThumbnailPromptFieldEditorProps) {
   const [description, setDescription] = useState(initialValue.description)
   const [expectedOutput, setExpectedOutput] = useState(initialValue.expectedOutput)
@@ -136,6 +158,7 @@ export function ThumbnailPromptFieldEditor({
       const formData = new FormData()
       formData.set('videoType', videoType)
       formData.set('role', role)
+      if (kind) formData.set('kind', kind)
       formData.set('file', file)
 
       const res = await fetch('/api/settings/thumbnail-config', {
@@ -160,7 +183,7 @@ export function ThumbnailPromptFieldEditor({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro no upload'
       setUploadError(message)
-      log('ERROR', 'Thumbnail config upload failed', { fieldKey, role, error: message })
+      log('ERROR', 'Thumbnail config upload failed', { fieldKey, role, kind, error: message })
     } finally {
       setUploadingRole(null)
     }
@@ -185,7 +208,7 @@ export function ThumbnailPromptFieldEditor({
 
   return (
     <div className="space-y-4 rounded-lg border p-4">
-      <h4 className="font-medium">Thumbnail</h4>
+      <h4 className="font-medium">{title}</h4>
 
       {/* Description field */}
       <div className="space-y-2">
@@ -236,8 +259,8 @@ export function ThumbnailPromptFieldEditor({
       {/* Base image */}
       <ImageSlot
         role="base"
-        label="Thumbnail Base"
-        helperText="Imagem que define a arte/composição que o modelo usa como ponto de partida."
+        label={`${title} Base`}
+        helperText={baseHelperText}
         imageUrl={baseImageUrl}
         mimeType={baseImageMimeType}
         uploading={uploadingRole === 'base'}
@@ -250,8 +273,8 @@ export function ThumbnailPromptFieldEditor({
       {/* Reference image */}
       <ImageSlot
         role="reference"
-        label="Thumbnail Referência"
-        helperText="Imagem cujas características o modelo reproduz adaptando para o novo contexto, mantendo as características."
+        label={`${title} Referência`}
+        helperText={referenceHelperText}
         imageUrl={referenceImageUrl}
         mimeType={referenceImageMimeType}
         uploading={uploadingRole === 'reference'}

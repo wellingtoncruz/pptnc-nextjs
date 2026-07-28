@@ -524,7 +524,7 @@ export function getNextPhase(currentPhase: WizardPhaseId): TrackedPhaseId | null
 export function getNextPhaseForType(
   currentPhase: WizardPhaseId,
   videoType: VideoTypeForWizard,
-  features?: { thumbnailGeneration?: boolean },
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean },
   standalone = false
 ): WizardPhaseId | null {
   const phases = getPhaseIdsForVideoTypeWithFeatures(videoType, features, standalone)

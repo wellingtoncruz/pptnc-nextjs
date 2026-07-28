@@ -47,7 +47,7 @@ interface Phase7TagsProps {
    * state machine falls back to the legacy 7 → 8 sequence and SKIPS the
    * Thumbnail phase silently.
    */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   className?: string
 }
 

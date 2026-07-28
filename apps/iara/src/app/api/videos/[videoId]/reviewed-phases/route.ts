@@ -30,12 +30,22 @@ import {
  * edit-check, risk and chapters require review confirmation; the Links phase
  * (Epic 26) also uses this mechanism — zero links is a valid reviewed state,
  * so completion comes from confirmation, not from data presence.
+ *
+ * Imagens Extras (Epic 28) entra pelo mesmo motivo: a fase não exige nenhuma
+ * das três imagens, então "passei por ela" não pode ser inferido da presença
+ * de dados — sem a confirmação, o breadcrumb nunca liberaria o retorno.
  */
 const ReviewedPhaseSchema = z.object({
   phase: z.union(
-    [z.literal('edit-check'), z.literal('risk'), z.literal('chapters'), z.literal('links')],
+    [
+      z.literal('edit-check'),
+      z.literal('risk'),
+      z.literal('chapters'),
+      z.literal('links'),
+      z.literal('extra-images'),
+    ],
     {
-      message: "Fase deve ser 'edit-check', 'risk', 'chapters' ou 'links'",
+      message: "Fase deve ser 'edit-check', 'risk', 'chapters', 'links' ou 'extra-images'",
     }
   ),
 })

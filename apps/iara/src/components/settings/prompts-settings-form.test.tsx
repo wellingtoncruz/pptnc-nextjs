@@ -569,3 +569,87 @@ describe('PromptsSettingsForm', () => {
     })
   })
 })
+
+/**
+ * Epic 28 — Imagens Extras do Episódio (Story, Vitrine, Feed).
+ *
+ * Três blocos completos do mesmo editor do Thumbnail, cada um com Base e
+ * Referência próprias. Só aparecem sob Episódios.
+ */
+describe('PromptsSettingsForm — Imagens Extras (Epic 28)', () => {
+  const mockOnSavePromptField = vi.fn<
+    (videoType: 'episode' | 'cut' | 'reel' | 'standalone', fieldName: string, value: PromptField) => Promise<void>
+  >()
+  const mockOnSaveExtraImagePromptField = vi.fn()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockOnSavePromptField.mockResolvedValue(undefined)
+    mockOnSaveExtraImagePromptField.mockResolvedValue(undefined)
+  })
+
+  function renderForm(withHandler = true) {
+    return render(
+      <PromptsSettingsForm
+        {...defaultProps}
+        onSavePromptField={mockOnSavePromptField}
+        onSaveExtraImagePromptField={withHandler ? mockOnSaveExtraImagePromptField : undefined}
+      />
+    )
+  }
+
+  it('renders the three kinds under Episódios', async () => {
+    const user = userEvent.setup()
+    renderForm()
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Imagens Extras (imagem)')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Story')).toBeInTheDocument()
+    expect(screen.getByText('Vitrine')).toBeInTheDocument()
+    expect(screen.getByText('Feed')).toBeInTheDocument()
+  })
+
+  /** Par próprio por imagem = 6 slots de upload, 2 por kind. */
+  it('gives each kind its own Base and Referência slots', async () => {
+    const user = userEvent.setup()
+    renderForm()
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Story Base')).toBeInTheDocument()
+    })
+    for (const label of ['Story', 'Vitrine', 'Feed']) {
+      expect(screen.getByLabelText(`${label} Base`)).toBeInTheDocument()
+      expect(screen.getByLabelText(`${label} Referência`)).toBeInTheDocument()
+    }
+  })
+
+  it('does not render the section when the save handler is absent', async () => {
+    const user = userEvent.setup()
+    renderForm(false)
+
+    await user.click(screen.getByText('Episódios'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Crítica')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Imagens Extras (imagem)')).not.toBeInTheDocument()
+  })
+
+  /** Episode-only: cortes e reels não ganham a seção. */
+  it('does not render the section under Cortes', async () => {
+    const user = userEvent.setup()
+    renderForm()
+
+    await user.click(screen.getByText('Cortes'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Brief de Thumbnail (texto)')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Imagens Extras (imagem)')).not.toBeInTheDocument()
+  })
+})

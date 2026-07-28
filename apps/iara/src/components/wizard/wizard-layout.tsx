@@ -4,7 +4,11 @@ import { useCallback } from 'react'
 
 import { cn } from '@/lib/utils'
 import { getBestThumbnailUrl } from '@/lib/video-utils'
-import { isTrackedPhaseId, type WizardPhaseId } from '@/lib/wizard'
+import {
+  getPhaseIdsForVideoTypeWithFeatures,
+  isTrackedPhaseId,
+  type WizardPhaseId,
+} from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 
@@ -36,7 +40,7 @@ interface WizardLayoutProps {
    * is consumed — inserts the Thumbnail phase between Tags and Publicar for
    * episode and cut video types.
    */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   className?: string
 }
 
@@ -91,17 +95,47 @@ export function WizardLayout({
   //   re-pick the parent). Completion is derived from video data via
   //   getExtendedPhaseState (parentEpisodeId / shortTitle / storageThumbnailUrl
   //   / reviewedPhases.includes('links')).
+  //
+  // Epic 28 abre UMA exceção, restrita a `extra-images`: a fase também é
+  // clicável quando todas as fases anteriores estão concluídas, mesmo que ela
+  // própria nunca tenha sido visitada.
+  //
+  // Motivo: a regra "atual ou concluída" torna qualquer fase NOVA inalcançável
+  // pelo breadcrumb em vídeos processados ANTES dela existir — eles nunca a
+  // visitaram, logo nunca a concluíram, logo o clique fica travado para sempre.
+  // Isso apareceu na homologação: os episódios existentes não conseguiam chegar
+  // às Imagens Extras. `thumbnail` e `links` têm a mesma limitação, e foi
+  // decisão do Wellington (2026-07-28) NÃO mexer nelas agora — o comportamento
+  // delas já está homologado e a mudança fica para uma revisão própria.
   const canNavigateToExtendedPhase = useCallback(
     (phase: WizardPhaseId): boolean => {
       if (isTrackedPhaseId(phase)) {
         return wizard.canNavigateToPhase(phase)
       }
-      return (
-        wizard.state.currentPhase === phase ||
-        getExtendedPhaseState(phase, video).status === 'completed'
-      )
+      if (wizard.state.currentPhase === phase) return true
+      if (getExtendedPhaseState(phase, video).status === 'completed') return true
+
+      if (phase === 'extra-images') {
+        const sequence = getPhaseIdsForVideoTypeWithFeatures(
+          video.videoType ?? 'episode',
+          features,
+          video.standalone === true
+        )
+        const targetIndex = sequence.indexOf(phase)
+        if (targetIndex < 0) return false
+        return sequence
+          .slice(0, targetIndex)
+          .every((previous) =>
+            isTrackedPhaseId(previous)
+              ? wizard.state.phases[previous].status === 'completed' ||
+                wizard.state.phases[previous].status === 'needs_review'
+              : getExtendedPhaseState(previous, video).status === 'completed'
+          )
+      }
+
+      return false
     },
-    [wizard, video]
+    [wizard, video, features]
   )
 
   return (

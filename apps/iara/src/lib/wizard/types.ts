@@ -158,7 +158,7 @@ export type WizardAction =
        * this, the state machine falls back to the legacy sequence and SKIPS the
        * Thumbnail phase silently — bug fixed in Story 22.3b follow-up.
        */
-      features?: { thumbnailGeneration?: boolean }
+      features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
       /** Editorial flag (Epic 25): drives next-phase navigation for standalone videos. */
       standalone?: boolean
     }

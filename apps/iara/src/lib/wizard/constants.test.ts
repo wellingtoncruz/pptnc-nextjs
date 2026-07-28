@@ -198,8 +198,8 @@ describe('isPhaseIdValidForVideoType', () => {
 })
 
 describe('PHASE_ID_METADATA', () => {
-  it('covers all 12 phase ids (incl. links, Epic 26)', () => {
-    expect(Object.keys(PHASE_ID_METADATA)).toHaveLength(12)
+  it('covers all 13 phase ids (incl. extra-images, Epic 28)', () => {
+    expect(Object.keys(PHASE_ID_METADATA)).toHaveLength(13)
   })
 
   it('includes metadata for parent', () => {
@@ -440,6 +440,98 @@ describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
       'short-title',
       'description',
       'tags',
+      'publish',
+    ])
+  })
+})
+
+// ============================================================================
+// Epic 28 — inserção da fase Imagens Extras
+// ============================================================================
+
+describe('getPhaseIdsForVideoTypeWithFeatures — extraImagesGeneration (Epic 28)', () => {
+  it('não insere a fase quando a flag está desligada', () => {
+    const phases = getPhaseIdsForVideoTypeWithFeatures('episode', { extraImagesGeneration: false })
+    expect(phases).not.toContain('extra-images')
+  })
+
+  it('insere entre thumbnail e links quando as duas flags estão ligadas', () => {
+    const phases = getPhaseIdsForVideoTypeWithFeatures('episode', {
+      thumbnailGeneration: true,
+      extraImagesGeneration: true,
+    })
+    expect(phases).toEqual([
+      'critique',
+      'edit-check',
+      'risk',
+      'chapters',
+      'title',
+      'description',
+      'tags',
+      'thumbnail',
+      'extra-images',
+      'links',
+      'publish',
+    ])
+  })
+
+  /**
+   * As duas flags são independentes por decisão de produto: com Thumbnail
+   * desligada, Imagens Extras ancora antes de `links` do mesmo jeito.
+   */
+  it('insere sem depender de thumbnailGeneration', () => {
+    const phases = getPhaseIdsForVideoTypeWithFeatures('episode', {
+      thumbnailGeneration: false,
+      extraImagesGeneration: true,
+    })
+    expect(phases).not.toContain('thumbnail')
+    const extraIndex = phases.indexOf('extra-images')
+    expect(extraIndex).toBeGreaterThan(phases.indexOf('tags'))
+    expect(extraIndex).toBeLessThan(phases.indexOf('links'))
+  })
+
+  it('mantém thumbnail antes de extra-images', () => {
+    const phases = getPhaseIdsForVideoTypeWithFeatures('episode', {
+      thumbnailGeneration: true,
+      extraImagesGeneration: true,
+    })
+    expect(phases.indexOf('thumbnail')).toBeLessThan(phases.indexOf('extra-images'))
+  })
+
+  /** Episode-only: cortes e reels nunca ganham a fase. */
+  it('não insere em cut nem em reel', () => {
+    for (const videoType of ['cut', 'reel'] as const) {
+      const phases = getPhaseIdsForVideoTypeWithFeatures(videoType, {
+        thumbnailGeneration: true,
+        extraImagesGeneration: true,
+      })
+      expect(phases).not.toContain('extra-images')
+    }
+  })
+
+  /** Um episódio avulso (Epic 25) perde as fases de análise mas mantém as extras. */
+  it('sobrevive ao filtro de standalone', () => {
+    const phases = getPhaseIdsForVideoTypeWithFeatures(
+      'episode',
+      { extraImagesGeneration: true },
+      true
+    )
+    expect(phases).toContain('extra-images')
+    expect(phases).not.toContain('critique')
+  })
+
+  it('não altera a sequência do thumbnail quando só ele está ligado (Epic 22 intacto)', () => {
+    const phases = getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: true })
+    expect(phases).toEqual([
+      'critique',
+      'edit-check',
+      'risk',
+      'chapters',
+      'title',
+      'description',
+      'tags',
+      'thumbnail',
+      'links',
       'publish',
     ])
   })

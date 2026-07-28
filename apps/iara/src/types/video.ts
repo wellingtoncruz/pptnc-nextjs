@@ -19,6 +19,7 @@ import type {
   EpisodeContextFormSchema,
   EditingIssueSchema,
   RiskAndComplianceItemSchema,
+  ExtraImagesSchema,
 } from '@/lib/schemas/video'
 
 import type {
@@ -37,6 +38,11 @@ import type {
  * IAra extends this with additional fields (status, videoType, generatedTitle, etc.)
  */
 export type Video = z.infer<typeof VideoSchema>
+
+/**
+ * Imagens extras do episódio (Epic 28) — proxy URLs de Story, Vitrine e Feed.
+ */
+export type ExtraImages = z.infer<typeof ExtraImagesSchema>
 
 /**
  * Input for creating/syncing a video document.
