@@ -25,7 +25,7 @@ interface WizardBreadcrumbProps {
    * between Tags (7) and Publicar (8). Epic 22 / Story 22.3a.
    * When omitted, behavior is identical to before Epic 22 (no Thumbnail).
    */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   onPhaseClick: (phase: WizardPhaseId) => void
   canNavigateToPhase: (phase: WizardPhaseId) => boolean
 }

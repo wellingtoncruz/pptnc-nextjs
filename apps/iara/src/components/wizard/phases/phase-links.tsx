@@ -22,7 +22,7 @@ import type { Link, Video } from '@/types/video'
 interface PhaseLinksProps {
   video: Video
   /** Podcast features (for the next-phase label) */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   /** Persist the full links array (PUT /api/videos/[videoId]/links) */
   onLinksChange: (links: Link[]) => Promise<void>
   /** Advance to Publicar — orchestrator confirms review ('links') + navigates */

@@ -41,7 +41,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   const currentView = searchParams.get('view')
 
   // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode, thumbnailGeneration)
-  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean; thumbnailGeneration?: boolean }>()
+  const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean; thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   const [llmConfig, setLlmConfig] = useState<{ provider?: 'gemini' | 'claude'; textModel?: string }>()
   // Refetch on every view change so that toggling a feature flag inside

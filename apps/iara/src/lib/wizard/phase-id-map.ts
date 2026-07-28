@@ -32,6 +32,7 @@ export type WizardPhaseId =
   | 'description'
   | 'tags'
   | 'thumbnail'
+  | 'extra-images'
   | 'links'
   | 'publish'
 
@@ -47,6 +48,7 @@ export const WIZARD_PHASE_IDS: readonly WizardPhaseId[] = [
   'description',
   'tags',
   'thumbnail',
+  'extra-images',
   'links',
   'publish',
 ]
@@ -61,9 +63,10 @@ export function isWizardPhaseId(value: string): value is WizardPhaseId {
 /**
  * The "tracked" phase IDs — the ones with a slot in `WizardState.phases`
  * (the former numeric phases 1-8). The "extended" phases (`parent`,
- * `short-title`, `thumbnail`, `links`) are NOT tracked in the state record;
- * their completion is derived from video data (parentEpisodeId / shortTitle /
- * storageThumbnailUrl / reviewedPhases.includes('links')).
+ * `short-title`, `thumbnail`, `extra-images`, `links`) are NOT tracked in the
+ * state record; their completion is derived from video data (parentEpisodeId /
+ * shortTitle / storageThumbnailUrl / extraImages /
+ * reviewedPhases.includes('links')).
  */
 export type TrackedPhaseId =
   | 'critique'

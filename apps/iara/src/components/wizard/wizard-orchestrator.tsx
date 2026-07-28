@@ -25,6 +25,7 @@ import { Phase6Description } from './phases/phase-6-description'
 import { Phase7Tags } from './phases/phase-7-tags'
 import { Phase8Publish } from './phases/phase-8-publish'
 import { PhaseThumbnail } from './phases/phase-thumbnail'
+import { PhaseExtraImages } from './phases/phase-extra-images'
 import { PhaseLinks } from './phases/phase-links'
 
 interface WizardOrchestratorProps {
@@ -35,7 +36,7 @@ interface WizardOrchestratorProps {
    * only `thumbnailGeneration` (Epic 22 / Story 22.3a) which inserts the
    * Thumbnail phase between Tags and Publicar for episode and cut.
    */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
   onVideoStatusChange?: () => void
 }
@@ -2605,6 +2606,25 @@ export function WizardOrchestrator({
             // depender de um novo fetch — o storage Firestore já está coerente.
             setVideoData((prev) => ({ ...prev, storageThumbnailUrl: payload.newStorageUrl }))
             wizard.completePhaseAndAdvance('thumbnail', {}, features)
+          }}
+        />
+      )
+    }
+
+    // extra-images phase — Epic 28 (episode-only). Gated por
+    // podcast.features.extraImagesGeneration, independente de thumbnailGeneration.
+    // Cada quadro persiste sozinho via POST /extra-images/select; o avanço não
+    // exige nenhuma imagem (decisão Wellington, 2026-07-28), então aqui só
+    // sincronizamos o videoData e navegamos.
+    if (wizard.currentPhase === 'extra-images') {
+      return (
+        <PhaseExtraImages
+          video={videoData}
+          features={features}
+          selectedExtraImages={videoData.extraImages}
+          onAdvance={(payload) => {
+            setVideoData((prev) => ({ ...prev, extraImages: payload.extraImages }))
+            wizard.completePhaseAndAdvance('extra-images', {}, features)
           }}
         />
       )

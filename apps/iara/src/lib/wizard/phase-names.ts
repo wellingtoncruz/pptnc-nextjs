@@ -26,6 +26,7 @@ export const PHASE_NAMES: Record<WizardPhaseId, string> = {
   description: 'Descrição',
   tags: 'Tags',
   thumbnail: 'Thumbnail',
+  'extra-images': 'Imagens Extras',
   links: 'Links',
   publish: 'Publicar no YouTube',
 }
@@ -59,7 +60,7 @@ export function getNextPhaseName(currentPhase: WizardPhaseId): string | null {
 export function getNextPhaseNameForType(
   currentPhase: WizardPhaseId,
   videoType: VideoTypeForWizard = 'episode',
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
 ): string | null {
   const nextPhase = getNextPhaseForType(currentPhase, videoType, features)
   if (nextPhase === null) return null

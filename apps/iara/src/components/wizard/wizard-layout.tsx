@@ -12,6 +12,7 @@ import { ConsoleArea } from './console-area'
 import { StandaloneToggle } from './standalone-toggle'
 import { VideoHeader, VideoMetadata, VideoShortTitle } from './video-header'
 import { VideoPreview } from './video-preview'
+import { ExtraImagesDownloads } from './extra-images-downloads'
 import { WizardBreadcrumb, getExtendedPhaseState } from './wizard-breadcrumb'
 import { YouTubeProvider } from './youtube-context'
 
@@ -36,7 +37,7 @@ interface WizardLayoutProps {
    * is consumed — inserts the Thumbnail phase between Tags and Publicar for
    * episode and cut video types.
    */
-  features?: { thumbnailGeneration?: boolean }
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   className?: string
 }
 
@@ -135,6 +136,9 @@ export function WizardLayout({
             {/* Short title display for cut videos - Story 4.3 AC2 */}
             <VideoShortTitle video={video} onShortTitleChange={onShortTitleChange} className="mt-2" />
             <VideoMetadata video={video} className="mt-3" />
+            {/* Epic 28 — download das imagens extras, acessível de qualquer fase.
+                Some quando o episódio não tem nenhuma persistida. */}
+            <ExtraImagesDownloads extraImages={video.extraImages} className="mt-3" />
           </div>
 
           {/* Interactive Panel (right) */}

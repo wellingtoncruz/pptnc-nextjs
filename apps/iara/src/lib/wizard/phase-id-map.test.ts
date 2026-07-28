@@ -12,7 +12,7 @@ import {
 
 describe('phase-id-map (TD-7 semantic phase IDs)', () => {
   describe('WIZARD_PHASE_IDS', () => {
-    it('lists all 12 phases in canonical order (incl. links, Epic 26)', () => {
+    it('lists all 13 phases in canonical order (incl. extra-images, Epic 28)', () => {
       expect(WIZARD_PHASE_IDS).toEqual([
         'parent',
         'critique',
@@ -24,6 +24,7 @@ describe('phase-id-map (TD-7 semantic phase IDs)', () => {
         'description',
         'tags',
         'thumbnail',
+        'extra-images',
         'links',
         'publish',
       ])
@@ -99,8 +100,8 @@ describe('phase-id-map (TD-7 semantic phase IDs)', () => {
     it('returns the canonical 0-based index', () => {
       expect(phaseIdOrder('parent')).toBe(0)
       expect(phaseIdOrder('critique')).toBe(1)
-      expect(phaseIdOrder('links')).toBe(10)
-      expect(phaseIdOrder('publish')).toBe(11)
+      expect(phaseIdOrder('links')).toBe(11)
+      expect(phaseIdOrder('publish')).toBe(12)
     })
 
     it('orders short-title between title and description', () => {

@@ -92,6 +92,13 @@ export const PHASE_ID_METADATA: Record<WizardPhaseId, PhaseMetadata> = {
     spinnerText: 'Gerando thumbnail...',
     alertTitle: 'Thumbnail',
   },
+  'extra-images': {
+    phase: 'extra-images',
+    label: 'Imagens Extras',
+    type: 'reprocessable',
+    spinnerText: 'Gerando imagens extras...',
+    alertTitle: 'Imagens Extras',
+  },
   links: {
     phase: 'links',
     label: 'Links',
@@ -195,28 +202,47 @@ const PODCAST_ONLY_PHASE_IDS: ReadonlySet<WizardPhaseId> = new Set<WizardPhaseId
  * - `features.thumbnailGeneration` (Epic 22): inserts the Thumbnail phase
  *   between Tags and Publish. Reels never get it (scope: only episode/cut).
  *   The Thumbnail decision is by duration, independent of `standalone`.
+ * - `features.extraImagesGeneration` (Epic 28): inserts the Imagens Extras
+ *   phase right after Thumbnail. **Episode-only** and independent of
+ *   `thumbnailGeneration` — with Thumbnail off, it anchors before `links`
+ *   just the same.
  *
- * Applied in order: standalone filter first, then thumbnail insertion — so a
- * standalone cut with the feature on still gets a Thumbnail phase.
+ * Applied in order: standalone filter first, then thumbnail, then extra images
+ * — so a standalone cut with the thumbnail feature on still gets a Thumbnail
+ * phase, and the two image phases keep the wizard order (thumbnail → extras).
  */
 export function getPhaseIdsForVideoTypeWithFeatures(
   videoType: VideoTypeForWizard,
-  features?: { thumbnailGeneration?: boolean },
+  features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean },
   standalone = false
 ): WizardPhaseId[] {
   let base = getPhaseIdsForVideoType(videoType)
   if (standalone) {
     base = base.filter((id) => !PODCAST_ONLY_PHASE_IDS.has(id))
   }
-  if (!features?.thumbnailGeneration) return base
-  if (videoType === 'reel') return base
-  // Insert 'thumbnail' before the closing phases. For episodes that means
-  // before 'links' (Epic 26: …tags → thumbnail → links → publish); otherwise
-  // before 'publish' (…tags → thumbnail → publish).
-  const linksIndex = base.indexOf('links')
-  const anchorIndex = linksIndex >= 0 ? linksIndex : base.indexOf('publish')
-  if (anchorIndex < 0) return base
-  return [...base.slice(0, anchorIndex), 'thumbnail', ...base.slice(anchorIndex)]
+
+  /**
+   * Insere `phase` antes das fases de fechamento: `links` quando existe
+   * (Epic 26, episódios), senão `publish`. Devolve a lista intacta se nenhuma
+   * das duas âncoras existir.
+   */
+  function insertBeforeClosing(list: WizardPhaseId[], phase: WizardPhaseId): WizardPhaseId[] {
+    const linksIndex = list.indexOf('links')
+    const anchorIndex = linksIndex >= 0 ? linksIndex : list.indexOf('publish')
+    if (anchorIndex < 0) return list
+    return [...list.slice(0, anchorIndex), phase, ...list.slice(anchorIndex)]
+  }
+
+  // Thumbnail: episode + cut (reels nunca), Epic 22.
+  if (features?.thumbnailGeneration && videoType !== 'reel') {
+    base = insertBeforeClosing(base, 'thumbnail')
+  }
+  // Imagens Extras: só episode, Epic 28. Como entra depois, cai naturalmente
+  // à direita de 'thumbnail' quando as duas features estão ligadas.
+  if (features?.extraImagesGeneration && videoType === 'episode') {
+    base = insertBeforeClosing(base, 'extra-images')
+  }
+  return base
 }
 
 // Re-export the canonical phase-ID list for convenience.
