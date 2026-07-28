@@ -37,7 +37,7 @@ const DEFAULT_PHASE_STATE = { status: 'pending' as const, data: null, error: nul
 
 /**
  * Determines the phase state for extended phases (parent, short-title,
- * thumbnail, links) based on video data.
+ * thumbnail, extra-images, links) based on video data.
  *
  * - Phase 0: completed if video.parentEpisodeId is defined
  * - Phase 5B: completed if video.shortTitle is defined
@@ -80,6 +80,24 @@ export function getExtendedPhaseState(
     const url = video.storageThumbnailUrl
     const isFromWizard = typeof url === 'string' && url.startsWith('/api/wizard/thumbnail/select')
     return isFromWizard
+      ? { status: 'completed', data: null, error: null }
+      : DEFAULT_PHASE_STATE
+  }
+
+  if (phase === 'extra-images') {
+    // Epic 28 — mesma lógica de `links`, e pelo mesmo motivo: a fase não exige
+    // nenhuma das três imagens, então zero imagens é um estado concluído
+    // válido. A completude vem da confirmação (`reviewedPhases`), não da
+    // presença de dados.
+    //
+    // O fallback pela presença de imagem cobre o vídeo que passou pela fase
+    // ANTES desta correção: ele tem `extraImages` gravado mas nunca recebeu a
+    // marca em `reviewedPhases`, e sem isso o breadcrumb continuaria travado.
+    const hasReviewMark = video.reviewedPhases?.includes('extra-images') ?? false
+    const hasAnyImage = Object.values(video.extraImages ?? {}).some(
+      (url) => typeof url === 'string' && url.length > 0
+    )
+    return hasReviewMark || hasAnyImage
       ? { status: 'completed', data: null, error: null }
       : DEFAULT_PHASE_STATE
   }

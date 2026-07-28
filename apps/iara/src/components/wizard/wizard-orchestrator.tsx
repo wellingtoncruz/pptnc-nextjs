@@ -2516,6 +2516,57 @@ export function WizardOrchestrator({
   }, [video.id, wizard, features])
 
   /**
+   * Avança da fase Imagens Extras (Epic 28).
+   *
+   * Confirma a revisão em `reviewedPhases` antes de navegar — sem essa marca o
+   * breadcrumb não reconhece a fase como concluída e o produtor não consegue
+   * voltar para editá-la depois (bug encontrado na homologação de 2026-07-28).
+   * É o mesmo mecanismo de `links`, e pelo mesmo motivo: a fase não exige
+   * nenhuma das três imagens, então a conclusão não pode ser inferida de dados.
+   *
+   * A falha da confirmação NÃO bloqueia o avanço: as imagens já foram
+   * persistidas uma a uma, e travar a publicação por causa da marca de revisão
+   * de uma fase acessória seria pior que o breadcrumb ficar travado. O erro vai
+   * pro log e pro alerta.
+   */
+  const handleExtraImagesAdvance = useCallback(
+    async (payload: { extraImages: NonNullable<Video['extraImages']> }) => {
+      setVideoData((prev) => ({ ...prev, extraImages: payload.extraImages }))
+      try {
+        const response = await fetch(`/api/videos/${video.id}/reviewed-phases`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phase: 'extra-images' }),
+        })
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error?.message || 'Erro ao confirmar revisao')
+        }
+        setVideoData((prev) => {
+          const current = prev.reviewedPhases || []
+          return current.includes('extra-images')
+            ? prev
+            : { ...prev, reviewedPhases: [...current, 'extra-images'] }
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Erro ao confirmar revisao'
+        log('WARN', 'Failed to mark extra-images as reviewed (advance continues)', {
+          videoId: video.id,
+          error: message,
+        })
+        wizard.addAlert(
+          'extra-images',
+          'Aviso',
+          'As imagens foram salvas, mas a confirmação da fase falhou. O breadcrumb pode não marcá-la como concluída.',
+          'warning'
+        )
+      }
+      wizard.completePhaseAndAdvance('extra-images', {}, features)
+    },
+    [video.id, wizard, features]
+  )
+
+  /**
    * Check if video is already sent (from initial video data).
    */
   useEffect(() => {
@@ -2622,10 +2673,7 @@ export function WizardOrchestrator({
           video={videoData}
           features={features}
           selectedExtraImages={videoData.extraImages}
-          onAdvance={(payload) => {
-            setVideoData((prev) => ({ ...prev, extraImages: payload.extraImages }))
-            wizard.completePhaseAndAdvance('extra-images', {}, features)
-          }}
+          onAdvance={(payload) => void handleExtraImagesAdvance(payload)}
         />
       )
     }

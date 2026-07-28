@@ -304,3 +304,32 @@ describe('DELETE /api/videos/[videoId]/reviewed-phases (reprocess un-review, Epi
     expect(response.status).toBe(404)
   })
 })
+
+/**
+ * Epic 28 — a fase Imagens Extras usa este mesmo mecanismo de confirmação.
+ * Sem aceitar 'extra-images', o avanço da fase recebe 400 e o breadcrumb nunca
+ * a marca como concluída (bug da homologação de 2026-07-28).
+ */
+describe('POST reviewed-phases — extra-images (Epic 28)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuth.mockResolvedValue({ user: { id: 'user-123' } } as never)
+    mockGetVideoAdmin.mockResolvedValue({ id: 'test-video' } as never)
+    const mockUpdate = vi.fn().mockResolvedValue(undefined)
+    const mockDocRef = { update: mockUpdate }
+    const mockCollection = vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue(mockDocRef) })
+    mockGetAdminDb.mockReturnValue({
+      collection: vi.fn().mockReturnValue({ doc: vi.fn().mockReturnValue({ collection: mockCollection }) }),
+    } as never)
+  })
+
+  it('accepts phase extra-images', async () => {
+    const response = await POST(createMockRequest({ phase: 'extra-images' }), createContext('test-video'))
+    expect(response.status).toBe(200)
+  })
+
+  it('still rejects an unknown phase name', async () => {
+    const response = await POST(createMockRequest({ phase: 'imagens-extras' }), createContext('test-video'))
+    expect(response.status).toBe(400)
+  })
+})
