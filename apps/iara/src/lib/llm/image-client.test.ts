@@ -483,3 +483,55 @@ describe('callGenAIImage', () => {
     })
   })
 })
+
+/**
+ * Epic 28 — `omitAspectRatio`.
+ *
+ * O `imageConfig.aspectRatio` VENCE o prompt: com 16:9 na request, pedir
+ * "imagem vertical" na Saída Esperada não muda nada, a API devolve widescreen
+ * (achado na homologação de 2026-07-28). Omitir o campo é a única forma de a
+ * proporção vir do prompt e das imagens de referência.
+ */
+describe('callGenAIImage — omitAspectRatio (Epic 28)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockGenerateContent.mockResolvedValue({
+      candidates: [{
+        content: {
+          parts: [{ inlineData: { data: Buffer.from('img').toString('base64'), mimeType: 'image/png' } }],
+        },
+      }],
+    })
+  })
+
+  it('omite imageConfig por completo quando pedido', async () => {
+    await callGenAIImage('vertical, 9:16', undefined, undefined, { omitAspectRatio: true })
+
+    const config = mockGenerateContent.mock.calls[0][0].config
+    expect(config).not.toHaveProperty('imageConfig')
+    expect(config.responseModalities).toEqual(['TEXT', 'IMAGE'])
+  })
+
+  it('mantém 16:9 quando a flag é false ou ausente', async () => {
+    await callGenAIImage('padrão', undefined, undefined, { omitAspectRatio: false })
+    expect(mockGenerateContent.mock.calls[0][0].config.imageConfig).toEqual({ aspectRatio: '16:9' })
+
+    mockGenerateContent.mockClear()
+    await callGenAIImage('padrão')
+    expect(mockGenerateContent.mock.calls[0][0].config.imageConfig).toEqual({ aspectRatio: '16:9' })
+  })
+
+  it('combina omissão com reference images', async () => {
+    await callGenAIImage('vertical', undefined, undefined, {
+      omitAspectRatio: true,
+      referenceImages: [{ role: 'base', uri: 'gs://b/base.png', mimeType: 'image/png' }],
+    })
+
+    const call = mockGenerateContent.mock.calls[0][0]
+    expect(call.config).not.toHaveProperty('imageConfig')
+    expect(call.contents).toEqual([
+      { fileData: { fileUri: 'gs://b/base.png', mimeType: 'image/png' } },
+      { text: 'vertical' },
+    ])
+  })
+})

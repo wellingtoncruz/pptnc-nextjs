@@ -10,8 +10,10 @@
  *
  * Não há foto de convidado aqui — aquilo é específico do thumbnail de cortes.
  *
- * A proporção NÃO é parametrizada, igual ao thumbnail: fica a cargo do prompt
- * e das imagens de referência (decisão Wellington, 2026-07-28).
+ * A proporção NÃO é parametrizada: fica a cargo do prompt e das imagens de
+ * referência (decisão Wellington, 2026-07-28). Para isso valer de fato, a
+ * chamada usa `omitAspectRatio` — o default 16:9 de `callGenAIImage` vence o
+ * prompt e fazia Story/Feed saírem widescreen (homologação, 2026-07-28).
  *
  * CRITICAL: Never expose to the client.
  */
@@ -156,6 +158,10 @@ export async function generateExtraImage(
     try {
       const { imageBuffer, mimeType } = await callGenAIImage(prompt, debugContext, modelOverride, {
         referenceImages,
+        // Sem isso a API força 16:9 e ignora o que a Saída Esperada pedir —
+        // Story sairia widescreen. A proporção é decidida pelo prompt e pelas
+        // imagens de referência.
+        omitAspectRatio: true,
       })
 
       // Staging é compartilhado com o thumbnail: o proxy GET de

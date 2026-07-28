@@ -65,6 +65,18 @@ export interface CallGenAIImageOptions {
    * images as input context and the prompt as the instruction.
    */
   referenceImages?: ReferenceImage[]
+  /**
+   * Omite `imageConfig.aspectRatio` da request (Epic 28).
+   *
+   * O default 16:9 é adequado para thumbnail e capa de newsletter, mas as
+   * imagens extras do episódio têm formatos diferentes entre si (Story é
+   * vertical, Feed é quadrado/retrato). Enviar 16:9 **vence o prompt**: por
+   * mais que a Saída Esperada peça vertical, a API devolvia widescreen.
+   *
+   * Omitindo, a proporção passa a ser decidida pelo modelo a partir do prompt
+   * e das imagens de referência — que é onde o produtor a descreve.
+   */
+  omitAspectRatio?: boolean
 }
 
 /**
@@ -135,9 +147,9 @@ export async function callGenAIImage(
       contents,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
-        imageConfig: {
-          aspectRatio: '16:9',
-        },
+        // Sem `imageConfig` a API não impõe proporção; com ele, o valor vence
+        // qualquer instrução do prompt. Ver `omitAspectRatio`.
+        ...(options?.omitAspectRatio ? {} : { imageConfig: { aspectRatio: '16:9' } }),
       },
     })
 

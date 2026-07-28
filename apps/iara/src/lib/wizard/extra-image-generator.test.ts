@@ -146,13 +146,22 @@ describe('generateExtraImage', () => {
   })
 
   /**
-   * A proporção NÃO é parametrizada — igual ao thumbnail. Se alguém adicionar
-   * um `aspectRatio` por kind sem combinar, este teste avisa.
+   * O default 16:9 de `callGenAIImage` VENCE o prompt: por mais que a Saída
+   * Esperada peça vertical, a API devolvia widescreen (achado na homologação
+   * de 2026-07-28). As extras precisam pedir a omissão explicitamente.
    */
-  it('não passa aspectRatio nas options (proporção fica no prompt)', async () => {
+  it('pede omitAspectRatio para que a proporção venha do prompt', async () => {
     await generateExtraImage({ video: episode, podcast: makePodcast(), kind: 'story' })
     const [, , , options] = mockCallGenAIImage.mock.calls[0]
-    expect(options).not.toHaveProperty('aspectRatio')
+    expect(options.omitAspectRatio).toBe(true)
+  })
+
+  it('pede a omissão para os três kinds', async () => {
+    for (const kind of ['story', 'vitrine', 'feed'] as const) {
+      mockCallGenAIImage.mockClear()
+      await generateExtraImage({ video: episode, podcast: makePodcast(), kind })
+      expect(mockCallGenAIImage.mock.calls[0][3].omitAspectRatio).toBe(true)
+    }
   })
 
   it('usa o thumbnailImageModel configurado como override', async () => {
