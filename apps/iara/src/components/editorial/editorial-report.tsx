@@ -14,11 +14,14 @@
  * @see story-11-4-relatorio-editorial.md
  */
 
-import { ExternalLinkIcon } from 'lucide-react'
+import { DownloadIcon, ExternalLinkIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { getReportImages, type ReportImage } from '@/lib/report/episode-images'
+import { cn } from '@/lib/utils'
 import { resolveVideoPlaceholders } from '@/lib/youtube/format-chapters'
 import type { Video } from '@/types/video'
 
@@ -33,6 +36,7 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
   const guests = video.guests ?? []
   const chapters = video.chapters ?? []
   const tags = video.tags ?? []
+  const images = getReportImages(video)
 
   return (
     <main
@@ -156,6 +160,24 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
         </section>
       )}
 
+      {/* Episode Images — thumbnail + imagens extras (Epics 22/28) */}
+      {images.length > 0 && (
+        <section className="mb-8">
+          <h2 className="mb-4 text-xl font-semibold">Imagens</h2>
+          {/*
+            Colunas CSS, não grid: as quatro artes têm proporções diferentes
+            (16:9, 9:16, 1:1, 4:5) e num grid a linha inteira ganha a altura da
+            mais alta, deixando um vão embaixo da Thumbnail. Aqui cada card
+            ocupa só a própria altura e a coluna segue empacotando.
+          */}
+          <div className="columns-1 gap-4 sm:columns-2">
+            {images.map((image) => (
+              <EpisodeImageCard key={image.kind} image={image} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Cuts Section */}
       {cuts.length > 0 && (
         <section className="mb-8">
@@ -259,6 +281,46 @@ export function EditorialReport({ video, cuts, reels, youtubeFooter }: Editorial
         }
       `}</style>
     </main>
+  )
+}
+
+/**
+ * Card de uma imagem do episódio, com download.
+ *
+ * A proporção NÃO é imposta (`h-auto`): Story, Vitrine e Feed têm formatos
+ * diferentes, definidos no prompt e nas imagens de referência, não no sistema
+ * (decisão do produtor no Epic 28). Forçar `aspect-video` aqui cortaria as
+ * verticais.
+ */
+function EpisodeImageCard({ image }: { image: ReportImage }) {
+  return (
+    <figure className="mb-4 break-inside-avoid overflow-hidden rounded-lg border">
+      <a href={image.src} target="_blank" rel="noopener noreferrer" title={`Abrir ${image.label}`}>
+        {/*
+          Sem `loading="lazy"`: são no máximo quatro imagens e o relatório é
+          impresso/salvo em PDF, onde imagem lazy fora da viewport corre o risco
+          de sair em branco. Medido em 2026-07-29 — com lazy, a aba em segundo
+          plano nem chegava a iniciar o download (`currentSrc` vazio).
+        */}
+        <img
+          src={image.src}
+          alt={image.label}
+          className="h-auto w-full bg-muted object-contain transition-opacity hover:opacity-90"
+        />
+      </a>
+      <figcaption className="flex items-center justify-between gap-2 border-t bg-muted/50 px-3 py-2">
+        <span className="text-sm font-medium">{image.label}</span>
+        <a
+          href={image.downloadHref}
+          download
+          data-testid={`report-download-${image.kind}`}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'print:hidden')}
+        >
+          <DownloadIcon className="mr-2 size-4" />
+          Baixar
+        </a>
+      </figcaption>
+    </figure>
   )
 }
 
