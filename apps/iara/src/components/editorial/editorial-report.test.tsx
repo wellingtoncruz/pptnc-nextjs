@@ -260,4 +260,56 @@ describe('EditorialReport', () => {
 
     expect(screen.getByText('dica')).toBeInTheDocument()
   })
+
+  describe('imagens do episódio', () => {
+    const thumbUrl = `/api/wizard/thumbnail/select?path=${encodeURIComponent('thumbnails/pptnc/episode-1/final-1.png')}`
+    const storyUrl = `/api/wizard/extra-images/select?path=${encodeURIComponent('extra-images/pptnc/episode-1/story-2.jpg')}`
+
+    it('omite a seção quando o episódio não tem imagens', () => {
+      render(<EditorialReport video={createMockVideo()} cuts={[]} reels={[]} />)
+
+      expect(screen.queryByRole('heading', { name: 'Imagens' })).not.toBeInTheDocument()
+    })
+
+    it('exibe thumbnail e imagens extras com botão de download', () => {
+      render(
+        <EditorialReport
+          video={createMockVideo({
+            storageThumbnailUrl: thumbUrl,
+            extraImages: { story: storyUrl },
+          })}
+          cuts={[]}
+          reels={[]}
+        />
+      )
+
+      expect(screen.getByRole('heading', { name: 'Imagens' })).toBeInTheDocument()
+      expect(screen.getByAltText('Thumbnail')).toHaveAttribute(
+        'src',
+        '/api/report/episode-1/image?kind=thumbnail'
+      )
+      expect(screen.getByAltText('Story')).toHaveAttribute(
+        'src',
+        '/api/report/episode-1/image?kind=story'
+      )
+
+      const download = screen.getByTestId('report-download-story')
+      expect(download).toHaveAttribute('href', '/api/report/episode-1/image?kind=story&download=1')
+      expect(download).toHaveAttribute('download')
+    })
+
+    it('mostra só as imagens que existem', () => {
+      render(
+        <EditorialReport
+          video={createMockVideo({ extraImages: { feed: storyUrl } })}
+          cuts={[]}
+          reels={[]}
+        />
+      )
+
+      expect(screen.getByTestId('report-download-feed')).toBeInTheDocument()
+      expect(screen.queryByTestId('report-download-thumbnail')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('report-download-vitrine')).not.toBeInTheDocument()
+    })
+  })
 })

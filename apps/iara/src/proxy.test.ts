@@ -75,6 +75,23 @@ describe('proxy', () => {
       })
     })
 
+    it('libera as imagens do relatório editorial sem sessão', async () => {
+      // O relatório é público; se o proxy barrasse /api/report, quem recebe o
+      // link veria a thumbnail e as imagens extras quebradas.
+      const req = createRequest('/api/report/vid1/image?kind=story')
+      const response = await proxy(req)
+
+      expect(response?.status).toBe(200)
+      expect(response?.headers.get('x-middleware-next')).toBe('1')
+    })
+
+    it('continua barrando os proxies autenticados de imagem do wizard', async () => {
+      const req = createRequest('/api/wizard/extra-images/select?path=extra-images/pptnc/v/s.png')
+      const response = await proxy(req)
+
+      expect(response?.status).toBe(401)
+    })
+
     it('returns 401 for SSE endpoints without buffering', async () => {
       const req = createRequest('/api/process/abc123')
       const response = await proxy(req)
@@ -136,6 +153,7 @@ describe('proxy', () => {
       // Verify the pattern contains exclusions for public routes
       // Next.js matcher uses special syntax: (?!...) for negative lookahead
       expect(pattern).toContain('api/auth')
+      expect(pattern).toContain('api/report')
       expect(pattern).toContain('_next/static')
       expect(pattern).toContain('_next/image')
       expect(pattern).toContain('favicon.ico')

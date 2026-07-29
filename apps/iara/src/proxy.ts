@@ -6,7 +6,7 @@
  * Uses Auth.js v5 middleware helper for session verification.
  * Handles:
  * - Protected routes: /videos, /settings, /api/* (except /api/auth)
- * - Public routes: /login, /report/*, /api/auth/*, /_next/*, assets
+ * - Public routes: /login, /report/*, /api/report/*, /api/auth/*, /_next/*, assets
  * - SSE endpoints: /api/process/* (no buffering, auth check returns 401)
  *
  * @see https://authjs.dev/getting-started/session-management/protecting
@@ -54,6 +54,16 @@ export const proxy = auth((req) => {
     return NextResponse.next()
   }
 
+  // Imagens do Relatório Editorial — públicas como a própria página /report.
+  // Precisa ser um `next()` explícito e ANTES dos blocos abaixo: apenas
+  // excluir da condição de API faria a requisição cair no redirect de página
+  // (307 para /login), que num `<img>` é tão quebrado quanto o 401.
+  // A rota resolve o arquivo pelo documento do episódio, nunca por path do
+  // cliente — os proxies do wizard seguem exigindo sessão.
+  if (pathname.startsWith('/api/report')) {
+    return NextResponse.next()
+  }
+
   // Protected API routes (except /api/auth, /api/admin, /api/social/execute which bypass auth)
   // /api/social/execute is called by Cloud Tasks — authenticates internally via task headers
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/admin') && !pathname.startsWith('/api/social/execute')) {
@@ -96,6 +106,7 @@ export const proxy = auth((req) => {
  * - /favicon.ico, /robots.txt, etc (static assets)
  * - /login (login page - must be public)
  * - /report/* (public editorial report pages)
+ * - /api/report/* (imagens do relatório público — thumbnail e imagens extras)
  * - /method-docs/* (public BMAD documentation site)
  * - /privacy, /terms (public legal pages)
  *
@@ -106,6 +117,7 @@ export const config = {
     /*
      * Match all request paths except:
      * - api/auth (Auth.js routes)
+     * - api/report (imagens do relatório público)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, robots.txt, sitemap.xml (SEO/browser files)
@@ -114,6 +126,6 @@ export const config = {
      * - privacy, terms (public legal pages)
      * - Public assets with extensions
      */
-    '/((?!api/auth|api/social/execute|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|privacy|terms|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|api/social/execute|api/report|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|privacy|terms|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }
