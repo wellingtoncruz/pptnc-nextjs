@@ -62,7 +62,7 @@ describe('readMediakit', () => {
     const data = await readMediakit()
     expect(data.stats?.episodes).toBe(234)
     expect(data.audience?.followers.spotify).toBe(3325)
-    expect(data.series?.spotifyMonthly).toEqual([])
+    expect(data.series?.spotifyDaily).toEqual([])
   })
 
   it('returns null + WARN for a missing section', async () => {
@@ -147,7 +147,11 @@ describe('writeMediakitSection', () => {
 
   it('rejects an invalid partial loudly (adapter bug must not land half-data)', async () => {
     await expect(
-      writeMediakitSection('series', { spotifyMonthly: [{ month: 'nope', value: 1 }] }, 'spotify')
+      writeMediakitSection(
+        'series',
+        { spotifyDaily: [{ date: 'nope', starts: 1, streams: 1 }] },
+        'spotify'
+      )
     ).rejects.toThrow()
     expect(mockSectionSet).not.toHaveBeenCalled()
   })

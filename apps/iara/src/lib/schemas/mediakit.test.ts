@@ -87,22 +87,33 @@ describe('MediakitSeriesSchema', () => {
     expect(MediakitSeriesSchema.safeParse(MEDIAKIT_SEED_SERIES).success).toBe(true)
   })
 
-  it('accepts sortable YYYY-MM points', () => {
+  it('accepts sortable YYYY-MM-DD daily points with the raw source fields', () => {
     const parsed = MediakitSeriesSchema.safeParse({
-      spotifyMonthly: [
-        { month: '2026-06', value: 2400 },
-        { month: '2026-07', value: 2700 },
+      spotifyDaily: [
+        { date: '2026-08-24', starts: 119, streams: 99 },
+        { date: '2026-08-25', starts: 175, streams: 123 },
       ],
-      youtubeHoursMonthly: [],
+      youtubeWatchDaily: [{ date: '2026-08-25', minutes: 3480 }],
     })
     expect(parsed.success).toBe(true)
   })
 
-  it('rejects invalid months in points', () => {
+  it('rejects invalid dates in points', () => {
+    for (const date of ['2026-8-25', '2026-08', '2026-13-01', '2026-08-32']) {
+      expect(
+        MediakitSeriesSchema.safeParse({
+          spotifyDaily: [{ date, starts: 1, streams: 1 }],
+          youtubeWatchDaily: [],
+        }).success
+      ).toBe(false)
+    }
+  })
+
+  it('spotify points carry BOTH raw fields (no info loss)', () => {
     expect(
       MediakitSeriesSchema.safeParse({
-        spotifyMonthly: [{ month: '2026-6', value: 1 }],
-        youtubeHoursMonthly: [],
+        spotifyDaily: [{ date: '2026-08-25', streams: 99 }],
+        youtubeWatchDaily: [],
       }).success
     ).toBe(false)
   })
@@ -132,9 +143,9 @@ describe('write schemas (adapter partials)', () => {
 
   it('series: accepts one series without the other', () => {
     const parsed = MediakitSeriesWriteSchema.parse({
-      youtubeHoursMonthly: [{ month: '2026-07', value: 9800 }],
+      youtubeWatchDaily: [{ date: '2026-08-25', minutes: 9800 }],
     })
-    expect(parsed.spotifyMonthly).toBeUndefined()
-    expect(parsed.youtubeHoursMonthly).toHaveLength(1)
+    expect(parsed.spotifyDaily).toBeUndefined()
+    expect(parsed.youtubeWatchDaily).toHaveLength(1)
   })
 })

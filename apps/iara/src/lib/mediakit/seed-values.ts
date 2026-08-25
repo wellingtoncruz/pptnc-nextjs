@@ -16,8 +16,10 @@
  *   collector replaces it with the real parcel on first run.
  * - impressions: display value "4,3 mi" — Wellington owns the exact number
  *   (manual field, decision D8).
- * - Series: PROVISIONAL empty — the real series are reverse-engineered from
- *   the SVG paths in story 30.3, which updates this fixture.
+ * - Series: PROVISIONAL empty — stored DAILY at source granularity (raw
+ *   fields, architectural correction 2026-08-25). Real data arrives via the
+ *   collectors' HISTORICAL BACKFILL (30.5/30.6); the golden fixture for the
+ *   charts (30.3) reverse-engineers the monthly aggregation the design shows.
  */
 import type { MediakitAudience, MediakitSeries, MediakitStats } from '@/types/mediakit'
 
@@ -54,6 +56,6 @@ export const MEDIAKIT_SEED_AUDIENCE: SeedDoc<MediakitAudience> = {
 }
 
 export const MEDIAKIT_SEED_SERIES: SeedDoc<MediakitSeries> = {
-  spotifyMonthly: [],
-  youtubeHoursMonthly: [],
+  spotifyDaily: [],
+  youtubeWatchDaily: [],
 }

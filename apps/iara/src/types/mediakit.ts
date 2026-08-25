@@ -7,18 +7,20 @@ import type {
   MediakitAudienceSchema,
   MediakitAudienceWriteSchema,
   MediakitFollowersSchema,
-  MediakitSeriesPointSchema,
   MediakitSeriesSchema,
   MediakitSeriesWriteSchema,
+  MediakitSpotifyDailyPointSchema,
   MediakitStatsSchema,
   MediakitStatsWriteSchema,
+  MediakitYoutubeWatchDailyPointSchema,
 } from '@/lib/schemas/mediakit'
 
 export type MediakitStats = z.infer<typeof MediakitStatsSchema>
 export type MediakitAudience = z.infer<typeof MediakitAudienceSchema>
 export type MediakitSeries = z.infer<typeof MediakitSeriesSchema>
 export type MediakitFollowers = z.infer<typeof MediakitFollowersSchema>
-export type MediakitSeriesPoint = z.infer<typeof MediakitSeriesPointSchema>
+export type MediakitSpotifyDailyPoint = z.infer<typeof MediakitSpotifyDailyPointSchema>
+export type MediakitYoutubeWatchDailyPoint = z.infer<typeof MediakitYoutubeWatchDailyPointSchema>
 
 export type MediakitStatsWrite = z.infer<typeof MediakitStatsWriteSchema>
 export type MediakitAudienceWrite = z.infer<typeof MediakitAudienceWriteSchema>

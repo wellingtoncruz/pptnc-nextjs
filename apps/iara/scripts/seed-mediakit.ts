@@ -49,9 +49,9 @@ async function main() {
   if (!ok) process.exit(1)
   console.log('  stats.episodes =', data.stats?.episodes)
   console.log('  audience.youtubeSubscribers =', data.audience?.youtubeSubscribers)
-  console.log('  series (provisórias, vazias até a 30.3) =', {
-    spotify: data.series?.spotifyMonthly.length,
-    youtube: data.series?.youtubeHoursMonthly.length,
+  console.log('  series diárias (vazias até a carga histórica dos coletores) =', {
+    spotifyDaily: data.series?.spotifyDaily.length,
+    youtubeWatchDaily: data.series?.youtubeWatchDaily.length,
   })
 }
 
