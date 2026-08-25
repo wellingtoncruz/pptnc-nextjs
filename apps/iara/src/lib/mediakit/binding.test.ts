@@ -8,19 +8,25 @@ import type { MediakitData } from '@/types/mediakit'
 import { bindMediakitDeck, applyMediakitValueBindings, BindingError } from './apply-bindings'
 import { deriveMediakitValues } from './bindings'
 import { BundleStructureError, repackBundle, unpackBundle } from './bundle'
+import { DESIGN_SERIES_FIXTURE } from './design-series-fixture'
+import { MEDIAKIT_SEED_AUDIENCE, MEDIAKIT_SEED_STATS } from './seed-values'
 import {
-  MEDIAKIT_SEED_AUDIENCE,
-  MEDIAKIT_SEED_SERIES,
-  MEDIAKIT_SEED_STATS,
-} from './seed-values'
+  aggregateSpotifyMonthly,
+  aggregateYoutubeHoursMonthly,
+  areaChart,
+  conicStops,
+  legendPct,
+  monthAxisLabel,
+} from './widgets'
 
 /** The date the seed values were read off the design — freezes derivations. */
 const SEED_NOW = new Date(Date.UTC(2026, 7, 25))
 
+/** Seed + the design-series fixture = the complete golden dataset. */
 const SEED_DATA: MediakitData = {
   stats: MEDIAKIT_SEED_STATS,
   audience: MEDIAKIT_SEED_AUDIENCE,
-  series: MEDIAKIT_SEED_SERIES,
+  series: DESIGN_SERIES_FIXTURE,
 }
 
 let bundleHtml: string
@@ -72,7 +78,7 @@ describe('GOLDEN — idempotence over the template', () => {
     expect(result.html).toBe(deckHtml)
   })
 
-  it('full bind only touches the stale speaker notes (slide 03 counts)', () => {
+  it('FULL bind (texts + widgets) only touches the stale speaker notes', () => {
     const result = bindMediakitDeck(deckHtml, SEED_DATA, SEED_NOW)
     // Capa and Público notes templates reproduce the current prose exactly;
     // slide 03 notes are stale in the export (224/1.120/1.792/159 mil) and
@@ -80,7 +86,9 @@ describe('GOLDEN — idempotence over the template', () => {
     expect(result.report.notesChanged).toEqual(['Cinco anos em números'])
     expect(result.html).toContain('234 episódios, 1.170 cortes, 1.872 shorts')
     expect(result.html).toContain('mais de 172 mil horas de exibição')
-    // Nothing outside the notes attribute changed.
+    // Nothing outside the notes attribute changed — this includes W1–W4:
+    // paths, dots, picos, range labels, conics and legends are byte-identical.
+    expect(result.report.applied).toEqual(['W1', 'W2', 'W3', 'W4'])
     const stripNotes = (html: string) => html.replace(/data-speaker-notes="[^"]*"/g, '')
     expect(stripNotes(result.html)).toBe(stripNotes(deckHtml))
   })
@@ -129,6 +137,111 @@ describe('bindings apply real changes', () => {
     expect(result.report.applied).toEqual(expect.arrayContaining(['C1', 'C4']))
     expect(result.html).toContain('Media Kit — 2027')
     expect(result.html).toContain('>6 anos</div>')
+  })
+})
+
+describe('widgets — geometry units', () => {
+  it('aggregates daily series into sorted monthly points', () => {
+    const monthly = aggregateSpotifyMonthly([
+      { date: '2026-02-03', starts: 10, streams: 8 },
+      { date: '2026-01-10', starts: 5, streams: 4 },
+      { date: '2026-01-20', starts: 7, streams: 5 },
+    ])
+    expect(monthly).toEqual([
+      { month: '2026-01', value: 12 },
+      { month: '2026-02', value: 10 },
+    ])
+  })
+
+  it('aggregates YouTube minutes into rounded monthly hours', () => {
+    const monthly = aggregateYoutubeHoursMonthly([
+      { date: '2026-01-01', minutes: 90 },
+      { date: '2026-01-02', minutes: 45 },
+    ])
+    expect(monthly).toEqual([{ month: '2026-01', value: 2 }])
+  })
+
+  it('areaChart produces valid geometry for a synthetic series', () => {
+    const chart = areaChart(
+      [
+        { month: '2026-01', value: 100 },
+        { month: '2026-02', value: 200 },
+        { month: '2026-03', value: 50 },
+      ],
+      41.1
+    )
+    expect(chart.linePath).toBe('M8.0 166.6 L500.0 41.1 L992.0 229.3')
+    expect(chart.fillPath).toBe('M8.0 166.6 L500.0 41.1 L992.0 229.3 L992.0 292.0 L8.0 292.0 Z')
+    expect(chart.dotLeft).toBe('50.0')
+    expect(chart.dotBottom).toBe('86.3')
+    expect(chart.peakValue).toBe(200)
+    expect(monthAxisLabel(chart.firstMonth)).toBe('jan/2026')
+  })
+
+  it('conicStops accumulates with point decimals and closes at 100%', () => {
+    expect(conicStops([84, 10.4, 5.6], ['#a', '#b', '#c'])).toBe('#a 0 84%,#b 84% 94.4%,#c 94.4% 100%')
+  })
+
+  it('legendPct: integer without decimals, fraction with pt-BR comma', () => {
+    expect(legendPct(84)).toBe('84%')
+    expect(legendPct(10.4)).toBe('10,4%')
+  })
+})
+
+describe('widgets apply real changes', () => {
+  it('a changed series redraws paths, dot, pico and range labels', () => {
+    const data: MediakitData = {
+      ...SEED_DATA,
+      series: {
+        ...DESIGN_SERIES_FIXTURE,
+        spotifyDaily: [
+          ...DESIGN_SERIES_FIXTURE.spotifyDaily,
+          { date: '2026-05-15', starts: 5000, streams: 4000 },
+        ],
+      },
+    }
+    const result = bindMediakitDeck(deckHtml, data, SEED_NOW)
+    // New month extends the range and becomes the new peak.
+    expect(result.html).toContain('>mai/2026<')
+    expect(result.html).toContain('>5,0 mil</div>')
+    expect(result.html).toContain('left:99.2%')
+    expect(result.html).not.toContain('>2,7 mil</div>')
+  })
+
+  it('flipped gender majority updates conic, center value and center word', () => {
+    const data: MediakitData = {
+      ...SEED_DATA,
+      audience: {
+        ...MEDIAKIT_SEED_AUDIENCE,
+        gender: { male: 30, female: 64.4, notSpecified: 5.6 },
+      },
+    }
+    const result = bindMediakitDeck(deckHtml, data, SEED_NOW)
+    expect(result.html).toContain('conic-gradient(#F26A21 0 30%,#E8A06B 30% 94.4%,#56565E 94.4% 100%)')
+    expect(result.html).toContain('>64,4%</div>')
+    expect(result.html).toContain('>Mulher</div>')
+  })
+
+  it('changed age shares update the age conic and its legend', () => {
+    const data: MediakitData = {
+      ...SEED_DATA,
+      audience: {
+        ...MEDIAKIT_SEED_AUDIENCE,
+        age: { '18-22': 1.9, '23-27': 11.6, '28-34': 16.8, '35-44': 40, '45-59': 29, '60+': 0.7 },
+      },
+    }
+    const result = bindMediakitDeck(deckHtml, data, SEED_NOW)
+    expect(result.html).toContain('#F26A21 0 40%,#D9591F 40% 69%')
+    expect(result.html).toContain('>40%</span>')
+    expect(result.html).toContain('>29%</span>')
+  })
+
+  it('empty series fail loud (backfill pending)', () => {
+    const data: MediakitData = {
+      ...SEED_DATA,
+      series: { spotifyDaily: [], youtubeWatchDaily: [] },
+    }
+    expect(() => bindMediakitDeck(deckHtml, data, SEED_NOW)).toThrow(/backfill/)
   })
 })
 

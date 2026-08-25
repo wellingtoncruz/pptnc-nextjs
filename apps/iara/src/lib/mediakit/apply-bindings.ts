@@ -17,6 +17,9 @@ import {
   type MediakitDerived,
   type TextBinding,
 } from './bindings'
+// Circular at module level with widget-bindings (which imports BindingError);
+// safe under ESM: both sides only touch the other inside function bodies.
+import { applyMediakitWidgets } from './widget-bindings'
 
 export class BindingError extends Error {
   constructor(message: string) {
@@ -180,15 +183,16 @@ export function applyMediakitSpeakerNotes(
   return { html, report: { applied: [], unchanged: [], notesChanged } }
 }
 
-/** Full text-binding pass: values + speaker notes. */
+/** Full binding pass: text values + widgets (charts/donuts) + speaker notes. */
 export function bindMediakitDeck(deckHtml: string, data: MediakitData, now: Date): BindResult {
   const derived = deriveMediakitValues(data, now)
   const values = applyMediakitValueBindings(deckHtml, derived)
-  const notes = applyMediakitSpeakerNotes(values.html, derived)
+  const widgets = applyMediakitWidgets(values.html, data)
+  const notes = applyMediakitSpeakerNotes(widgets.html, derived)
   return {
     html: notes.html,
     report: {
-      applied: values.report.applied,
+      applied: [...values.report.applied, ...widgets.applied],
       unchanged: values.report.unchanged,
       notesChanged: notes.report.notesChanged,
     },
