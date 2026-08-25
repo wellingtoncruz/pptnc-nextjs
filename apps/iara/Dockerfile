@@ -39,6 +39,9 @@ ENV NODE_ENV=production
 COPY --from=builder /app/apps/iara/.next/standalone ./
 COPY --from=builder /app/apps/iara/.next/static ./apps/iara/.next/static
 COPY --from=builder /app/apps/iara/public ./apps/iara/public
+# Mediakit template (Epic 30): fora do public/ de propósito (não é asset servível);
+# o output standalone do Next não rastreia arquivos lidos via fs em runtime.
+COPY --from=builder /app/apps/iara/mediakit-template ./apps/iara/mediakit-template
 
 # Cloud Run uses port 8080 by default
 EXPOSE 8080
