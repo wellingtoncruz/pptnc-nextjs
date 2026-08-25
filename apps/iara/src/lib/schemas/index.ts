@@ -91,3 +91,19 @@ export { LlmLogSchema, LlmLogCreateSchema } from './llm-log'
 
 // Jobs LLM assíncronos genéricos (Epic 27) — substitui o WizardJob específico.
 export { JobSchema, JobCreateSchema, JobUpdateSchema, JobStatusSchema } from './job'
+
+// Contrato do mediakit dinâmico (Epic 30) — fronteira coletores × gerador.
+export {
+  MediakitStatsSchema,
+  MediakitAudienceSchema,
+  MediakitSeriesSchema,
+  MediakitFollowersSchema,
+  MediakitGenderSchema,
+  MediakitAgeSchema,
+  MediakitSeriesPointSchema,
+  MediakitStatsWriteSchema,
+  MediakitAudienceWriteSchema,
+  MediakitSeriesWriteSchema,
+  MEDIAKIT_AGE_BUCKETS,
+  MEDIAKIT_SECTION_IDS,
+} from './mediakit'
