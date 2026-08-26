@@ -1,0 +1,38 @@
+# ============================================================
+# Cloud Run Job: mediakit-generator (Epic 30)
+# Asset APARTADO do serviço web — decisão de arquitetura 2026-08-26
+# (feedback_batch_jobs_not_http_endpoints): sem porta, sem HTTP;
+# roda `tsx jobs/mediakit/generate.ts` até o fim e sai.
+#
+# Build (na raiz do monorepo):
+#   docker build -f apps/iara/Dockerfile.mediakit-generator -t mediakit-generator .
+# ============================================================
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Chromium para o print do PDF (as fontes do deck viajam embutidas no bundle;
+# ttf-freefont é só fallback).
+RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont
+ENV MEDIAKIT_CHROME_BIN=/usr/bin/chromium-browser
+# AI 34: binário verificado no build — imagem sem Chromium não passa.
+RUN ${MEDIAKIT_CHROME_BIN} --version
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Dependências do workspace (tsx roda o TS direto; sem build do Next aqui —
+# este asset não é o app, é um job de biblioteca).
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/iara/package.json ./apps/iara/
+RUN pnpm install --frozen-lockfile --filter iara
+
+# Código da biblioteca + entrypoint + template canônico.
+COPY apps/iara/tsconfig.json ./apps/iara/
+COPY apps/iara/src ./apps/iara/src
+COPY apps/iara/jobs ./apps/iara/jobs
+COPY apps/iara/mediakit-template ./apps/iara/mediakit-template
+
+WORKDIR /app/apps/iara
+ENV NODE_ENV=production
+
+ENTRYPOINT ["npx", "tsx", "jobs/mediakit/generate.ts"]

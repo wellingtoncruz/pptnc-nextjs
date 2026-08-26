@@ -92,20 +92,9 @@ describe('proxy', () => {
       expect(response?.status).toBe(401)
     })
 
-    it('libera /api/media-kit/* sem sessão (m2m do Cloud Scheduler — Epic 30)', async () => {
-      // A rota autentica internamente por X-Mediakit-Key; o proxy barrando
-      // aqui viraria 401/307 antes do handler — lesson_public_route_needs_proxy_optout.
-      for (const path of ['/api/media-kit/generate', '/api/media-kit/collect']) {
-        const response = await proxy(createRequest(path))
-        expect(response?.status).toBe(200)
-        expect(response?.headers.get('x-middleware-next')).toBe('1')
-      }
-    })
-
-    it('rotas vizinhas de /api/media-kit continuam protegidas', async () => {
-      const response = await proxy(createRequest('/api/media-kits'))
-      expect(response?.status).toBe(401)
-    })
+    // Epic 30: as rotas m2m do mediakit foram REMOVIDAS por decisão de
+    // arquitetura (2026-08-26) — coletor e gerador são Cloud Run Jobs
+    // apartados, sem estímulo HTTP. Nenhum opt-out de proxy existe para eles.
 
     it('returns 401 for SSE endpoints without buffering', async () => {
       const req = createRequest('/api/process/abc123')
@@ -168,7 +157,6 @@ describe('proxy', () => {
       // Verify the pattern contains exclusions for public routes
       // Next.js matcher uses special syntax: (?!...) for negative lookahead
       expect(pattern).toContain('api/auth')
-      expect(pattern).toContain('api/media-kit')
       expect(pattern).toContain('api/report')
       expect(pattern).toContain('_next/static')
       expect(pattern).toContain('_next/image')
