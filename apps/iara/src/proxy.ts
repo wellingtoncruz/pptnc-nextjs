@@ -64,6 +64,15 @@ export const proxy = auth((req) => {
     return NextResponse.next()
   }
 
+  // Rotas m2m do mediakit (Epic 30) — chamadas pelo Cloud Scheduler, sem
+  // sessão. Autenticam internamente via X-Mediakit-Key vs MEDIAKIT_TRIGGER_KEY
+  // (503 sem env, 401 sem/errada a chave). O `next()` explícito é obrigatório:
+  // apenas excluir da condição de API abaixo faria a requisição cair no
+  // redirect de página (307 → /login) — lesson_public_route_needs_proxy_optout.
+  if (pathname.startsWith('/api/media-kit/')) {
+    return NextResponse.next()
+  }
+
   // Protected API routes (except /api/auth, /api/admin, /api/social/execute which bypass auth)
   // /api/social/execute is called by Cloud Tasks — authenticates internally via task headers
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/admin') && !pathname.startsWith('/api/social/execute')) {
@@ -126,6 +135,6 @@ export const config = {
      * - privacy, terms (public legal pages)
      * - Public assets with extensions
      */
-    '/((?!api/auth|api/social/execute|api/report|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|privacy|terms|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|api/social/execute|api/media-kit|api/report|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|login|auth/error|report|method-docs|privacy|terms|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

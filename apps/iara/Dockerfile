@@ -35,6 +35,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Chromium para o render do mediakit (Epic 30) — ~+120MB no alpine.
+# ttf-freefont é fallback; as fontes do deck viajam embutidas no bundle.
+RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont
+ENV MEDIAKIT_CHROME_BIN=/usr/bin/chromium-browser
+# AI 34: binário verificado no build — imagem sem Chromium não passa.
+RUN ${MEDIAKIT_CHROME_BIN} --version
+
 # Copy standalone output from builder
 COPY --from=builder /app/apps/iara/.next/standalone ./
 COPY --from=builder /app/apps/iara/.next/static ./apps/iara/.next/static

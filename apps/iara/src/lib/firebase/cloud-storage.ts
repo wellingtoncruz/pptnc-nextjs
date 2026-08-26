@@ -803,3 +803,33 @@ export async function downloadExtraImageFinal(filePath: string): Promise<Buffer>
     )
   }
 }
+
+/**
+ * Uploads the generated mediakit PDF to the stable object path (Epic 30).
+ *
+ * Same bucket as the other app assets (NEWSLETTER_IMAGES_BUCKET — decision
+ * registered in story 30.4: no dedicated bucket). Write-through to a STABLE
+ * path: the caller must only invoke this AFTER `verifyMediakitPdf` passed —
+ * a failed pipeline never reaches this call, so the previous PDF survives.
+ *
+ * @returns The GCS file path (`media-kit/latest.pdf`)
+ */
+export const MEDIAKIT_PDF_PATH = 'media-kit/latest.pdf'
+
+export async function uploadMediakitPdf(pdf: Buffer): Promise<string> {
+  try {
+    const bucket = getBucket()
+    await bucket.file(MEDIAKIT_PDF_PATH).save(pdf, {
+      contentType: 'application/pdf',
+      resumable: false,
+    })
+    log('INFO', 'Mediakit PDF uploaded', { filePath: MEDIAKIT_PDF_PATH, size: pdf.length })
+    return MEDIAKIT_PDF_PATH
+  } catch (error) {
+    log('ERROR', 'Mediakit PDF upload failed', {
+      filePath: MEDIAKIT_PDF_PATH,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    throw new CloudStorageError('Failed to upload mediakit PDF', 'UPLOAD_FAILED')
+  }
+}
