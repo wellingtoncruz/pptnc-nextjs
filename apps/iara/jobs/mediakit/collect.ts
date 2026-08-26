@@ -10,13 +10,13 @@
  * JÁ escreveram — dado parcial é melhor que nenhum; o exit≠0 é o sinal de
  * monitoração).
  */
+import { brightdataSocialsAdapter } from '../../src/lib/mediakit/collectors/brightdata-socials'
 import { iaraCountsAdapter } from '../../src/lib/mediakit/collectors/iara-counts'
 import { runCollectors } from '../../src/lib/mediakit/collectors/runner'
 import { spotifyAdapter } from '../../src/lib/mediakit/collectors/spotify'
 import { youtubeAdapter } from '../../src/lib/mediakit/collectors/youtube'
 
-// 30.7 (brightdata-socials) entra nesta lista.
-const ADAPTERS = [iaraCountsAdapter, youtubeAdapter, spotifyAdapter]
+const ADAPTERS = [iaraCountsAdapter, youtubeAdapter, spotifyAdapter, brightdataSocialsAdapter]
 
 async function main() {
   console.log('[mediakit-collector] starting —', ADAPTERS.map((a) => a.name).join(', '))
