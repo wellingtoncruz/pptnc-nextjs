@@ -1,0 +1,27 @@
+# ============================================================
+# Cloud Run Job: mediakit-collector (Epic 30)
+# Asset APARTADO do serviço web e do gerador — arquitetura v4
+# (feedback_batch_jobs_not_http_endpoints). SEM Chromium: só coleta
+# das fontes e escrita na collection `mediakit`.
+#
+# Build (na raiz do monorepo):
+#   docker build -f apps/iara/Dockerfile.mediakit-collector -t mediakit-collector .
+# ============================================================
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/iara/package.json ./apps/iara/
+RUN pnpm install --frozen-lockfile --filter iara
+
+COPY apps/iara/tsconfig.json ./apps/iara/
+COPY apps/iara/src ./apps/iara/src
+COPY apps/iara/jobs ./apps/iara/jobs
+
+WORKDIR /app/apps/iara
+ENV NODE_ENV=production
+
+ENTRYPOINT ["npx", "tsx", "jobs/mediakit/collect.ts"]
