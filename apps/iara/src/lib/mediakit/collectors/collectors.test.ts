@@ -41,7 +41,8 @@ vi.mock('@/lib/auth/refresh-token', () => ({
 
 import { iaraCountsAdapter } from './iara-counts'
 import { runCollectors, type CollectorAdapter } from './runner'
-import { incrementalStart, mergeDailySeries, youtubeAdapter } from './youtube'
+import { incrementalStart, mergeByDate } from './series-utils'
+import { youtubeAdapter } from './youtube'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -97,9 +98,9 @@ describe('iaraCountsAdapter', () => {
 
 // ── youtube: pure helpers ────────────────────────────────────────────────
 
-describe('youtube series helpers', () => {
-  it('mergeDailySeries: fresh points overwrite by date, result sorted', () => {
-    const merged = mergeDailySeries(
+describe('series helpers (shared youtube/spotify)', () => {
+  it('mergeByDate: fresh points overwrite by date, result sorted', () => {
+    const merged = mergeByDate(
       [
         { date: '2026-08-01', minutes: 100 },
         { date: '2026-08-02', minutes: 200 },

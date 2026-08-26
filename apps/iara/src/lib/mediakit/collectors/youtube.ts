@@ -24,12 +24,9 @@ import { readMediakit } from '@/lib/firebase/mediakit-admin'
 import { getUserTokens, saveUserTokens } from '@/lib/firebase/tokens'
 import { isTokenExpired, refreshAccessToken } from '@/lib/auth/refresh-token'
 import { log } from '@/lib/logger'
-import type { MediakitYoutubeWatchDailyPoint } from '@/types/mediakit'
 
 import type { CollectorAdapter, SectionWrite } from './runner'
-
-const OVERLAP_DAYS = 7
-const BACKFILL_START = '2021-09-01'
+import { incrementalStart, isoToday, mergeByDate, SERIES_BACKFILL_START } from './series-utils'
 
 const ChannelStatsSchema = z.object({
   items: z
@@ -100,29 +97,6 @@ async function apiGet(url: string, accessToken: string): Promise<unknown> {
   return response.json()
 }
 
-function isoDate(date: Date): string {
-  return date.toISOString().slice(0, 10)
-}
-
-/** Merges fresh daily points over stored ones — by date, fresh wins. */
-export function mergeDailySeries(
-  stored: MediakitYoutubeWatchDailyPoint[],
-  fresh: MediakitYoutubeWatchDailyPoint[]
-): MediakitYoutubeWatchDailyPoint[] {
-  const byDate = new Map(stored.map((p) => [p.date, p]))
-  for (const point of fresh) byDate.set(point.date, point)
-  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1))
-}
-
-/** Incremental start: last stored date minus the overlap; backfill if empty. */
-export function incrementalStart(stored: MediakitYoutubeWatchDailyPoint[]): string {
-  if (stored.length === 0) return BACKFILL_START
-  const last = stored[stored.length - 1].date
-  const from = new Date(`${last}T00:00:00Z`)
-  from.setUTCDate(from.getUTCDate() - OVERLAP_DAYS)
-  return isoDate(from)
-}
-
 export const youtubeAdapter: CollectorAdapter = {
   name: 'youtube',
   async collect(): Promise<SectionWrite[]> {
@@ -132,7 +106,7 @@ export const youtubeAdapter: CollectorAdapter = {
     const channelId = podcastDoc.data()?.channelId as string | undefined
     if (!channelId) throw new YoutubeAdapterError('podcast has no channelId')
     const accessToken = await resolveAccessToken()
-    const today = isoDate(new Date())
+    const today = isoToday()
 
     // Data API — public channel statistics (source-provided scalars).
     const statsRaw = await apiGet(
@@ -144,7 +118,7 @@ export const youtubeAdapter: CollectorAdapter = {
     // Analytics API — total watch minutes (source-side aggregation, no day dim).
     const totalRaw = await apiGet(
       `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==${channelId}` +
-        `&startDate=${BACKFILL_START}&endDate=${today}&metrics=estimatedMinutesWatched`,
+        `&startDate=${SERIES_BACKFILL_START}&endDate=${today}&metrics=estimatedMinutesWatched`,
       accessToken
     )
     const totalRows = AnalyticsReportSchema.parse(totalRaw).rows ?? []
@@ -178,7 +152,7 @@ export const youtubeAdapter: CollectorAdapter = {
         },
       },
       { section: 'audience', partial: { youtubeSubscribers: Number(stats.subscriberCount) } },
-      { section: 'series', partial: { youtubeWatchDaily: mergeDailySeries(stored, fresh) } },
+      { section: 'series', partial: { youtubeWatchDaily: mergeByDate(stored, fresh) } },
     ]
   },
 }

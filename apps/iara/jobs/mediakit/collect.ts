@@ -12,10 +12,11 @@
  */
 import { iaraCountsAdapter } from '../../src/lib/mediakit/collectors/iara-counts'
 import { runCollectors } from '../../src/lib/mediakit/collectors/runner'
+import { spotifyAdapter } from '../../src/lib/mediakit/collectors/spotify'
 import { youtubeAdapter } from '../../src/lib/mediakit/collectors/youtube'
 
-// 30.6 (spotify) e 30.7 (brightdata-socials) entram nesta lista.
-const ADAPTERS = [iaraCountsAdapter, youtubeAdapter]
+// 30.7 (brightdata-socials) entra nesta lista.
+const ADAPTERS = [iaraCountsAdapter, youtubeAdapter, spotifyAdapter]
 
 async function main() {
   console.log('[mediakit-collector] starting —', ADAPTERS.map((a) => a.name).join(', '))
