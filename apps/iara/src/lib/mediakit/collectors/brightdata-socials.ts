@@ -54,7 +54,9 @@ function networkConfigs(): NetworkConfig[] {
     {
       key: 'tiktok',
       datasetId: 'gd_l1villgoiiidt09ci',
-      url: process.env.MEDIAKIT_TIKTOK_URL,
+      // Handle confirmado pelo Wellington em 2026-08-27; o dead_page do spike
+      // era flakiness do endpoint /scrape antigo — via /trigger coleta normal.
+      url: process.env.MEDIAKIT_TIKTOK_URL ?? 'https://www.tiktok.com/@pptnaocompila',
     },
     {
       key: 'instagram',
