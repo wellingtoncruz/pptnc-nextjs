@@ -8,26 +8,33 @@ vi.mock('@/lib/logger', () => ({ log: vi.fn() }))
 
 import { brightdataSocialsAdapter, BrightdataSocialsError } from './brightdata-socials'
 
-function stubBrightdata(handlers: {
-  instagram?: () => Response
-  linkedin?: () => Response
-  tiktok?: () => Response
-  snapshot?: () => Response
+/** Stub of the /trigger → /progress → /snapshot flow; each network's record
+ * (or trigger failure) is configured per key. */
+function stubBrightdata(records: {
+  instagram?: Response | Record<string, unknown>
+  linkedin?: Response | Record<string, unknown>
+  tiktok?: Response | Record<string, unknown>
 }) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init?: RequestInit) => {
-      if (url.includes('/scrape')) {
+      if (url.includes('/trigger')) {
         const body = String(init?.body ?? '')
-        if (body.includes('tiktok.com')) return handlers.tiktok?.() ?? new Response('{}')
-        if (body.includes('instagram.com')) return handlers.instagram?.() ?? new Response('{}')
-        return handlers.linkedin?.() ?? new Response('{}')
+        const network = body.includes('tiktok.com')
+          ? 'tiktok'
+          : body.includes('instagram.com')
+            ? 'instagram'
+            : 'linkedin'
+        const record = records[network as keyof typeof records]
+        if (record instanceof Response) return record // trigger-level failure
+        return new Response(JSON.stringify({ snapshot_id: `sd_${network}` }))
       }
       if (url.includes('/progress/')) {
         return new Response(JSON.stringify({ status: 'ready' }))
       }
       if (url.includes('/snapshot/')) {
-        return handlers.snapshot?.() ?? new Response('[]')
+        const network = url.match(/sd_(\w+)\?/)?.[1] as keyof typeof records
+        return new Response(JSON.stringify([records[network] ?? {}]))
       }
       throw new Error(`unexpected url: ${url}`)
     })
@@ -44,11 +51,10 @@ beforeEach(() => {
 })
 
 describe('brightdataSocialsAdapter', () => {
-  it('collects sync (linkedin) and snapshot (instagram) records; tiktok skipped without URL', async () => {
+  it('collects records via trigger→poll→snapshot; tiktok skipped without URL', async () => {
     stubBrightdata({
-      linkedin: () => new Response(JSON.stringify({ name: 'PPT', followers: 3262 })),
-      instagram: () => new Response(JSON.stringify({ snapshot_id: 'sd_1' })),
-      snapshot: () => new Response(JSON.stringify([{ account: 'pptnaocompila', followers: 1251 }])),
+      linkedin: { name: 'PPT', followers: 3262 },
+      instagram: { account: 'pptnaocompila', followers: 1251 },
     })
 
     const writes = await brightdataSocialsAdapter.collect()
@@ -60,10 +66,9 @@ describe('brightdataSocialsAdapter', () => {
   it('one network failing (dead_page) never blocks the others', async () => {
     process.env.MEDIAKIT_TIKTOK_URL = 'https://www.tiktok.com/@x'
     stubBrightdata({
-      tiktok: () =>
-        new Response(JSON.stringify({ error: "Couldn't find this account", error_code: 'dead_page' })),
-      linkedin: () => new Response(JSON.stringify({ followers: 3262 })),
-      instagram: () => new Response(JSON.stringify({ followers: 1251 })),
+      tiktok: { error: "Couldn't find this account", error_code: 'dead_page' },
+      linkedin: { followers: 3262 },
+      instagram: { followers: 1251 },
     })
 
     const writes = await brightdataSocialsAdapter.collect()
@@ -73,8 +78,8 @@ describe('brightdataSocialsAdapter', () => {
 
   it('null followers (lesson_brightdata_null_fields) fails that network only', async () => {
     stubBrightdata({
-      instagram: () => new Response(JSON.stringify({ followers: null })),
-      linkedin: () => new Response(JSON.stringify({ followers: 3262 })),
+      instagram: { followers: null },
+      linkedin: { followers: 3262 },
     })
 
     const writes = await brightdataSocialsAdapter.collect()
@@ -84,8 +89,8 @@ describe('brightdataSocialsAdapter', () => {
 
   it('throws only when EVERY configured network fails', async () => {
     stubBrightdata({
-      instagram: () => new Response('{}', { status: 500 }),
-      linkedin: () => new Response('{}', { status: 500 }),
+      instagram: new Response('{}', { status: 500 }),
+      linkedin: new Response('{}', { status: 500 }),
     })
     await expect(brightdataSocialsAdapter.collect()).rejects.toThrow(BrightdataSocialsError)
   })

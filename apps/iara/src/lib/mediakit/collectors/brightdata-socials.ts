@@ -26,7 +26,10 @@ import { log } from '@/lib/logger'
 
 import type { CollectorAdapter, SectionWrite } from './runner'
 
-const SCRAPE_URL = 'https://api.brightdata.com/datasets/v3/scrape'
+// /trigger (não /scrape): o /scrape tenta responder inline e SEGURA a conexão
+// além do timeout por request nos datasets assíncronos (visto no smoke com o
+// Instagram); /trigger devolve o snapshot_id imediatamente e o poll assume.
+const TRIGGER_URL = 'https://api.brightdata.com/datasets/v3/trigger'
 const PROGRESS_URL = 'https://api.brightdata.com/datasets/v3/progress'
 const SNAPSHOT_URL = 'https://api.brightdata.com/datasets/v3/snapshot'
 
@@ -108,32 +111,23 @@ async function scrapeProfile(
   const deadline = Date.now() + TOTAL_DEADLINE_MS
 
   const trigger = await bdFetch(
-    `${SCRAPE_URL}?dataset_id=${config.datasetId}&notify=false&include_errors=true`,
+    `${TRIGGER_URL}?dataset_id=${config.datasetId}&include_errors=true`,
     apiKey,
     { method: 'POST', body: JSON.stringify([{ url: config.url }]) }
   )
   if (!trigger.ok) {
     throw new BrightdataSocialsError(`${config.key}: trigger failed ${trigger.status}`)
   }
-  const triggerBody = (await trigger.json()) as unknown
-
-  // Sync datasets answer with the record; async ones with a snapshot ticket.
-  const ticket = SnapshotTicketSchema.safeParse(triggerBody)
-  if (!ticket.success) {
-    return ProfileRecordSchema.parse(firstRecord(triggerBody))
-  }
+  const ticket = SnapshotTicketSchema.parse(await trigger.json())
 
   while (Date.now() < deadline) {
-    const progress = await bdFetch(`${PROGRESS_URL}/${ticket.data.snapshot_id}`, apiKey)
+    const progress = await bdFetch(`${PROGRESS_URL}/${ticket.snapshot_id}`, apiKey)
     if (!progress.ok) {
       throw new BrightdataSocialsError(`${config.key}: progress failed ${progress.status}`)
     }
     const { status } = ProgressSchema.parse(await progress.json())
     if (status === 'ready') {
-      const snapshot = await bdFetch(
-        `${SNAPSHOT_URL}/${ticket.data.snapshot_id}?format=json`,
-        apiKey
-      )
+      const snapshot = await bdFetch(`${SNAPSHOT_URL}/${ticket.snapshot_id}?format=json`, apiKey)
       if (!snapshot.ok) {
         throw new BrightdataSocialsError(`${config.key}: snapshot failed ${snapshot.status}`)
       }
