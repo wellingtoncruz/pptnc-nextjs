@@ -34,12 +34,14 @@ const ChannelStatsSchema = z.object({
       z.object({
         statistics: z.object({
           viewCount: z.string().regex(/^\d+$/),
-          subscriberCount: z.string().regex(/^\d+$/),
         }),
       })
     )
     .min(1),
 })
+
+/** Lifetime window for the exact-subscribers delta (Σ gained − lost). */
+const SUBSCRIBERS_SINCE = '2005-01-01'
 
 const AnalyticsReportSchema = z.object({
   rows: z.array(z.array(z.union([z.string(), z.number()]))).optional(),
@@ -108,12 +110,28 @@ export const youtubeAdapter: CollectorAdapter = {
     const accessToken = await resolveAccessToken()
     const today = isoToday()
 
-    // Data API — public channel statistics (source-provided scalars).
+    // Data API — exact total views (viewCount is NOT rounded, unlike
+    // subscriberCount, which the public API abbreviates to 3 significant
+    // digits — 33.970 vira 33.900).
     const statsRaw = await apiGet(
       `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}`,
       accessToken
     )
     const stats = ChannelStatsSchema.parse(statsRaw).items[0].statistics
+
+    // Subscribers via Analytics lifetime delta (decisão Wellington 2026-08-31):
+    // Σ(subscribersGained − subscribersLost) ≈ Studio com desvio mínimo
+    // (purgas de contas não geram evento de perda), contra −70 do arredondado.
+    const subsRaw = await apiGet(
+      `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==${channelId}` +
+        `&startDate=${SUBSCRIBERS_SINCE}&endDate=${today}&metrics=subscribersGained,subscribersLost`,
+      accessToken
+    )
+    const subsRows = AnalyticsReportSchema.parse(subsRaw).rows ?? []
+    const subscribers = Math.max(
+      0,
+      Number(subsRows[0]?.[0] ?? 0) - Number(subsRows[0]?.[1] ?? 0)
+    )
 
     // Analytics API — total watch minutes (source-side aggregation, no day dim).
     const totalRaw = await apiGet(
@@ -151,7 +169,7 @@ export const youtubeAdapter: CollectorAdapter = {
           watchHours: Math.round(totalMinutes / 60),
         },
       },
-      { section: 'audience', partial: { youtubeSubscribers: Number(stats.subscriberCount) } },
+      { section: 'audience', partial: { youtubeSubscribers: subscribers } },
       { section: 'series', partial: { youtubeWatchDaily: mergeByDate(stored, fresh) } },
     ]
   },
