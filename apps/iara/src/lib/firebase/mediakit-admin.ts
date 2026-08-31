@@ -117,3 +117,19 @@ export async function writeMediakitSection<S extends MediakitSectionId>(
 
   log('INFO', 'Mediakit section written', { section, source, fields })
 }
+
+/**
+ * Persists the RENDERED display values — the exact formatted strings the
+ * published PDF shows (an OUTPUT artifact like latest.pdf, not contract
+ * data). The /midiakit page of apps/web displays these verbatim, so the page
+ * and the PDF can never diverge (equalização por construção, 2026-08-31).
+ *
+ * Call ONLY after the PDF upload succeeded — same failsafe semantics: the
+ * page always mirrors the artifact actually being served.
+ */
+export async function writeMediakitRendered(values: Record<string, string>): Promise<void> {
+  await getMediakitCollection()
+    .doc('rendered')
+    .set({ values, updatedAt: FieldValue.serverTimestamp() })
+  log('INFO', 'Mediakit rendered values written', { fields: Object.keys(values) })
+}

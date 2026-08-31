@@ -11,11 +11,12 @@
  * `media-kit/latest.pdf` is never overwritten by a broken render.
  */
 import { uploadMediakitPdf } from '@/lib/firebase/cloud-storage'
-import { readMediakit } from '@/lib/firebase/mediakit-admin'
+import { readMediakit, writeMediakitRendered } from '@/lib/firebase/mediakit-admin'
 import { log } from '@/lib/logger'
 import type { MediakitData } from '@/types/mediakit'
 
 import { bindMediakitDeck } from './apply-bindings'
+import { buildRenderedValues, deriveMediakitValues } from './bindings'
 import { repackBundle, unpackBundle } from './bundle'
 import { renderMediakitPdf } from './render'
 import { loadMediakitTemplate } from './template'
@@ -58,6 +59,9 @@ export async function runMediakitGeneration(): Promise<GenerationReport> {
 
   const data = await readMediakit()
   const ages = staleness(data)
+  // Deriva JÁ AQUI: contrato incompleto falha alto antes de qualquer render/
+  // upload; o mesmo derived alimenta o doc `rendered` após o publish.
+  const derived = deriveMediakitValues(data, new Date())
 
   const bundleHtml = await loadMediakitTemplate()
   const { deckHtml } = unpackBundle(bundleHtml)
@@ -68,6 +72,10 @@ export async function runMediakitGeneration(): Promise<GenerationReport> {
 
   const rendered = await renderMediakitPdf(boundBundle, expectedPages)
   const path = await uploadMediakitPdf(rendered.pdf)
+
+  // Só APÓS o upload: a página /midiakit exibe estas strings verbatim, e elas
+  // devem espelhar sempre o PDF que está de fato publicado.
+  await writeMediakitRendered(buildRenderedValues(derived))
 
   const report: GenerationReport = {
     path,

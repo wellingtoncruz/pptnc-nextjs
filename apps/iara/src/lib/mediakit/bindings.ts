@@ -63,6 +63,28 @@ export function deriveMediakitValues(data: MediakitData, now: Date): MediakitDer
   }
 }
 
+/**
+ * Display strings EXACTLY as the PDF shows them — persisted as
+ * `mediakit/rendered` after each successful publish and displayed verbatim
+ * by the /midiakit page of apps/web (equalização por construção).
+ */
+export function buildRenderedValues(d: MediakitDerived): Record<string, string> {
+  return {
+    episodes: intDot(d.episodes),
+    cuts: intDot(d.cuts),
+    shorts: intDot(d.shorts),
+    youtubeSubscribers: intDot(d.youtubeSubscribers),
+    spotifyFollowers: intDot(d.followers.spotify),
+    tiktokFollowers: intDot(d.followers.tiktok),
+    linkedinFollowers: intDot(d.followers.linkedin),
+    instagramFollowers: intDot(d.followers.instagram),
+    views: `${compactMi2(d.views)} mi`,
+    watchHours: `${kSuffix(d.watchHours)} +`,
+    impressions: plusCompactMi(d.impressions),
+    yearsOnAir: `${d.years} anos`,
+  }
+}
+
 export type TextBinding =
   | {
       id: string

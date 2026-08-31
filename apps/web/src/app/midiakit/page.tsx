@@ -16,7 +16,9 @@ import { Container } from "@/components/layout/container";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SpotifyIcon } from "@/components/icons/social-icons";
-import { getMetrics, formatMetricNumber } from "@/lib/datastore/metrics";
+// Números do mediakit dinâmico (Epic 30): a página exibe as MESMAS strings do
+// PDF publicado (doc mediakit/rendered), nunca uma formatação própria.
+import { getMediakitRendered } from "@/lib/datastore/mediakit";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://pptnaocompila.com.br";
 
@@ -58,7 +60,7 @@ function MetricCard({ icon, value, label, description }: MetricCardProps) {
 }
 
 export default async function MidiakitPage() {
-  const metrics = await getMetrics();
+  const metrics = await getMediakitRendered();
 
   return (
     <Container className="py-8 lg:py-12">
@@ -85,51 +87,51 @@ export default async function MidiakitPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             icon={<PlayCircle className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.episodes)}
+            value={metrics.episodes}
             label="Episódios"
             description="Publicados"
           />
           <MetricCard
             icon={<Scissors className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.cortes)}
+            value={metrics.cuts}
             label="Cortes"
             description="Clipes curtos"
           />
           <MetricCard
             icon={<Film className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.reels)}
-            label="Reels"
+            value={metrics.shorts}
+            label="Shorts"
             description="Conteúdo vertical"
           />
           <MetricCard
             icon={<Youtube className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.youtubeSubscribers)}
+            value={metrics.youtubeSubscribers}
             label="Inscritos"
             description="No YouTube"
           />
           <MetricCard
             icon={<SpotifyIcon className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.spotifyFollowers)}
+            value={metrics.spotifyFollowers}
             label="Seguidores"
             description="No Spotify"
           />
           <MetricCard
             icon={<Headphones className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.monthlyListeners)}
-            label="Ouvintes/mês"
-            description="Média mensal"
+            value={metrics.views}
+            label="Visualizações"
+            description="YouTube + Spotify"
           />
           <MetricCard
             icon={<TrendingUp className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.totalPlays)}
-            label="Plays totais"
-            description="Todas as plataformas"
+            value={metrics.watchHours}
+            label="Horas exibidas"
+            description="Tempo assistido"
           />
           <MetricCard
             icon={<Users className="h-8 w-8" />}
-            value={formatMetricNumber(metrics.socialReach)}
-            label="Alcance social"
-            description="Redes sociais"
+            value={metrics.impressions}
+            label="Pessoas impactadas"
+            description="Todas as plataformas"
           />
         </div>
       </section>
