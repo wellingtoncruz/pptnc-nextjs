@@ -83,16 +83,31 @@ describe('runCollectors', () => {
 // ── iara-counts ──────────────────────────────────────────────────────────
 
 describe('iaraCountsAdapter', () => {
-  it('counts each videoType via aggregate count (no doc reads)', async () => {
-    const counts: Record<string, number> = { episode: 247, cut: 1063, reel: 1523 }
-    mockWhere.mockImplementation(((_field: string, _op: string, type: string) => ({
-      count: () => ({ get: async () => ({ data: () => ({ count: counts[type] }) }) }),
+  beforeEach(() => {
+    delete process.env.MEDIAKIT_EPISODE_OFFSET
+    delete process.env.MEDIAKIT_CUTS_PER_EPISODE
+    delete process.env.MEDIAKIT_SHORTS_PER_EPISODE
+  })
+
+  it('decisão A1: episódios = total − offset 8; cortes ×5 e shorts ×8 derivados', async () => {
+    mockWhere.mockImplementation((() => ({
+      count: () => ({ get: async () => ({ data: () => ({ count: 248 }) }) }),
     })) as never)
 
     const writes = await iaraCountsAdapter.collect()
     expect(writes).toEqual([
-      { section: 'stats', partial: { episodes: 247, cuts: 1063, shorts: 1523 } },
+      { section: 'stats', partial: { episodes: 240, cuts: 1200, shorts: 1920 } },
     ])
+  })
+
+  it('offset e razões são env-overridable (offset zera após limpeza do lixo)', async () => {
+    process.env.MEDIAKIT_EPISODE_OFFSET = '0'
+    mockWhere.mockImplementation((() => ({
+      count: () => ({ get: async () => ({ data: () => ({ count: 248 }) }) }),
+    })) as never)
+
+    const writes = await iaraCountsAdapter.collect()
+    expect(writes[0].partial).toEqual({ episodes: 248, cuts: 1240, shorts: 1984 })
   })
 })
 
