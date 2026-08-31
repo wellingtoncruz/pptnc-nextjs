@@ -1,0 +1,92 @@
+# Cloud Build — esteira dos DOIS assets de job do mediakit (Epic 30):
+#   mediakit-collector (sem Chromium) e mediakit-generator (com Chromium).
+#
+# Gatilho: push de tag ^v[0-9]+\.[0-9]+\.[0-9]+-mediakit$ (trigger
+# mediakit-jobs-stable, us-east1, mesma conexão GitHub das demais esteiras).
+#
+# A esteira BUILDA e PUBLICA as duas imagens ($TAG_NAME + stable) e atualiza
+# a IMAGEM dos dois Cloud Run Jobs. Ela NÃO gerencia envs/secrets de runtime
+# (regra da casa: cloudbuild só carrega envs de build/deploy; runtime vive no
+# recurso — ver runbook epic-30 §2). `jobs update --image` preserva as
+# envs/secrets configuradas no job.
+#
+# BOOTSTRAP: os jobs precisam EXISTIR antes da primeira tag (criação única
+# com envs/secrets via runbook §2, `gcloud run jobs create`). Sem eles, os
+# steps de update falham — de propósito, nunca criamos um job sem envs.
+
+substitutions:
+  _REGION: us-east1
+  _REPOSITORY: pptnc
+  _COLLECTOR_JOB: mediakit-collector
+  _GENERATOR_JOB: mediakit-generator
+
+steps:
+  # Collector — imagem magra (coleta das fontes → collection mediakit)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/iara/Dockerfile.mediakit-collector'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_COLLECTOR_JOB}:$TAG_NAME'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_COLLECTOR_JOB}:stable'
+      - '.'
+
+  # Generator — imagem com Chromium (bind + render + publish do PDF)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/iara/Dockerfile.mediakit-generator'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_GENERATOR_JOB}:$TAG_NAME'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_GENERATOR_JOB}:stable'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_COLLECTOR_JOB}'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_GENERATOR_JOB}'
+
+  # Atualiza SÓ a imagem dos jobs (envs/secrets preservados; ver header)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'jobs'
+      - 'update'
+      - '${_COLLECTOR_JOB}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_COLLECTOR_JOB}:stable'
+      - '--region'
+      - '${_REGION}'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'jobs'
+      - 'update'
+      - '${_GENERATOR_JOB}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_GENERATOR_JOB}:stable'
+      - '--region'
+      - '${_REGION}'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_COLLECTOR_JOB}:$TAG_NAME'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_COLLECTOR_JOB}:stable'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_GENERATOR_JOB}:$TAG_NAME'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_GENERATOR_JOB}:stable'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
