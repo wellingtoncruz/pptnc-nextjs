@@ -59,11 +59,13 @@ describe('auth configuration', () => {
       // Verify YouTube scopes contain required permissions
       expect(YOUTUBE_SCOPES).toContain('https://www.googleapis.com/auth/youtube.readonly')
       expect(YOUTUBE_SCOPES).toContain('https://www.googleapis.com/auth/youtube.force-ssl')
+      // Epic 30 (mediakit): horas assistidas + série diária via Analytics API
+      expect(YOUTUBE_SCOPES).toContain('https://www.googleapis.com/auth/yt-analytics.readonly')
 
       // Verify scope string format (space-separated)
       expect(typeof YOUTUBE_SCOPES).toBe('string')
       const scopeArray = YOUTUBE_SCOPES.split(' ')
-      expect(scopeArray).toHaveLength(2)
+      expect(scopeArray).toHaveLength(3)
     })
 
     it('configures offline access for refresh token', () => {
