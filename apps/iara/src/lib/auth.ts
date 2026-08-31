@@ -23,6 +23,9 @@ import { log } from './logger'
 export const YOUTUBE_SCOPES = [
   'https://www.googleapis.com/auth/youtube.readonly',
   'https://www.googleapis.com/auth/youtube.force-ssl',
+  // Epic 30 (mediakit): horas assistidas + série diária via Analytics API.
+  // Adicionado em 2026-08-31 (decisão A3) — exige re-login para valer.
+  'https://www.googleapis.com/auth/yt-analytics.readonly',
 ].join(' ')
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
