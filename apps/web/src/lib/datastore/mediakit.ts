@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import { getFirestoreClient } from "./client";
 import { logger } from "@/lib/logger";
 
@@ -38,8 +37,6 @@ const EMPTY: MediakitRendered = {
   updatedAt: null,
 };
 
-const CACHE_REVALIDATE = 3600;
-
 async function fetchMediakitRendered(): Promise<MediakitRendered> {
   try {
     const db = await getFirestoreClient();
@@ -78,8 +75,7 @@ async function fetchMediakitRendered(): Promise<MediakitRendered> {
   }
 }
 
-export const getMediakitRendered = unstable_cache(
-  fetchMediakitRendered,
-  ["mediakit-rendered"],
-  { revalidate: CACHE_REVALIDATE }
-);
+// Sem unstable_cache de propósito: no build o cache seria primado com EMPTY
+// (sem credenciais) e embarcado na imagem; a página é force-dynamic e o custo
+// real é 1 leitura de doc por pageview.
+export const getMediakitRendered = fetchMediakitRendered;

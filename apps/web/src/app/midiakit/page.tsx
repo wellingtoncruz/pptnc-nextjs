@@ -37,7 +37,11 @@ export const metadata: Metadata = {
 };
 
 // Revalidate every hour
-export const revalidate = 3600;
+// Dinâmica por request (Epic 30): o prerender de build não tem credenciais do
+// Firestore (assava "—" no HTML) e a revalidação ISR no Cloud Run sofre do
+// CPU-throttling conhecido. Mesmo padrão da rota /midiakit.pdf; o custo é 1
+// leitura de doc por pageview.
+export const dynamic = "force-dynamic";
 
 interface MetricCardProps {
   icon: React.ReactNode;

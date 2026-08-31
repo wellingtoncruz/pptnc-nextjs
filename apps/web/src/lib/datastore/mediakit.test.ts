@@ -15,11 +15,6 @@ vi.mock("@/lib/logger", () => ({
   logger: { warn: vi.fn(), error: vi.fn() },
 }));
 
-// unstable_cache passthrough (mesmo padrão dos demais testes de datastore)
-vi.mock("next/cache", () => ({
-  unstable_cache: (fn: () => unknown) => fn,
-}));
-
 import { getMediakitRendered } from "./mediakit";
 
 beforeEach(() => {
