@@ -178,8 +178,11 @@ describe('token storage', () => {
       })
     })
 
-    it('preserves existing refresh_token on subsequent logins', async () => {
-      // Subsequent login - document exists with refresh_token
+    it('ROTATES the refresh_token on re-authorization (incident 2026-09-01)', async () => {
+      // Re-login com prompt=consent: o Google emite refresh token NOVO e pode
+      // revogar o anterior (grant mudou — ex.: escopo novo). Preservar o
+      // antigo deixava o doc com um token morto e o job diário falhava com
+      // invalid_grant.
       mockTokenRef.get.mockResolvedValue({
         exists: true,
         data: () => ({ refreshToken: 'original-refresh-token' }),
@@ -188,30 +191,40 @@ describe('token storage', () => {
 
       await saveUserTokens('user-123', {
         accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token', // Should be ignored
+        refreshToken: 'new-refresh-token',
         expiresAt: 1234567890,
       })
 
-      // Capture the actual call arguments for explicit verification
       const setCallArgs = mockTokenRef.set.mock.calls[0]
       const updateData = setCallArgs[0] as Record<string, unknown>
 
-      // Explicitly verify refreshToken is NOT present in update data
-      expect(updateData).not.toHaveProperty('refreshToken')
-
-      // Verify only expected fields are in update data
-      expect(Object.keys(updateData)).toEqual(
-        expect.arrayContaining(['accessToken', 'expiresAt', 'updatedAt'])
-      )
-      expect(Object.keys(updateData)).not.toContain('refreshToken')
-
-      // Verify merge option is used
+      expect(updateData.refreshToken).toBe('new-refresh-token')
       expect(setCallArgs[1]).toEqual({ merge: true })
-
-      expect(log).toHaveBeenCalledWith('INFO', 'Refresh token preserved (not overwritten)', {
+      expect(log).toHaveBeenCalledWith('INFO', 'Refresh token rotated (re-authorization)', {
         userId: 'user-123',
         podcastId: PODCAST_ID,
       })
+    })
+
+    it('preserves the stored refresh_token when the save has none (refresh response)', async () => {
+      mockTokenRef.get.mockResolvedValue({
+        exists: true,
+        data: () => ({ refreshToken: 'original-refresh-token' }),
+      })
+      mockTokenRef.set.mockResolvedValue(undefined)
+
+      await saveUserTokens('user-123', {
+        accessToken: 'refreshed-access-token',
+        expiresAt: 1234567890,
+      })
+
+      const updateData = mockTokenRef.set.mock.calls[0][0] as Record<string, unknown>
+      expect(updateData).not.toHaveProperty('refreshToken')
+      expect(log).toHaveBeenCalledWith(
+        'INFO',
+        'Refresh token preserved (refresh response has none)',
+        { userId: 'user-123', podcastId: PODCAST_ID }
+      )
     })
 
     it('saves refresh_token when document exists but has no refresh_token', async () => {

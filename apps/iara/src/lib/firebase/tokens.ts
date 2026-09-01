@@ -84,15 +84,26 @@ export async function saveUserTokens(userId: string, tokens: SaveTokensInput): P
     updatedAt: FieldValue.serverTimestamp(),
   }
 
-  // CRITICAL: Only save refresh_token if:
-  // 1. It's provided in the new tokens (first authorization)
-  // 2. AND there's no existing refresh_token
-  if (validatedTokens.refreshToken && !existingData?.refreshToken) {
+  // Refresh token: PROVIDED → overwrite; ABSENT → preserve o armazenado.
+  //
+  // A regra antiga ("nunca sobrescrever se já existe um") protegia contra
+  // respostas de REFRESH (que não trazem refresh_token) — caso já coberto
+  // pelo ramo "ausente". Mas ela DESCARTAVA o token novo de um RE-LOGIN com
+  // prompt=consent: quando o grant muda (ex.: escopo novo do Epic 30), o
+  // Google emite um refresh token novo e pode revogar o anterior — e o doc
+  // ficava com o antigo, morto. Incidente de 2026-09-01: o job diário das
+  // 08:00 falhou com invalid_grant exatamente por isso.
+  if (validatedTokens.refreshToken) {
     updateData.refreshToken = validatedTokens.refreshToken
-    log('INFO', 'Refresh token saved (first authorization)', { userId, podcastId: PODCAST_ID })
-  } else if (validatedTokens.refreshToken && existingData?.refreshToken) {
-    log('INFO', 'Refresh token preserved (not overwritten)', { userId, podcastId: PODCAST_ID })
-  } else if (!validatedTokens.refreshToken && !existingData?.refreshToken) {
+    log('INFO', existingData?.refreshToken
+      ? 'Refresh token rotated (re-authorization)'
+      : 'Refresh token saved (first authorization)', { userId, podcastId: PODCAST_ID })
+  } else if (existingData?.refreshToken) {
+    log('INFO', 'Refresh token preserved (refresh response has none)', {
+      userId,
+      podcastId: PODCAST_ID,
+    })
+  } else {
     log('WARN', 'No refresh token available', { userId, podcastId: PODCAST_ID })
   }
 
