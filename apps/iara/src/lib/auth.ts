@@ -147,8 +147,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             const { saveUserTokens } = await import('./firebase/tokens')
             await saveUserTokens(userId, {
               accessToken: refreshed.accessToken,
+              // O refresh acabou de funcionar com este token: ele é comprovadamente
+              // válido. Persisti-lo faz o Firestore convergir para o token que
+              // funciona mesmo que um login anterior tenha gravado um token morto
+              // (incidente 2026-09-01/02: doc com token revogado, válido só no JWT).
+              refreshToken: token.refreshToken as string,
               expiresAt: refreshed.expiresAt,
-              // Note: refresh_token is NOT returned in refresh response, keep existing
             })
           } catch (saveError) {
             log('ERROR', 'Failed to persist refreshed tokens', {
