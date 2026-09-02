@@ -144,16 +144,11 @@ function stubYoutubeApis(analyticsStatus = 200) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string) => {
-      if (url.includes('googleapis.com/youtube/v3/channels')) {
-        return new Response(
-          JSON.stringify({ items: [{ statistics: { viewCount: '2650000' } }] })
-        )
-      }
       if (analyticsStatus !== 200) {
         return new Response('insufficient scopes', { status: analyticsStatus })
       }
       if (url.includes('subscribersGained')) {
-        return new Response(JSON.stringify({ rows: [[62_043, 28_064]] }))
+        return new Response(JSON.stringify({ rows: [[62_043, 28_064, 2_738_483]] }))
       }
       if (url.includes('dimensions=day')) {
         return new Response(
@@ -176,9 +171,11 @@ describe('youtubeAdapter', () => {
   it('collects scalars from the source and the RAW daily series (backfill mode)', async () => {
     stubYoutubeApis()
     const writes = await youtubeAdapter.collect()
+    // Views do Analytics vitalício (mesma linha dos inscritos), não o
+    // viewCount público da Data API, que roda ~420 mil abaixo do Studio.
     expect(writes).toContainEqual({
       section: 'stats',
-      partial: { viewsYoutube: 2_650_000, watchHours: 172_000 },
+      partial: { viewsYoutube: 2_738_483, watchHours: 172_000 },
     })
     // Inscritos EXATOS via delta vitalício da Analytics (62.043 − 28.064),
     // não o subscriberCount arredondado da Data API.

@@ -1,6 +1,6 @@
 /**
- * Adapter `youtube` — subscribers + total views (Data API) and watch hours +
- * DAILY watch series (Analytics API).
+ * Adapter `youtube` — subscribers, total views, watch hours and DAILY watch
+ * series, tudo via Analytics API (a mesma fonte do Studio).
  *
  * Series rules (architectural correction 2026-08-25):
  * - stored RAW daily (`youtubeWatchDaily` in minutes, the API's unit);
@@ -28,19 +28,7 @@ import { log } from '@/lib/logger'
 import type { CollectorAdapter, SectionWrite } from './runner'
 import { incrementalStart, isoToday, mergeByDate, SERIES_BACKFILL_START } from './series-utils'
 
-const ChannelStatsSchema = z.object({
-  items: z
-    .array(
-      z.object({
-        statistics: z.object({
-          viewCount: z.string().regex(/^\d+$/),
-        }),
-      })
-    )
-    .min(1),
-})
-
-/** Lifetime window for the exact-subscribers delta (Σ gained − lost). */
+/** Lifetime window for the exact-subscribers delta (Σ gained − lost) + views. */
 const SUBSCRIBERS_SINCE = '2005-01-01'
 
 const AnalyticsReportSchema = z.object({
@@ -110,28 +98,25 @@ export const youtubeAdapter: CollectorAdapter = {
     const accessToken = await resolveAccessToken()
     const today = isoToday()
 
-    // Data API — exact total views (viewCount is NOT rounded, unlike
-    // subscriberCount, which the public API abbreviates to 3 significant
-    // digits — 33.970 vira 33.900).
-    const statsRaw = await apiGet(
-      `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}`,
-      accessToken
-    )
-    const stats = ChannelStatsSchema.parse(statsRaw).items[0].statistics
-
-    // Subscribers via Analytics lifetime delta (decisão Wellington 2026-08-31):
-    // Σ(subscribersGained − subscribersLost) ≈ Studio com desvio mínimo
-    // (purgas de contas não geram evento de perda), contra −70 do arredondado.
-    const subsRaw = await apiGet(
+    // Subscribers + views via Analytics vitalício (decisões Wellington
+    // 2026-08-31 e 2026-09-02: a verdade é o Studio, que exibe o Analytics).
+    // Subscribers: Σ(subscribersGained − subscribersLost) ≈ Studio com desvio
+    // mínimo (purgas não geram evento de perda), contra −70 do subscriberCount
+    // arredondado. Views: o viewCount público da Data API roda ~420 mil ABAIXO
+    // do Analytics (pipelines de auditoria distintos; conteúdo removido sai do
+    // contador público mas fica no histórico do Analytics).
+    const lifetimeRaw = await apiGet(
       `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==${channelId}` +
-        `&startDate=${SUBSCRIBERS_SINCE}&endDate=${today}&metrics=subscribersGained,subscribersLost`,
+        `&startDate=${SUBSCRIBERS_SINCE}&endDate=${today}` +
+        `&metrics=subscribersGained,subscribersLost,views`,
       accessToken
     )
-    const subsRows = AnalyticsReportSchema.parse(subsRaw).rows ?? []
+    const lifetimeRows = AnalyticsReportSchema.parse(lifetimeRaw).rows ?? []
     const subscribers = Math.max(
       0,
-      Number(subsRows[0]?.[0] ?? 0) - Number(subsRows[0]?.[1] ?? 0)
+      Number(lifetimeRows[0]?.[0] ?? 0) - Number(lifetimeRows[0]?.[1] ?? 0)
     )
+    const viewsYoutube = Math.max(0, Number(lifetimeRows[0]?.[2] ?? 0))
 
     // Analytics API — total watch minutes (source-side aggregation, no day dim).
     const totalRaw = await apiGet(
@@ -165,7 +150,7 @@ export const youtubeAdapter: CollectorAdapter = {
       {
         section: 'stats',
         partial: {
-          viewsYoutube: Number(stats.viewCount),
+          viewsYoutube,
           watchHours: Math.round(totalMinutes / 60),
         },
       },
