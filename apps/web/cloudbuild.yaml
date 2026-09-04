@@ -11,7 +11,13 @@ substitutions:
   # Next no bundle do cliente, então definir só no runtime do Cloud Run não
   # funciona (o AnalyticsProvider renderiza null e nenhuma tag é injetada).
   # Não é segredo — o ID é público, aparece no HTML servido.
-  _GA_MEASUREMENT_ID: G-3XW2HEFHYF
+  # Fluxo "PPTNC - Produção" (URL pptnaocompila.com.br). Antes de trocar este
+  # valor, confirme que o Google serve tag para ele:
+  #   curl -s -o /dev/null -w "%{http_code} %{size_download}\n" \
+  #     "https://www.googletagmanager.com/gtag/js?id=<ID>"
+  # ID inexistente devolve 200 com stub genérico (~427 KB); ID válido devolve
+  # ~520 KB. Existir na UI do GA não basta — o fluxo anterior dava 404.
+  _GA_MEASUREMENT_ID: G-VXMSFJHLQ9
 
 steps:
   # Step 1: Install Dependencies with pnpm
