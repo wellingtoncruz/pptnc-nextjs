@@ -7,6 +7,11 @@ substitutions:
   # Firestore named DB. Cloud Build = produção (mesma convenção da iara), então
   # default pptnc-prod. Aplicado no build (SSG lê o Firestore) e no runtime.
   _FIRESTORE_DATABASE_ID: pptnc-prod
+  # GA4 measurement ID. Precisa existir no BUILD: NEXT_PUBLIC_* é inlined pelo
+  # Next no bundle do cliente, então definir só no runtime do Cloud Run não
+  # funciona (o AnalyticsProvider renderiza null e nenhuma tag é injetada).
+  # Não é segredo — o ID é público, aparece no HTML servido.
+  _GA_MEASUREMENT_ID: G-3XW2HEFHYF
 
 steps:
   # Step 1: Install Dependencies with pnpm
@@ -26,6 +31,7 @@ steps:
       - 'GOOGLE_PROJECT_ID=$PROJECT_ID'
       - 'NEXT_PUBLIC_PROJECT_ID=$PROJECT_ID'
       - 'FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID}'
+      - 'NEXT_PUBLIC_GA_MEASUREMENT_ID=${_GA_MEASUREMENT_ID}'
 
   # Step 3: Build Docker image (copies pre-built artifacts)
   - name: 'gcr.io/cloud-builders/docker'
