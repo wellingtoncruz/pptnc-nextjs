@@ -101,7 +101,7 @@ export {
   MediakitGenderSchema,
   MediakitAgeSchema,
   MediakitSpotifyDailyPointSchema,
-  MediakitYoutubeWatchDailyPointSchema,
+  MediakitYoutubeDailyPointSchema,
   MediakitStatsWriteSchema,
   MediakitAudienceWriteSchema,
   MediakitSeriesWriteSchema,

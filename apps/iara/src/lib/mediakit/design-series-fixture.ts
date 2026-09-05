@@ -73,7 +73,7 @@ export const DESIGN_SERIES_FIXTURE: SeriesDoc = {
   { date: '2026-03-15', starts: 2700, streams: 2160 },
   { date: '2026-04-15', starts: 2700, streams: 2160 },
   ],
-  youtubeWatchDaily: [
+  youtubeDaily: [
   { date: '2021-09-15', minutes: 5940 },
   { date: '2021-10-15', minutes: 9060 },
   { date: '2021-11-15', minutes: 7800 },

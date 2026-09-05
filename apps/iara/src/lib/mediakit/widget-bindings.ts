@@ -128,7 +128,7 @@ export interface WidgetBindResult {
 export function applyMediakitWidgets(deckHtml: string, data: MediakitData): WidgetBindResult {
   if (!data.series) throw new MediakitDataError('series section missing/invalid in Firestore')
   if (!data.audience) throw new MediakitDataError('audience section missing/invalid in Firestore')
-  if (data.series.spotifyDaily.length === 0 || data.series.youtubeWatchDaily.length === 0) {
+  if (data.series.spotifyDaily.length === 0 || data.series.youtubeDaily.length === 0) {
     throw new MediakitDataError(
       'series are empty — run the collectors historical backfill before generating'
     )
@@ -142,7 +142,7 @@ export function applyMediakitWidgets(deckHtml: string, data: MediakitData): Widg
   const ytLabelIdx = findOnce(html, slide3, 'Horas de exibição / mês', 'chart panels')
 
   const spotifyMonthly = aggregateSpotifyMonthly(data.series.spotifyDaily)
-  const youtubeMonthly = aggregateYoutubeHoursMonthly(data.series.youtubeWatchDaily)
+  const youtubeMonthly = aggregateYoutubeHoursMonthly(data.series.youtubeDaily)
 
   const spPanel: Slice = { start: slide3.start, end: ytLabelIdx }
   const spChart = areaChart(spotifyMonthly, CHART_STYLE.spotify.peakY)

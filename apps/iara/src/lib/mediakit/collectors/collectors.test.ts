@@ -41,7 +41,7 @@ vi.mock('@/lib/auth/refresh-token', () => ({
 
 import { iaraCountsAdapter } from './iara-counts'
 import { runCollectors, type CollectorAdapter } from './runner'
-import { incrementalStart, mergeByDate } from './series-utils'
+import { incrementalStart, isBackfillForced, mergeByDate } from './series-utils'
 import { youtubeAdapter } from './youtube'
 
 beforeEach(() => {
@@ -136,6 +136,21 @@ describe('series helpers (shared youtube/spotify)', () => {
     expect(incrementalStart([])).toBe('2021-09-01')
     expect(incrementalStart([{ date: '2026-08-20', minutes: 1 }])).toBe('2026-08-13')
   })
+
+  // Métrica nova numa série antiga: sem a flag o incremental só traria os
+  // últimos 7 dias e o histórico ficaria sem o campo novo para sempre.
+  it('incrementalStart: MEDIAKIT_SERIES_BACKFILL=1 força backfill com série cheia', () => {
+    const stored = [{ date: '2026-08-20', minutes: 1 }]
+    expect(incrementalStart(stored)).toBe('2026-08-13')
+    process.env.MEDIAKIT_SERIES_BACKFILL = '1'
+    try {
+      expect(isBackfillForced()).toBe(true)
+      expect(incrementalStart(stored)).toBe('2021-09-01')
+    } finally {
+      delete process.env.MEDIAKIT_SERIES_BACKFILL
+    }
+    expect(isBackfillForced()).toBe(false)
+  })
 })
 
 // ── youtube: adapter flow ────────────────────────────────────────────────
@@ -152,7 +167,12 @@ function stubYoutubeApis(analyticsStatus = 200) {
       }
       if (url.includes('dimensions=day')) {
         return new Response(
-          JSON.stringify({ rows: [['2026-08-25', 3480], ['2026-08-26', 1200]] })
+          JSON.stringify({
+            rows: [
+              ['2026-08-25', 3480, 9100],
+              ['2026-08-26', 1200, 3400],
+            ],
+          })
         )
       }
       return new Response(JSON.stringify({ rows: [[10_320_000]] }))
@@ -165,7 +185,7 @@ describe('youtubeAdapter', () => {
     mockPodcastGet.mockResolvedValue({ data: () => ({ channelId: 'UCtest' }) })
     process.env.MEDIAKIT_YOUTUBE_USER_ID = 'user-1'
     mockGetUserTokens.mockResolvedValue({ accessToken: 'tok', refreshToken: 'ref', expiresAt: 9e9 })
-    mockReadMediakit.mockResolvedValue({ series: { youtubeWatchDaily: [], spotifyDaily: [] } })
+    mockReadMediakit.mockResolvedValue({ series: { youtubeDaily: [], spotifyDaily: [] } })
   })
 
   it('collects scalars from the source and the RAW daily series (backfill mode)', async () => {
@@ -186,9 +206,9 @@ describe('youtubeAdapter', () => {
     expect(writes).toContainEqual({
       section: 'series',
       partial: {
-        youtubeWatchDaily: [
-          { date: '2026-08-25', minutes: 3480 },
-          { date: '2026-08-26', minutes: 1200 },
+        youtubeDaily: [
+          { date: '2026-08-25', minutes: 3480, views: 9100 },
+          { date: '2026-08-26', minutes: 1200, views: 3400 },
         ],
       },
     })
