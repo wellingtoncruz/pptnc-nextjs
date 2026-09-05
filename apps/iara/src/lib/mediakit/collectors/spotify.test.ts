@@ -6,9 +6,13 @@ vi.mock('@/lib/firebase/mediakit-admin', () => ({
 }))
 vi.mock('@/lib/logger', () => ({ log: vi.fn() }))
 
+import { MediakitSpotifyDailyPointSchema } from '@/lib/schemas/mediakit'
+
 import {
   ageSharesFromAggregate,
+  attachFollowers,
   genderSharesFromAggregate,
+  keepKnownFollowers,
   spotifyAdapter,
   SpotifyCredentialsExpired,
   yearChunks,
@@ -28,6 +32,22 @@ const AGGREGATE_FIXTURE = {
   },
   genderedCounts: { counts: { NON_BINARY: 0, FEMALE: 231, NOT_SPECIFIED: 46, MALE: 1633 } },
 }
+
+/**
+ * Real shapes from the 31.2 spike (2026-09-04). The followers series lags the
+ * streams one by ~2 days: 09-04 has streams but no followers count yet, and
+ * that gap is intentional in the fixture.
+ */
+const DETAILED_STREAMS_FIXTURE = [
+  { date: '2026-09-02', starts: 180, streams: 129 },
+  { date: '2026-09-03', starts: 175, streams: 123 },
+  { date: '2026-09-04', starts: 42, streams: 30 },
+]
+const FOLLOWERS_FIXTURE = [
+  { count: 3339, date: '2026-09-02' },
+  { count: 3358, date: '2026-09-03' },
+]
+const METADATA_FIXTURE = { totalEpisodes: 254, streams: 57592, followers: 3358 }
 
 describe('demographic transforms (spike fixtures)', () => {
   it('gender shares: pt percentages with NOT_SPECIFIED+NON_BINARY merged', () => {
@@ -65,7 +85,51 @@ describe('yearChunks', () => {
   })
 })
 
-function stubSpotifyApis(options: { loginRequired?: boolean } = {}) {
+describe('attachFollowers', () => {
+  it('joins the followers total onto the streams axis by date', () => {
+    const { points } = attachFollowers(DETAILED_STREAMS_FIXTURE, FOLLOWERS_FIXTURE)
+    expect(points).toEqual([
+      { date: '2026-09-02', starts: 180, streams: 129, followers: 3339 },
+      { date: '2026-09-03', starts: 175, streams: 123, followers: 3358 },
+      { date: '2026-09-04', starts: 42, streams: 30 },
+    ])
+  })
+
+  it('reports followers dates with no stream point instead of dropping them silently', () => {
+    const { points, datesOffAxis } = attachFollowers(DETAILED_STREAMS_FIXTURE, [
+      ...FOLLOWERS_FIXTURE,
+      { date: '2026-09-01', count: 3325 },
+    ])
+    expect(datesOffAxis).toEqual(['2026-09-01'])
+    expect(points).toHaveLength(3)
+  })
+
+  it('an empty followers response leaves every point untouched', () => {
+    const { points, datesOffAxis } = attachFollowers(DETAILED_STREAMS_FIXTURE, [])
+    expect(points).toEqual(DETAILED_STREAMS_FIXTURE)
+    expect(datesOffAxis).toEqual([])
+  })
+})
+
+describe('keepKnownFollowers', () => {
+  it('carries the stored value into a refetched point that came back without one', () => {
+    const stored = [{ date: '2026-09-03', starts: 175, streams: 123, followers: 3358 }]
+    const fresh = [{ date: '2026-09-03', starts: 175, streams: 130 }]
+    expect(keepKnownFollowers(stored, fresh)).toEqual([
+      { date: '2026-09-03', starts: 175, streams: 130, followers: 3358 },
+    ])
+  })
+
+  it('a fresh value always wins over the stored one', () => {
+    const stored = [{ date: '2026-09-03', starts: 175, streams: 123, followers: 3300 }]
+    const fresh = [{ date: '2026-09-03', starts: 175, streams: 123, followers: 3358 }]
+    expect(keepKnownFollowers(stored, fresh)[0].followers).toBe(3358)
+  })
+})
+
+function stubSpotifyApis(
+  options: { loginRequired?: boolean; followers?: Array<{ date: string; count: number }> } = {}
+) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init?: RequestInit) => {
@@ -82,17 +146,21 @@ function stubSpotifyApis(options: { loginRequired?: boolean } = {}) {
         expect(String(init?.body)).toContain('code=AUTH_CODE')
         return new Response(JSON.stringify({ access_token: 'BEARER', expires_in: 3600 }))
       }
+      // Path checks below are mutually exclusive (`/detailedStreams`,
+      // `/followers`, `/metadata`, `/aggregate` never appear in each other's
+      // URL) — a substring that also matched a sibling would route a call to
+      // the wrong fixture and the suite would pass testing the wrong thing.
       if (url.includes('/detailedStreams')) {
-        return new Response(
-          JSON.stringify({
-            detailedStreams: [{ date: '2026-08-25', starts: 175, streams: 123 }],
-          })
-        )
+        return new Response(JSON.stringify({ detailedStreams: DETAILED_STREAMS_FIXTURE }))
+      }
+      if (url.includes('/followers')) {
+        // `start` is REQUIRED by the real endpoint (HTTP 400 without it).
+        expect(url).toMatch(/[?&]start=\d{4}-\d{2}-\d{2}/)
+        expect(url).toMatch(/[?&]end=\d{4}-\d{2}-\d{2}/)
+        return new Response(JSON.stringify({ counts: options.followers ?? FOLLOWERS_FIXTURE }))
       }
       if (url.includes('/metadata')) {
-        return new Response(
-          JSON.stringify({ totalEpisodes: 254, streams: 57592, followers: 3189 })
-        )
+        return new Response(JSON.stringify(METADATA_FIXTURE))
       }
       if (url.includes('/aggregate')) {
         return new Response(JSON.stringify(AGGREGATE_FIXTURE))
@@ -112,6 +180,13 @@ describe('spotifyAdapter', () => {
     })
   })
 
+  function seriesOf(writes: Awaited<ReturnType<typeof spotifyAdapter.collect>>) {
+    const partial = writes.find((w) => w.section === 'series')?.partial as {
+      spotifyDaily: Array<{ date: string; starts: number; streams: number; followers?: number }>
+    }
+    return partial.spotifyDaily
+  }
+
   it('collects raw daily series (merged), source totals and demographics', async () => {
     stubSpotifyApis()
     const writes = await spotifyAdapter.collect()
@@ -121,7 +196,9 @@ describe('spotifyAdapter', () => {
       partial: {
         spotifyDaily: [
           { date: '2026-08-20', starts: 100, streams: 80 },
-          { date: '2026-08-25', starts: 175, streams: 123 },
+          { date: '2026-09-02', starts: 180, streams: 129, followers: 3339 },
+          { date: '2026-09-03', starts: 175, streams: 123, followers: 3358 },
+          { date: '2026-09-04', starts: 42, streams: 30 },
         ],
       },
     })
@@ -133,8 +210,72 @@ describe('spotifyAdapter', () => {
       string,
       unknown
     >
-    expect(audience.followers).toEqual({ spotify: 3189 })
+    expect(audience.followers).toEqual({ spotify: 3358 })
     expect(audience.gender).toEqual({ male: 85.5, female: 12.1, notSpecified: 2.4 })
+  })
+
+  it('stores the daily followers TOTAL, never the variation', async () => {
+    stubSpotifyApis()
+    const series = seriesOf(await spotifyAdapter.collect())
+
+    // 3339 → 3358 is +19 on the day; what lands is the accumulated total.
+    expect(series.map((p) => p.followers)).toEqual([undefined, 3339, 3358, undefined])
+  })
+
+  it('the last day WITH followers matches metadata.followers (backfill invariant)', async () => {
+    stubSpotifyApis()
+    const writes = await spotifyAdapter.collect()
+    const series = seriesOf(writes)
+    const audience = writes.find((w) => w.section === 'audience')?.partial as {
+      followers: { spotify: number }
+    }
+
+    const withFollowers = series.filter((p) => p.followers !== undefined)
+    expect(withFollowers[withFollowers.length - 1].followers).toBe(METADATA_FIXTURE.followers)
+    expect(audience.followers.spotify).toBe(METADATA_FIXTURE.followers)
+  })
+
+  it('lagging days keep NO followers key — never a 0 nor a repeated value', async () => {
+    stubSpotifyApis()
+    const series = seriesOf(await spotifyAdapter.collect())
+
+    const lagging = series.find((p) => p.date === '2026-09-04')!
+    expect(lagging).not.toHaveProperty('followers')
+    expect(MediakitSpotifyDailyPointSchema.parse(lagging)).toEqual({
+      date: '2026-09-04',
+      starts: 42,
+      streams: 30,
+    })
+  })
+
+  it('legacy stored points (no followers) survive the merge and the schema', async () => {
+    stubSpotifyApis()
+    const series = seriesOf(await spotifyAdapter.collect())
+
+    const legacy = series.find((p) => p.date === '2026-08-20')!
+    expect(legacy).toEqual({ date: '2026-08-20', starts: 100, streams: 80 })
+    // The whole series must parse — a required `followers` would fail the
+    // section's safeParse and `readMediakit` would hand back `series: null`.
+    for (const point of series) {
+      expect(MediakitSpotifyDailyPointSchema.safeParse(point).success).toBe(true)
+    }
+  })
+
+  it('a stored followers value is not blanked out by a refetch without it', async () => {
+    mockReadMediakit.mockResolvedValue({
+      series: {
+        spotifyDaily: [{ date: '2026-09-03', starts: 175, streams: 123, followers: 3358 }],
+      },
+    })
+    stubSpotifyApis({ followers: [] })
+    const series = seriesOf(await spotifyAdapter.collect())
+
+    expect(series.find((p) => p.date === '2026-09-03')?.followers).toBe(3358)
+  })
+
+  it('fails loud when the followers response is off-schema', async () => {
+    stubSpotifyApis({ followers: [{ date: '2026-09-03', count: -1 }] })
+    await expect(spotifyAdapter.collect()).rejects.toThrow()
   })
 
   it('expired cookies fail with the actionable renewal message', async () => {

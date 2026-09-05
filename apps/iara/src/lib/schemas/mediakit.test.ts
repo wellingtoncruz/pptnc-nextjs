@@ -164,4 +164,40 @@ describe('write schemas (adapter partials)', () => {
     expect(parsed.success && parsed.data.youtubeDaily[0].views).toBeUndefined()
     expect(parsed.success && parsed.data.youtubeDaily[1].views).toBe(9100)
   })
+
+  // Mesma razão de `views`: os 1.828 pontos gravados antes do backfill da 31.1
+  // não têm inscritos. Campo obrigatório derrubaria o safeParse da seção
+  // inteira e readMediakit devolveria series: null.
+  it('series: ponto legado sem inscritos continua válido (compatibilidade)', () => {
+    const parsed = MediakitSeriesSchema.safeParse({
+      spotifyDaily: [],
+      youtubeDaily: [
+        { date: '2021-09-01', minutes: 120 },
+        { date: '2026-09-04', minutes: 3480, views: 9100 },
+        {
+          date: '2026-09-05',
+          minutes: 3600,
+          views: 9500,
+          subscribersGained: 42,
+          subscribersLost: 7,
+        },
+      ],
+    })
+    expect(parsed.success).toBe(true)
+    if (!parsed.success) return
+    expect(parsed.data.youtubeDaily[0].subscribersGained).toBeUndefined()
+    expect(parsed.data.youtubeDaily[1].subscribersLost).toBeUndefined()
+    // Separados na persistência — nunca um agregado.
+    expect(parsed.data.youtubeDaily[2].subscribersGained).toBe(42)
+    expect(parsed.data.youtubeDaily[2].subscribersLost).toBe(7)
+  })
+
+  it('series: inscritos negativos são rejeitados (nonNegInt)', () => {
+    expect(
+      MediakitSeriesSchema.safeParse({
+        spotifyDaily: [],
+        youtubeDaily: [{ date: '2026-09-05', minutes: 10, subscribersLost: -1 }],
+      }).success
+    ).toBe(false)
+  })
 })

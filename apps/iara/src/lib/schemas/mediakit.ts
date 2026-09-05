@@ -96,36 +96,63 @@ export const MediakitAudienceSchema = z.object({
   ...docMeta,
 })
 
-/** Raw daily point from Spotify `detailedStreams` — BOTH source fields kept. */
+/**
+ * Raw daily point from Spotify `detailedStreams` — BOTH source fields kept —
+ * mais o TOTAL de seguidores do dia (endpoint `followers`).
+ *
+ * `followers` é o **acumulado** que a fonte entrega (`counts[].count`), nunca a
+ * variação: o spike da story 31.2 (2026-09-04, chamada real) provou que o
+ * painel do Spotify NÃO separa ganhos de perdas. De uma série de totais deriva-
+ * se a variação; do contrário, não — a variação semanal do Dashboard é
+ * calculada pelo consumidor na leitura.
+ *
+ * Opcional por compatibilidade: os 1.831 pontos gravados antes de 2026-09-04 só
+ * têm `starts`/`streams`, e exigir o campo faria o `safeParse` da seção falhar
+ * inteira — `readMediakit` devolveria `series: null` e os gráficos parariam em
+ * silêncio. Os dois últimos dias de cada coleta também ficam sem ele: a série
+ * de seguidores tem defasagem de ~2 dias em relação à de streams. Depois de um
+ * backfill completo, pode virar obrigatório (menos os dias da defasagem).
+ */
 export const MediakitSpotifyDailyPointSchema = z.object({
   date: z.string().regex(MEDIAKIT_DATE_REGEX),
   starts: nonNegInt,
   streams: nonNegInt,
+  followers: nonNegInt.optional(),
 })
 
 /**
- * Raw daily point from YouTube Analytics (`estimatedMinutesWatched` + `views`
- * by day).
+ * Raw daily point from YouTube Analytics (`estimatedMinutesWatched`, `views`,
+ * `subscribersGained` e `subscribersLost` by day).
  *
- * `views` é opcional por compatibilidade: os pontos gravados antes de
- * 2026-09-04 só têm `minutes`. Exigi-lo faria o `safeParse` da seção falhar
- * inteira — `readMediakit` devolveria `series: null` e os gráficos parariam
- * em silêncio. Depois de um backfill completo com as duas métricas, o campo
- * pode virar obrigatório.
+ * Ganhos e perdas ficam SEPARADOS, como a fonte os entrega: somar na coleta
+ * destruiria a distinção que o gráfico de inscritos do Dashboard pede (área
+ * dos ganhos + linha do líquido) e qualquer análise futura de retenção.
+ *
+ * `views`, `subscribersGained` e `subscribersLost` são opcionais por
+ * compatibilidade: os pontos gravados antes de 2026-09-04 só têm `minutes`, e
+ * os gravados antes do backfill da story 31.1 não têm os dois de inscritos.
+ * Exigi-los faria o `safeParse` da seção falhar inteira — `readMediakit`
+ * devolveria `series: null` e os gráficos parariam em silêncio. Depois de um
+ * backfill completo com as quatro métricas, os campos podem virar obrigatórios.
  */
 export const MediakitYoutubeDailyPointSchema = z.object({
   date: z.string().regex(MEDIAKIT_DATE_REGEX),
   minutes: nonNegInt,
   views: nonNegInt.optional(),
+  subscribersGained: nonNegInt.optional(),
+  subscribersLost: nonNegInt.optional(),
 })
 
 export const MediakitSeriesSchema = z.object({
-  /** Daily Spotify starts/streams (collector: spotify) — slide 03 left chart
-   * aggregates this to monthly at render time. */
+  /** Daily Spotify starts/streams e total de seguidores (collector: spotify) —
+   * slide 03 left chart aggregates starts/streams to monthly at render time;
+   * `followers` é matéria-prima do Dashboard (Epic 31), cuja variação semanal é
+   * derivada na leitura, nunca na coleta. */
   spotifyDaily: z.array(MediakitSpotifyDailyPointSchema),
-  /** Daily YouTube watch minutes + views (collector: youtube) — slide 03 right
-   * chart aggregates minutes to monthly hours at render time; `views` ainda não
-   * tem consumidor, é matéria-prima para o épico que vem. */
+  /** Daily YouTube watch minutes, views e inscritos ganhos/perdidos (collector:
+   * youtube) — slide 03 right chart aggregates minutes to monthly hours at
+   * render time; as demais métricas são matéria-prima do Dashboard (Epic 31),
+   * agregadas por semana na leitura, nunca na coleta. */
   youtubeDaily: z.array(MediakitYoutubeDailyPointSchema),
   ...docMeta,
 })

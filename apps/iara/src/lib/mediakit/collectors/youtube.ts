@@ -1,10 +1,12 @@
 /**
  * Adapter `youtube` — subscribers, total views, watch hours and DAILY series
- * (watch minutes + views), tudo via Analytics API (a mesma fonte do Studio).
+ * (watch minutes, views e inscritos ganhos/perdidos), tudo via Analytics API
+ * (a mesma fonte do Studio).
  *
  * Series rules (architectural correction 2026-08-25):
- * - stored RAW daily (`youtubeDaily`: `minutes` e `views`, as unidades da
- *   própria API — a agregação é problema do consumidor);
+ * - stored RAW daily (`youtubeDaily`: `minutes`, `views`, `subscribersGained`
+ *   e `subscribersLost`, as unidades da própria API — a agregação é problema
+ *   do consumidor, e ganhos/perdas nunca são somados na coleta);
  * - HISTORICAL BACKFILL from the launch month when the stored series is
  *   empty; INCREMENTAL afterwards, refetching the last OVERLAP_DAYS so
  *   late-arriving data overwrites by date;
@@ -94,6 +96,26 @@ async function resolveAccessToken(): Promise<string> {
   return refreshed.accessToken
 }
 
+/**
+ * Lê um valor que a fonte entrega por convenção como POSITIVO (perdas de
+ * inscritos) e **falha alto** se a convenção mudar.
+ *
+ * Um clamp silencioso (`Math.max(0, …)`) sobreviveria a uma troca de sinal do
+ * lado do Google zerando todas as perdas — o líquido do gráfico ficaria igual
+ * aos ganhos e ninguém perceberia. Melhor a coleta quebrar ruidosamente: o
+ * runner isola a falha deste adapter e o failsafe preserva o último dado bom.
+ */
+function positiveConventionOrThrow(raw: unknown, date: string): number {
+  const value = Math.round(Number(raw))
+  if (!Number.isFinite(value) || value < 0) {
+    throw new YoutubeAdapterError(
+      `subscribersLost fora da convenção positiva em ${date}: ${String(raw)} — ` +
+        'a fonte mudou de contrato; corrigir o mapeamento antes de gravar'
+    )
+  }
+  return value
+}
+
 async function apiGet(url: string, accessToken: string): Promise<unknown> {
   const response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
   if (!response.ok) {
@@ -151,10 +173,15 @@ export const youtubeAdapter: CollectorAdapter = {
       forced: isBackfillForced(),
       startDate,
     })
+    // Ganhos e perdas vêm SEPARADOS da fonte e são persistidos assim: somar
+    // aqui destruiria a distinção que o gráfico de inscritos do Dashboard pede
+    // (área dos ganhos + linha do líquido). Mesma requisição, mesma quota,
+    // duas colunas a mais.
     const dailyRaw = await apiGet(
       `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==${channelId}` +
         `&startDate=${startDate}&endDate=${today}` +
-        `&metrics=estimatedMinutesWatched,views&dimensions=day&sort=day`,
+        `&metrics=estimatedMinutesWatched,views,subscribersGained,subscribersLost` +
+        `&dimensions=day&sort=day`,
       accessToken
     )
     const dailyRows = AnalyticsReportSchema.parse(dailyRaw).rows ?? []
@@ -162,6 +189,13 @@ export const youtubeAdapter: CollectorAdapter = {
       date: String(row[0]),
       minutes: Math.max(0, Math.round(Number(row[1]))),
       views: Math.max(0, Math.round(Number(row[2]))),
+      subscribersGained: Math.max(0, Math.round(Number(row[3]))),
+      // Falha ALTA, não clamp (decisão do Wellington, 2026-09-04). A API
+      // entrega perdas como número POSITIVO; se um dia mudar de convenção e
+      // devolver com sinal, um Math.max(0, …) zeraria a perda em silêncio e o
+      // gráfico do líquido passaria a mentir para sempre. Métrica errada em
+      // silêncio é o modo de falha mais caro deste projeto.
+      subscribersLost: positiveConventionOrThrow(row[4], String(row[0])),
     }))
 
     return [
