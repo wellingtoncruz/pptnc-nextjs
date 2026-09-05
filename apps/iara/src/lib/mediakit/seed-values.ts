@@ -57,5 +57,5 @@ export const MEDIAKIT_SEED_AUDIENCE: SeedDoc<MediakitAudience> = {
 
 export const MEDIAKIT_SEED_SERIES: SeedDoc<MediakitSeries> = {
   spotifyDaily: [],
-  youtubeWatchDaily: [],
+  youtubeDaily: [],
 }

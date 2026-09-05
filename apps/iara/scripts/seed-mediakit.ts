@@ -51,7 +51,7 @@ async function main() {
   console.log('  audience.youtubeSubscribers =', data.audience?.youtubeSubscribers)
   console.log('  series diárias (vazias até a carga histórica dos coletores) =', {
     spotifyDaily: data.series?.spotifyDaily.length,
-    youtubeWatchDaily: data.series?.youtubeWatchDaily.length,
+    youtubeDaily: data.series?.youtubeDaily.length,
   })
 }
 

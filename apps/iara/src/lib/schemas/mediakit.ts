@@ -103,19 +103,30 @@ export const MediakitSpotifyDailyPointSchema = z.object({
   streams: nonNegInt,
 })
 
-/** Raw daily point from YouTube Analytics (`estimatedMinutesWatched` by day). */
-export const MediakitYoutubeWatchDailyPointSchema = z.object({
+/**
+ * Raw daily point from YouTube Analytics (`estimatedMinutesWatched` + `views`
+ * by day).
+ *
+ * `views` é opcional por compatibilidade: os pontos gravados antes de
+ * 2026-09-04 só têm `minutes`. Exigi-lo faria o `safeParse` da seção falhar
+ * inteira — `readMediakit` devolveria `series: null` e os gráficos parariam
+ * em silêncio. Depois de um backfill completo com as duas métricas, o campo
+ * pode virar obrigatório.
+ */
+export const MediakitYoutubeDailyPointSchema = z.object({
   date: z.string().regex(MEDIAKIT_DATE_REGEX),
   minutes: nonNegInt,
+  views: nonNegInt.optional(),
 })
 
 export const MediakitSeriesSchema = z.object({
   /** Daily Spotify starts/streams (collector: spotify) — slide 03 left chart
    * aggregates this to monthly at render time. */
   spotifyDaily: z.array(MediakitSpotifyDailyPointSchema),
-  /** Daily YouTube watch minutes (collector: youtube) — slide 03 right chart
-   * aggregates to monthly hours at render time. */
-  youtubeWatchDaily: z.array(MediakitYoutubeWatchDailyPointSchema),
+  /** Daily YouTube watch minutes + views (collector: youtube) — slide 03 right
+   * chart aggregates minutes to monthly hours at render time; `views` ainda não
+   * tem consumidor, é matéria-prima para o épico que vem. */
+  youtubeDaily: z.array(MediakitYoutubeDailyPointSchema),
   ...docMeta,
 })
 
@@ -138,7 +149,7 @@ export const MediakitAudienceWriteSchema = z.object({
 
 export const MediakitSeriesWriteSchema = z.object({
   spotifyDaily: z.array(MediakitSpotifyDailyPointSchema).optional(),
-  youtubeWatchDaily: z.array(MediakitYoutubeWatchDailyPointSchema).optional(),
+  youtubeDaily: z.array(MediakitYoutubeDailyPointSchema).optional(),
 })
 
 export const MEDIAKIT_SECTION_IDS = ['stats', 'audience', 'series'] as const

@@ -14,7 +14,7 @@
  * Dot: first index of the maximum → left = round1(x/10)%, bottom =
  * round1((300 − y)/3)%.
  */
-import type { MediakitSpotifyDailyPoint, MediakitYoutubeWatchDailyPoint } from '@/types/mediakit'
+import type { MediakitSpotifyDailyPoint, MediakitYoutubeDailyPoint } from '@/types/mediakit'
 
 export interface MonthlyPoint {
   month: string
@@ -40,7 +40,7 @@ export function aggregateSpotifyMonthly(daily: MediakitSpotifyDailyPoint[]): Mon
 
 /** YouTube chart input: monthly watch HOURS (minutes summed, then rounded). */
 export function aggregateYoutubeHoursMonthly(
-  daily: MediakitYoutubeWatchDailyPoint[]
+  daily: MediakitYoutubeDailyPoint[]
 ): MonthlyPoint[] {
   return sumByMonth(daily.map((p) => p.date), daily.map((p) => p.minutes)).map(
     ({ month, value }) => ({ month, value: Math.round(value / 60) })

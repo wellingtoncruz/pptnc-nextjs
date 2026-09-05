@@ -1,9 +1,10 @@
 /**
- * Adapter `youtube` — subscribers, total views, watch hours and DAILY watch
- * series, tudo via Analytics API (a mesma fonte do Studio).
+ * Adapter `youtube` — subscribers, total views, watch hours and DAILY series
+ * (watch minutes + views), tudo via Analytics API (a mesma fonte do Studio).
  *
  * Series rules (architectural correction 2026-08-25):
- * - stored RAW daily (`youtubeWatchDaily` in minutes, the API's unit);
+ * - stored RAW daily (`youtubeDaily`: `minutes` e `views`, as unidades da
+ *   própria API — a agregação é problema do consumidor);
  * - HISTORICAL BACKFILL from the launch month when the stored series is
  *   empty; INCREMENTAL afterwards, refetching the last OVERLAP_DAYS so
  *   late-arriving data overwrites by date;
@@ -26,7 +27,13 @@ import { isTokenExpired, refreshAccessToken } from '@/lib/auth/refresh-token'
 import { log } from '@/lib/logger'
 
 import type { CollectorAdapter, SectionWrite } from './runner'
-import { incrementalStart, isoToday, mergeByDate, SERIES_BACKFILL_START } from './series-utils'
+import {
+  incrementalStart,
+  isBackfillForced,
+  isoToday,
+  mergeByDate,
+  SERIES_BACKFILL_START,
+} from './series-utils'
 
 /** Lifetime window for the exact-subscribers delta (Σ gained − lost) + views. */
 const SUBSCRIBERS_SINCE = '2005-01-01'
@@ -128,22 +135,24 @@ export const youtubeAdapter: CollectorAdapter = {
     const totalMinutes = Number(totalRows[0]?.[0] ?? 0)
 
     // Analytics API — DAILY series: backfill or incremental with overlap.
-    const stored = (await readMediakit()).series?.youtubeWatchDaily ?? []
+    const stored = (await readMediakit()).series?.youtubeDaily ?? []
     const startDate = incrementalStart(stored)
     log('INFO', 'YouTube daily series load', {
-      mode: stored.length === 0 ? 'backfill' : 'incremental',
+      mode: stored.length === 0 || isBackfillForced() ? 'backfill' : 'incremental',
+      forced: isBackfillForced(),
       startDate,
     })
     const dailyRaw = await apiGet(
       `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==${channelId}` +
         `&startDate=${startDate}&endDate=${today}` +
-        `&metrics=estimatedMinutesWatched&dimensions=day&sort=day`,
+        `&metrics=estimatedMinutesWatched,views&dimensions=day&sort=day`,
       accessToken
     )
     const dailyRows = AnalyticsReportSchema.parse(dailyRaw).rows ?? []
     const fresh = dailyRows.map((row) => ({
       date: String(row[0]),
       minutes: Math.max(0, Math.round(Number(row[1]))),
+      views: Math.max(0, Math.round(Number(row[2]))),
     }))
 
     return [
@@ -155,7 +164,7 @@ export const youtubeAdapter: CollectorAdapter = {
         },
       },
       { section: 'audience', partial: { youtubeSubscribers: subscribers } },
-      { section: 'series', partial: { youtubeWatchDaily: mergeByDate(stored, fresh) } },
+      { section: 'series', partial: { youtubeDaily: mergeByDate(stored, fresh) } },
     ]
   },
 }

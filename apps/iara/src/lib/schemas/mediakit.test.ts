@@ -93,7 +93,7 @@ describe('MediakitSeriesSchema', () => {
         { date: '2026-08-24', starts: 119, streams: 99 },
         { date: '2026-08-25', starts: 175, streams: 123 },
       ],
-      youtubeWatchDaily: [{ date: '2026-08-25', minutes: 3480 }],
+      youtubeDaily: [{ date: '2026-08-25', minutes: 3480 }],
     })
     expect(parsed.success).toBe(true)
   })
@@ -103,7 +103,7 @@ describe('MediakitSeriesSchema', () => {
       expect(
         MediakitSeriesSchema.safeParse({
           spotifyDaily: [{ date, starts: 1, streams: 1 }],
-          youtubeWatchDaily: [],
+          youtubeDaily: [],
         }).success
       ).toBe(false)
     }
@@ -113,7 +113,7 @@ describe('MediakitSeriesSchema', () => {
     expect(
       MediakitSeriesSchema.safeParse({
         spotifyDaily: [{ date: '2026-08-25', streams: 99 }],
-        youtubeWatchDaily: [],
+        youtubeDaily: [],
       }).success
     ).toBe(false)
   })
@@ -143,9 +143,25 @@ describe('write schemas (adapter partials)', () => {
 
   it('series: accepts one series without the other', () => {
     const parsed = MediakitSeriesWriteSchema.parse({
-      youtubeWatchDaily: [{ date: '2026-08-25', minutes: 9800 }],
+      youtubeDaily: [{ date: '2026-08-25', minutes: 9800 }],
     })
     expect(parsed.spotifyDaily).toBeUndefined()
-    expect(parsed.youtubeWatchDaily).toHaveLength(1)
+    expect(parsed.youtubeDaily).toHaveLength(1)
+  })
+
+  // Os 1.827 pontos gravados antes de 2026-09-04 não têm `views`. Se o campo
+  // fosse obrigatório, o safeParse da seção falharia inteiro e readMediakit
+  // devolveria series: null — os gráficos parariam em silêncio.
+  it('series: ponto legado sem `views` continua válido (compatibilidade)', () => {
+    const parsed = MediakitSeriesSchema.safeParse({
+      spotifyDaily: [],
+      youtubeDaily: [
+        { date: '2021-09-01', minutes: 120 },
+        { date: '2026-09-04', minutes: 3480, views: 9100 },
+      ],
+    })
+    expect(parsed.success).toBe(true)
+    expect(parsed.success && parsed.data.youtubeDaily[0].views).toBeUndefined()
+    expect(parsed.success && parsed.data.youtubeDaily[1].views).toBe(9100)
   })
 })

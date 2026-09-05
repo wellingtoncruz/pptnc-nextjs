@@ -11,6 +11,21 @@
 export const SERIES_BACKFILL_START = '2021-09-01'
 export const SERIES_OVERLAP_DAYS = 7
 
+/**
+ * Força o modo BACKFILL mesmo com série já gravada.
+ *
+ * Existe para quando uma MÉTRICA NOVA é acrescentada a uma série antiga: o
+ * incremental só traria os últimos dias, e o histórico ficaria sem o campo
+ * novo para sempre. Com a flag, uma execução refaz a série inteira e o
+ * `mergeByDate` sobrescreve por data.
+ *
+ * Uso pontual, via env do Job (`MEDIAKIT_SERIES_BACKFILL=1`), nunca ligada
+ * em regime — o custo é refetch de todo o histórico a cada execução.
+ */
+export function isBackfillForced(): boolean {
+  return process.env.MEDIAKIT_SERIES_BACKFILL === '1'
+}
+
 interface DatedPoint {
   date: string
 }
@@ -28,7 +43,7 @@ export function incrementalStart(
   backfillStart: string = SERIES_BACKFILL_START,
   overlapDays: number = SERIES_OVERLAP_DAYS
 ): string {
-  if (stored.length === 0) return backfillStart
+  if (stored.length === 0 || isBackfillForced()) return backfillStart
   const from = new Date(`${stored[stored.length - 1].date}T00:00:00Z`)
   from.setUTCDate(from.getUTCDate() - overlapDays)
   return from.toISOString().slice(0, 10)

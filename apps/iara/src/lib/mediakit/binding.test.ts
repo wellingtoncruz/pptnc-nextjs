@@ -239,7 +239,7 @@ describe('widgets apply real changes', () => {
   it('empty series fail loud (backfill pending)', () => {
     const data: MediakitData = {
       ...SEED_DATA,
-      series: { spotifyDaily: [], youtubeWatchDaily: [] },
+      series: { spotifyDaily: [], youtubeDaily: [] },
     }
     expect(() => bindMediakitDeck(deckHtml, data, SEED_NOW)).toThrow(/backfill/)
   })
