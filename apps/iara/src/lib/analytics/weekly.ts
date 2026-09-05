@@ -48,8 +48,18 @@ export interface WeekMeta {
   days: number
 }
 
-/** Semana agregada: metadados + a soma de cada campo pedido em `sum`. */
-export type WeekSummary<K extends string> = WeekMeta & Record<K, number>
+/**
+ * Semana agregada: metadados + a soma de cada campo pedido em `sum` + o último
+ * valor conhecido de cada campo pedido em `last`.
+ *
+ * Os campos de `last` são OPCIONAIS por natureza: uma semana pode não ter
+ * nenhum dia com aquele campo (a série de seguidores do Spotify tem ~2 dias de
+ * defasagem, então a semana corrente costuma chegar sem ele). Ausente ≠ zero —
+ * zero significaria "perdeu todos os seguidores".
+ */
+export type WeekSummary<K extends string, L extends string = never> = WeekMeta &
+  Record<K, number> &
+  Partial<Record<L, number>>
 
 /** Escopos de período do dashboard (D4). */
 export const WEEK_SCOPES = ['last-12-weeks', 'year-to-date', 'all-time'] as const
@@ -59,9 +69,22 @@ export type WeekScope = (typeof WEEK_SCOPES)[number]
 /** Campos somáveis de `T`, já excluídos os nomes reservados de `WeekMeta`. */
 export type SummableKeys<T> = Exclude<NumericKeys<T>, keyof WeekMeta>
 
-export interface ToWeeksOptions<K extends string> {
-  /** Campos numéricos a somar. É o que torna a função genérica sobre as 4 séries. */
+export interface ToWeeksOptions<K extends string, L extends string = never> {
+  /**
+   * Campos numéricos a SOMAR — contagens do dia (`starts`, `streams`, `views`,
+   * `subscribersGained`/`Lost`). Somar o que a fonte conta por dia é correto.
+   */
   sum: readonly K[]
+  /**
+   * Campos CUMULATIVOS, dos quais se pega o ÚLTIMO valor conhecido da semana —
+   * nunca a soma. `followers` do Spotify é um total acumulado: somar sete dias
+   * de ~3.350 seguidores daria ~23.450, um número que não significa nada.
+   *
+   * A variação (semanal ou de qualquer janela) é derivada pelo consumidor a
+   * partir destes valores. Guardamos o total, que é a informação maior: de
+   * totais se derivam variações, do contrário não.
+   */
+  last?: readonly L[]
   /**
    * "Hoje" em ISO UTC. Default: a data corrente em UTC.
    * Injetável para que os testes não dependam do relógio.
@@ -140,22 +163,31 @@ export function weekEndOf(date: IsoDate): IsoDate {
  * toWeeks(spotifyDaily, { sum: ['starts', 'streams'], scope: 'last-12-weeks' })
  * // [{ weekStart: '2026-06-17', weekEnd: '2026-06-23', partial: false, days: 7, starts: 812, streams: 640 }, ...]
  */
-export function toWeeks<T extends DailyPoint, K extends SummableKeys<T>>(
-  points: readonly T[],
-  options: ToWeeksOptions<K>
-): WeekSummary<K>[] {
-  const { sum, scope = 'all-time' } = options
+export function toWeeks<
+  T extends DailyPoint,
+  K extends SummableKeys<T>,
+  L extends SummableKeys<T> = never,
+>(points: readonly T[], options: ToWeeksOptions<K, L>): WeekSummary<K, L>[] {
+  const { sum, last = [] as readonly L[], scope = 'all-time' } = options
   const today = options.today ?? todayUtc()
   // Valida "hoje" cedo, mesmo com série vazia: erro de chamada não pode passar batido.
   const currentWeekStart = weekStartOf(today)
 
-  const buckets = new Map<IsoDate, { totals: Map<K, number>; dates: Set<IsoDate> }>()
+  const buckets = new Map<
+    IsoDate,
+    {
+      totals: Map<K, number>
+      dates: Set<IsoDate>
+      /** Por campo cumulativo: o valor e a data em que ele foi visto. */
+      latest: Map<L, { date: IsoDate; value: number }>
+    }
+  >()
 
   for (const point of points) {
     const start = weekStartOf(point.date)
     let bucket = buckets.get(start)
     if (!bucket) {
-      bucket = { totals: new Map(sum.map((k) => [k, 0])), dates: new Set() }
+      bucket = { totals: new Map(sum.map((k) => [k, 0])), dates: new Set(), latest: new Map() }
       buckets.set(start, bucket)
     }
     bucket.dates.add(point.date)
@@ -163,6 +195,16 @@ export function toWeeks<T extends DailyPoint, K extends SummableKeys<T>>(
       const value = (point as Record<string, unknown>)[key]
       if (typeof value === 'number' && Number.isFinite(value)) {
         bucket.totals.set(key, (bucket.totals.get(key) ?? 0) + value)
+      }
+    }
+    // Campos cumulativos: vence a MAIOR data que tenha o campo presente. A
+    // ordem de entrada não importa — comparar a data é o que garante isso.
+    for (const key of last) {
+      const value = (point as Record<string, unknown>)[key]
+      if (typeof value !== 'number' || !Number.isFinite(value)) continue
+      const current = bucket.latest.get(key)
+      if (!current || point.date > current.date) {
+        bucket.latest.set(key, { date: point.date, value })
       }
     }
   }
@@ -175,9 +217,15 @@ export function toWeeks<T extends DailyPoint, K extends SummableKeys<T>>(
         weekEnd: fromUtcMs(toUtcMs(weekStart) + 6 * MS_PER_DAY),
         partial: weekStart === currentWeekStart,
         days: bucket.dates.size,
-      } as WeekSummary<K>
+      } as WeekSummary<K, L>
       for (const key of sum) {
         ;(week as Record<string, unknown>)[key] = bucket.totals.get(key) ?? 0
+      }
+      // Campo cumulativo sem nenhum dia na semana fica AUSENTE, não zero:
+      // zero leria como "perdeu todos os seguidores".
+      for (const key of last) {
+        const seen = bucket.latest.get(key)
+        if (seen) (week as Record<string, unknown>)[key] = seen.value
       }
       return week
     })
@@ -222,4 +270,39 @@ export function filterWeeksByScope<W extends WeekMeta>(
 function todayYear(today: IsoDate): string {
   toUtcMs(today) // valida
   return today.slice(0, 4)
+}
+
+/**
+ * Deriva a VARIAÇÃO de uma métrica cumulativa entre semanas consecutivas.
+ *
+ * Existe porque o painel do Spotify entrega o total de seguidores por dia e
+ * **não separa ganhos de perdas** (provado pelo spike da story 31.2). De uma
+ * série de totais só se deriva o líquido — daí o gráfico de seguidores ser
+ * variação líquida em barra, que aceita valor negativo (área atravessando o
+ * eixo é ilegível).
+ *
+ * A primeira semana com valor não tem anterior para comparar, então fica sem
+ * variação. Semana sem o campo (a defasagem de ~2 dias da fonte) também fica
+ * sem variação e **não quebra a cadeia**: a próxima semana com valor compara
+ * com a última semana que teve valor, não com zero.
+ */
+export function withNetChange<W extends WeekMeta, K extends string, N extends string>(
+  weeks: readonly (W & Partial<Record<K, number>>)[],
+  key: K,
+  outKey: N
+): (W & Partial<Record<K, number>> & Partial<Record<N, number>>)[] {
+  let previous: number | undefined
+  return weeks.map((week) => {
+    const value = week[key]
+    const out = { ...week } as W &
+      Partial<Record<K, number>> &
+      Partial<Record<N, number>>
+    if (typeof value === 'number') {
+      if (previous !== undefined) {
+        ;(out as Record<string, unknown>)[outKey] = value - previous
+      }
+      previous = value
+    }
+    return out
+  })
 }

@@ -7,6 +7,7 @@ import {
   todayUtc,
   weekEndOf,
   weekStartOf,
+  withNetChange,
   type WeekScope,
 } from './weekly'
 
@@ -527,5 +528,97 @@ describe('invariantes de bordas sobre a série completa (AC 5, espelho sintétic
       expect(weeks[i].weekStart).toBe(plusDays(weeks[i - 1].weekEnd, 1))
       expect(weeks[i].weekEnd).toBe(plusDays(weeks[i].weekStart, 6))
     }
+  })
+})
+
+// ── campos cumulativos (`last`) ──────────────────────────────────────────
+//
+// `followers` do Spotify é um TOTAL acumulado, não uma contagem do dia. Somar
+// sete dias de ~3.350 seguidores daria ~23.450 — número sem significado. Bug
+// real cometido na story 31.4 e pego antes de virar gráfico.
+describe('toWeeks — campos cumulativos', () => {
+  const pts = [
+    { date: '2026-08-26', starts: 10, followers: 3300 }, // quarta
+    { date: '2026-08-27', starts: 20, followers: 3310 },
+    { date: '2026-08-31', starts: 30, followers: 3340 },
+    { date: '2026-09-01', starts: 40, followers: 3350 }, // terça (fecha a semana)
+  ]
+
+  it('pega o ÚLTIMO valor da semana, nunca a soma', () => {
+    const [week] = toWeeks(pts, { sum: ['starts'], last: ['followers'], today: '2026-09-10' })
+    expect(week.starts).toBe(100) // soma correta do que é contagem do dia
+    expect(week.followers).toBe(3350) // último, não 13.300
+  })
+
+  it('a ordem de entrada não muda o último valor (compara a DATA, não a posição)', () => {
+    const embaralhado = [pts[2], pts[0], pts[3], pts[1]]
+    const [week] = toWeeks(embaralhado, {
+      sum: ['starts'],
+      last: ['followers'],
+      today: '2026-09-10',
+    })
+    expect(week.followers).toBe(3350)
+  })
+
+  it('semana sem nenhum dia com o campo fica AUSENTE, não zero', () => {
+    // A série de seguidores tem ~2 dias de defasagem: a semana corrente chega
+    // sem o campo. Zero leria como "perdeu todos os seguidores".
+    const comLacuna = [
+      { date: '2026-08-26', starts: 10, followers: 3300 },
+      { date: '2026-09-02', starts: 50 }, // semana seguinte, sem followers
+    ]
+    const weeks = toWeeks(comLacuna, {
+      sum: ['starts'],
+      last: ['followers'],
+      today: '2026-09-10',
+    })
+    expect(weeks).toHaveLength(2)
+    expect(weeks[0].followers).toBe(3300)
+    expect(weeks[1].followers).toBeUndefined()
+    expect(weeks[1].starts).toBe(50)
+  })
+
+  it('sem `last`, o comportamento anterior segue idêntico', () => {
+    const [week] = toWeeks(pts, { sum: ['starts'], today: '2026-09-10' })
+    expect(week.starts).toBe(100)
+    expect((week as Record<string, unknown>).followers).toBeUndefined()
+  })
+})
+
+
+// ── variação líquida a partir de série cumulativa ────────────────────────
+describe('withNetChange', () => {
+  const w = (weekStart: string, followers?: number) => ({
+    weekStart,
+    weekEnd: weekStart,
+    partial: false,
+    days: 7,
+    ...(followers === undefined ? {} : { followers }),
+  })
+
+  it('deriva a variação entre semanas consecutivas', () => {
+    const out = withNetChange([w('2026-08-19', 3300), w('2026-08-26', 3340), w('2026-09-02', 3358)], 'followers', 'net')
+    expect(out[0].net).toBeUndefined() // sem semana anterior para comparar
+    expect(out[1].net).toBe(40)
+    expect(out[2].net).toBe(18)
+  })
+
+  it('variação NEGATIVA é preservada (é o motivo de o gráfico ser barra)', () => {
+    const out = withNetChange([w('2026-08-19', 3300), w('2026-08-26', 3280)], 'followers', 'net')
+    expect(out[1].net).toBe(-20)
+  })
+
+  it('semana sem o campo não quebra a cadeia — a próxima compara com a última COM valor', () => {
+    const out = withNetChange(
+      [w('2026-08-19', 3300), w('2026-08-26'), w('2026-09-02', 3358)],
+      'followers',
+      'net'
+    )
+    expect(out[1].net).toBeUndefined()
+    expect(out[2].net).toBe(58) // 3358 − 3300, não 3358 − 0
+  })
+
+  it('série vazia devolve vazio', () => {
+    expect(withNetChange([], 'followers', 'net')).toEqual([])
   })
 })
