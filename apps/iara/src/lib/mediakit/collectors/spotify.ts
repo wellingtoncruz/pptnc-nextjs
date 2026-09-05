@@ -19,6 +19,13 @@
  * the RAW `{date, starts, streams}` pairs; backfill from launch when empty,
  * incremental with overlap afterwards. Demographics come from `aggregate`
  * over a rolling window (default 90d — inventory decision).
+ *
+ * Followers (story 31.2, spike of 2026-09-04 with a real call): the `followers`
+ * endpoint hands `{counts: [{date, count}]}` daily since 2021-09-01 and does
+ * NOT split gains from losses — only the running TOTAL. That total is what gets
+ * stored, on the same daily point as the streams; the weekly variation the
+ * Dashboard draws is derived at read time. The series lags the streams one by
+ * ~2 days, so the last points legitimately have no `followers` yet.
  */
 import { createHash, randomBytes } from 'node:crypto'
 
@@ -127,6 +134,23 @@ const DetailedStreamsSchema = z.object({
   ),
 })
 
+/**
+ * `followers` — daily series of the show's TOTAL followers.
+ *
+ * Proven with a real call in the 31.2 spike (2026-09-04): `start` is REQUIRED
+ * (HTTP 400 without it), the series is daily, covers 2021-09-01 onwards, and
+ * the source does NOT split gains from losses — it hands the running total.
+ * We persist that total as-is; the variation is derived by the reader.
+ */
+const FollowersSchema = z.object({
+  counts: z.array(
+    z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      count: z.number().int().nonnegative(),
+    })
+  ),
+})
+
 const MetadataSchema = z.object({
   totalEpisodes: z.number().int().nonnegative(),
   streams: z.number().int().nonnegative(),
@@ -149,7 +173,7 @@ const AggregateSchema = z.object({
 })
 
 async function showGet(
-  path: 'detailedStreams' | 'aggregate' | 'metadata',
+  path: 'detailedStreams' | 'followers' | 'aggregate' | 'metadata',
   bearer: string,
   start?: string,
   end?: string
@@ -185,6 +209,61 @@ export function yearChunks(start: string, end: string): Array<{ start: string; e
 }
 
 // ── transforms ───────────────────────────────────────────────────────────
+
+/** One stored point of `series.spotifyDaily` — the streams axis plus, when the
+ * source already has it, the day's TOTAL followers. */
+export interface SpotifyDailyPoint {
+  date: string
+  starts: number
+  streams: number
+  followers?: number
+}
+
+/**
+ * Joins the `followers` series onto the `detailedStreams` axis, by date.
+ *
+ * Single point per day (the two series share the date axis) — two parallel
+ * series would drift apart the day one of the two calls fails mid-run.
+ * `followers` stays UNDEFINED where the source has no value: the followers
+ * series lags the streams one by ~2 days, and writing a 0 or repeating the
+ * previous day would invent data.
+ *
+ * Followers dates with no stream point are reported back (never silently
+ * dropped) — with the axis complete since 2021-09-01 this should stay empty.
+ */
+export function attachFollowers(
+  points: Array<{ date: string; starts: number; streams: number }>,
+  counts: Array<{ date: string; count: number }>
+): { points: SpotifyDailyPoint[]; datesOffAxis: string[] } {
+  const followersByDate = new Map(counts.map((c) => [c.date, c.count]))
+  const axis = new Set(points.map((p) => p.date))
+  return {
+    points: points.map((point) => {
+      const followers = followersByDate.get(point.date)
+      return followers === undefined ? { ...point } : { ...point, followers }
+    }),
+    datesOffAxis: counts.filter((c) => !axis.has(c.date)).map((c) => c.date),
+  }
+}
+
+/**
+ * Carries a followers value we already stored into a refetched point that came
+ * back without one — a re-read of the overlap window must never blank out
+ * information already collected (the merge replaces the whole point).
+ */
+export function keepKnownFollowers(
+  stored: SpotifyDailyPoint[],
+  fresh: SpotifyDailyPoint[]
+): SpotifyDailyPoint[] {
+  const known = new Map(
+    stored.flatMap((p) => (p.followers === undefined ? [] : [[p.date, p.followers] as const]))
+  )
+  return fresh.map((point) => {
+    if (point.followers !== undefined) return point
+    const previous = known.get(point.date)
+    return previous === undefined ? point : { ...point, followers: previous }
+  })
+}
 
 const round1 = (v: number) => Math.round(v * 10) / 10
 
@@ -252,10 +331,27 @@ export const spotifyAdapter: CollectorAdapter = {
       mode: stored.length === 0 ? 'backfill' : 'incremental',
       startDate,
     })
-    const fresh: Array<{ date: string; starts: number; streams: number }> = []
+    // Both daily series are fetched per chunk and joined on the date axis:
+    // streams (starts/streams) and the followers TOTAL of the day. Chunking is
+    // kept even though the 5 years fit in one request (2026-09-04 spike) — the
+    // internal API may lower that limit without notice.
+    const fresh: SpotifyDailyPoint[] = []
+    const followersOffAxis: string[] = []
     for (const chunk of yearChunks(startDate, today)) {
-      const raw = await showGet('detailedStreams', bearer, chunk.start, chunk.end)
-      fresh.push(...DetailedStreamsSchema.parse(raw).detailedStreams)
+      const streamsRaw = await showGet('detailedStreams', bearer, chunk.start, chunk.end)
+      const followersRaw = await showGet('followers', bearer, chunk.start, chunk.end)
+      const joined = attachFollowers(
+        DetailedStreamsSchema.parse(streamsRaw).detailedStreams,
+        FollowersSchema.parse(followersRaw).counts
+      )
+      fresh.push(...joined.points)
+      followersOffAxis.push(...joined.datesOffAxis)
+    }
+    if (followersOffAxis.length > 0) {
+      log('WARN', 'Spotify followers dates outside the streams axis (not stored)', {
+        count: followersOffAxis.length,
+        sample: followersOffAxis.slice(0, 5),
+      })
     }
 
     // Metadata — SOURCE-provided totals (streams parcel for D6 + followers).
@@ -272,7 +368,7 @@ export const spotifyAdapter: CollectorAdapter = {
     )
     const aggregate = AggregateSchema.parse(aggregateRaw)
 
-    const merged = mergeByDate(stored, fresh)
+    const merged = mergeByDate(stored, keepKnownFollowers(stored, fresh))
 
     return [
       { section: 'series', partial: { spotifyDaily: merged } },
