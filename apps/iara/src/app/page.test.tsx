@@ -38,12 +38,15 @@ describe('HomePage (public landing)', () => {
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 
-  it('redirects authenticated users to /videos', async () => {
+  // Epic 31 (D5): a aba inicial passou de /videos para /dashboard em
+  // 2026-09-04. A raiz continua PÚBLICA (exigência da verificação OAuth do
+  // Google, v2.9.4) — só o ramo do usuário autenticado mudou de destino.
+  it('redirects authenticated users to /dashboard (aba inicial, Epic 31)', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
 
     await HomePage()
 
-    expect(mockRedirect).toHaveBeenCalledWith('/videos')
+    expect(mockRedirect).toHaveBeenCalledWith('/dashboard')
   })
 
   it('does not redirect when the session carries an error', async () => {

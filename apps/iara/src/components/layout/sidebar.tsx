@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { PanelLeftClose, PanelLeftOpen, Video, FileText, Newspaper, Share2, Megaphone, Mail, CalendarClock, Users, Settings, Bug, LogOut } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, LayoutDashboard, Video, FileText, Newspaper, Share2, Megaphone, Mail, CalendarClock, Users, Settings, Bug, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
 import { cn } from '@/lib/utils'
@@ -81,6 +81,16 @@ export function Sidebar({ userName, features, enabledSocialNetworks, llmConfig }
     const isScheduledPostsView = searchParams.get('view') === 'scheduled-posts'
 
     const items = [
+      {
+        // Aba INICIAL (Epic 31, D5). Rota própria, não `?view=` — decisão do
+        // Wellington em 2026-09-04: permite ler e agregar no servidor e não
+        // engorda o videos-layout.tsx (TD-17).
+        href: '/dashboard',
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        isActive: pathname === '/dashboard',
+        adminOnly: false,
+      },
       {
         href: '/videos',
         label: 'Vídeos',

@@ -5,7 +5,8 @@
  * homepage for the Google OAuth consent screen — it must be publicly reachable
  * and include a visible link to the Privacy Policy (and Terms).
  *
- * Authenticated users are redirected straight to the app (/videos).
+ * Authenticated users are redirected straight to the app (/dashboard — aba
+ * inicial desde o Epic 31, decisão D5).
  */
 
 import { redirect } from 'next/navigation'
@@ -20,7 +21,7 @@ export default async function HomePage() {
   // Send already-authenticated users to the app.
   const session = await auth()
   if (session && !session.error) {
-    redirect('/videos')
+    redirect('/dashboard')
   }
 
   return (
@@ -50,7 +51,7 @@ export default async function HomePage() {
           className="mt-8"
           action={async () => {
             'use server'
-            await signIn('google', { redirectTo: '/videos' })
+            await signIn('google', { redirectTo: '/dashboard' })
           }}
         >
           <Button
