@@ -162,18 +162,21 @@ function stubYoutubeApis(analyticsStatus = 200) {
       if (analyticsStatus !== 200) {
         return new Response('insufficient scopes', { status: analyticsStatus })
       }
-      if (url.includes('subscribersGained')) {
-        return new Response(JSON.stringify({ rows: [[62_043, 28_064, 2_738_483]] }))
-      }
+      // A série diária TAMBÉM pede subscribersGained desde a 31.1 — o
+      // roteamento por `dimensions=day` vem primeiro, senão a chamada diária
+      // cairia na resposta vitalícia.
       if (url.includes('dimensions=day')) {
         return new Response(
           JSON.stringify({
             rows: [
-              ['2026-08-25', 3480, 9100],
-              ['2026-08-26', 1200, 3400],
+              ['2026-08-25', 3480, 9100, 42, 7],
+              ['2026-08-26', 1200, 3400, 15, 3],
             ],
           })
         )
+      }
+      if (url.includes('subscribersGained')) {
+        return new Response(JSON.stringify({ rows: [[62_043, 28_064, 2_738_483]] }))
       }
       return new Response(JSON.stringify({ rows: [[10_320_000]] }))
     })
@@ -207,15 +210,73 @@ describe('youtubeAdapter', () => {
       section: 'series',
       partial: {
         youtubeDaily: [
-          { date: '2026-08-25', minutes: 3480, views: 9100 },
-          { date: '2026-08-26', minutes: 1200, views: 3400 },
+          {
+            date: '2026-08-25',
+            minutes: 3480,
+            views: 9100,
+            subscribersGained: 42,
+            subscribersLost: 7,
+          },
+          {
+            date: '2026-08-26',
+            minutes: 1200,
+            views: 3400,
+            subscribersGained: 15,
+            subscribersLost: 3,
+          },
         ],
       },
     })
   })
 
+  // Ganhos e perdas são pedidos SEPARADOS e persistidos separados: a soma é
+  // decisão do consumidor, não da coleta.
+  it('pede as quatro métricas por dia e NÃO soma ganhos com perdas', async () => {
+    stubYoutubeApis()
+    const writes = await youtubeAdapter.collect()
+
+    const dailyUrl = (globalThis.fetch as unknown as { mock: { calls: [string][] } }).mock.calls
+      .map(([url]) => url)
+      .find((url) => url.includes('dimensions=day'))
+    expect(dailyUrl).toContain(
+      'metrics=estimatedMinutesWatched,views,subscribersGained,subscribersLost'
+    )
+    expect(dailyUrl).toContain('sort=day')
+
+    const series = writes.find((w) => w.section === 'series')?.partial as {
+      youtubeDaily: { subscribersGained?: number; subscribersLost?: number }[]
+    }
+    expect(series.youtubeDaily[0].subscribersGained).toBe(42)
+    expect(series.youtubeDaily[0].subscribersLost).toBe(7)
+  })
+
   it('missing analytics scope fails LOUD with the API status (runner isolates it)', async () => {
     stubYoutubeApis(403)
     await expect(youtubeAdapter.collect()).rejects.toThrow(/403/)
+  })
+
+  // Decisão do Wellington (2026-09-04): perda de inscrito com sinal negativo
+  // NÃO é clampada em silêncio. Um Math.max(0, …) sobreviveria a uma troca de
+  // convenção do Google zerando todas as perdas — o líquido ficaria igual aos
+  // ganhos e ninguém perceberia. O runner isola a falha e o failsafe preserva
+  // o último dado bom.
+  it('subscribersLost negativo FALHA ALTO, nunca é zerado em silêncio', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.includes('dimensions=day')) {
+          return new Response(
+            JSON.stringify({ rows: [['2026-08-25', 3480, 9100, 42, -7]] })
+          )
+        }
+        if (url.includes('subscribersGained')) {
+          return new Response(JSON.stringify({ rows: [[62_043, 28_064, 2_738_483]] }))
+        }
+        return new Response(JSON.stringify({ rows: [[10_320_000]] }))
+      })
+    )
+    await expect(youtubeAdapter.collect()).rejects.toThrow(
+      /subscribersLost fora da convenção positiva em 2026-08-25/
+    )
   })
 })
