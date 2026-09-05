@@ -35,8 +35,17 @@ import {
   SERIES_BACKFILL_START,
 } from './series-utils'
 
-/** Lifetime window for the exact-subscribers delta (Σ gained − lost) + views. */
-const SUBSCRIBERS_SINCE = '2005-01-01'
+/**
+ * Janela "desde sempre" das métricas vitalícias: delta exato de inscritos
+ * (Σ gained − lost) e `views`.
+ *
+ * `2005-01-01` é uma data-sentinela — antecede a fundação do YouTube, logo
+ * antecede qualquer canal. Não é a data do canal: o primeiro vídeo do PPTNC é
+ * de 2021-09-05, quatro dias depois do `SERIES_BACKFILL_START`. Como não há
+ * conteúdo anterior, a soma das `views` diárias da série deve fechar com o
+ * `viewsYoutube` vitalício — divergência aqui é sintoma, não arredondamento.
+ */
+const ANALYTICS_LIFETIME_SINCE = '2005-01-01'
 
 const AnalyticsReportSchema = z.object({
   rows: z.array(z.array(z.union([z.string(), z.number()]))).optional(),
@@ -114,7 +123,7 @@ export const youtubeAdapter: CollectorAdapter = {
     // contador público mas fica no histórico do Analytics).
     const lifetimeRaw = await apiGet(
       `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==${channelId}` +
-        `&startDate=${SUBSCRIBERS_SINCE}&endDate=${today}` +
+        `&startDate=${ANALYTICS_LIFETIME_SINCE}&endDate=${today}` +
         `&metrics=subscribersGained,subscribersLost,views`,
       accessToken
     )
