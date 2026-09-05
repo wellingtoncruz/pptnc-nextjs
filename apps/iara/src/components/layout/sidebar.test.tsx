@@ -527,4 +527,63 @@ describe('Sidebar', () => {
 
     expect(screen.queryByText('Depuração')).not.toBeInTheDocument()
   })
+
+  // Epic 31 (D5): o Dashboard é a aba INICIAL e mora em rota própria
+  // (`/dashboard`), não em `?view=`. A aba ativa dele NÃO depende de
+  // searchParams, ao contrário das dez abas de `/videos`.
+  describe('aba Dashboard (Epic 31)', () => {
+    it('aparece como PRIMEIRO item da navegação, apontando para /dashboard', async () => {
+      render(<Sidebar />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Dashboard')).toBeInTheDocument()
+      })
+
+      const dashboard = screen.getByText('Dashboard').closest('a')
+      expect(dashboard).toHaveAttribute('href', '/dashboard')
+
+      // Primeiro da lista: vem antes de Vídeos no DOM.
+      const videos = screen.getByText('Vídeos').closest('a')
+      expect(dashboard!.compareDocumentPosition(videos!)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING
+      )
+    })
+
+    it('não é escondido por feature flag (não é opcional como as demais abas)', async () => {
+      render(
+        <Sidebar
+          features={{
+            editorial: false,
+            news: false,
+            socialMedia: false,
+            adwords: false,
+            newsletter: false,
+            socialPublish: false,
+            llmDebugMode: false,
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Dashboard')).toBeInTheDocument()
+      })
+      expect(screen.queryByText('Editorial')).not.toBeInTheDocument()
+    })
+
+    it('em /dashboard o item ativo é o Dashboard, e Vídeos NÃO fica ativo', async () => {
+      const { usePathname } = await import('next/navigation')
+      vi.mocked(usePathname).mockReturnValue('/dashboard')
+
+      render(<Sidebar />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Dashboard')).toBeInTheDocument()
+      })
+
+      const dashboard = screen.getByText('Dashboard').closest('a')
+      const videos = screen.getByText('Vídeos').closest('a')
+      expect(dashboard?.className).toContain('bg-')
+      expect(videos?.className).not.toEqual(dashboard?.className)
+    })
+  })
 })
