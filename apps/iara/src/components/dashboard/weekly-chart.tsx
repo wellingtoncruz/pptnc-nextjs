@@ -42,6 +42,47 @@ interface WeeklyChartProps {
 
 const nf = new Intl.NumberFormat('pt-BR')
 
+/**
+ * Intervalo do eixo X a sombrear para marcar a semana em andamento (D3).
+ *
+ * **O intervalo correto depende da escala do eixo**, e a escala do eixo de
+ * categorias do Recharts muda conforme o gráfico tenha barra ou não. Medido no
+ * browser em 2026-09-06 (sonda isolada com Recharts 3.8), porque duas tentativas
+ * por raciocínio erraram:
+ *
+ * | gráfico          | escala | x1=x2=parcial      | x1=anterior, x2=parcial |
+ * |------------------|--------|--------------------|-------------------------|
+ * | área / linha     | point  | invisível (larg. 0)| ✅ cobre o trecho final |
+ * | com barra        | band   | ✅ cobre a banda   | ❌ cobre DUAS bandas    |
+ *
+ * Em escala `point` os valores são pontos, e um intervalo degenerado tem
+ * largura zero. Em escala `band` cada categoria ocupa uma faixa e o intervalo é
+ * **inclusivo nas duas pontas** — daí pegar duas semanas.
+ *
+ * Histórico: o código original usava `x1 === x2` em todos, então o sombreado
+ * NUNCA renderizou em área/linha; o gráfico de barras só parecia marcado por
+ * causa de um segundo mecanismo (opacidade por `Cell`). Bug relatado pelo
+ * Wellington em 2026-09-06.
+ *
+ * Devolve `null` quando não há semana parcial, ou quando ela é a única num
+ * gráfico sem barra (não há de onde partir) — a legenda em texto abaixo do
+ * gráfico segue explicando nesse caso.
+ */
+export function partialShadeRange(
+  weeks: readonly ChartWeek[],
+  hasBandScale: boolean
+): { from: string; to: string } | null {
+  const index = weeks.findIndex((w) => w.partial)
+  if (index < 0) return null
+
+  const partialStart = weeks[index].weekStart
+  // Escala band: a própria categoria já é uma faixa com largura.
+  if (hasBandScale) return { from: partialStart, to: partialStart }
+  // Escala point: precisa de dois pontos distintos para ter largura.
+  if (index === 0) return null
+  return { from: weeks[index - 1].weekStart, to: partialStart }
+}
+
 /** `2026-09-02` → `02/09`. Rótulo do eixo X: início da semana (quarta). */
 function shortDate(iso: string): string {
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}`
@@ -67,6 +108,10 @@ function toneVar(tone: number): string {
  */
 export function WeeklyChart({ title, weeks, series, emptyLabel }: WeeklyChartProps) {
   const partial = weeks.find((w) => w.partial)
+  // A presença de uma barra é o que faz o Recharts usar escala `band` no eixo
+  // de categorias — e é o que decide qual intervalo sombrear.
+  const hasBandScale = series.some((s) => s.type === 'bar')
+  const shade = partialShadeRange(weeks, hasBandScale)
 
   // Linha do zero quando alguma série cruza para baixo — sem ela, "−23" e "+23"
   // ficam visualmente parecidos e o leitor não sabe de que lado do eixo está.
@@ -114,10 +159,10 @@ export function WeeklyChart({ title, weeks, series, emptyLabel }: WeeklyChartPro
                   <ReferenceLine y={0} stroke="var(--border)" strokeWidth={1.5} />
                 ) : null}
 
-                {partial ? (
+                {shade ? (
                   <ReferenceArea
-                    x1={partial.weekStart}
-                    x2={partial.weekStart}
+                    x1={shade.from}
+                    x2={shade.to}
                     fill="var(--muted-foreground)"
                     fillOpacity={0.12}
                     ifOverflow="extendDomain"
