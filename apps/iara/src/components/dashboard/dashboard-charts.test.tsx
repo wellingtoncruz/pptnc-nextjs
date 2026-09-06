@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { render, screen } from '@/test-utils'
 
 import { ScopeSelector, SCOPE_LABELS } from './scope-selector'
-import { WeeklyChart, type ChartWeek } from './weekly-chart'
+import { WeeklyChart, partialShadeRange, type ChartWeek } from './weekly-chart'
 
 function week(weekStart: string, weekEnd: string, partial = false): ChartWeek {
   return { weekStart, weekEnd, partial, days: 7, starts: 100, streams: 80 }
@@ -109,5 +109,53 @@ describe('WeeklyChart', () => {
       />
     )
     expect(screen.queryByText(/em andamento/i)).not.toBeInTheDocument()
+  })
+})
+
+// ── marcação da semana em andamento (bug achado pelo Wellington, 2026-09-06) ──
+//
+// O `ReferenceArea` original usava `x1 === x2` — largura ZERO, não renderiza em
+// gráfico nenhum. Só o gráfico de barras PARECIA marcado, e apenas porque
+// barras têm um segundo mecanismo (opacidade por `Cell`). A geometria virou
+// função pura justamente para deixar de depender de inspeção visual.
+describe('partialShadeRange', () => {
+  const w = (weekStart: string, partial = false): ChartWeek => ({
+    weekStart,
+    weekEnd: weekStart,
+    partial,
+    days: 7,
+  })
+  const semanas = [w('2026-08-19'), w('2026-08-26'), w('2026-09-02', true)]
+
+  // Tabela verdade MEDIDA no browser em 2026-09-06 (sonda isolada com Recharts
+  // 3.8), depois de duas tentativas por raciocínio errarem. O intervalo certo
+  // depende da escala do eixo, que muda conforme o gráfico tenha barra.
+
+  it('escala POINT (área/linha): dois pontos distintos — x1===x2 teria largura zero', () => {
+    const range = partialShadeRange(semanas, false)
+    expect(range).toEqual({ from: '2026-08-26', to: '2026-09-02' })
+    expect(range!.from).not.toBe(range!.to)
+  })
+
+  it('escala BAND (barra): a própria categoria — intervalo maior pegaria DUAS semanas', () => {
+    const range = partialShadeRange(semanas, true)
+    expect(range).toEqual({ from: '2026-09-02', to: '2026-09-02' })
+  })
+
+  it('sem semana parcial, não sombreia nada — nas duas escalas', () => {
+    const completas = [w('2026-08-19'), w('2026-08-26')]
+    expect(partialShadeRange(completas, false)).toBeNull()
+    expect(partialShadeRange(completas, true)).toBeNull()
+  })
+
+  it('semana parcial ÚNICA: sem sombra em point (não há de onde partir), com sombra em band', () => {
+    const so = [w('2026-09-02', true)]
+    expect(partialShadeRange(so, false)).toBeNull()
+    expect(partialShadeRange(so, true)).toEqual({ from: '2026-09-02', to: '2026-09-02' })
+  })
+
+  it('série vazia não quebra', () => {
+    expect(partialShadeRange([], false)).toBeNull()
+    expect(partialShadeRange([], true)).toBeNull()
   })
 })
