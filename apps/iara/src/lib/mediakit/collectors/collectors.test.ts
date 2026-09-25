@@ -40,7 +40,7 @@ vi.mock('@/lib/auth/refresh-token', () => ({
 }))
 
 import { iaraCountsAdapter } from './iara-counts'
-import { runCollectors, type CollectorAdapter } from './runner'
+import { runCollectors, selectAdapters, type CollectorAdapter } from './runner'
 import { incrementalStart, isBackfillForced, mergeByDate } from './series-utils'
 import { youtubeAdapter } from './youtube'
 
@@ -77,6 +77,24 @@ describe('runCollectors', () => {
     await runCollectors([okAdapter])
     expect(mockWriteSection).toHaveBeenCalledTimes(1)
     expect(mockWriteSection.mock.calls[0][2]).toBe('ok-adapter')
+  })
+})
+
+describe('selectAdapters (MEDIAKIT_ADAPTERS)', () => {
+  const named = (name: string): CollectorAdapter => ({ name, collect: async () => [] })
+  const all = ['iara-counts', 'youtube', 'spotify', 'brightdata-socials'].map(named)
+
+  it('sem a env roda todos — o PPTNC segue igual', () => {
+    expect(selectAdapters(all, undefined)).toBe(all)
+    expect(selectAdapters(all, '  ')).toBe(all)
+  })
+
+  it('com a env roda só os listados, na ordem pedida', () => {
+    expect(selectAdapters(all, 'spotify, youtube').map((a) => a.name)).toEqual(['spotify', 'youtube'])
+  })
+
+  it('nome desconhecido falha alto — typo não vira "coletou nada"', () => {
+    expect(() => selectAdapters(all, 'youtube,spotfy')).toThrow(/spotfy/)
   })
 })
 

@@ -70,3 +70,31 @@ export async function runCollectors(adapters: CollectorAdapter[]): Promise<Colle
 
   return { adapters: reports, ok: reports.every((r) => r.ok) }
 }
+
+/**
+ * Quais adapters rodam NESTE tenant — `MEDIAKIT_ADAPTERS` (lista por vírgula).
+ *
+ * Sem a env, rodam todos: o PPTNC segue igual. O 2º tenant (TrenDs News,
+ * set/2026) roda só as fontes do Dashboard; as do PDF ficariam coletando o
+ * PPTNC (URLs default) ou falhando todo dia por falta de credencial — e um
+ * exit≠0 diário vira alarme permanente, que é o mesmo que não ter alarme.
+ *
+ * Nome desconhecido LANÇA: um typo na env não pode virar "coletou nada" em
+ * silêncio.
+ */
+export function selectAdapters(
+  all: CollectorAdapter[],
+  raw: string | undefined = process.env.MEDIAKIT_ADAPTERS
+): CollectorAdapter[] {
+  const names = (raw ?? '').split(',').map((n) => n.trim()).filter(Boolean)
+  if (names.length === 0) return all
+
+  const byName = new Map(all.map((a) => [a.name, a]))
+  const unknown = names.filter((n) => !byName.has(n))
+  if (unknown.length > 0) {
+    throw new Error(
+      `MEDIAKIT_ADAPTERS com nome desconhecido: ${unknown.join(', ')} (válidos: ${[...byName.keys()].join(', ')})`
+    )
+  }
+  return names.map((n) => byName.get(n)!)
+}

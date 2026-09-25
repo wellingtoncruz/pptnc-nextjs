@@ -39,7 +39,17 @@ import { incrementalStart, isoToday, mergeByDate, SERIES_BACKFILL_START } from '
 
 const BASE_URL = 'https://generic.wg.spotify.com/podcasters/v0'
 const WEB_CLIENT_ID = '05a1371ee5194c27860b3ff3ff3979d2'
-const SHOW_ID = '5aKHRdBlylb2wj5Ac8Kqpj' // PPT Não Compila
+/** Show do PPTNC — default para o tenant original seguir igual sem env nova. */
+const DEFAULT_SHOW_ID = '5aKHRdBlylb2wj5Ac8Kqpj'
+
+/**
+ * Show do Spotify DESTE tenant. O ID era constante do PPTNC; o 2º tenant
+ * (TrenDs News, set/2026) passa o próprio em `MEDIAKIT_SPOTIFY_SHOW_ID` no job.
+ * Lido a cada chamada — env de runtime, não de import.
+ */
+export function spotifyShowId(): string {
+  return process.env.MEDIAKIT_SPOTIFY_SHOW_ID || DEFAULT_SHOW_ID
+}
 const DEMOGRAPHICS_WINDOW_DAYS = 90
 
 export class SpotifyAdapterError extends Error {
@@ -179,7 +189,7 @@ async function showGet(
   end?: string
 ): Promise<unknown> {
   const range = start && end ? `?start=${start}&end=${end}` : ''
-  const url = `${BASE_URL}/shows/${SHOW_ID}/${path}${range}`
+  const url = `${BASE_URL}/shows/${spotifyShowId()}/${path}${range}`
   const response = await fetch(url, { headers: { Authorization: `Bearer ${bearer}` } })
   if (!response.ok) {
     const body = await response.text()
