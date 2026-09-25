@@ -17,6 +17,7 @@ interface PodcastFeatures {
   socialPublish: boolean
   thumbnailGeneration: boolean
   extraImagesGeneration: boolean
+  youtubePublish: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -51,10 +52,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [socialPublish, setSocialPublish] = useState(features.socialPublish)
   const [thumbnailGeneration, setThumbnailGeneration] = useState(features.thumbnailGeneration)
   const [extraImagesGeneration, setExtraImagesGeneration] = useState(features.extraImagesGeneration)
+  const [youtubePublish, setYoutubePublish] = useState(features.youtubePublish)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish' | 'thumbnailGeneration' | 'extraImagesGeneration'
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish' | 'thumbnailGeneration' | 'extraImagesGeneration' | 'youtubePublish'
   const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
@@ -66,10 +68,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
     socialPublish: setSocialPublish,
     thumbnailGeneration: setThumbnailGeneration,
     extraImagesGeneration: setExtraImagesGeneration,
+    youtubePublish: setYoutubePublish,
   }
 
   async function handleToggle(key: FeatureKey, value: boolean) {
-    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, thumbnailGeneration, extraImagesGeneration, [key]: value }
+    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, thumbnailGeneration, extraImagesGeneration, youtubePublish, [key]: value }
 
     setters[key](value)
 
@@ -242,6 +245,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-extraImagesGeneration"
             checked={extraImagesGeneration}
             onCheckedChange={(value) => handleToggle('extraImagesGeneration', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-youtubePublish">Publicação no YouTube</Label>
+            <p className="text-xs text-muted-foreground">
+              Libera o botão Publicar do wizard: título, descrição, tags e thumbnail vão para o canal. Desligada, a IAra gera tudo mas nada sobe. Fora do ambiente de produção a publicação segue bloqueada mesmo ligada.
+            </p>
+          </div>
+          <Switch
+            id="feature-youtubePublish"
+            checked={youtubePublish}
+            onCheckedChange={(value) => handleToggle('youtubePublish', value)}
             disabled={saving}
           />
         </div>

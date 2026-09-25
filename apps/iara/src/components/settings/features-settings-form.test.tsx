@@ -11,7 +11,7 @@ vi.mock('@/lib/logger', () => ({
 
 import { FeaturesSettingsForm } from './features-settings-form'
 
-const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false, extraImagesGeneration: false }
+const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false, extraImagesGeneration: false, youtubePublish: true }
 
 /**
  * Body PATCH esperado, derivado de `defaultFeatures` + o toggle sob teste.
@@ -459,6 +459,41 @@ describe('FeaturesSettingsForm', () => {
           body: expect.stringContaining('"extraImagesGeneration":true'),
         }))
       })
+    })
+  })
+
+  // ===========================================================================
+  // youtubePublish — chave do admin sobre a publicação no YouTube (set/2026)
+  // ===========================================================================
+
+  describe('youtubePublish', () => {
+    it('reflete o estado recebido (ligada por padrão, desligada no tenant novo)', () => {
+      const { unmount } = render(<FeaturesSettingsForm features={defaultFeatures} />)
+      expect(screen.getByLabelText('Publicação no YouTube')).toHaveAttribute('data-state', 'checked')
+      unmount()
+
+      render(<FeaturesSettingsForm features={{ ...defaultFeatures, youtubePublish: false }} />)
+      expect(screen.getByLabelText('Publicação no YouTube')).toHaveAttribute('data-state', 'unchecked')
+    })
+
+    it('desligar grava youtubePublish:false sem tocar nas outras flags', async () => {
+      render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+      await act(async () => {
+        screen.getByLabelText('Publicação no YouTube').click()
+      })
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+          method: 'PATCH',
+          body: expectedFeaturesBody({ youtubePublish: false }),
+        }))
+      })
+    })
+
+    it('avisa que fora de produção a publicação segue bloqueada', () => {
+      render(<FeaturesSettingsForm features={defaultFeatures} />)
+      expect(screen.getByText(/Fora do ambiente de produção a publicação segue bloqueada/)).toBeInTheDocument()
     })
   })
 })

@@ -40,6 +40,7 @@ import {
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
 import { log } from '@/lib/logger'
 import { YouTubeAPIError, YouTubeClient } from '@/lib/youtube'
+import { getYoutubePublishGate } from '@/lib/youtube/publish-gate'
 
 export const runtime = 'nodejs'
 
@@ -108,6 +109,18 @@ export async function POST(
 
   const userId = session.user.id
   const { videoId } = await context.params
+
+  // Mesma trava da publicação de metadados: thumbnail também é escrita no
+  // YouTube. Pelo wizard esta rota só roda depois de um PUT aceito — a trava
+  // aqui fecha a chamada direta, que antes subia em qualquer ambiente.
+  const gate = await getYoutubePublishGate()
+  if (!gate.allowed) {
+    log('WARN', 'Blocked YouTube thumbnail upload', { videoId, code: gate.code })
+    return NextResponse.json(
+      { error: { code: gate.code, message: gate.message } },
+      { status: 403 }
+    )
+  }
 
   const video = await getVideoAdmin(PODCAST_ID, videoId)
   if (!video) {

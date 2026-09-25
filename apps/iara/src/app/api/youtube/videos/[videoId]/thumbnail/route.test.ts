@@ -42,6 +42,11 @@ vi.mock('@/lib/firebase/cloud-storage', () => ({
 
 vi.mock('@/lib/firebase/config', () => ({ PODCAST_ID: 'pptnc' }))
 
+const mockGate = vi.fn()
+vi.mock('@/lib/youtube/publish-gate', () => ({
+  getYoutubePublishGate: () => mockGate(),
+}))
+
 vi.mock('@/lib/logger', () => ({ log: vi.fn() }))
 
 const mockUploadThumbnail = vi.fn()
@@ -83,6 +88,7 @@ describe('POST /api/youtube/videos/[videoId]/thumbnail (Epic 22, Story 22.5)', (
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthFn.mockResolvedValue(validSession)
+    mockGate.mockResolvedValue({ allowed: true })
     mockGetUserTokensWithExpiry.mockResolvedValue({
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
@@ -94,6 +100,21 @@ describe('POST /api/youtube/videos/[videoId]/thumbnail (Epic 22, Story 22.5)', (
     mockAuthFn.mockResolvedValue(null)
     const response = await POST(makeRequest(), makeContext('vid-1'))
     expect(response.status).toBe(401)
+  })
+
+  // Thumbnail também é escrita no canal: mesma trava da publicação (PRD E
+  // `features.youtubePublish`). Antes, a chamada direta subia em qualquer ambiente.
+  it('returns 403 and never reaches YouTube when the publish gate is closed', async () => {
+    mockGate.mockResolvedValue({
+      allowed: false,
+      code: 'PUBLISH_DISABLED',
+      message: 'Publicação no YouTube desligada nas Configurações do podcast',
+    })
+    const response = await POST(makeRequest(), makeContext('vid-1'))
+    expect(response.status).toBe(403)
+    expect((await response.json()).error.code).toBe('PUBLISH_DISABLED')
+    expect(mockGetVideoAdmin).not.toHaveBeenCalled()
+    expect(mockUploadThumbnail).not.toHaveBeenCalled()
   })
 
   it('returns 404 when video does not exist', async () => {

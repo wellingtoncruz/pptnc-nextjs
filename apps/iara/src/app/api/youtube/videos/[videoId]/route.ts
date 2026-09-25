@@ -31,9 +31,10 @@ import {
   TokenRefreshError,
 } from '@/lib/firebase/tokens'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
-import { IS_PRODUCTION, PODCAST_ID } from '@/lib/firebase/config'
+import { PODCAST_ID } from '@/lib/firebase/config'
 import { log } from '@/lib/logger'
 import { YouTubeAPIError, YouTubeClient } from '@/lib/youtube'
+import { getYoutubePublishGate } from '@/lib/youtube/publish-gate'
 import { transition, canTransition } from '@/lib/video-state-machine/transitions'
 
 export const runtime = 'nodejs'
@@ -66,14 +67,14 @@ export async function PUT(
   const userId = session.user.id
   const { videoId } = await context.params
 
-  // TRAVA DE SEGURANÇA (Epic 27 append): publicação final no YouTube só é
-  // permitida em produção (ENVIRONMENT=PRD). Em ambiente de testes (default DEV)
-  // bloqueia, evitando que dados de teste subam ao YouTube por engano. É o lock
+  // TRAVA DE SEGURANÇA: publicação final no YouTube exige ENVIRONMENT=PRD (Epic
+  // 27 append) E `features.youtubePublish` ligada pelo admin (set/2026). É o lock
   // real (o botão desabilitado é só UX; isto não pode ser burlado).
-  if (!IS_PRODUCTION) {
-    log('WARN', 'Blocked YouTube publish in non-production environment', { videoId })
+  const gate = await getYoutubePublishGate()
+  if (!gate.allowed) {
+    log('WARN', 'Blocked YouTube publish', { videoId, code: gate.code })
     return NextResponse.json(
-      { error: { code: 'ENV_NOT_AUTHORIZED', message: 'Ambiente de testes, publicação final não autorizada' } },
+      { error: { code: gate.code, message: gate.message } },
       { status: 403 }
     )
   }
