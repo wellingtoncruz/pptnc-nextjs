@@ -22,6 +22,8 @@ interface PodcastFeatures {
 
 interface DashboardLayoutProps {
   userName?: string
+  /** Nome configurado do tenant; `null` quando não há podcast semeado. */
+  podcastName?: string | null
   data: DashboardData
 }
 
@@ -37,7 +39,7 @@ interface DashboardLayoutProps {
  * montasse a Sidebar com outra fonte, os itens de menu divergiriam entre as
  * abas conforme o que estivesse desabilitado.
  */
-export function DashboardLayout({ userName, data }: DashboardLayoutProps) {
+export function DashboardLayout({ userName, podcastName, data }: DashboardLayoutProps) {
   // Um escopo POR LINHA do 2×2 (D4): o seletor da linha controla os dois
   // gráficos dela. Trocar o escopo é filtro de apresentação — não refaz busca.
   const [spotifyScope, setSpotifyScope] = useState<WeekScope>('last-12-weeks')
@@ -110,7 +112,7 @@ export function DashboardLayout({ userName, data }: DashboardLayoutProps) {
             {firstName ? `Bem-vindo, ${firstName}` : 'Bem-vindo'}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            A evolução do PPT Não Compila, semana a semana — de quarta a terça.
+            A evolução do {podcastName ?? 'podcast'}, semana a semana — de quarta a terça.
           </p>
         </header>
 

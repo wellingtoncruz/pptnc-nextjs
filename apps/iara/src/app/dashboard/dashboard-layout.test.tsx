@@ -74,6 +74,23 @@ describe('DashboardLayout', () => {
     expect(screen.getByText('Bem-vindo')).toBeInTheDocument()
   })
 
+  // O subtítulo é do TENANT (nome configurado), não do PPTNC — escrito por
+  // extenso em 09709ad, só apareceu quando o 2º tenant subiu.
+  it('o subtítulo usa o nome configurado do podcast', () => {
+    render(<DashboardLayout userName="Wellington" podcastName="TrenDs News" data={data} />)
+    expect(
+      screen.getByText('A evolução do TrenDs News, semana a semana — de quarta a terça.')
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/PPT Não Compila/)).not.toBeInTheDocument()
+  })
+
+  it('sem nome de podcast, o subtítulo fica neutro', () => {
+    render(<DashboardLayout userName="Wellington" podcastName={null} data={data} />)
+    expect(
+      screen.getByText('A evolução do podcast, semana a semana — de quarta a terça.')
+    ).toBeInTheDocument()
+  })
+
   it('monta as DUAS linhas do 2×2, com dois gráficos cada (linha 1 Spotify, linha 2 YouTube)', () => {
     render(<DashboardLayout userName="Wellington" data={data} />)
 

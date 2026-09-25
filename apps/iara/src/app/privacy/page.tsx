@@ -7,6 +7,7 @@
 
 import type { Metadata } from 'next'
 
+import { getPodcastName } from '@/lib/firebase/podcasts-admin'
 import { LegalPage, Section, Paragraph, List } from '@/components/legal/legal-page'
 
 export const metadata: Metadata = {
@@ -14,11 +15,18 @@ export const metadata: Metadata = {
   description: 'Política de Privacidade da plataforma IAra.',
 }
 
+// Renderiza por requisição: o rodapé lê o nome do tenant no Firestore. Estática,
+// a página seria gerada no BUILD — sem credencial, e numa imagem compartilhada
+// entre tenants — e todos veriam o mesmo rodapé.
+export const dynamic = 'force-dynamic'
+
 const LAST_UPDATED = '18 de junho de 2026'
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  const podcastName = await getPodcastName()
+
   return (
-    <LegalPage title="Política de Privacidade" lastUpdated={LAST_UPDATED}>
+    <LegalPage title="Política de Privacidade" lastUpdated={LAST_UPDATED} podcastName={podcastName}>
       <Section title="1. Introdução">
         <Paragraph>
           Esta Política de Privacidade descreve como a plataforma IArA

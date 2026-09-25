@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import { auth } from '@/lib/auth'
 import { readMediakit } from '@/lib/firebase/mediakit-admin'
+import { getPodcastName } from '@/lib/firebase/podcasts-admin'
 import { log } from '@/lib/logger'
 import { toWeeks, type WeekSummary } from '@/lib/analytics/weekly'
 
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
   }
 
   const startedAt = Date.now()
-  const mediakit = await readMediakit()
+  const [mediakit, podcastName] = await Promise.all([readMediakit(), getPodcastName()])
   const readMs = Date.now() - startedAt
 
   const series = mediakit.series
@@ -79,5 +80,11 @@ export default async function DashboardPage() {
     unavailable: data.unavailable,
   })
 
-  return <DashboardLayout userName={session.user.name ?? undefined} data={data} />
+  return (
+    <DashboardLayout
+      userName={session.user.name ?? undefined}
+      podcastName={podcastName}
+      data={data}
+    />
+  )
 }

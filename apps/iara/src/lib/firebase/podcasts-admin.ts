@@ -18,6 +18,7 @@ import { log } from '@/lib/logger'
 import type { Podcast, PodcastCreate, PodcastUpdate } from '@/types/podcast'
 
 import { getAdminDb } from './admin'
+import { PODCAST_ID } from './config'
 
 /**
  * Gets a podcast document by ID (admin context).
@@ -47,6 +48,27 @@ export async function getPodcastAdmin(podcastId: string): Promise<Podcast | null
       log('ERROR', 'Failed to get podcast (admin)', { podcastId, error })
     }
     throw error
+  }
+}
+
+/**
+ * Nome do podcast DESTE deployment, para textos de interface.
+ *
+ * O nome é configuração do tenant desde o começo do projeto — texto de tela
+ * nunca o escreve por extenso. Com um único tenant, o literal e o configurado
+ * eram indistinguíveis; o 2º tenant (TrenDs News) expôs seis telas com o nome
+ * do PPTNC.
+ *
+ * Nunca lança: serve login, home e páginas legais, que são públicas e não podem
+ * cair por falha de leitura. Sem nome (deployment ainda sem podcast semeado, ou
+ * erro), devolve `null` e cada tela usa o seu texto neutro.
+ */
+export async function getPodcastName(): Promise<string | null> {
+  try {
+    const podcast = await getPodcastAdmin(PODCAST_ID)
+    return podcast?.name?.trim() || null
+  } catch {
+    return null
   }
 }
 

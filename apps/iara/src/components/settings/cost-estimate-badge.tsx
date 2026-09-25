@@ -100,7 +100,7 @@ export function CostEstimateBadge({ provider, model }: CostEstimateBadgeProps) {
             <div className="pt-1 border-t border-border/40 text-[10px] text-muted-foreground">
               {estimate.source === 'actual'
                 ? `Baseado no histórico real dos últimos 30 dias.`
-                : `Baseado em volumes típicos PPTNC (sem histórico real disponível).`}
+                : `Baseado em volumes típicos de um podcast de referência (sem histórico real disponível).`}
             </div>
           </div>
         </TooltipContent>
