@@ -181,6 +181,28 @@ describe('Phase8Publish', () => {
       expect(screen.getByRole('button', { name: /enviar para o youtube/i })).toBeDisabled()
     })
 
+    // Flag `youtubePublish` (set/2026): em PRD com a publicação desligada pelo
+    // admin, o aviso é o motivo que o servidor mandou — não "ambiente de testes".
+    it('mostra o motivo do servidor quando o admin desligou a publicação', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: {
+            publishAllowed: false,
+            publishBlockedReason: 'Publicação no YouTube desligada nas Configurações do podcast',
+          },
+        }),
+      }))
+
+      render(<Phase8Publish video={mockVideoComplete} onSend={vi.fn()} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/desligada nas Configurações do podcast/)).toBeInTheDocument()
+      })
+      expect(screen.queryByText(/ambiente de testes/i)).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /enviar para o youtube/i })).toBeDisabled()
+    })
+
     it('mantém o botão habilitado em produção (publishAllowed=true)', async () => {
       render(<Phase8Publish video={mockVideoComplete} onSend={vi.fn()} />)
 

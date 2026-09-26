@@ -15,6 +15,7 @@ import {
   keepKnownFollowers,
   spotifyAdapter,
   SpotifyCredentialsExpired,
+  spotifyShowId,
   yearChunks,
 } from './spotify'
 
@@ -289,3 +290,33 @@ describe('spotifyAdapter', () => {
     await expect(spotifyAdapter.collect()).rejects.toThrow(/SPOTIFY_SP_DC/)
   })
 })
+
+// O show era constante do PPTNC; o 2º tenant (TrenDs News) passa o dele por env.
+describe('spotify show por tenant (MEDIAKIT_SPOTIFY_SHOW_ID)', () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals()
+    delete process.env.MEDIAKIT_SPOTIFY_SHOW_ID
+    process.env.SPOTIFY_SP_DC = 'dc'
+    process.env.SPOTIFY_SP_KEY = 'key'
+    mockReadMediakit.mockResolvedValue({ series: { spotifyDaily: [] } })
+  })
+
+  it('sem a env, segue no show do PPTNC', () => {
+    expect(spotifyShowId()).toBe('5aKHRdBlylb2wj5Ac8Kqpj')
+  })
+
+  it('com a env, TODAS as chamadas vão ao show do tenant — nenhuma ao do PPTNC', async () => {
+    process.env.MEDIAKIT_SPOTIFY_SHOW_ID = 'TRENDS_SHOW'
+    stubSpotifyApis()
+
+    await spotifyAdapter.collect()
+
+    const showUrls = (vi.mocked(fetch).mock.calls as Array<[string]>)
+      .map(([url]) => url)
+      .filter((url) => url.includes('/shows/'))
+    expect(showUrls.length).toBeGreaterThan(0)
+    expect(showUrls.every((url) => url.includes('/shows/TRENDS_SHOW/'))).toBe(true)
+    delete process.env.MEDIAKIT_SPOTIFY_SHOW_ID
+  })
+})
+

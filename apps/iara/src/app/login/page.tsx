@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Image from 'next/image'
 
 import { auth, signIn } from '@/lib/auth'
+import { getPodcastName } from '@/lib/firebase/podcasts-admin'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { GoogleIcon } from '@/components/auth/google-icon'
@@ -32,6 +33,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect(callbackUrl)
   }
 
+  const podcastName = await getPodcastName()
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm border-border/50">
@@ -49,7 +52,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">IAra</h1>
             <CardDescription>
-              A Inteligência Artificial do PPT Não Compila
+              A Inteligência Artificial do {podcastName ?? 'seu podcast'}
             </CardDescription>
           </div>
         </CardHeader>

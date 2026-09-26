@@ -1,10 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@/test-utils'
 
-const { mockAuth, mockSignIn, mockRedirect } = vi.hoisted(() => ({
+const { mockAuth, mockSignIn, mockRedirect, mockGetPodcastName } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockSignIn: vi.fn(),
   mockRedirect: vi.fn(),
+  mockGetPodcastName: vi.fn(),
+}))
+
+vi.mock('@/lib/firebase/podcasts-admin', () => ({
+  getPodcastName: mockGetPodcastName,
 }))
 
 vi.mock('@/lib/auth', () => ({
@@ -21,6 +26,7 @@ import HomePage from './page'
 describe('HomePage (public landing)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetPodcastName.mockResolvedValue('PPT Não Compila')
   })
 
   it('renders a public landing with a visible Privacy Policy link when unauthenticated', async () => {
@@ -56,5 +62,25 @@ describe('HomePage (public landing)', () => {
 
     expect(mockRedirect).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /Entrar com Google/ })).toBeInTheDocument()
+  })
+
+  it('names the configured podcast — a second tenant never sees PPT Não Compila', async () => {
+    mockAuth.mockResolvedValue(null)
+    mockGetPodcastName.mockResolvedValue('TrenDs News')
+
+    render(await HomePage())
+
+    expect(screen.getByText('A Inteligência Artificial do TrenDs News')).toBeInTheDocument()
+    expect(screen.getByText(/IAra · TrenDs News/)).toBeInTheDocument()
+    expect(screen.queryByText(/PPT Não Compila/)).not.toBeInTheDocument()
+  })
+
+  it('uses neutral copy when the deployment has no podcast yet', async () => {
+    mockAuth.mockResolvedValue(null)
+    mockGetPodcastName.mockResolvedValue(null)
+
+    render(await HomePage())
+
+    expect(screen.getByText('A Inteligência Artificial do seu podcast')).toBeInTheDocument()
   })
 })

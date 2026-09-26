@@ -21,9 +21,11 @@ interface LegalPageProps {
   lastUpdated: string
   /** Document body — use the exported Section/Paragraph/List helpers. */
   children: React.ReactNode
+  /** Nome configurado do podcast (`getPodcastName`); sem ele, o rodapé fica só "IAra". */
+  podcastName?: string | null
 }
 
-export function LegalPage({ title, lastUpdated, children }: LegalPageProps) {
+export function LegalPage({ title, lastUpdated, children, podcastName }: LegalPageProps) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-6 py-12">
@@ -71,7 +73,7 @@ export function LegalPage({ title, lastUpdated, children }: LegalPageProps) {
               Voltar ao login
             </Link>
           </nav>
-          <p>© {new Date().getFullYear()} IAra · PPT Não Compila</p>
+          <p>© {new Date().getFullYear()} IAra{podcastName ? ` · ${podcastName}` : ''}</p>
         </footer>
       </div>
     </main>

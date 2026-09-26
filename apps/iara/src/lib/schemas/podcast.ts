@@ -504,6 +504,13 @@ export const PodcastSchema = z.object({
      * sozinha, e nesse caso o step ancora antes de `links` do mesmo jeito.
      */
     extraImagesGeneration: z.boolean().default(false),
+    /**
+     * Libera a publicação final no YouTube (metadados + thumbnail). É a chave
+     * do ADMIN; a de infra (`ENVIRONMENT=PRD`) continua valendo — as duas
+     * precisam estar abertas (`lib/youtube/publish-gate.ts`). Default `true`
+     * para o PPTNC seguir publicando sem migração; tenant novo nasce `false`.
+     */
+    youtubePublish: z.boolean().default(true),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

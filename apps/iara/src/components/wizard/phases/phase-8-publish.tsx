@@ -87,17 +87,24 @@ export function Phase8Publish({
   const guests = video.guests || []
   const links = video.links || []
 
-  // Trava de segurança (Epic 27 append): a publicação final só é liberada em
-  // produção (ENVIRONMENT=PRD). A trava REAL é server-side (a rota retorna 403);
+  // Trava de segurança (Epic 27 append + flag `youtubePublish`, set/2026): a
+  // publicação final só é liberada em PRD com a flag ligada. A trava REAL é server-side (a rota retorna 403);
   // este botão é só UX. Default otimista `true` → em prod não há flash; em
   // ambiente de testes o fetch desabilita o botão (e, se clicarem no intervalo,
   // o server bloqueia mesmo assim).
   const [publishAllowed, setPublishAllowed] = useState<boolean>(true)
+  // O motivo vem do servidor: fora de PRD ou flag `youtubePublish` desligada
+  // pelo admin. Sem resposta, cai no texto histórico do ambiente de testes.
+  const [publishBlockedReason, setPublishBlockedReason] = useState<string | null>(null)
   useEffect(() => {
     let active = true
     fetch('/api/environment')
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (active) setPublishAllowed(d?.data?.publishAllowed ?? false) })
+      .then((d) => {
+        if (!active) return
+        setPublishAllowed(d?.data?.publishAllowed ?? false)
+        setPublishBlockedReason(d?.data?.publishBlockedReason ?? null)
+      })
       .catch(() => { if (active) setPublishAllowed(false) })
     return () => { active = false }
   }, [])
@@ -456,13 +463,13 @@ export function Phase8Publish({
           </CardContent>
         </Card>
 
-        {/* Trava de segurança: ambiente de testes não autoriza publicação final */}
+        {/* Trava de segurança: fora de PRD ou publicação desligada pelo admin */}
         {!publishAllowed && !isSent && (
           <div
             data-testid="publish-env-lock"
             className="mt-4 flex items-center gap-2 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950/20 dark:text-amber-200"
           >
-            <span>⚠️ Ambiente de testes, publicação final não autorizada</span>
+            <span>⚠️ {publishBlockedReason ?? 'Ambiente de testes, publicação final não autorizada'}</span>
           </div>
         )}
 

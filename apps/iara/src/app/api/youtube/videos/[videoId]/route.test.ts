@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Trava de segurança (Epic 27 append): publicação final só em produção.
 // IS_PRODUCTION=false → a rota deve retornar 403 ANTES de tocar vídeo/YouTube.
+// A trava (`lib/youtube/publish-gate.ts`) roda de verdade aqui — em DEV ela
+// responde sem ler o podcast; a chave do admin é testada em publish-gate.test.ts.
 vi.mock('@/lib/auth', () => ({ auth: vi.fn() }))
 vi.mock('@/lib/firebase/config', () => ({ IS_PRODUCTION: false, PODCAST_ID: 'pptnc' }))
 vi.mock('@/lib/logger', () => ({ log: vi.fn() }))

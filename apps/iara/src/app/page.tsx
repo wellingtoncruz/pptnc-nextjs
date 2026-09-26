@@ -14,6 +14,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { auth, signIn } from '@/lib/auth'
+import { getPodcastName } from '@/lib/firebase/podcasts-admin'
 import { Button } from '@/components/ui/button'
 import { GoogleIcon } from '@/components/auth/google-icon'
 
@@ -23,6 +24,8 @@ export default async function HomePage() {
   if (session && !session.error) {
     redirect('/dashboard')
   }
+
+  const podcastName = await getPodcastName()
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between bg-background p-6">
@@ -38,7 +41,7 @@ export default async function HomePage() {
 
         <h1 className="mt-6 text-3xl font-bold tracking-tight">IAra</h1>
         <p className="mt-2 text-muted-foreground">
-          A Inteligência Artificial do PPT Não Compila
+          A Inteligência Artificial do {podcastName ?? 'seu podcast'}
         </p>
 
         <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
@@ -75,7 +78,9 @@ export default async function HomePage() {
             Termos de Serviço
           </Link>
         </nav>
-        <p className="mt-3">© {new Date().getFullYear()} IAra · PPT Não Compila</p>
+        <p className="mt-3">
+          © {new Date().getFullYear()} IAra{podcastName ? ` · ${podcastName}` : ''}
+        </p>
       </footer>
     </main>
   )

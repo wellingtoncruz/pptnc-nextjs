@@ -65,6 +65,24 @@ describe('readMediakit', () => {
     expect(data.series?.spotifyDaily).toEqual([])
   })
 
+  // Tenant sem uma das fontes (TrenDs News sem Spotify): a série ausente vira
+  // [] e a outra sobrevive. Antes a seção inteira era descartada.
+  it('a series written by only one adapter is read, the absent one as []', async () => {
+    const youtubeDaily = [{ date: '2026-09-20', minutes: 120, views: 40 }]
+    mockCollectionGet.mockResolvedValue({
+      docs: [mockDoc('series', { youtubeDaily, updatedAt: mockTimestamp })],
+    })
+
+    const data = await readMediakit()
+    expect(data.series?.youtubeDaily).toEqual(youtubeDaily)
+    expect(data.series?.spotifyDaily).toEqual([])
+    expect(log).not.toHaveBeenCalledWith(
+      'WARN',
+      'Invalid mediakit section skipped',
+      expect.anything()
+    )
+  })
+
   it('returns null + WARN for a missing section', async () => {
     mockCollectionGet.mockResolvedValue({
       docs: [mockDoc('stats', MEDIAKIT_SEED_STATS)],
