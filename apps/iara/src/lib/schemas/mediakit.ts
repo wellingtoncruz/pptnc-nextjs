@@ -143,17 +143,23 @@ export const MediakitYoutubeDailyPointSchema = z.object({
   subscribersLost: nonNegInt.optional(),
 })
 
+/**
+ * Cada série é escrita por UM adapter; tenant sem aquela fonte (TrenDs News sem
+ * Spotify, set/2026) tem a série legitimamente AUSENTE → lida como `[]`. Exigir
+ * as duas descartava a seção inteira: o Dashboard perdia a série do YouTube e o
+ * coletor, lendo "nada gravado", refazia o backfill todo dia.
+ */
 export const MediakitSeriesSchema = z.object({
   /** Daily Spotify starts/streams e total de seguidores (collector: spotify) —
    * slide 03 left chart aggregates starts/streams to monthly at render time;
    * `followers` é matéria-prima do Dashboard (Epic 31), cuja variação semanal é
    * derivada na leitura, nunca na coleta. */
-  spotifyDaily: z.array(MediakitSpotifyDailyPointSchema),
+  spotifyDaily: z.array(MediakitSpotifyDailyPointSchema).default([]),
   /** Daily YouTube watch minutes, views e inscritos ganhos/perdidos (collector:
    * youtube) — slide 03 right chart aggregates minutes to monthly hours at
    * render time; as demais métricas são matéria-prima do Dashboard (Epic 31),
    * agregadas por semana na leitura, nunca na coleta. */
-  youtubeDaily: z.array(MediakitYoutubeDailyPointSchema),
+  youtubeDaily: z.array(MediakitYoutubeDailyPointSchema).default([]),
   ...docMeta,
 })
 
