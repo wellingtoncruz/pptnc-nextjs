@@ -80,6 +80,14 @@ export async function PUT(
       )
     }
 
+    // 2a. Avulso nunca tem pai (Epic 25 + adendo)
+    if (video.standalone === true) {
+      return NextResponse.json(
+        { error: { code: 'STANDALONE_NO_PARENT', message: 'Vídeo avulso não tem episódio pai' } },
+        { status: 400 }
+      )
+    }
+
     // 2b. Validate no self-reference
     if (parentEpisodeId === videoId) {
       return NextResponse.json(
@@ -104,6 +112,15 @@ export async function PUT(
     if (parentVideoType !== 'episode') {
       return NextResponse.json(
         { error: { code: 'INVALID_PARENT_TYPE', message: 'Pai deve ser um episodio' } },
+        { status: 400 }
+      )
+    }
+
+    // 5. Avulso não tem filhos (adendo do Epic 25) — nem reclassificado como
+    // episódio pode ser pai. O seletor já o esconde; isto fecha a chamada direta.
+    if (parentEpisode.standalone === true) {
+      return NextResponse.json(
+        { error: { code: 'INVALID_PARENT', message: 'Vídeo avulso não pode ser episódio pai' } },
         { status: 400 }
       )
     }

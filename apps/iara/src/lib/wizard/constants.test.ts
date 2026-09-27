@@ -396,17 +396,16 @@ describe('getPhaseIdsForVideoTypeWithFeatures (Epic 22)', () => {
       ).toEqual(['title', 'description', 'tags', 'publish'])
     })
 
-    it('drops the analysis phases for a standalone episode (out-of-scope but safe)', () => {
-      // episode+standalone is not a real product case (decision Wellington), but
-      // the filter must still behave: parent + critique/edit-check/risk/chapters out.
-      // 'links' stays (episode phase, not podcast-only).
-      expect(getPhaseIdsForVideoTypeWithFeatures('episode', undefined, true)).toEqual([
-        'title',
-        'description',
-        'tags',
-        'links',
-        'publish',
-      ])
+    // Adendo do Epic 25 (2026-09-27): avulso reclassificado como episódio roda
+    // o wizard de episódio LITERAL — o teste anterior fixava o contrário
+    // (análises fora), de quando episódio+avulso "não era caso real".
+    it('a standalone episode keeps the full episode flow (analysis phases included)', () => {
+      expect(getPhaseIdsForVideoTypeWithFeatures('episode', undefined, true)).toEqual(
+        getPhaseIdsForVideoTypeWithFeatures('episode')
+      )
+      expect(
+        getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: true, extraImagesGeneration: true }, true)
+      ).toEqual(getPhaseIdsForVideoTypeWithFeatures('episode', { thumbnailGeneration: true, extraImagesGeneration: true }))
     })
 
     it('standalone=false is identical to the non-standalone flow (regression)', () => {
@@ -517,7 +516,8 @@ describe('getPhaseIdsForVideoTypeWithFeatures — extraImagesGeneration (Epic 28
       true
     )
     expect(phases).toContain('extra-images')
-    expect(phases).not.toContain('critique')
+    // Adendo do Epic 25: avulso-episódio mantém as análises do episódio.
+    expect(phases).toContain('critique')
   })
 
   it('não altera a sequência do thumbnail quando só ele está ligado (Epic 22 intacto)', () => {

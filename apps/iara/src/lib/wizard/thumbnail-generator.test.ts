@@ -197,6 +197,28 @@ describe('generateThumbnail', () => {
     expect(options.referenceImages[0].uri).toContain('/standalone/')
   })
 
+  // Adendo do Epic 25: avulso reclassificado como episódio usa a thumbnail do EPISÓDIO.
+  it('standalone EPISODE uses the episode thumbnail config, not the standalone one', async () => {
+    const video = { id: 'video-1', videoType: 'episode', standalone: true, title: 'Pocket' } as never
+    const podcast = {
+      ...(basePodcast as object),
+      prompts: {
+        episode: {
+          thumbnail: { description: 'Thumbnail de EPISÓDIO', expectedOutput: 'PNG 1280x720' },
+        },
+        standalone: {
+          thumbnail: { description: 'Thumbnail de vídeo AVULSO', expectedOutput: 'PNG 1280x720' },
+        },
+      },
+    } as never
+
+    await generateThumbnail({ video, podcast, observation: undefined })
+
+    const [prompt] = mockCallGenAIImage.mock.calls[0]
+    expect(String(prompt)).toContain('EPISÓDIO')
+    expect(String(prompt)).not.toContain('vídeo AVULSO')
+  })
+
   it('base/reference images are optional: generates text-only when none configured', async () => {
     const podcast = {
       ...basePodcast,

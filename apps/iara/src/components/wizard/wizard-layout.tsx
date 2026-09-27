@@ -34,6 +34,8 @@ interface WizardLayoutProps {
    * a "Vídeo avulso" toggle is shown in the video header for cut/reel videos.
    */
   onStandaloneToggle?: (next: boolean) => Promise<void>
+  /** Reclassificação manual do avulso (adendo do Epic 25) — espurga o wizard. */
+  onReclassify?: (videoType: 'episode' | 'cut' | 'reel') => Promise<void>
   /**
    * Optional podcast features used to gate phases conditionally in the
    * breadcrumb. Currently only `thumbnailGeneration` (Epic 22 / Story 22.3a)
@@ -72,6 +74,7 @@ export function WizardLayout({
   onTitleChange,
   onShortTitleChange,
   onStandaloneToggle,
+  onReclassify,
   features,
   className,
 }: WizardLayoutProps) {
@@ -159,7 +162,12 @@ export function WizardLayout({
           <div className="lg:w-1/2 p-4 flex flex-col">
             <VideoHeader video={video} onTitleChange={onTitleChange} className="mb-2" />
             {onStandaloneToggle && (
-              <StandaloneToggle video={video} onToggle={onStandaloneToggle} className="mb-3" />
+              <StandaloneToggle
+                video={video}
+                onToggle={onStandaloneToggle}
+                onReclassify={onReclassify}
+                className="mb-3"
+              />
             )}
             <VideoPreview
               videoId={wizard.state.videoId}

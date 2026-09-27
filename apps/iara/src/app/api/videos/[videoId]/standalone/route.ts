@@ -10,11 +10,15 @@
  *   inherited from the parent (parentEpisodeId, guests, theme). These are
  *   re-inherited if the producer later turns the flag off and re-selects a
  *   parent via PUT /parent.
- * - Disabling (standalone=false): just flips the flag; the parent-selection
- *   phase reappears in the wizard.
+ * - Disabling (standalone=false) — adendo do Epic 25 (2026-09-27): o tipo
+ *   volta a ser o da DURAÇÃO (a reclassificação manual só vale para avulso) e
+ *   o wizard recomeça — dados gerados espurgados, imagens incluídas, título/
+ *   descrição/tags restaurados do YouTube (lib/wizard/purge-wizard-data.ts).
+ *   A seleção de pai reaparece se o tipo voltar a corte/reel.
  *
- * Only cut and reel videos can be standalone (episodes are out of scope —
- * decision Wellington; see ADR-25.3).
+ * Only cut and reel videos can BECOME standalone (by duration, "por enquanto" —
+ * decision Wellington; see ADR-25.3). Once standalone, the type is free
+ * (PUT /video-type), so disabling must work whatever the current type is.
  *
  * Body: { standalone: boolean }
  *
@@ -26,10 +30,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
+import { runAvulsoPurge } from '@/lib/api/avulso-purge'
 import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import { log } from '@/lib/logger'
+import { classifyVideoType } from '@/lib/video-utils'
 
 export const runtime = 'nodejs'
 
@@ -81,7 +88,42 @@ export async function PUT(
       )
     }
 
-    // 2. Validate that current video is cut or reel (episodes are out of scope)
+    // 2. Desmarcar: tipo volta ao da duração + espurgo do wizard (adendo 25).
+    if (!standalone) {
+      if (!video.standalone) {
+        return NextResponse.json({
+          data: { standalone: false, videoType: video.videoType, imagesPurged: true },
+        })
+      }
+      const podcast = await getPodcastAdmin(PODCAST_ID)
+      if (!podcast) {
+        return NextResponse.json(
+          { error: { code: 'PODCAST_NOT_CONFIGURED', message: 'Podcast não encontrado' } },
+          { status: 500 }
+        )
+      }
+      const videoType = classifyVideoType(video.duration, podcast.videoTypes)
+      const result = await runAvulsoPurge({
+        podcastId: PODCAST_ID,
+        userId: session.user.id,
+        video,
+        patch: { standalone: false, videoType },
+      })
+      if (!result.ok) return result.response
+
+      log('INFO', 'Standalone flag disabled (wizard purged, type from duration)', {
+        userId: session.user.id,
+        videoId,
+        from: video.videoType,
+        to: videoType,
+        imagesPurged: result.imagesPurged,
+      })
+      return NextResponse.json({
+        data: { standalone: false, videoType, imagesPurged: result.imagesPurged },
+      })
+    }
+
+    // 3. Marcar: só corte ou reel (episódios fora do escopo, por enquanto)
     if (video.videoType === 'episode' || !video.videoType) {
       return NextResponse.json(
         { error: { code: 'INVALID_VIDEO_TYPE', message: 'Apenas videos cut ou reel podem ser avulsos' } },
@@ -89,12 +131,9 @@ export async function PUT(
       )
     }
 
-    // 3. Build the update. Enabling clears the parent link + inherited fields
-    // (guests/theme came from the parent via PUT /parent); disabling just
-    // flips the flag.
-    const updateData = standalone
-      ? { standalone: true, parentEpisodeId: '', guests: [], theme: '' }
-      : { standalone: false }
+    // 4. Enabling clears the parent link + inherited fields (guests/theme came
+    // from the parent via PUT /parent).
+    const updateData = { standalone: true, parentEpisodeId: '', guests: [], theme: '' }
 
     await updateVideoAdmin(PODCAST_ID, videoId, updateData)
 
@@ -102,17 +141,12 @@ export async function PUT(
       userId: session.user.id,
       videoId,
       videoType: video.videoType,
-      standalone,
-      clearedParent: standalone,
+      standalone: true,
+      clearedParent: true,
     })
 
     return NextResponse.json({
-      data: {
-        standalone,
-        parentEpisodeId: standalone ? '' : (video.parentEpisodeId ?? ''),
-        guests: standalone ? [] : (video.guests ?? []),
-        theme: standalone ? '' : (video.theme ?? ''),
-      },
+      data: { standalone: true, parentEpisodeId: '', guests: [], theme: '' },
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
