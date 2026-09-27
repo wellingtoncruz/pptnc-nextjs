@@ -123,8 +123,17 @@ interface InitParams {
  * hydration effect runs.
  */
 function initializeWizardState({ videoId, videoData }: InitParams): WizardState {
-  const stored = loadWizardState(videoId)
+  let stored = loadWizardState(videoId)
   const videoType = videoData?.videoType ?? 'episode'
+
+  // Estado salvo de OUTRO tipo é descartado: o fluxo de fases é outro, e a fase
+  // atual dele (ex.: 'parent' de um corte) não existe no fluxo novo — o wizard
+  // abria parado, sem painel. Acontece desde que o tipo passou a mudar
+  // (reclassificação do avulso, adendo do Epic 25). Só compara quando os dois
+  // lados informam o tipo; estado antigo sem `videoType` segue o caminho abaixo.
+  if (stored?.videoType && videoData?.videoType && stored.videoType !== videoData.videoType) {
+    stored = null
+  }
 
   // Create initial state with video type for proper phase initialization
   let initial = stored ?? createInitialWizardState(

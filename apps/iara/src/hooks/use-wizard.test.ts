@@ -136,3 +136,41 @@ describe('useWizard — reinitializeFromVideo (Epic 25 / Story 25.9 — Vídeo A
     expect(result.current.currentPhase).toBe('parent')
   })
 })
+
+// Adendo do Epic 25: reclassificar o avulso muda o tipo do vídeo. O estado que
+// ficou no navegador é do fluxo antigo — um corte reclassificado como episódio
+// abria parado em 'parent', fase que não existe no fluxo de episódio.
+describe('useWizard — estado salvo de outro tipo (reclassificação do avulso)', () => {
+  it('corte reclassificado como episódio recomeça pela crítica', () => {
+    const cutState = {
+      videoId: 'vid-5',
+      videoType: 'cut',
+      currentPhase: 'parent',
+      phases: kebabPhases(),
+      schemaVersion: 2,
+    }
+    localStorage.setItem(storageKey('vid-5'), JSON.stringify(cutState))
+
+    const { result } = renderHook(() =>
+      useWizard('vid-5', { videoType: 'episode', standalone: true })
+    )
+
+    expect(result.current.currentPhase).toBe('critique')
+  })
+
+  it('episódio que volta a corte avulso recomeça pelo título (sem fase de pai)', () => {
+    const episodeState = {
+      videoId: 'vid-6',
+      videoType: 'episode',
+      currentPhase: 'chapters',
+      phases: kebabPhases(),
+      schemaVersion: 2,
+    }
+    localStorage.setItem(storageKey('vid-6'), JSON.stringify(episodeState))
+
+    const { result } = renderHook(() => useWizard('vid-6', { videoType: 'cut', standalone: true }))
+
+    expect(result.current.currentPhase).toBe('title')
+  })
+})
+
