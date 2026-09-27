@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/test-utils'
+import { render, screen, waitFor, within } from '@/test-utils'
 import userEvent from '@testing-library/user-event'
 
 import { StandaloneToggle } from './standalone-toggle'
@@ -61,13 +61,73 @@ describe('StandaloneToggle', () => {
     await waitFor(() => expect(onToggle).toHaveBeenCalledWith(true))
   })
 
-  it('turning OFF calls onToggle(false) directly (no confirmation needed)', async () => {
+  // Adendo do Epic 25: desmarcar ESPURGA o wizard — passou a exigir confirmação.
+  it('turning OFF asks for confirmation (it purges the wizard) before onToggle(false)', async () => {
     const onToggle = vi.fn().mockResolvedValue(undefined)
     render(<StandaloneToggle video={makeVideo({ standalone: true })} onToggle={onToggle} />)
 
     await userEvent.click(screen.getByRole('switch'))
 
+    expect(await screen.findByText('Deixar de ser avulso?')).toBeInTheDocument()
+    expect(screen.getByText(/recomeça do zero/)).toBeInTheDocument()
+    expect(onToggle).not.toHaveBeenCalled()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }))
     await waitFor(() => expect(onToggle).toHaveBeenCalledWith(false))
-    expect(screen.queryByText('Marcar como vídeo avulso?')).not.toBeInTheDocument()
+  })
+
+  it('cancelling the purge confirmation changes nothing', async () => {
+    const onToggle = vi.fn().mockResolvedValue(undefined)
+    render(<StandaloneToggle video={makeVideo({ standalone: true })} onToggle={onToggle} />)
+
+    await userEvent.click(screen.getByRole('switch'))
+    await userEvent.click(await screen.findByRole('button', { name: 'Cancelar' }))
+
+    expect(onToggle).not.toHaveBeenCalled()
+  })
+
+  describe('seletor de tipo do avulso (adendo do Epic 25)', () => {
+    it('só aparece quando o vídeo é avulso', () => {
+      const { unmount } = render(
+        <StandaloneToggle video={makeVideo({ standalone: false })} onToggle={vi.fn()} onReclassify={vi.fn()} />
+      )
+      expect(screen.queryByRole('group', { name: 'Tipo do vídeo avulso' })).not.toBeInTheDocument()
+      unmount()
+
+      render(<StandaloneToggle video={makeVideo({ standalone: true })} onToggle={vi.fn()} onReclassify={vi.fn()} />)
+      const group = screen.getByRole('group', { name: 'Tipo do vídeo avulso' })
+      expect(within(group).getByRole('button', { name: 'Corte' })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('avulso reclassificado como episódio continua com o controle (dá para desfazer)', () => {
+      render(
+        <StandaloneToggle
+          video={makeVideo({ standalone: true, videoType: 'episode' })}
+          onToggle={vi.fn()}
+          onReclassify={vi.fn()}
+        />
+      )
+      expect(screen.getByRole('switch')).toBeChecked()
+      expect(screen.getByRole('button', { name: 'Episódio' })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('escolher outro tipo confirma o espurgo antes de reclassificar', async () => {
+      const onReclassify = vi.fn().mockResolvedValue(undefined)
+      render(
+        <StandaloneToggle video={makeVideo({ standalone: true })} onToggle={vi.fn()} onReclassify={onReclassify} />
+      )
+
+      await userEvent.click(screen.getByRole('button', { name: 'Episódio' }))
+      expect(await screen.findByText('Reclassificar como Episódio?')).toBeInTheDocument()
+      expect(onReclassify).not.toHaveBeenCalled()
+
+      await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }))
+      await waitFor(() => expect(onReclassify).toHaveBeenCalledWith('episode'))
+    })
+
+    it('o tipo atual não é clicável (reclassificar para o mesmo tipo espurgaria por nada)', () => {
+      render(<StandaloneToggle video={makeVideo({ standalone: true })} onToggle={vi.fn()} onReclassify={vi.fn()} />)
+      expect(screen.getByRole('button', { name: 'Corte' })).toBeDisabled()
+    })
   })
 })

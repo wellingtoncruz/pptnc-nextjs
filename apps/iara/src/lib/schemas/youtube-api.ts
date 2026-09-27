@@ -276,6 +276,21 @@ export const YouTubeVideoStatusCheckResponseSchema = z.object({
 })
 
 /**
+ * Resposta de `videos.list?part=snippet` — só os metadados editoriais.
+ *
+ * Usada pelo espurgo do wizard (adendo do Epic 25): título, descrição e tags
+ * que sobrevivem são os que estão NO YOUTUBE agora. `tags` só vem para quem
+ * gerencia o canal.
+ */
+export const YouTubeVideoSnippetResponseSchema = z.object({
+  kind: z.literal('youtube#videoListResponse').optional(),
+  items: z.array(z.object({
+    id: z.string(),
+    snippet: YouTubeSnippetSchema,
+  })),
+})
+
+/**
  * YouTube Video Update Response schema - response from videos.update endpoint.
  *
  * Returns the updated video resource.

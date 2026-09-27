@@ -14,6 +14,7 @@ import {
   YouTubeCaptionsResponseSchema,
   YouTubeChannelsResponseSchema,
   YouTubePlaylistItemsResponseSchema,
+  YouTubeVideoSnippetResponseSchema,
   YouTubeVideosResponseSchema,
   YouTubeVideoStatusCheckResponseSchema,
   YouTubeVideoUpdateResponseSchema,
@@ -352,6 +353,31 @@ export class YouTubeClient {
       // A video is a finished live broadcast if it has actualEndTime in liveStreamingDetails
       wasLiveBroadcast: Boolean(item.liveStreamingDetails?.actualEndTime),
     }))
+  }
+
+  /**
+   * Metadados editoriais VIGENTES no YouTube (título, descrição, tags) de um
+   * vídeo — 1 unidade de quota. `null` quando o token não enxerga o vídeo.
+   *
+   * Fonte do que sobrevive ao espurgo do wizard (adendo do Epic 25): num vídeo
+   * publicado é o último envio; num não publicado, o original. O banco não serve
+   * para isso — o wizard grava título/descrição/tags por cima dos do YouTube.
+   */
+  async getVideoMetadata(
+    videoId: string
+  ): Promise<{ title: string; description: string; tags: string[]; channelId: string } | null> {
+    const data = await this.fetch(
+      `/videos?id=${encodeURIComponent(videoId)}&part=snippet`,
+      YouTubeVideoSnippetResponseSchema
+    )
+    const item = data.items[0]
+    if (!item) return null
+    return {
+      title: item.snippet.title,
+      description: item.snippet.description,
+      tags: item.snippet.tags ?? [],
+      channelId: item.snippet.channelId,
+    }
   }
 
   /**

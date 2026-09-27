@@ -12,6 +12,7 @@ import {
   type TrackedPhaseId,
   type WizardPhaseId,
 } from './phase-id-map'
+import { usesAvulsoFlow } from './avulso'
 import type { PhaseMetadata, VideoTypeForWizard } from './types'
 
 /**
@@ -217,7 +218,8 @@ export function getPhaseIdsForVideoTypeWithFeatures(
   standalone = false
 ): WizardPhaseId[] {
   let base = getPhaseIdsForVideoType(videoType)
-  if (standalone) {
+  // Avulso-episódio (adendo do Epic 25) mantém as fases de análise do episódio.
+  if (usesAvulsoFlow(videoType, standalone)) {
     base = base.filter((id) => !PODCAST_ONLY_PHASE_IDS.has(id))
   }
 

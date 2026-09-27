@@ -244,6 +244,44 @@ export async function deleteNewsImage(filePath: string): Promise<void> {
 }
 
 /**
+ * Apaga TODAS as imagens que o wizard gerou para um vídeo: thumbnails finais,
+ * staging (thumbnail e imagens extras compartilham `thumbnail-staging/`) e
+ * imagens extras finais. Usado pelo espurgo do wizard (adendo do Epic 25).
+ *
+ * Varre por prefixo do vídeo — não depende de o documento ainda apontar para
+ * cada arquivo (candidatos não escolhidos também ficam no staging).
+ *
+ * @returns quantos arquivos foram apagados
+ * @throws CloudStorageError se a listagem/remoção falhar
+ */
+export async function deleteVideoWizardImages(videoId: string): Promise<number> {
+  if (!videoId || videoId.includes('/') || videoId.includes('..')) {
+    throw new CloudStorageError('Invalid video ID for wizard image purge', 'DELETE_FAILED')
+  }
+  const prefixes = [
+    `thumbnails/${PODCAST_ID}/${videoId}/`,
+    `thumbnail-staging/${PODCAST_ID}/${videoId}/`,
+    `extra-images/${PODCAST_ID}/${videoId}/`,
+  ]
+  try {
+    const bucket = getBucket()
+    let deleted = 0
+    for (const prefix of prefixes) {
+      const [files] = await bucket.getFiles({ prefix })
+      await Promise.all(files.map((file) => file.delete({ ignoreNotFound: true })))
+      deleted += files.length
+    }
+    log('INFO', 'Wizard images purged', { podcastId: PODCAST_ID, videoId, deleted })
+    return deleted
+  } catch (error) {
+    throw new CloudStorageError(
+      `Failed to purge wizard images: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DELETE_FAILED'
+    )
+  }
+}
+
+/**
  * Deletes a newsletter image from Cloud Storage.
  *
  * Fire-and-forget: errors are logged but NOT thrown.

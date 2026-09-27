@@ -2036,6 +2036,17 @@ export function WizardOrchestrator({
   }, [video.id])
 
   /**
+   * Depois de um espurgo do wizard (adendo do Epic 25): apaga o estado salvo no
+   * navegador e recarrega. O orchestrator guarda o resultado de cada fase em
+   * estado local; recarregar é o único reset que garante que nenhum resultado
+   * do wizard anterior sobreviva na tela.
+   */
+  const restartWizardAfterPurge = useCallback(() => {
+    wizard.reset()
+    window.location.reload()
+  }, [wizard])
+
+  /**
    * Toggle the editorial `standalone` flag (Epic 25 Bloco B) from the workspace
    * header. Enabling clears the parent link + inherited guests/theme (mirrors the
    * endpoint), then the wizard state is rebuilt so the phase flow reflects the new
@@ -2057,10 +2068,15 @@ export function WizardOrchestrator({
         throw new Error(errorData.error?.message || 'Erro ao alterar vídeo avulso')
       }
 
-      // Reflect the persisted change locally, then rebuild the wizard flow.
-      const updated: Video = next
-        ? { ...videoData, standalone: true, parentEpisodeId: '', guests: [], theme: '' }
-        : { ...videoData, standalone: false }
+      if (!next) {
+        // Desmarcar espurgou o wizard e pode ter trocado o tipo (adendo do
+        // Epic 25): recomeça do zero, sem nenhum resultado de fase em memória.
+        restartWizardAfterPurge()
+        return
+      }
+
+      // Marcar: reflete localmente e reconstrói o fluxo (sai a fase de pai).
+      const updated: Video = { ...videoData, standalone: true, parentEpisodeId: '', guests: [], theme: '' }
       setVideoData(updated)
       wizard.reinitializeFromVideo(updated)
 
@@ -2070,7 +2086,32 @@ export function WizardOrchestrator({
       log('ERROR', 'Failed to toggle standalone', { videoId: video.id, error: message })
       wizard.addAlert(wizard.currentPhase, 'Erro', message, 'error')
     }
-  }, [video.id, videoData, wizard])
+  }, [video.id, videoData, wizard, restartWizardAfterPurge])
+
+  /**
+   * Reclassificação manual do avulso (adendo do Epic 25, PUT /video-type). O
+   * servidor espurgou o wizard e trocou o tipo — o fluxo inteiro muda (episódio
+   * ↔ corte/reel), então recomeça do zero, como no desmarcar.
+   */
+  const handleReclassify = useCallback(async (videoType: 'episode' | 'cut' | 'reel') => {
+    log('INFO', 'Avulso reclassification requested', { videoId: video.id, videoType })
+    try {
+      const response = await fetch(`/api/videos/${video.id}/video-type`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoType }),
+      })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error?.message || 'Erro ao reclassificar o vídeo')
+      }
+      restartWizardAfterPurge()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao reclassificar o vídeo'
+      log('ERROR', 'Failed to reclassify avulso', { videoId: video.id, error: message })
+      wizard.addAlert(wizard.currentPhase, 'Erro', message, 'error')
+    }
+  }, [video.id, wizard, restartWizardAfterPurge])
 
   /**
    * Handle suggested title edit from Phase 5.
@@ -2945,6 +2986,7 @@ export function WizardOrchestrator({
       onTitleChange={handleTitleChange}
       onShortTitleChange={handleShortTitleChange}
       onStandaloneToggle={handleStandaloneToggle}
+      onReclassify={handleReclassify}
       features={features}
       className={className}
     />

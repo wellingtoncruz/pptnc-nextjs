@@ -29,6 +29,7 @@ import {
 } from '@/lib/llm/image-client'
 import { LLMError } from '@/lib/llm/errors'
 import { log } from '@/lib/logger'
+import { usesAvulsoFlow } from '@/lib/wizard/avulso'
 import { resolveVideoPlaceholders } from '@/lib/youtube/format-chapters'
 import type { Podcast, ThumbnailPromptField } from '@/types/podcast'
 import type { Video } from '@/types/video'
@@ -149,7 +150,10 @@ function getThumbnailConfig(
   }
   // Standalone videos (Epic 25) use their own thumbnail config when complete,
   // falling back to the videoType (cut) bucket otherwise.
-  const standaloneCfg = standalone ? podcast.prompts?.standalone?.thumbnail : undefined
+  // Avulso-episódio usa a thumbnail do EPISÓDIO (adendo do Epic 25).
+  const standaloneCfg = usesAvulsoFlow(videoType, standalone)
+    ? podcast.prompts?.standalone?.thumbnail
+    : undefined
   const config =
     standaloneCfg?.description && standaloneCfg?.expectedOutput
       ? standaloneCfg

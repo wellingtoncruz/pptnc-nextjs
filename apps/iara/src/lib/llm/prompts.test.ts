@@ -391,6 +391,13 @@ describe('buildPhasePrompt', () => {
       expect(result).not.toContain('Gere títulos para corte')
     })
 
+    // Adendo do Epic 25: avulso-episódio usa os prompts do EPISÓDIO.
+    it('a standalone EPISODE ignores the standalone bucket and uses the episode prompts', () => {
+      const result = buildPhasePrompt('title', validWriterPersona, promptsWithStandalone, 'episode', true)
+      expect(result).toBe(buildPhasePrompt('title', validWriterPersona, promptsWithStandalone, 'episode', false))
+      expect(result).not.toContain('Gere títulos para vídeo avulso')
+    })
+
     it('ignores the standalone bucket when standalone=false', () => {
       const result = buildPhasePrompt('title', validWriterPersona, promptsWithStandalone, 'cut', false)
       expect(result).toContain('Gere títulos para corte')

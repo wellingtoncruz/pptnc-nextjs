@@ -1,4 +1,5 @@
 import type { TrackedPhaseId } from '@/lib/wizard'
+import { usesAvulsoFlow } from '@/lib/wizard/avulso'
 import type { Persona, Prompts } from '@/types/podcast'
 import type { VideoType } from '@/types/video'
 
@@ -525,7 +526,8 @@ export function buildPhasePrompt(
   // Fallback chain: [standalone] -> videoType -> episode -> BASE_SYSTEM_PROMPTS.
   // Standalone videos (Epic 25) try their dedicated bucket first so the producer
   // can frame avulso content independently of the podcast cut/reel prompts.
-  let phasePrompt = standalone
+  // Avulso-episódio usa os prompts do EPISÓDIO (adendo do Epic 25).
+  let phasePrompt = usesAvulsoFlow(videoType, standalone)
     ? getPhasePromptFromVideoType(asPromptRecord(prompts.standalone), config.promptKey)
     : undefined
 

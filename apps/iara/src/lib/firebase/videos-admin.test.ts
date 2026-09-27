@@ -73,6 +73,7 @@ import {
   updateVideoEmbedding,
   findSimilarEpisodes,
   getVideosForDisplayAdmin,
+  getEpisodesWithContext,
 } from './videos-admin'
 
 describe('videos-admin.ts - Admin SDK operations', () => {
@@ -687,4 +688,25 @@ describe('videos-admin.ts - Admin SDK operations', () => {
       expect(ids).toEqual(['s-ready', 's-sent'])
     })
   })
+
+  // Adendo do Epic 25: avulso não pode ser pai — nem reclassificado como episódio.
+  describe('getEpisodesWithContext', () => {
+    it('never offers an avulso as a parent candidate', async () => {
+      const doc = (id: string, data: Record<string, unknown>) => ({ id, data: () => data })
+      mockWhere.mockReturnValueOnce({
+        get: vi.fn().mockResolvedValue({
+          empty: false,
+          docs: [
+            doc('ep-1', { title: 'Episódio de verdade', videoType: 'episode' }),
+            doc('pocket', { title: 'Pocket-episódio', videoType: 'episode', standalone: true }),
+          ],
+        }),
+      })
+
+      const episodes = await getEpisodesWithContext('pptnc')
+
+      expect(episodes.map((e) => e.id)).toEqual(['ep-1'])
+    })
+  })
 })
+

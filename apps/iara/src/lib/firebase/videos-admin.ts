@@ -971,6 +971,10 @@ export async function getEpisodesWithContext(
     for (const docSnap of snapshot.docs) {
       const rawData = docSnap.data()
 
+      // Avulso não tem pai NEM filhos (adendo do Epic 25): um avulso
+      // reclassificado como episódio nunca aparece como pai possível.
+      if (rawData.standalone === true) continue
+
       // Parse publishedAt safely for sorting
       const publishedAtDate = parsePublishedAt(rawData.publishedAt)
 

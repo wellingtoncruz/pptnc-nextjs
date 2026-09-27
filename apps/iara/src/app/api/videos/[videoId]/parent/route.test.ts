@@ -169,6 +169,28 @@ describe('PUT /api/videos/[videoId]/parent', () => {
       expect(json.error.code).toBe('INVALID_PARENT_TYPE')
     })
 
+    // Adendo do Epic 25: avulso não tem pai NEM filhos ("é por isso que se
+    // chama AVULSO" — Wellington). Nem reclassificado como episódio vira pai.
+    it('returns 400 when the parent is an avulso (even reclassified as episode)', async () => {
+      mockGetVideoAdmin
+        .mockResolvedValueOnce({ id: 'cut-video', videoType: 'cut' } as never)
+        .mockResolvedValueOnce({ id: 'pocket', videoType: 'episode', standalone: true } as never)
+
+      const response = await PUT(createMockRequest({ parentEpisodeId: 'pocket' }), createContext('cut-video'))
+
+      expect(response.status).toBe(400)
+      expect((await response.json()).error.code).toBe('INVALID_PARENT')
+    })
+
+    it('returns 400 when the child is an avulso (avulso never has a parent)', async () => {
+      mockGetVideoAdmin.mockResolvedValueOnce({ id: 'cut-video', videoType: 'cut', standalone: true } as never)
+
+      const response = await PUT(createMockRequest({ parentEpisodeId: 'ep-1' }), createContext('cut-video'))
+
+      expect(response.status).toBe(400)
+      expect((await response.json()).error.code).toBe('STANDALONE_NO_PARENT')
+    })
+
     it('returns 400 when trying to set self as parent', async () => {
       mockGetVideoAdmin.mockResolvedValueOnce({ id: 'cut-video', videoType: 'cut' } as never)
 
