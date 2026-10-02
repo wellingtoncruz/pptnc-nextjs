@@ -227,7 +227,11 @@ export async function getVideosForDisplayAdmin(
   }
 
   try {
-    const snapshot = await query.get()
+    // Memória proporcional à PÁGINA, não ao acervo (out/2026, TrenDs: 1820
+    // vídeos com transcrição, thumbnail base64 e embedding derrubavam o
+    // contêiner de 1 GiB quando a lista vinha sem filtro). 1ª leitura: só os
+    // campos que filtram e ordenam; os documentos inteiros, só da página.
+    const snapshot = await query.select('publishedAt', 'videoType', 'status').get()
 
     if (snapshot.empty) {
       log('INFO', 'No videos found for display (admin)', { podcastId, videoType })
@@ -237,12 +241,52 @@ export async function getVideosForDisplayAdmin(
       }
     }
 
-    const videos: Array<VideoSummary & { _publishedAt: Date }> = []
+    const candidates: Array<{ id: string; publishedAt: Date }> = []
+    for (const docSnap of snapshot.docs) {
+      const light = docSnap.data()
+      const docVideoType = light.videoType ?? 'cut'
+
+      // Double-check videoType for documents without the field
+      if (videoType && docVideoType !== videoType) {
+        continue
+      }
+
+      // In-memory status filter for the standalone view (the Firestore status
+      // filter was skipped to avoid a composite index — see options.standalone).
+      if (standalone && status) {
+        const docStatus = light.status ?? 'new'
+        let excluded: boolean
+        if (status === 'not_sent') {
+          excluded = docStatus === 'sent'
+        } else if (status === 'ready_sent') {
+          excluded = docStatus !== 'ready' && docStatus !== 'sent'
+        } else {
+          excluded = docStatus !== status
+        }
+        if (excluded) {
+          continue
+        }
+      }
+
+      candidates.push({ id: docSnap.id, publishedAt: parsePublishedAt(light.publishedAt) })
+    }
+
+    // Sort by publishedAt descending
+    candidates.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())
+
+    // Calculate pagination
+    const totalCount = candidates.length
+    const totalPages = Math.ceil(totalCount / limit)
+    const startIndex = (page - 1) * limit
+    const pageIds = candidates.slice(startIndex, startIndex + limit).map((c) => c.id)
+
+    const pageSnaps = pageIds.length > 0 ? await db.getAll(...pageIds.map((id) => videosRef.doc(id))) : []
+    const pageDocs = pageSnaps.filter((snap) => snap.exists)
 
     // Story 24.5 — Batch-load parent episodes for cuts/reels with parentEpisodeId,
     // to resolve their `guests` view dynamically without N+1 reads.
     const parentEpisodeIds = new Set<string>()
-    for (const docSnap of snapshot.docs) {
+    for (const docSnap of pageDocs) {
       const raw = docSnap.data() as { videoType?: string; parentEpisodeId?: string }
       if (raw.videoType && raw.videoType !== 'episode' && raw.parentEpisodeId) {
         parentEpisodeIds.add(raw.parentEpisodeId)
@@ -251,9 +295,7 @@ export async function getVideosForDisplayAdmin(
 
     const parentGuestsById = new Map<string, unknown>()
     if (parentEpisodeIds.size > 0) {
-      const refs = Array.from(parentEpisodeIds).map((id) =>
-        db.collection('podcasts').doc(podcastId).collection('videos').doc(id)
-      )
+      const refs = Array.from(parentEpisodeIds).map((id) => videosRef.doc(id))
       try {
         const parentSnaps = await db.getAll(...refs)
         for (const snap of parentSnaps) {
@@ -270,34 +312,9 @@ export async function getVideosForDisplayAdmin(
       }
     }
 
-    for (const docSnap of snapshot.docs) {
-      const rawData = docSnap.data()
+    const paginatedVideos: VideoSummary[] = pageDocs.map((docSnap) => {
+      const rawData = docSnap.data() as DocumentData
       const docVideoType = rawData.videoType ?? 'cut'
-
-      // Double-check videoType for documents without the field
-      if (videoType && docVideoType !== videoType) {
-        continue
-      }
-
-      // In-memory status filter for the standalone view (the Firestore status
-      // filter was skipped to avoid a composite index — see options.standalone).
-      if (standalone && status) {
-        const docStatus = rawData.status ?? 'new'
-        let excluded: boolean
-        if (status === 'not_sent') {
-          excluded = docStatus === 'sent'
-        } else if (status === 'ready_sent') {
-          excluded = docStatus !== 'ready' && docStatus !== 'sent'
-        } else {
-          excluded = docStatus !== status
-        }
-        if (excluded) {
-          continue
-        }
-      }
-
-      // Parse publishedAt using helper for consistent handling
-      const publishedAtDate = parsePublishedAt(rawData.publishedAt)
 
       // Story 24.5 — Resolve guests view for cuts/reels with parentEpisodeId.
       let resolvedGuests = rawData.guests
@@ -309,7 +326,7 @@ export async function getVideosForDisplayAdmin(
       }
 
       // Create summary with default values for missing fields
-      const summary = {
+      return {
         id: docSnap.id,
         title: rawData.title ?? 'Sem título',
         thumbnails: rawData.thumbnails,
@@ -341,22 +358,8 @@ export async function getVideosForDisplayAdmin(
         updatedAt: rawData.updatedAt,
         // Thumbnail stored in Firebase Storage (works for draft/private videos)
         storageThumbnailUrl: rawData.storageThumbnailUrl,
-        _publishedAt: publishedAtDate,
       }
-      videos.push(summary)
-    }
-
-    // Sort by publishedAt descending
-    videos.sort((a, b) => b._publishedAt.getTime() - a._publishedAt.getTime())
-
-    // Calculate pagination
-    const totalCount = videos.length
-    const totalPages = Math.ceil(totalCount / limit)
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-
-    // Slice for current page and remove internal _publishedAt field
-    const paginatedVideos: VideoSummary[] = videos.slice(startIndex, endIndex).map(({ _publishedAt, ...v }) => v)
+    })
 
     log('INFO', 'Videos fetched for display (admin)', {
       podcastId,
