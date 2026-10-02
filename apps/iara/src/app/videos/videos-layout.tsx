@@ -165,6 +165,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       // They are fetched on-demand when the producer selects a video
       setSyncResult({
         newVideos: newCount,
+        removal: result.removal,
       })
       setSyncModalOpen(true)
     } catch (err) {

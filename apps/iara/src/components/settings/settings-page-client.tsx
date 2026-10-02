@@ -366,6 +366,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             thumbnailGeneration: podcast.features?.thumbnailGeneration ?? false,
             extraImagesGeneration: podcast.features?.extraImagesGeneration ?? false,
             youtubePublish: podcast.features?.youtubePublish ?? true,
+            syncRemovesDeletedVideos: podcast.features?.syncRemovesDeletedVideos ?? false,
           }} />
         </AccordionContent>
       </AccordionItem>

@@ -195,6 +195,11 @@ export const YouTubeChannelItemSchema = z.object({
  * Response from channels.list endpoint.
  * @see https://developers.google.com/youtube/v3/docs/channels/list
  */
+/** channels.list `part=id` — só os IDs dos canais da conta autenticada. */
+export const YouTubeChannelIdsResponseSchema = z.object({
+  items: z.array(z.object({ id: z.string() })).default([]),
+})
+
 export const YouTubeChannelsResponseSchema = z.object({
   kind: z.literal('youtube#channelListResponse').optional(),
   etag: z.string().optional(),

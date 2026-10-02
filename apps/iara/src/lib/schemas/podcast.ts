@@ -511,6 +511,14 @@ export const PodcastSchema = z.object({
      * para o PPTNC seguir publicando sem migração; tenant novo nasce `false`.
      */
     youtubePublish: z.boolean().default(true),
+    /**
+     * O sync remove da IAra os vídeos que não existem mais no YouTube (out/2026,
+     * TrenDs News). Default `false`: o PPTNC segue nunca apagando nada no sync.
+     * Só remove quando a conta que sincroniza é a do canal (senão vídeo privado
+     * pareceria apagado) e nunca remove vídeo com vínculo pai/filho ou ocupado
+     * — esses entram no resultado do sync como aviso (`lib/sync/remove-deleted-videos.ts`).
+     */
+    syncRemovesDeletedVideos: z.boolean().default(false),
   }).optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

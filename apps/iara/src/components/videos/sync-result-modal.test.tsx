@@ -116,3 +116,50 @@ describe('SyncResultModal', () => {
     })
   })
 })
+
+describe('SyncResultModal — vídeos apagados do YouTube (out/2026)', () => {
+  const base: SyncResultData = { newVideos: 0 }
+
+  it('sem o resultado de remoção (flag desligada), nada muda', () => {
+    render(<SyncResultModal isOpen onClose={vi.fn()} result={base} />)
+    expect(screen.getByText('Nenhum Vídeo Novo')).toBeInTheDocument()
+    expect(screen.queryByText(/removid/)).not.toBeInTheDocument()
+  })
+
+  it('lista os removidos e conta como sincronização com mudança', () => {
+    render(
+      <SyncResultModal
+        isOpen
+        onClose={vi.fn()}
+        result={{ ...base, removal: { removed: [{ id: 'g', title: 'Live apagada' }], skipped: [], pendingWrongAccount: 0 } }}
+      />
+    )
+    expect(screen.getByText('Sincronização Concluída')).toBeInTheDocument()
+    expect(screen.getByText(/vídeo removido/)).toBeInTheDocument()
+    expect(screen.getByText('Live apagada')).toBeInTheDocument()
+  })
+
+  it('mostra os que ficaram por vínculo, com o motivo', () => {
+    render(
+      <SyncResultModal
+        isOpen
+        onClose={vi.fn()}
+        result={{ ...base, removal: { removed: [], skipped: [{ id: 'e', title: 'Episódio X', reason: 'linked' }], pendingWrongAccount: 0 } }}
+      />
+    )
+    expect(screen.getByText(/Episódio X — vinculado a outro vídeo/)).toBeInTheDocument()
+  })
+
+  it('avisa quando a conta não é a do canal', () => {
+    render(
+      <SyncResultModal
+        isOpen
+        onClose={vi.fn()}
+        result={{ ...base, removal: { removed: [], skipped: [], pendingWrongAccount: 2 } }}
+      />
+    )
+    expect(screen.getByText(/2 vídeos não existem mais no YouTube/)).toBeInTheDocument()
+    expect(screen.getByText(/não é a do canal/)).toBeInTheDocument()
+  })
+})
+

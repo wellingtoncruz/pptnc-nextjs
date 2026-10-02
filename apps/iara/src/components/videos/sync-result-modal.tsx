@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import type { RemovalResult } from '@/lib/sync/remove-deleted-videos'
 
 /**
  * Sync result data for the modal.
@@ -15,6 +16,56 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 export interface SyncResultData {
   /** Number of new videos found */
   newVideos: number
+  /** Vídeos que sumiram do YouTube — só com `features.syncRemovesDeletedVideos`. */
+  removal?: RemovalResult
+}
+
+const SKIP_REASON: Record<'linked' | 'busy', string> = {
+  linked: 'vinculado a outro vídeo',
+  busy: 'em processamento ou com geração em andamento',
+}
+
+function RemovalSummary({ removal }: { removal: RemovalResult }) {
+  return (
+    <>
+      {removal.removed.length > 0 && (
+        <div className="text-sm">
+          <p>
+            <span className="font-medium">{removal.removed.length}</span>{' '}
+            {removal.removed.length === 1
+              ? 'vídeo removido (não existe mais no YouTube):'
+              : 'vídeos removidos (não existem mais no YouTube):'}
+          </p>
+          <ul className="mt-1 max-h-32 list-disc overflow-auto pl-5 text-muted-foreground">
+            {removal.removed.map((v) => (
+              <li key={v.id}>{v.title}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {removal.skipped.length > 0 && (
+        <div className="text-sm text-amber-600 dark:text-amber-400">
+          <p>Sumiram do YouTube, mas ficaram na IAra:</p>
+          <ul className="mt-1 max-h-32 list-disc overflow-auto pl-5">
+            {removal.skipped.map((v) => (
+              <li key={v.id}>
+                {v.title} — {SKIP_REASON[v.reason]}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-xs">Vídeos vinculados saem no próximo sync depois que o vínculo for desfeito.</p>
+        </div>
+      )}
+      {removal.pendingWrongAccount > 0 && (
+        <p className="text-sm text-amber-600 dark:text-amber-400">
+          {removal.pendingWrongAccount === 1
+            ? '1 vídeo não existe mais no YouTube'
+            : `${removal.pendingWrongAccount} vídeos não existem mais no YouTube`}
+          , mas nada foi removido: a conta que sincronizou não é a do canal. Sincronize com a conta do canal para removê-los.
+        </p>
+      )}
+    </>
+  )
 }
 
 interface SyncResultModalProps {
@@ -95,10 +146,12 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
   if (!result) return null
 
   const hasNewVideos = result.newVideos > 0
+  const hasRemoved = (result.removal?.removed.length ?? 0) > 0
+  const hasChanges = hasNewVideos || hasRemoved
 
-  const Icon = hasNewVideos ? CheckCircle2 : Info
-  const iconColor = hasNewVideos ? 'text-green-500' : 'text-muted-foreground'
-  const title = hasNewVideos ? 'Sincronização Concluída' : 'Nenhum Vídeo Novo'
+  const Icon = hasChanges ? CheckCircle2 : Info
+  const iconColor = hasChanges ? 'text-green-500' : 'text-muted-foreground'
+  const title = hasChanges ? 'Sincronização Concluída' : 'Nenhum Vídeo Novo'
 
   return (
     <div
@@ -134,6 +187,7 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
               Nenhum vídeo novo foi encontrado no canal.
             </p>
           )}
+          {result.removal && <RemovalSummary removal={result.removal} />}
         </CardContent>
 
         <CardFooter className="justify-end">

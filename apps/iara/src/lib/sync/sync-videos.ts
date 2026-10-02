@@ -6,7 +6,9 @@
  * - Existing videos are NEVER modified — sent videos stay sent regardless of
  *   any change in YouTube visibility. Reopening a sent video for editing only
  *   happens through explicit user action (POST /api/videos/[videoId]/reopen).
- * - Videos are NEVER deleted.
+ * - Videos are NEVER deleted — unless the podcast turns on
+ *   `features.syncRemovesDeletedVideos` (out/2026): then videos gone from
+ *   YouTube are removed, with guards (see ./remove-deleted-videos.ts).
  *
  * Note: Transcriptions are NOT fetched during sync (Story 5.6 - Transcrição On-Demand).
  * They are fetched on-demand when the producer selects a video in the Wizard.
@@ -28,6 +30,7 @@ import { log } from '@/lib/logger'
 import { classifyVideoType, getBestThumbnailUrl } from '@/lib/video-utils'
 import { YouTubeClient, type YouTubeVideoDataFromAPI } from '@/lib/youtube'
 import { embedVideos } from '@/lib/embedding/video-embedding'
+import { removeVideosGoneFromYouTube, type RemovalResult } from './remove-deleted-videos'
 import type { VideoCreate } from '@/types/video'
 
 /** Maximum concurrent thumbnail uploads to avoid overwhelming Firebase Storage */
@@ -89,6 +92,11 @@ export interface SyncResult {
   liveBroadcastsExcluded: number
   /** Summary for UI: total new videos found */
   newVideos: number
+  /**
+   * Vídeos que sumiram do YouTube — só presente com
+   * `features.syncRemovesDeletedVideos` ligada.
+   */
+  removal?: RemovalResult
 }
 
 /**
@@ -112,14 +120,17 @@ export interface SyncResult {
  * @param client - YouTube API client
  * @param channelId - YouTube channel ID to fetch videos from
  * @param existingIds - Set of video IDs that already exist in Firestore
- * @returns Array of new videos only (not in Firestore)
+ * @returns New videos (not in Firestore) + EVERY id seen in the uploads
+ *   playlist — read to the last page; any pagination failure throws, so a
+ *   partial list never reaches the removal step.
  */
 async function fetchNewYouTubeVideos(
   client: YouTubeClient,
   channelId: string,
   existingIds: Set<string>
-): Promise<YouTubeVideoDataFromAPI[]> {
+): Promise<{ newVideos: YouTubeVideoDataFromAPI[]; youtubeIds: Set<string> }> {
   const newVideoIds: string[] = []
+  const youtubeIds = new Set<string>()
   let pageToken: string | undefined
   let pagesChecked = 0
   let totalIdsChecked = 0
@@ -141,6 +152,7 @@ async function fetchNewYouTubeVideos(
     totalIdsChecked += videoIds.length
 
     for (const id of videoIds) {
+      youtubeIds.add(id)
       if (existingIds.has(id)) {
         // Skip existing video, but continue checking others
         skippedExisting++
@@ -179,7 +191,7 @@ async function fetchNewYouTubeVideos(
     quotaSaved,
   })
 
-  return newVideos
+  return { newVideos, youtubeIds }
 }
 
 /**
@@ -318,7 +330,11 @@ export async function syncVideos(
 
   // 3. Fetch only NEW videos from YouTube using delta sync with early exit
   const client = new YouTubeClient(accessToken)
-  const newYoutubeVideos = await fetchNewYouTubeVideos(client, podcast.channelId, existingIds)
+  const { newVideos: newYoutubeVideos, youtubeIds } = await fetchNewYouTubeVideos(
+    client,
+    podcast.channelId,
+    existingIds
+  )
 
   // 4. Filter out live broadcasts (unless podcast config includes them)
   const includeLivestreams = podcast.features?.includeLivestreams ?? false
@@ -450,6 +466,17 @@ export async function syncVideos(
   // Note: Transcriptions are no longer fetched during sync (Story 5.6)
   // They are fetched on-demand when producer selects a video in the Wizard
 
+  // 9. Vídeos que não existem mais no YouTube (opt-in por podcast, out/2026).
+  const removal = podcast.features?.syncRemovesDeletedVideos
+    ? await removeVideosGoneFromYouTube({
+        podcastId,
+        channelId: podcast.channelId,
+        youtube: client,
+        existingIds,
+        youtubeIds,
+      })
+    : undefined
+
   const result: SyncResult = {
     added: addedAsNew,
     addedAsSent,
@@ -457,6 +484,7 @@ export async function syncVideos(
     liveBroadcastsExcluded,
     // Summary fields for UI
     newVideos: toCreate.length,
+    ...(removal && { removal }),
   }
 
   log('INFO', 'Video import completed', { podcastId, ...result })
