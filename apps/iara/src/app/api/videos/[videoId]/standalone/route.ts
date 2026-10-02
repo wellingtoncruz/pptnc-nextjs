@@ -1,48 +1,42 @@
 /**
  * PUT /api/videos/[videoId]/standalone
  *
- * Toggles the editorial `standalone` flag on a cut or reel video (Epic 25
- * Bloco B). A standalone video is a PPTNC video that is NOT podcast content
- * (an AI-generated news video, a message to listeners) and has no parent
- * episode.
+ * Liga/desliga a flag editorial `standalone` (Epic 25 Bloco B). Avulso = vídeo
+ * que não se relaciona com nenhum outro: não tem pai, não tem filhos, sai das
+ * listas de pais. Regras do Adendo B (2026-10-02):
  *
- * - Enabling (standalone=true): also clears the parent link and the fields
- *   inherited from the parent (parentEpisodeId, guests, theme). These are
- *   re-inherited if the producer later turns the flag off and re-selects a
- *   parent via PUT /parent.
- * - Disabling (standalone=false) — adendo do Epic 25 (2026-09-27): o tipo
- *   volta a ser o da DURAÇÃO (a reclassificação manual só vale para avulso) e
- *   o wizard recomeça — dados gerados espurgados, imagens incluídas, título/
- *   descrição/tags restaurados do YouTube (lib/wizard/purge-wizard-data.ts).
- *   A seleção de pai reaparece se o tipo voltar a corte/reel.
+ * - Marcar (standalone=true): vale para QUALQUER tipo, inclusive episódio, mas
+ *   só para vídeo SEM vínculo. Com vínculo → 409 VIDEO_LINKED com os vínculos
+ *   em `details` (a UI mostra o que impede). Não existe "desvincular": corte/
+ *   reel com pai nunca vira avulso (acabou o "marcar avulso apaga o pai").
+ *   Revalidado dentro da transação da escrita.
+ * - Desmarcar (standalone=false): o produtor ESCOLHE o tipo (`videoType`
+ *   obrigatório — a régua da duração não decide) e o wizard recomeça: dados
+ *   gerados espurgados, imagens incluídas, título/descrição/tags restaurados do
+ *   YouTube (lib/wizard/purge-wizard-data.ts). Corte/reel volta a pedir pai.
  *
- * Only cut and reel videos can BECOME standalone (by duration, "por enquanto" —
- * decision Wellington; see ADR-25.3). Once standalone, the type is free
- * (PUT /video-type), so disabling must work whatever the current type is.
- *
- * Body: { standalone: boolean }
- *
- * Returns:
- * - Success: { data: { standalone, parentEpisodeId, guests, theme } }
- * - Error: { error: { code: ErrorCode, message: string } }
+ * Body: { standalone: true } | { standalone: false, videoType: 'episode' | 'cut' | 'reel' }
  */
 
+import { FieldValue } from 'firebase-admin/firestore'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { runAvulsoPurge } from '@/lib/api/avulso-purge'
 import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
-import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
-import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
+import { getAdminDb } from '@/lib/firebase/admin'
+import { getVideoAdmin } from '@/lib/firebase/videos-admin'
 import { log } from '@/lib/logger'
-import { classifyVideoType } from '@/lib/video-utils'
+import { VideoTypeSchema } from '@/lib/schemas/video'
+import { assertUnlinkedInTx, getVideoRelations, hasRelations, VideoLinkedError } from '@/lib/wizard/video-relations'
 
 export const runtime = 'nodejs'
 
-const RequestBodySchema = z.object({
-  standalone: z.boolean(),
-})
+const RequestBodySchema = z.discriminatedUnion('standalone', [
+  z.object({ standalone: z.literal(true) }),
+  z.object({ standalone: z.literal(false), videoType: VideoTypeSchema }),
+])
 
 interface RouteContext {
   params: Promise<{ videoId: string }>
@@ -70,7 +64,12 @@ export async function PUT(
     body = RequestBodySchema.parse(rawBody)
   } catch {
     return NextResponse.json(
-      { error: { code: 'INVALID_BODY', message: 'Body invalido: standalone (boolean) obrigatorio' } },
+      {
+        error: {
+          code: 'INVALID_BODY',
+          message: 'Body invalido: standalone (boolean) obrigatorio; ao desmarcar, videoType (episode|cut|reel) tambem',
+        },
+      },
       { status: 400 }
     )
   }
@@ -88,21 +87,14 @@ export async function PUT(
       )
     }
 
-    // 2. Desmarcar: tipo volta ao da duração + espurgo do wizard (adendo 25).
-    if (!standalone) {
+    // 2. Desmarcar: o produtor escolhe o tipo + espurgo do wizard (Adendo B).
+    if (!body.standalone) {
       if (!video.standalone) {
         return NextResponse.json({
           data: { standalone: false, videoType: video.videoType, imagesPurged: true },
         })
       }
-      const podcast = await getPodcastAdmin(PODCAST_ID)
-      if (!podcast) {
-        return NextResponse.json(
-          { error: { code: 'PODCAST_NOT_CONFIGURED', message: 'Podcast não encontrado' } },
-          { status: 500 }
-        )
-      }
-      const videoType = classifyVideoType(video.duration, podcast.videoTypes)
+      const { videoType } = body
       const result = await runAvulsoPurge({
         podcastId: PODCAST_ID,
         userId: session.user.id,
@@ -111,7 +103,7 @@ export async function PUT(
       })
       if (!result.ok) return result.response
 
-      log('INFO', 'Standalone flag disabled (wizard purged, type from duration)', {
+      log('INFO', 'Standalone flag disabled (wizard purged, type chosen by producer)', {
         userId: session.user.id,
         videoId,
         from: video.videoType,
@@ -123,31 +115,54 @@ export async function PUT(
       })
     }
 
-    // 3. Marcar: só corte ou reel (episódios fora do escopo, por enquanto)
-    if (video.videoType === 'episode' || !video.videoType) {
+    // 3. Marcar: qualquer tipo, só sem vínculo (Adendo B).
+    const relations = await getVideoRelations(PODCAST_ID, video)
+    if (hasRelations(relations)) {
       return NextResponse.json(
-        { error: { code: 'INVALID_VIDEO_TYPE', message: 'Apenas videos cut ou reel podem ser avulsos' } },
-        { status: 400 }
+        {
+          error: {
+            code: 'VIDEO_LINKED',
+            message: 'Vídeos vinculados a outro vídeo (pai ou filhos) não podem ser avulsos',
+            details: relations,
+          },
+        },
+        { status: 409 }
       )
     }
 
-    // 4. Enabling clears the parent link + inherited fields (guests/theme came
-    // from the parent via PUT /parent).
-    const updateData = { standalone: true, parentEpisodeId: '', guests: [], theme: '' }
+    const videoRef = getAdminDb()
+      .collection('podcasts')
+      .doc(PODCAST_ID)
+      .collection('videos')
+      .doc(videoId)
+    try {
+      await getAdminDb().runTransaction(async (tx) => {
+        await assertUnlinkedInTx(tx, PODCAST_ID, videoId)
+        const current = await tx.get(videoRef)
+        // Mesmo auto-draft do updateVideoAdmin: mexer num vídeo 'new' o torna 'draft'.
+        tx.update(videoRef, {
+          standalone: true,
+          ...(current.get('status') === 'new' ? { status: 'draft' } : {}),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+      })
+    } catch (error) {
+      if (error instanceof VideoLinkedError) {
+        return NextResponse.json(
+          { error: { code: error.code, message: error.message } },
+          { status: 409 }
+        )
+      }
+      throw error
+    }
 
-    await updateVideoAdmin(PODCAST_ID, videoId, updateData)
-
-    log('INFO', 'Standalone flag toggled', {
+    log('INFO', 'Standalone flag enabled', {
       userId: session.user.id,
       videoId,
       videoType: video.videoType,
-      standalone: true,
-      clearedParent: true,
     })
 
-    return NextResponse.json({
-      data: { standalone: true, parentEpisodeId: '', guests: [], theme: '' },
-    })
+    return NextResponse.json({ data: { standalone: true } })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 

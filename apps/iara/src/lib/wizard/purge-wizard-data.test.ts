@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { mockJobsGet, mockVideoUpdate, mockLegacyGet, mockDeleteImages } = vi.hoisted(() => ({
+const { mockJobsGet, mockVideoUpdate, mockLegacyGet, mockDeleteImages, mockTxUpdate } = vi.hoisted(() => ({
+  mockTxUpdate: vi.fn(),
   mockJobsGet: vi.fn(),
   mockVideoUpdate: vi.fn(),
   mockLegacyGet: vi.fn(),
@@ -9,6 +10,7 @@ const { mockJobsGet, mockVideoUpdate, mockLegacyGet, mockDeleteImages } = vi.hoi
 
 vi.mock('@/lib/firebase/admin', () => ({
   getAdminDb: () => ({
+    runTransaction: (fn: (tx: unknown) => Promise<void>) => fn({ update: mockTxUpdate }),
     collection: () => ({
       doc: () => ({
         collection: (name: string) =>
@@ -163,5 +165,48 @@ describe('purgeWizardData — adendo do Epic 25', () => {
         'WRONG_CHANNEL'
       )
     })
+  })
+})
+
+describe('purgeWizardData — trava de vínculo na escrita (Adendo B)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockJobsGet.mockResolvedValue({ docs: [] })
+    mockLegacyGet.mockResolvedValue({ docs: [] })
+    mockDeleteImages.mockResolvedValue(undefined)
+  })
+
+  const youtube = () => ({ getVideoMetadata: vi.fn().mockResolvedValue(ON_YOUTUBE) })
+
+  it('com guard, escreve dentro da transação depois da checagem', async () => {
+    const guard = vi.fn().mockResolvedValue(undefined)
+    await purgeWizardData({
+      podcastId: 'trendsnews',
+      channelId: 'UC-trends',
+      video: video(),
+      youtube: youtube(),
+      patch: { videoType: 'cut' },
+      guard,
+    })
+    expect(guard).toHaveBeenCalledTimes(1)
+    expect(mockTxUpdate).toHaveBeenCalledTimes(1)
+    expect(mockVideoUpdate).not.toHaveBeenCalled()
+  })
+
+  it('guard que recusa: nada é escrito nem apagado', async () => {
+    const guard = vi.fn().mockRejectedValue(new Error('linked'))
+    await expect(
+      purgeWizardData({
+        podcastId: 'trendsnews',
+        channelId: 'UC-trends',
+        video: video(),
+        youtube: youtube(),
+        patch: { videoType: 'cut' },
+        guard,
+      })
+    ).rejects.toThrow('linked')
+    expect(mockTxUpdate).not.toHaveBeenCalled()
+    expect(mockVideoUpdate).not.toHaveBeenCalled()
+    expect(mockDeleteImages).not.toHaveBeenCalled()
   })
 })

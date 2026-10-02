@@ -1,6 +1,6 @@
 /**
- * Execução comum das duas mudanças que espurgam o wizard de um avulso
- * (adendo do Epic 25): reclassificar o tipo e desmarcar o avulso.
+ * Execução comum das mudanças que espurgam o wizard (Epic 25, Adendos A e B):
+ * reclassificar o tipo e desmarcar o avulso.
  *
  * Monta o cliente do YouTube do usuário logado, carrega o podcast (canal) e
  * chama `purgeWizardData`; traduz cada recusa em resposta HTTP — nada foi
@@ -10,7 +10,10 @@ import { NextResponse } from 'next/server'
 
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { log } from '@/lib/logger'
+import type { Transaction } from 'firebase-admin/firestore'
+
 import { purgeWizardData, WizardPurgeBlockedError } from '@/lib/wizard/purge-wizard-data'
+import { VideoLinkedError } from '@/lib/wizard/video-relations'
 import { YouTubeAPIError } from '@/lib/youtube'
 import { getUserYouTubeClient } from '@/lib/youtube/user-client'
 import type { Video } from '@/types/video'
@@ -27,8 +30,9 @@ export async function runAvulsoPurge(args: {
   userId: string
   video: Video
   patch: Record<string, unknown>
+  guard?: (tx: Transaction) => Promise<void>
 }): Promise<{ ok: true; imagesPurged: boolean } | { ok: false; response: NextResponse }> {
-  const { podcastId, userId, video, patch } = args
+  const { podcastId, userId, video, patch, guard } = args
 
   const youtube = await getUserYouTubeClient(userId)
   if (!youtube.ok) {
@@ -59,9 +63,20 @@ export async function runAvulsoPurge(args: {
       video,
       youtube: youtube.client,
       patch,
+      guard,
     })
     return { ok: true, imagesPurged }
   } catch (error) {
+    if (error instanceof VideoLinkedError) {
+      log('WARN', 'Purge refused: video got linked meanwhile (nothing deleted)', { videoId: video.id })
+      return {
+        ok: false,
+        response: NextResponse.json(
+          { error: { code: error.code, message: error.message } },
+          { status: 409 }
+        ),
+      }
+    }
     if (error instanceof WizardPurgeBlockedError) {
       log('WARN', 'Avulso purge refused (nothing deleted)', { videoId: video.id, code: error.code })
       return {

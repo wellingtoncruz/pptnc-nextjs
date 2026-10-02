@@ -9,11 +9,14 @@ import {
   isTrackedPhaseId,
   type WizardPhaseId,
 } from '@/lib/wizard'
+import { useVideoRelations } from '@/hooks/use-video-relations'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video } from '@/types/video'
 
 import { ConsoleArea } from './console-area'
 import { StandaloneToggle } from './standalone-toggle'
+import { VideoTypeControl } from './video-type-control'
+import type { VideoTypeChoice } from './video-type-labels'
 import { VideoHeader, VideoMetadata, VideoShortTitle } from './video-header'
 import { VideoPreview } from './video-preview'
 import { WizardBreadcrumb, getExtendedPhaseState } from './wizard-breadcrumb'
@@ -30,12 +33,16 @@ interface WizardLayoutProps {
   /** Callback when short title is changed. If provided, short title becomes editable. */
   onShortTitleChange?: (newShortTitle: string) => Promise<void>
   /**
-   * Callback to toggle the editorial `standalone` flag (Epic 25). When provided,
-   * a "Vídeo avulso" toggle is shown in the video header for cut/reel videos.
+   * Toggle da flag editorial `standalone` (Epic 25). Quando presente, o toggle
+   * "Vídeo avulso" aparece para todos os vídeos (Adendo B). Desmarcar leva o
+   * tipo escolhido pelo produtor.
    */
-  onStandaloneToggle?: (next: boolean) => Promise<void>
-  /** Reclassificação manual do avulso (adendo do Epic 25) — espurga o wizard. */
-  onReclassify?: (videoType: 'episode' | 'cut' | 'reel') => Promise<void>
+  onStandaloneToggle?: (next: boolean, videoType?: VideoTypeChoice) => Promise<void>
+  /**
+   * Reclassificação manual do tipo (Epic 25, Adendos A e B) — espurga o wizard.
+   * O seletor só aparece para vídeos elegíveis (avulso, ou sem pai e sem filhos).
+   */
+  onReclassify?: (videoType: VideoTypeChoice) => Promise<void>
   /**
    * Optional podcast features used to gate phases conditionally in the
    * breadcrumb. Currently only `thumbnailGeneration` (Epic 22 / Story 22.3a)
@@ -78,6 +85,14 @@ export function WizardLayout({
   features,
   className,
 }: WizardLayoutProps) {
+  // Vínculos pai/filho decidem quem pode reclassificar e o que bloqueia o
+  // avulso (Adendo B). Relê quando o próprio vídeo ganha/perde pai ou flag.
+  const relations = useVideoRelations(
+    video.id,
+    `${video.standalone === true}|${video.parentEpisodeId ?? ''}|${video.videoType ?? ''}`,
+    Boolean(onStandaloneToggle || onReclassify)
+  )
+
   // Wrapper to handle phase navigation.
   // Tracked phases use wizard.goToPhase; extended phases (parent/short-title/
   // thumbnail) are handled by phase-specific components.
@@ -161,13 +176,19 @@ export function WizardLayout({
           {/* Video Preview (left) */}
           <div className="lg:w-1/2 p-4 flex flex-col">
             <VideoHeader video={video} onTitleChange={onTitleChange} className="mb-2" />
-            {onStandaloneToggle && (
-              <StandaloneToggle
-                video={video}
-                onToggle={onStandaloneToggle}
-                onReclassify={onReclassify}
-                className="mb-3"
-              />
+            {(onStandaloneToggle || onReclassify) && (
+              <div className="mb-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+                {onReclassify && relations?.canReclassify && (
+                  <VideoTypeControl video={video} onReclassify={onReclassify} />
+                )}
+                {onStandaloneToggle && (
+                  <StandaloneToggle
+                    video={video}
+                    relations={relations}
+                    onToggle={onStandaloneToggle}
+                  />
+                )}
+              </div>
             )}
             <VideoPreview
               videoId={wizard.state.videoId}
