@@ -1,17 +1,19 @@
 /**
  * PUT /api/videos/[videoId]/video-type
  *
- * Reclassificação MANUAL do tipo de um vídeo avulso — adendo do Epic 25
- * (2026-09-27). Por padrão o tipo vem da duração e é rígido; marcar o vídeo
- * como avulso destrava a escolha, e ela é livre (episódio, corte ou reel).
- * Avulso reclassificado como episódio roda o wizard completo, com os prompts
- * de episódio.
+ * Reclassificação MANUAL do tipo de um vídeo — Epic 25, Adendos A (2026-09-27)
+ * e B (2026-10-02). O tipo nasce da duração; o produtor pode corrigi-lo em
+ * qualquer vídeo SEM vínculo pai/filho (o vínculo prova que o tipo está certo).
+ * O avulso proíbe vínculo, então é sempre reclassificável. Reclassificar NÃO
+ * torna avulso: corte/reel não avulso segue para a seleção de pai.
  *
  * Trocar o tipo reinicia o wizard: os dados gerados pelo wizard anterior são
  * espurgados (imagens incluídas) e título/descrição/tags voltam ao que está no
  * YouTube — ver `lib/wizard/purge-wizard-data.ts`. A UI pede confirmação antes.
  *
- * Avulso nunca tem pai (nem filhos): o vínculo é zerado na mesma escrita.
+ * Vídeo com vínculo → 409 VIDEO_LINKED (a UI nem mostra a opção). A
+ * elegibilidade é revalidada dentro da transação da escrita (corrida com outra
+ * aba vinculando um corte).
  *
  * Body: { videoType: 'episode' | 'cut' | 'reel' }
  */
@@ -24,6 +26,7 @@ import { PODCAST_ID } from '@/lib/firebase/config'
 import { getVideoAdmin } from '@/lib/firebase/videos-admin'
 import { log } from '@/lib/logger'
 import { VideoTypeSchema } from '@/lib/schemas/video'
+import { assertUnlinkedInTx, canReclassify, getVideoRelations } from '@/lib/wizard/video-relations'
 
 export const runtime = 'nodejs'
 
@@ -61,9 +64,16 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
       { status: 404 }
     )
   }
-  if (!video.standalone) {
+  const relations = await getVideoRelations(PODCAST_ID, video)
+  if (!canReclassify(video, relations)) {
     return NextResponse.json(
-      { error: { code: 'NOT_STANDALONE', message: 'Só vídeos avulsos podem ser reclassificados' } },
+      {
+        error: {
+          code: 'VIDEO_LINKED',
+          message: 'Vídeos vinculados a outro vídeo (pai ou filhos) não podem ser reclassificados',
+          details: relations,
+        },
+      },
       { status: 409 }
     )
   }
@@ -78,15 +88,19 @@ export async function PUT(request: NextRequest, context: RouteContext): Promise<
     podcastId: PODCAST_ID,
     userId: session.user.id,
     video,
-    patch: { videoType, parentEpisodeId: '' },
+    patch: { videoType },
+    // Avulso não tem vínculo por construção (PUT /parent recusa); os demais
+    // são revalidados na escrita.
+    guard: video.standalone ? undefined : (tx) => assertUnlinkedInTx(tx, PODCAST_ID, videoId),
   })
   if (!result.ok) return result.response
 
-  log('INFO', 'Avulso reclassified (wizard purged)', {
+  log('INFO', 'Video reclassified (wizard purged)', {
     userId: session.user.id,
     videoId,
     from: video.videoType,
     to: videoType,
+    standalone: video.standalone === true,
     imagesPurged: result.imagesPurged,
   })
   return NextResponse.json({ data: { videoType, imagesPurged: result.imagesPurged } })

@@ -1,8 +1,8 @@
 /**
  * Espurgo dos dados gerados pelo wizard — adendo do Epic 25 (2026-09-27).
  *
- * Roda quando um vídeo avulso muda de tipo (reclassificação manual) ou deixa
- * de ser avulso: o wizard recomeça do zero no novo formato, e o que o wizard
+ * Roda quando um vídeo muda de tipo (reclassificação manual — avulso ou
+ * qualquer vídeo sem vínculo, Adendo B) ou deixa de ser avulso: o wizard recomeça do zero no novo formato, e o que o wizard
  * anterior gerou vai embora — inclusive as imagens no bucket.
  *
  * O QUE SOBREVIVE (decisão do Wellington): título, descrição e tags que estão
@@ -17,7 +17,7 @@
  * o vídeo está em processamento ou sendo publicado, ou o YouTube não devolve o
  * vídeo do canal deste podcast (sem os metadados, não há o que restaurar).
  */
-import { FieldValue } from 'firebase-admin/firestore'
+import { FieldValue, type Transaction } from 'firebase-admin/firestore'
 
 import { getAdminDb } from '@/lib/firebase/admin'
 import { deleteVideoWizardImages } from '@/lib/firebase/cloud-storage'
@@ -74,6 +74,12 @@ export interface PurgeWizardDataInput {
    * velhos, nem o inverso.
    */
   patch: Record<string, unknown>
+  /**
+   * Checagem feita DENTRO da transação da escrita (Adendo B): a elegibilidade
+   * foi checada antes, mas outra aba pode ter criado um vínculo no meio. Se
+   * lançar, nada é escrito.
+   */
+  guard?: (tx: Transaction) => Promise<void>
 }
 
 /** Thumbnail escolhida no wizard aponta para o proxy dele; a do sync, não. */
@@ -112,7 +118,7 @@ async function assertNoWizardJobRunning(podcastId: string, videoId: string): Pro
 export async function purgeWizardData(
   input: PurgeWizardDataInput
 ): Promise<{ imagesPurged: boolean }> {
-  const { podcastId, channelId, video, youtube, patch } = input
+  const { podcastId, channelId, video, youtube, patch, guard } = input
 
   if (video.status === 'processing' || video.status === 'sending') {
     throw new WizardPurgeBlockedError(
@@ -156,7 +162,14 @@ export async function purgeWizardData(
     .doc(podcastId)
     .collection('videos')
     .doc(video.id)
-  await videoRef.update(update)
+  if (guard) {
+    await getAdminDb().runTransaction(async (tx) => {
+      await guard(tx)
+      tx.update(videoRef, update)
+    })
+  } else {
+    await videoRef.update(update)
+  }
 
   // Resíduo do predecessor dos jobs genéricos (Epic 27): subcoleção por vídeo.
   const legacyJobs = await videoRef.collection('wizardJobs').get()

@@ -2047,20 +2047,23 @@ export function WizardOrchestrator({
   }, [wizard])
 
   /**
-   * Toggle the editorial `standalone` flag (Epic 25 Bloco B) from the workspace
-   * header. Enabling clears the parent link + inherited guests/theme (mirrors the
-   * endpoint), then the wizard state is rebuilt so the phase flow reflects the new
-   * shape (parent phase removed/restored). Handles its own errors (surfaces an
-   * alert) — the toggle only awaits this to drive its saving state.
+   * Toggle the editorial `standalone` flag (Epic 25 Bloco B; Adendo B) from the
+   * workspace header. Marcar só vale para vídeo sem vínculo (o servidor recusa
+   * com VIDEO_LINKED) e não mexe em pai/convidados/tema — não há pai a apagar.
+   * Desmarcar leva o tipo escolhido pelo produtor e espurga o wizard. Handles
+   * its own errors (surfaces an alert) — the toggle only awaits this.
    */
-  const handleStandaloneToggle = useCallback(async (next: boolean) => {
-    log('INFO', 'Standalone toggle requested', { videoId: video.id, standalone: next })
+  const handleStandaloneToggle = useCallback(async (
+    next: boolean,
+    videoType?: 'episode' | 'cut' | 'reel'
+  ) => {
+    log('INFO', 'Standalone toggle requested', { videoId: video.id, standalone: next, videoType })
 
     try {
       const response = await fetch(`/api/videos/${video.id}/standalone`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ standalone: next }),
+        body: JSON.stringify(next ? { standalone: true } : { standalone: false, videoType }),
       })
 
       if (!response.ok) {
@@ -2076,7 +2079,7 @@ export function WizardOrchestrator({
       }
 
       // Marcar: reflete localmente e reconstrói o fluxo (sai a fase de pai).
-      const updated: Video = { ...videoData, standalone: true, parentEpisodeId: '', guests: [], theme: '' }
+      const updated: Video = { ...videoData, standalone: true }
       setVideoData(updated)
       wizard.reinitializeFromVideo(updated)
 
@@ -2089,12 +2092,12 @@ export function WizardOrchestrator({
   }, [video.id, videoData, wizard, restartWizardAfterPurge])
 
   /**
-   * Reclassificação manual do avulso (adendo do Epic 25, PUT /video-type). O
-   * servidor espurgou o wizard e trocou o tipo — o fluxo inteiro muda (episódio
-   * ↔ corte/reel), então recomeça do zero, como no desmarcar.
+   * Reclassificação manual do tipo (Epic 25, Adendos A e B; PUT /video-type) —
+   * avulso ou vídeo sem vínculo. O servidor espurgou o wizard e trocou o tipo —
+   * o fluxo inteiro muda (episódio ↔ corte/reel), então recomeça do zero.
    */
   const handleReclassify = useCallback(async (videoType: 'episode' | 'cut' | 'reel') => {
-    log('INFO', 'Avulso reclassification requested', { videoId: video.id, videoType })
+    log('INFO', 'Video reclassification requested', { videoId: video.id, videoType })
     try {
       const response = await fetch(`/api/videos/${video.id}/video-type`, {
         method: 'PUT',

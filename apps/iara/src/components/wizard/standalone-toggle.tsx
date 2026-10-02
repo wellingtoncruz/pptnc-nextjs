@@ -17,95 +17,88 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import type { VideoRelations } from '@/lib/wizard/video-relations'
 import type { Video } from '@/types/video'
 
-type VideoTypeChoice = 'episode' | 'cut' | 'reel'
+import {
+  NEEDS_PARENT_NOTE,
+  PURGE_WARNING,
+  VIDEO_TYPE_LABELS,
+  type VideoTypeChoice,
+} from './video-type-labels'
 
-const TYPE_LABELS: Record<VideoTypeChoice, string> = {
-  episode: 'Episódio',
-  cut: 'Corte',
-  reel: 'Reel',
-}
-
-/** O que a confirmação vai executar — as duas ações destrutivas do avulso. */
-type PendingAction =
-  | { kind: 'enable' }
-  | { kind: 'disable' }
-  | { kind: 'reclassify'; videoType: VideoTypeChoice }
+type PendingAction = { kind: 'enable' } | { kind: 'blocked' } | { kind: 'disable' }
 
 interface StandaloneToggleProps {
   video: Video
   /**
-   * Persists the new flag value (PUT /standalone) and refreshes the workspace.
-   * Enabling clears the parent link + inherited guests/theme. Disabling (adendo
-   * do Epic 25) returns the type to the duration one and PURGES the wizard.
-   * Should handle its own errors (the toggle only awaits it for the saving state).
+   * Vínculos pai/filho (GET /relations). `null` enquanto carrega: marcar fica
+   * travado até saber se há vínculo.
    */
-  onToggle: (next: boolean) => Promise<void>
+  relations: VideoRelations | null
   /**
-   * Reclassificação manual do avulso (PUT /video-type) — adendo do Epic 25.
-   * Espurga o wizard. Sem o handler, o seletor de tipo não aparece.
+   * PUT /standalone. Marcar só vale sem vínculo; desmarcar leva o tipo
+   * escolhido e ESPURGA o wizard. Deve tratar os próprios erros.
    */
-  onReclassify?: (videoType: VideoTypeChoice) => Promise<void>
+  onToggle: (next: boolean, videoType?: VideoTypeChoice) => Promise<void>
   className?: string
 }
 
-/** Texto comum das confirmações que espurgam — o produtor precisa saber o que perde. */
-const PURGE_WARNING =
-  'O wizard deste vídeo recomeça do zero: tudo o que ele gerou (análises, títulos, título curto, capítulos, links, thumbnail e imagens extras) é apagado, e título, descrição e tags voltam a ser os que estão no YouTube agora. Não dá para desfazer.'
+function typeLabel(videoType?: string): string {
+  return VIDEO_TYPE_LABELS[videoType as VideoTypeChoice] ?? 'Vídeo'
+}
 
 /**
- * Toggle for the editorial `standalone` flag (Epic 25 Bloco B) + seletor de
- * tipo do avulso (adendo do Epic 25, 2026-09-27).
+ * Toggle da flag editorial `standalone` — Epic 25 (Bloco B; Adendos A e B).
  *
- * Um vídeo só VIRA avulso sendo corte ou reel pela duração; já avulso, o tipo é
- * livre (episódio roda o wizard completo) — então o controle aparece para
- * corte/reel e para qualquer avulso, inclusive o reclassificado como episódio.
+ * Avulso = vídeo que não se relaciona com nenhum outro (sem pai, sem filhos),
+ * de qualquer tipo. Regras do Adendo B (2026-10-02):
+ * - aparece para TODOS os vídeos;
+ * - com vínculo, marcar é bloqueado, mas a opção continua visível e explica
+ *   qual vínculo impede (não existe "desvincular": filhos são reapontados a
+ *   outro episódio; corte/reel com pai nunca vira avulso);
+ * - desmarcar obriga o produtor a escolher o tipo e espurga o wizard.
  *
- * As três ações são destrutivas e passam por AlertDialog (shadcn — nunca o
- * confirm() nativo): marcar descarta o pai + convidados/tema herdados;
- * desmarcar e reclassificar ESPURGAM o wizard.
+ * O tipo em si é corrigido pelo `VideoTypeControl`, separado deste toggle.
  */
-export function StandaloneToggle({ video, onToggle, onReclassify, className }: StandaloneToggleProps) {
+export function StandaloneToggle({ video, relations, onToggle, className }: StandaloneToggleProps) {
   const [pending, setPending] = useState<PendingAction | null>(null)
+  const [chosenType, setChosenType] = useState<VideoTypeChoice | null>(null)
   const [saving, setSaving] = useState(false)
 
   const isOn = video.standalone === true
-  if (!isOn && video.videoType !== 'cut' && video.videoType !== 'reel') {
-    return null
-  }
+  const linked = relations !== null && (relations.parent !== null || relations.children.length > 0)
 
-  async function run(action: PendingAction) {
+  async function run(action: PendingAction, videoType: VideoTypeChoice | null) {
+    if (action.kind === 'blocked') return
+    if (action.kind === 'disable' && !videoType) return
     setSaving(true)
     try {
-      if (action.kind === 'reclassify') await onReclassify?.(action.videoType)
-      else await onToggle(action.kind === 'enable')
+      if (action.kind === 'enable') await onToggle(true)
+      else await onToggle(false, videoType ?? undefined)
     } finally {
       setSaving(false)
     }
   }
 
   function handleCheckedChange(next: boolean) {
-    setPending({ kind: next ? 'enable' : 'disable' })
+    if (next) {
+      setPending({ kind: linked ? 'blocked' : 'enable' })
+    } else {
+      setChosenType(null)
+      setPending({ kind: 'disable' })
+    }
   }
 
-  const dialog =
-    pending?.kind === 'enable'
-      ? {
-          title: 'Marcar como vídeo avulso?',
-          body: 'Vídeos avulsos não têm episódio pai. Ao confirmar, o vínculo com o episódio pai e os convidados/tema herdados dele serão removidos deste vídeo, e as fases de seleção de pai e de análise saem do fluxo.',
-        }
-      : pending?.kind === 'disable'
-        ? {
-            title: 'Deixar de ser avulso?',
-            body: `O tipo volta a ser o definido pela duração do vídeo. ${PURGE_WARNING}`,
-          }
-        : pending?.kind === 'reclassify'
-          ? {
-              title: `Reclassificar como ${TYPE_LABELS[pending.videoType]}?`,
-              body: PURGE_WARNING,
-            }
-          : null
+  function close() {
+    setPending(null)
+    setChosenType(null)
+  }
+
+  const enableBody =
+    video.videoType === 'episode'
+      ? 'Vídeo avulso não se relaciona com nenhum outro: este episódio não poderá receber cortes nem reels vinculados e sai da lista de episódios para vincular.'
+      : 'Vídeo avulso não se relaciona com nenhum outro: não terá episódio pai, e as fases de seleção de pai e de análise saem do fluxo.'
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
@@ -113,7 +106,7 @@ export function StandaloneToggle({ video, onToggle, onReclassify, className }: S
         id="standalone-toggle"
         checked={isOn}
         onCheckedChange={handleCheckedChange}
-        disabled={saving}
+        disabled={saving || (!isOn && relations === null)}
         aria-label="Vídeo avulso"
       />
       <Label htmlFor="standalone-toggle" className="text-sm text-muted-foreground cursor-pointer">
@@ -133,60 +126,122 @@ export function StandaloneToggle({ video, onToggle, onReclassify, className }: S
             </button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
-            Marque para vídeos que não são do podcast (notícia, recado aos ouvintes,
-            pocket-episódio). Avulso não tem episódio pai nem filhos, e o tipo pode ser
-            escolhido: Episódio roda o wizard completo; Corte e Reel, o simplificado.
+            Avulso é o vídeo que não se relaciona com nenhum outro: não tem episódio pai nem
+            vídeos vinculados, e pode ser de qualquer tipo. Episódio roda o wizard completo;
+            Corte e Reel, o simplificado.
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
-      {isOn && onReclassify && (
-        <div
-          role="group"
-          aria-label="Tipo do vídeo avulso"
-          className="ml-2 inline-flex rounded-md border border-border bg-background p-0.5"
-        >
-          {(Object.keys(TYPE_LABELS) as VideoTypeChoice[]).map((type) => {
-            const active = video.videoType === type
-            return (
-              <button
-                key={type}
-                type="button"
-                aria-pressed={active}
-                disabled={saving || active}
-                onClick={() => setPending({ kind: 'reclassify', videoType: type })}
-                className={cn(
-                  'rounded px-2.5 py-0.5 text-xs transition-colors',
-                  active
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {TYPE_LABELS[type]}
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      <AlertDialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
+      <AlertDialog open={pending !== null} onOpenChange={(open) => !open && close()}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{dialog?.title}</AlertDialogTitle>
-            <AlertDialogDescription>{dialog?.body}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (pending) void run(pending)
-                setPending(null)
-              }}
-              disabled={saving}
-            >
-              Confirmar
-            </AlertDialogAction>
-          </AlertDialogFooter>
+          {pending?.kind === 'blocked' && relations && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Este vídeo não pode ser avulso</AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                  <div className="space-y-2">
+                    {relations.parent ? (
+                      <p>
+                        Ele está vinculado ao episódio <strong>{relations.parent.title}</strong>.
+                        Vídeos vinculados a um episódio não podem ser avulsos.
+                      </p>
+                    ) : (
+                      <>
+                        <p>
+                          {relations.children.length === 1
+                            ? 'Ele tem 1 vídeo vinculado:'
+                            : `Ele tem ${relations.children.length} vídeos vinculados:`}
+                        </p>
+                        <ul className="list-disc space-y-1 pl-5">
+                          {relations.children.map((child) => (
+                            <li key={child.id}>
+                              <strong>{child.title}</strong> ({typeLabel(child.videoType)})
+                            </li>
+                          ))}
+                        </ul>
+                        <p>Aponte esses vídeos para outro episódio e tente de novo.</p>
+                      </>
+                    )}
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Fechar</AlertDialogCancel>
+              </AlertDialogFooter>
+            </>
+          )}
+
+          {pending?.kind === 'enable' && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Marcar como vídeo avulso?</AlertDialogTitle>
+                <AlertDialogDescription>{enableBody}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    void run(pending, chosenType)
+                    close()
+                  }}
+                  disabled={saving}
+                >
+                  Confirmar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+          )}
+
+          {pending?.kind === 'disable' && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Deixar de ser avulso?</AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                  <div className="space-y-3">
+                    <p>Escolha o tipo do vídeo:</p>
+                    <div
+                      role="radiogroup"
+                      aria-label="Tipo do vídeo ao deixar de ser avulso"
+                      className="inline-flex rounded-md border border-border bg-background p-0.5"
+                    >
+                      {(Object.keys(VIDEO_TYPE_LABELS) as VideoTypeChoice[]).map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          role="radio"
+                          aria-checked={chosenType === type}
+                          onClick={() => setChosenType(type)}
+                          className={cn(
+                            'rounded px-2.5 py-0.5 text-xs transition-colors',
+                            chosenType === type
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          )}
+                        >
+                          {VIDEO_TYPE_LABELS[type]}
+                        </button>
+                      ))}
+                    </div>
+                    {chosenType && chosenType !== 'episode' && <p>{NEEDS_PARENT_NOTE}</p>}
+                    <p>{PURGE_WARNING}</p>
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={saving}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    void run(pending, chosenType)
+                    close()
+                  }}
+                  disabled={saving || chosenType === null}
+                >
+                  Confirmar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+          )}
         </AlertDialogContent>
       </AlertDialog>
     </div>
