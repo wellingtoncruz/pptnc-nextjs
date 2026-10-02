@@ -11,7 +11,7 @@ vi.mock('@/lib/logger', () => ({
 
 import { FeaturesSettingsForm } from './features-settings-form'
 
-const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false, extraImagesGeneration: false, youtubePublish: true }
+const defaultFeatures = { editorial: true, news: true, includeLivestreams: false, socialMedia: false, adwords: false, newsletter: false, llmDebugMode: false, socialPublish: false, thumbnailGeneration: false, extraImagesGeneration: false, youtubePublish: true, syncRemovesDeletedVideos: false }
 
 /**
  * Body PATCH esperado, derivado de `defaultFeatures` + o toggle sob teste.
@@ -494,6 +494,32 @@ describe('FeaturesSettingsForm', () => {
     it('avisa que fora de produção a publicação segue bloqueada', () => {
       render(<FeaturesSettingsForm features={defaultFeatures} />)
       expect(screen.getByText(/Fora do ambiente de produção a publicação segue bloqueada/)).toBeInTheDocument()
+    })
+  })
+
+  // ===========================================================================
+  // syncRemovesDeletedVideos — sync remove vídeos apagados do YouTube (out/2026)
+  // ===========================================================================
+
+  describe('syncRemovesDeletedVideos', () => {
+    it('nasce desligada (o PPTNC segue sem remover)', () => {
+      render(<FeaturesSettingsForm features={defaultFeatures} />)
+      expect(screen.getByLabelText('Remover vídeos apagados do YouTube')).toHaveAttribute('data-state', 'unchecked')
+    })
+
+    it('ligar grava syncRemovesDeletedVideos:true sem tocar nas outras flags', async () => {
+      render(<FeaturesSettingsForm features={defaultFeatures} />)
+
+      await act(async () => {
+        screen.getByLabelText('Remover vídeos apagados do YouTube').click()
+      })
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+          method: 'PATCH',
+          body: expectedFeaturesBody({ syncRemovesDeletedVideos: true }),
+        }))
+      })
     })
   })
 })

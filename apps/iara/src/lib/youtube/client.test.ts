@@ -31,6 +31,23 @@ describe('YouTubeClient', () => {
     })
   })
 
+  describe('listMyChannelIds', () => {
+    it('devolve os IDs dos canais da conta (channels.list mine=true, part=id)', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ id: 'UC-a' }, { id: 'UC-b' }] }) })
+
+      expect(await client.listMyChannelIds()).toEqual(['UC-a', 'UC-b'])
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.googleapis.com/youtube/v3/channels?mine=true&part=id',
+        expect.anything()
+      )
+    })
+
+    it('conta sem canal: lista vazia', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+      expect(await client.listMyChannelIds()).toEqual([])
+    })
+  })
+
   describe('getUploadsPlaylistId', () => {
     it('returns uploads playlist ID from channel', async () => {
       mockFetch.mockResolvedValueOnce({

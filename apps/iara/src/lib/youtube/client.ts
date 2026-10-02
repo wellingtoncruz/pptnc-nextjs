@@ -12,6 +12,7 @@ import type { z } from 'zod'
 import { log } from '@/lib/logger'
 import {
   YouTubeCaptionsResponseSchema,
+  YouTubeChannelIdsResponseSchema,
   YouTubeChannelsResponseSchema,
   YouTubePlaylistItemsResponseSchema,
   YouTubeVideoSnippetResponseSchema,
@@ -295,6 +296,15 @@ export class YouTubeClient {
     }
 
     return data.items[0].contentDetails.relatedPlaylists.uploads
+  }
+
+  /**
+   * IDs dos canais da conta autenticada (channels.list mine=true, 1 unidade).
+   * O sync usa para só remover vídeos quando quem sincroniza é a conta do canal.
+   */
+  async listMyChannelIds(): Promise<string[]> {
+    const data = await this.fetch('/channels?mine=true&part=id', YouTubeChannelIdsResponseSchema)
+    return data.items.map((channel) => channel.id)
   }
 
   /**

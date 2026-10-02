@@ -76,7 +76,14 @@ vi.mock('@/lib/embedding/video-embedding', () => ({
   embedVideos: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
 }))
 
+// Remoção de vídeos apagados do YouTube (out/2026) — testada em
+// remove-deleted-videos.test.ts; aqui só o acoplamento com o sync.
+vi.mock('./remove-deleted-videos', () => ({
+  removeVideosGoneFromYouTube: vi.fn(),
+}))
+
 import { getAllVideosRaw, batchWriteVideos, getExistingVideoIds } from '@/lib/firebase/videos-admin'
+import { removeVideosGoneFromYouTube } from './remove-deleted-videos'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { classifyVideoType } from '@/lib/video-utils'
 import { embedVideos } from '@/lib/embedding/video-embedding'
@@ -1069,5 +1076,58 @@ describe('sync-videos.ts - Video import (create only)', () => {
         expect(mockEmbedVideos).not.toHaveBeenCalled()
       })
     })
+  })
+})
+
+describe('syncVideos — remoção de vídeos apagados do YouTube (features.syncRemovesDeletedVideos)', () => {
+  const mockRemove = vi.mocked(removeVideosGoneFromYouTube)
+  const podcast = (syncRemovesDeletedVideos?: boolean) => ({
+    id: 'trendsnews',
+    channelId: 'UC123',
+    videoTypes: {},
+    features: syncRemovesDeletedVideos === undefined ? undefined : { syncRemovesDeletedVideos },
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockGetVideoDetailsBatch = vi.fn().mockResolvedValue([])
+    mockUploadVideoThumbnail = vi.fn()
+    mockGetExistingVideoIds.mockResolvedValue(new Set(['a', 'gone']))
+    mockListPlaylistItems = vi
+      .fn()
+      .mockResolvedValueOnce({ videoIds: ['a'], nextPageToken: 'p2' })
+      .mockResolvedValueOnce({ videoIds: ['b'], nextPageToken: undefined })
+  })
+
+  it.each([undefined, false])('flag %s: o sync nunca remove (PPTNC)', async (flag) => {
+    mockGetPodcastAdmin.mockResolvedValue(podcast(flag) as never)
+    const result = await syncVideos('trendsnews', 'token')
+    expect(mockRemove).not.toHaveBeenCalled()
+    expect(result.removal).toBeUndefined()
+  })
+
+  it('flag ligada: passa TODOS os IDs da playlist (todas as páginas) e devolve o resultado', async () => {
+    mockGetPodcastAdmin.mockResolvedValue(podcast(true) as never)
+    const removal = { removed: [{ id: 'gone', title: 'Sumiu' }], skipped: [], pendingWrongAccount: 0 }
+    mockRemove.mockResolvedValue(removal)
+
+    const result = await syncVideos('trendsnews', 'token')
+
+    const call = mockRemove.mock.calls[0][0]
+    expect(call.channelId).toBe('UC123')
+    expect([...call.youtubeIds].sort()).toEqual(['a', 'b'])
+    expect([...call.existingIds].sort()).toEqual(['a', 'gone'])
+    expect(result.removal).toEqual(removal)
+  })
+
+  it('falha no meio da playlist: lança antes de remover qualquer coisa', async () => {
+    mockGetPodcastAdmin.mockResolvedValue(podcast(true) as never)
+    mockListPlaylistItems = vi
+      .fn()
+      .mockResolvedValueOnce({ videoIds: ['a'], nextPageToken: 'p2' })
+      .mockRejectedValueOnce(new Error('quota'))
+
+    await expect(syncVideos('trendsnews', 'token')).rejects.toThrow('quota')
+    expect(mockRemove).not.toHaveBeenCalled()
   })
 })

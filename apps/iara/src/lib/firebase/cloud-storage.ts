@@ -254,6 +254,28 @@ export async function deleteNewsImage(filePath: string): Promise<void> {
  * @returns quantos arquivos foram apagados
  * @throws CloudStorageError se a listagem/remoção falhar
  */
+/**
+ * Apaga TODOS os arquivos do bucket ligados a um vídeo — as imagens do wizard
+ * (ver `deleteVideoWizardImages`) e as capas de newsletter. Usado quando o
+ * vídeo sai da IAra porque não existe mais no YouTube.
+ */
+export async function deleteAllVideoImages(videoId: string): Promise<number> {
+  if (!SAFE_ID_PATTERN.test(videoId)) {
+    throw new CloudStorageError('Invalid video ID for image cleanup', 'DELETE_FAILED')
+  }
+  const wizardImages = await deleteVideoWizardImages(videoId)
+  try {
+    const [files] = await getBucket().getFiles({ prefix: `newsletters/${PODCAST_ID}/${videoId}/` })
+    await Promise.all(files.map((file) => file.delete({ ignoreNotFound: true })))
+    return wizardImages + files.length
+  } catch (error) {
+    throw new CloudStorageError(
+      `Failed to delete newsletter images: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'DELETE_FAILED'
+    )
+  }
+}
+
 export async function deleteVideoWizardImages(videoId: string): Promise<number> {
   if (!videoId || videoId.includes('/') || videoId.includes('..')) {
     throw new CloudStorageError('Invalid video ID for wizard image purge', 'DELETE_FAILED')

@@ -18,6 +18,7 @@ interface PodcastFeatures {
   thumbnailGeneration: boolean
   extraImagesGeneration: boolean
   youtubePublish: boolean
+  syncRemovesDeletedVideos: boolean
 }
 
 interface FeaturesSettingsFormProps {
@@ -53,10 +54,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
   const [thumbnailGeneration, setThumbnailGeneration] = useState(features.thumbnailGeneration)
   const [extraImagesGeneration, setExtraImagesGeneration] = useState(features.extraImagesGeneration)
   const [youtubePublish, setYoutubePublish] = useState(features.youtubePublish)
+  const [syncRemovesDeletedVideos, setSyncRemovesDeletedVideos] = useState(features.syncRemovesDeletedVideos)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish' | 'thumbnailGeneration' | 'extraImagesGeneration' | 'youtubePublish'
+  type FeatureKey = 'editorial' | 'news' | 'includeLivestreams' | 'socialMedia' | 'adwords' | 'newsletter' | 'llmDebugMode' | 'socialPublish' | 'thumbnailGeneration' | 'extraImagesGeneration' | 'youtubePublish' | 'syncRemovesDeletedVideos'
   const setters: Record<FeatureKey, (v: boolean) => void> = {
     editorial: setEditorial,
     news: setNews,
@@ -69,10 +71,11 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
     thumbnailGeneration: setThumbnailGeneration,
     extraImagesGeneration: setExtraImagesGeneration,
     youtubePublish: setYoutubePublish,
+    syncRemovesDeletedVideos: setSyncRemovesDeletedVideos,
   }
 
   async function handleToggle(key: FeatureKey, value: boolean) {
-    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, thumbnailGeneration, extraImagesGeneration, youtubePublish, [key]: value }
+    const updated = { editorial, news, includeLivestreams, socialMedia, adwords, newsletter, llmDebugMode, socialPublish, thumbnailGeneration, extraImagesGeneration, youtubePublish, syncRemovesDeletedVideos, [key]: value }
 
     setters[key](value)
 
@@ -260,6 +263,21 @@ export function FeaturesSettingsForm({ features }: FeaturesSettingsFormProps) {
             id="feature-youtubePublish"
             checked={youtubePublish}
             onCheckedChange={(value) => handleToggle('youtubePublish', value)}
+            disabled={saving}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="feature-syncRemovesDeletedVideos">Remover vídeos apagados do YouTube</Label>
+            <p className="text-xs text-muted-foreground">
+              Ao sincronizar, apaga da IAra (com tudo o que foi gerado) os vídeos que não existem mais no canal. Só remove quando quem sincroniza é a conta do canal, e nunca remove vídeo vinculado a outro: esses aparecem no resultado do sync. Desligada, o sync só adiciona.
+            </p>
+          </div>
+          <Switch
+            id="feature-syncRemovesDeletedVideos"
+            checked={syncRemovesDeletedVideos}
+            onCheckedChange={(value) => handleToggle('syncRemovesDeletedVideos', value)}
             disabled={saving}
           />
         </div>
