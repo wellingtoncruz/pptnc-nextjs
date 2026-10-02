@@ -10,6 +10,7 @@ const mockBatch = vi.fn()
 const mockOrderBy = vi.fn()
 const mockWhere = vi.fn()
 const mockSelect = vi.fn()
+const mockGetAll = vi.fn()
 const mockFindNearest = vi.fn()
 
 vi.mock('firebase-admin/firestore', () => ({
@@ -28,7 +29,7 @@ const createMockDocRef = () => ({
 
 // Create mock collection ref factory
 const createMockCollectionRef = () => ({
-  doc: vi.fn(() => createMockDocRef()),
+  doc: vi.fn((id?: string) => ({ id, ...createMockDocRef() })),
   orderBy: mockOrderBy,
   where: mockWhere,
   get: mockGet,
@@ -47,6 +48,7 @@ vi.mock('./admin', () => ({
       })),
     })),
     batch: mockBatch,
+    getAll: mockGetAll,
   })),
 }))
 
@@ -111,6 +113,7 @@ describe('videos-admin.ts - Admin SDK operations', () => {
     mockWhere.mockReturnValue({
       orderBy: mockOrderBy,
       get: mockGet,
+      select: mockSelect,
     })
     // Setup select to return chainable mock with get (for getExistingVideoIds)
     mockSelect.mockReturnValue({
@@ -647,6 +650,7 @@ describe('videos-admin.ts - Admin SDK operations', () => {
   describe('getVideosForDisplayAdmin - status filter (Epic 26 / TD-11)', () => {
     const displayDoc = (id: string, status: string, videoType = 'episode') => ({
       id,
+      exists: true,
       data: () => ({
         title: `Video ${id}`,
         status,
@@ -654,6 +658,15 @@ describe('videos-admin.ts - Admin SDK operations', () => {
         duration: 100,
         publishedAt: mockTimestamp,
       }),
+    })
+
+    // A 2ª leitura (documentos inteiros da página) devolve os mesmos docs por id.
+    beforeEach(() => {
+      mockGetAll.mockImplementation(async (...refs: Array<{ id: string }>) => {
+        const result = await mockGet.mock.results.at(-1)?.value
+        const byId = new Map((result?.docs ?? []).map((d: { id: string }) => [d.id, d]))
+        return refs.map((r) => byId.get(r.id) ?? { id: r.id, exists: false, data: () => undefined })
+      })
     })
 
     it("maps status='ready_sent' to a Firestore 'in' query on [ready, sent]", async () => {
@@ -706,6 +719,70 @@ describe('videos-admin.ts - Admin SDK operations', () => {
       const episodes = await getEpisodesWithContext('pptnc')
 
       expect(episodes.map((e) => e.id)).toEqual(['ep-1'])
+    })
+  })
+
+  // out/2026 — TrenDs: lista sem filtro carregava os 1820 documentos inteiros e
+  // derrubava o contêiner de 1 GiB. Memória tem que ser proporcional à página.
+  describe('getVideosForDisplayAdmin - leitura em duas etapas', () => {
+    const at = (iso: string) => ({ toDate: () => new Date(iso) })
+    const light = (id: string, iso: string, extra: Record<string, unknown> = {}) => ({
+      id,
+      exists: true,
+      data: () => ({ publishedAt: at(iso), videoType: 'cut', status: 'sent', ...extra }),
+    })
+    const full = (id: string, extra: Record<string, unknown> = {}) => ({
+      id,
+      exists: true,
+      data: () => ({ title: `Título ${id}`, videoType: 'cut', status: 'sent', transcriptionTXT: 'longa', ...extra }),
+    })
+
+    beforeEach(() => {
+      mockSelect.mockReturnValue({ get: mockGet })
+    })
+
+    it('1ª leitura só com os campos de filtro/ordem; documentos inteiros só da página, na ordem', async () => {
+      mockGet.mockResolvedValueOnce({
+        empty: false,
+        docs: [
+          light('v1', '2026-01-01'),
+          light('v2', '2026-03-01'),
+          light('v3', '2026-02-01'),
+          light('v4', '2026-05-01'),
+          light('v5', '2026-04-01'),
+        ],
+      })
+      mockGetAll.mockImplementation(async (...refs: Array<{ id: string }>) => refs.map((r) => full(r.id)))
+
+      const result = await getVideosForDisplayAdmin('pptnc', { page: 1, limit: 2 })
+
+      expect(mockSelect).toHaveBeenCalledWith('publishedAt', 'videoType', 'status')
+      expect(mockGetAll.mock.calls[0].map((r: { id: string }) => r.id)).toEqual(['v4', 'v5'])
+      expect(result.data.map((v) => v.id)).toEqual(['v4', 'v5'])
+      expect(result.data[0].title).toBe('Título v4')
+      expect(result.data[0].transcriptionTXT).toBe('longa')
+      expect(result.pagination).toEqual({ page: 1, limit: 2, totalCount: 5, totalPages: 3 })
+    })
+
+    it('página além do fim: não lê nenhum documento inteiro', async () => {
+      mockGet.mockResolvedValueOnce({ empty: false, docs: [light('v1', '2026-01-01')] })
+
+      const result = await getVideosForDisplayAdmin('pptnc', { page: 5, limit: 20 })
+
+      expect(mockGetAll).not.toHaveBeenCalled()
+      expect(result.data).toEqual([])
+      expect(result.pagination.totalCount).toBe(1)
+    })
+
+    it('corte da página herda os convidados do pai (Story 24.5)', async () => {
+      mockGet.mockResolvedValueOnce({ empty: false, docs: [light('c1', '2026-01-01')] })
+      mockGetAll
+        .mockImplementationOnce(async () => [full('c1', { parentEpisodeId: 'ep-1', guests: [] })])
+        .mockImplementationOnce(async () => [{ id: 'ep-1', exists: true, data: () => ({ guests: [{ name: 'Ana' }] }) }])
+
+      const result = await getVideosForDisplayAdmin('pptnc', {})
+
+      expect(result.data[0].guests).toEqual([{ name: 'Ana' }])
     })
   })
 })
