@@ -56,6 +56,13 @@ function RemovalSummary({ removal }: { removal: RemovalResult }) {
           <p className="mt-1 text-xs">Vídeos vinculados saem no próximo sync depois que o vínculo for desfeito.</p>
         </div>
       )}
+      {removal.missingFromPlaylist > 0 && (
+        <p className="text-sm text-muted-foreground">
+          {removal.missingFromPlaylist === 1
+            ? '1 vídeo não veio na lista do YouTube, mas ainda existe — mantido.'
+            : `${removal.missingFromPlaylist} vídeos não vieram na lista do YouTube, mas ainda existem — mantidos.`}
+        </p>
+      )}
       {removal.pendingWrongAccount > 0 && (
         <p className="text-sm text-amber-600 dark:text-amber-400">
           {removal.pendingWrongAccount === 1
