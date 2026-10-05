@@ -20,7 +20,7 @@ import { getAdminDb } from '@/lib/firebase/admin'
 import { log } from '@/lib/logger'
 import { classifyVideoType } from '@/lib/video-utils'
 import { YouTubeClient, type YouTubeVideoDataFromAPI } from '@/lib/youtube'
-import { youtubeToVideoCreate } from '@/lib/sync/sync-videos'
+import { isLiveInProgress, youtubeToVideoCreate } from '@/lib/sync/sync-videos'
 import { embedVideos } from '@/lib/embedding/video-embedding'
 
 /**
@@ -315,9 +315,17 @@ export async function fullSyncVideos(
           unchanged++
         }
       } else {
+        // Mesma regra de lives do sync delta (out/2026): com `includeLivestreams`,
+        // live no ar/agendada espera terminar e live encerrada entra como `new`.
+        const includeLivestreams = podcast.features?.includeLivestreams ?? false
+        if (includeLivestreams && isLiveInProgress(ytVideo)) {
+          continue
+        }
         // New video - create using shared function (same as delta sync)
         const videoType = classifyVideoType(ytVideo.duration, podcast.videoTypes)
-        const videoCreate = youtubeToVideoCreate(ytVideo, podcastId, videoType)
+        const videoCreate = youtubeToVideoCreate(ytVideo, podcastId, videoType, undefined, {
+          livesAsNew: includeLivestreams,
+        })
 
         batch.set(docRef, {
           ...videoCreate,

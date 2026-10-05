@@ -90,6 +90,11 @@ export interface SyncResult {
   skipped: number
   /** Number of live broadcasts excluded from import */
   liveBroadcastsExcluded: number
+  /**
+   * Lives ainda no ar/agendadas não importadas (com `includeLivestreams`);
+   * entram no sync depois que terminarem.
+   */
+  liveInProgressSkipped?: number
   /** Summary for UI: total new videos found */
   newVideos: number
   /**
@@ -244,10 +249,33 @@ export function getInitialStatusFromVisibility(privacyStatus: 'public' | 'unlist
 }
 
 /**
+ * Live ainda no ar ou agendada (out/2026, TrenDs). Não é importada: sem fim de
+ * transmissão, a duração vem 0 (vira reel) e o sync delta nunca corrige depois.
+ * O próximo sync após o término traz a live com duração e tipo certos.
+ */
+export function isLiveInProgress(video: YouTubeVideoDataFromAPI): boolean {
+  return video.liveBroadcastContent === 'live' || video.liveBroadcastContent === 'upcoming'
+}
+
+/**
+ * Status inicial na importação. Regra geral: público → sent, demais → new.
+ * Exceção (out/2026, TrenDs): com `includeLivestreams`, live ENCERRADA entra
+ * como `new` mesmo pública — ela vai ao ar crua na transmissão, sem passar pela
+ * IAra; "público" ali não significa "já trabalhado".
+ */
+export function getInitialStatus(
+  video: YouTubeVideoDataFromAPI,
+  options: { livesAsNew?: boolean } = {}
+): 'new' | 'sent' {
+  if (options.livesAsNew && video.wasLiveBroadcast) return 'new'
+  return getInitialStatusFromVisibility(video.privacyStatus)
+}
+
+/**
  * Converts YouTube API video to Firestore VideoCreate (flat structure).
  *
  * Uses FLAT fields compatible with portal-web/EpisodeEntity schema.
- * Status is determined by visibility: public → sent, others → new
+ * Status: `getInitialStatus` (visibility; lives as new when opted in)
  *
  * @param youtubeVideo - Video data from YouTube API
  * @param podcastId - Podcast ID
@@ -258,9 +286,10 @@ export function youtubeToVideoCreate(
   youtubeVideo: YouTubeVideoDataFromAPI,
   podcastId: string,
   videoType: 'episode' | 'cut' | 'reel',
-  storageThumbnailUrl?: string | null
+  storageThumbnailUrl?: string | null,
+  options: { livesAsNew?: boolean } = {}
 ): VideoCreate {
-  const status = getInitialStatusFromVisibility(youtubeVideo.privacyStatus)
+  const status = getInitialStatus(youtubeVideo, options)
 
   return {
     id: youtubeVideo.id,
@@ -272,7 +301,7 @@ export function youtubeToVideoCreate(
     duration: youtubeVideo.duration,
     publishedAt: Timestamp.fromDate(new Date(youtubeVideo.publishedAt)),
     // IAra-specific fields
-    status, // Determined by visibility: public → sent, others → new
+    status, // getInitialStatus: visibility, or `new` for finished lives when opted in
     videoType,
     youtubePrivacyStatus: youtubeVideo.privacyStatus,
     visibilityUpdatedAt: Timestamp.now(),
@@ -280,6 +309,7 @@ export function youtubeToVideoCreate(
     ...(storageThumbnailUrl && { storageThumbnailUrl }),
     // Embedding flag (Epic 17) — starts as false, set to true after embedding generation
     hasEmbedding: false,
+    ...(youtubeVideo.wasLiveBroadcast && { wasLiveBroadcast: true }),
   }
 }
 
@@ -339,8 +369,12 @@ export async function syncVideos(
   // 4. Filter out live broadcasts (unless podcast config includes them)
   const includeLivestreams = podcast.features?.includeLivestreams ?? false
   const { videos: filteredNewVideos, excludedCount: liveBroadcastsExcluded } = includeLivestreams
-    ? { videos: newYoutubeVideos, excludedCount: 0 }
+    ? { videos: newYoutubeVideos.filter((v) => !isLiveInProgress(v)), excludedCount: 0 }
     : filterLiveBroadcasts(newYoutubeVideos)
+  const liveInProgressSkipped = includeLivestreams
+    ? newYoutubeVideos.length - filteredNewVideos.length
+    : 0
+  const statusOptions = { livesAsNew: includeLivestreams }
 
   log('INFO', 'New YouTube videos fetched (delta sync)', {
     podcastId,
@@ -361,7 +395,7 @@ export async function syncVideos(
     newVideosToProcess.push({ ytVideo, videoType })
 
     // Track how many were added with each status
-    const status = getInitialStatusFromVisibility(ytVideo.privacyStatus)
+    const status = getInitialStatus(ytVideo, statusOptions)
     if (status === 'sent') {
       addedAsSent++
     } else {
@@ -406,7 +440,7 @@ export async function syncVideos(
         }
       }
 
-      return youtubeToVideoCreate(ytVideo, podcastId, videoType, storageThumbnailUrl)
+      return youtubeToVideoCreate(ytVideo, podcastId, videoType, storageThumbnailUrl, statusOptions)
     },
     THUMBNAIL_UPLOAD_CONCURRENCY
   )
@@ -482,6 +516,7 @@ export async function syncVideos(
     addedAsSent,
     skipped,
     liveBroadcastsExcluded,
+    ...(liveInProgressSkipped > 0 && { liveInProgressSkipped }),
     // Summary fields for UI
     newVideos: toCreate.length,
     ...(removal && { removal }),

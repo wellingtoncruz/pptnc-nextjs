@@ -18,6 +18,8 @@ export interface SyncResultData {
   newVideos: number
   /** Vídeos que sumiram do YouTube — só com `features.syncRemovesDeletedVideos`. */
   removal?: RemovalResult
+  /** Lives ainda no ar/agendadas — entram no sync depois que terminarem. */
+  liveInProgressSkipped?: number
 }
 
 const SKIP_REASON: Record<'linked' | 'busy', string> = {
@@ -192,6 +194,13 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
           ) : (
             <p className="text-sm text-muted-foreground">
               Nenhum vídeo novo foi encontrado no canal.
+            </p>
+          )}
+          {(result.liveInProgressSkipped ?? 0) > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {result.liveInProgressSkipped === 1
+                ? '1 live ainda no ar ou agendada entra no próximo sync, depois que terminar.'
+                : `${result.liveInProgressSkipped} lives ainda no ar ou agendadas entram no próximo sync, depois que terminarem.`}
             </p>
           )}
           {result.removal && <RemovalSummary removal={result.removal} />}

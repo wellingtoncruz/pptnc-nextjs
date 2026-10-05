@@ -86,6 +86,9 @@ vi.mock('@/lib/embedding/video-embedding', () => ({
 
 // Mock sync-videos (youtubeToVideoCreate)
 vi.mock('@/lib/sync/sync-videos', () => ({
+  isLiveInProgress: vi.fn(
+    (v: { liveBroadcastContent?: string }) => v.liveBroadcastContent === 'live' || v.liveBroadcastContent === 'upcoming'
+  ),
   youtubeToVideoCreate: vi.fn(
     (ytVideo: { id: string; title: string; description?: string; thumbnails: unknown; duration: number; publishedAt: string; privacyStatus: string }, podcastId: string, videoType: string) => ({
       id: ytVideo.id,
@@ -177,7 +180,9 @@ describe('full-sync-videos.ts', () => {
       expect(mockYoutubeToVideoCreate).toHaveBeenCalledWith(
         ytVideo,
         'pptnc',
-        'episode'
+        'episode',
+        undefined,
+        { livesAsNew: false }
       )
 
       // batch.set should spread the result + add timestamps
@@ -507,6 +512,28 @@ describe('full-sync-videos.ts', () => {
       await fullSyncVideos('pptnc', 'access-token', 'user-123')
 
       expect(mockEmbedVideos).not.toHaveBeenCalled()
+    })
+  })
+
+  // out/2026 — TrenDs: com includeLivestreams, live no ar espera terminar e live encerrada entra como new.
+  describe('fullSyncVideos — lives (includeLivestreams)', () => {
+    const base = { title: 'L', description: '', thumbnails: makeThumbnails('l'), duration: 3600, publishedAt: '2026-10-01T00:00:00Z', privacyStatus: 'public' as const }
+
+    it('não cria live no ar/agendada e pede livesAsNew para a encerrada', async () => {
+      vi.mocked(getPodcastAdmin).mockResolvedValue({ id: 'trendsnews', channelId: 'UC123', videoTypes: {}, features: { includeLivestreams: true } } as never)
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['ao-vivo', 'agendada', 'encerrada'], nextPageToken: undefined })
+      mockGetVideoDetailsBatch.mockResolvedValue([
+        { ...base, id: 'ao-vivo', liveBroadcastContent: 'live' },
+        { ...base, id: 'agendada', liveBroadcastContent: 'upcoming' },
+        { ...base, id: 'encerrada', liveBroadcastContent: 'none', wasLiveBroadcast: true },
+      ])
+      mockGetAllVideosRaw.mockResolvedValue([])
+
+      await fullSyncVideos('trendsnews', 'access-token', 'user-123')
+
+      expect(mockYoutubeToVideoCreate).toHaveBeenCalledTimes(1)
+      expect(mockYoutubeToVideoCreate.mock.calls[0][0].id).toBe('encerrada')
+      expect(mockYoutubeToVideoCreate.mock.calls[0][4]).toEqual({ livesAsNew: true })
     })
   })
 })

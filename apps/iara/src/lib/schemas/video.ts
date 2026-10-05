@@ -403,6 +403,9 @@ export const VideoCreateSchema = z.object({
 
   // Embedding control flag (Epic 17 — Video Embeddings)
   hasEmbedding: z.boolean().default(false),
+
+  /** Veio de uma transmissão ao vivo já encerrada (out/2026, TrenDs). */
+  wasLiveBroadcast: z.boolean().optional(),
 })
 
 /**
