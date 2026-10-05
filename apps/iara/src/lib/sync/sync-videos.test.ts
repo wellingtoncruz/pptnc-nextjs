@@ -1131,3 +1131,76 @@ describe('syncVideos — remoção de vídeos apagados do YouTube (features.sync
     expect(mockRemove).not.toHaveBeenCalled()
   })
 })
+
+// out/2026 — TrenDs: todo episódio é live, ao ar público e cru na transmissão.
+describe('lives na importação (features.includeLivestreams)', () => {
+  const live = (over: Record<string, unknown>) => ({
+    id: 'x',
+    title: 'Live',
+    description: '',
+    thumbnails: makeThumbnails('x'),
+    duration: 3600,
+    publishedAt: '2026-10-01T00:00:00Z',
+    privacyStatus: 'public' as const,
+    liveBroadcastContent: 'none' as const,
+    wasLiveBroadcast: false,
+    ...over,
+  })
+
+  describe('youtubeToVideoCreate', () => {
+    it('live encerrada pública entra como new com livesAsNew, e marca wasLiveBroadcast', () => {
+      const v = youtubeToVideoCreate(live({ wasLiveBroadcast: true }) as never, 'trendsnews', 'episode', null, { livesAsNew: true })
+      expect(v.status).toBe('new')
+      expect(v).toMatchObject({ wasLiveBroadcast: true })
+    })
+
+    it('sem livesAsNew, a regra de visibilidade segue (PPTNC): pública → sent', () => {
+      const v = youtubeToVideoCreate(live({ wasLiveBroadcast: true }) as never, 'pptnc', 'episode')
+      expect(v.status).toBe('sent')
+    })
+
+    it('vídeo comum público continua sent mesmo com livesAsNew', () => {
+      const v = youtubeToVideoCreate(live({}) as never, 'trendsnews', 'cut', null, { livesAsNew: true })
+      expect(v.status).toBe('sent')
+      expect(v).not.toHaveProperty('wasLiveBroadcast')
+    })
+  })
+
+  describe('syncVideos', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      mockUploadVideoThumbnail = vi.fn().mockResolvedValue(null)
+      mockGetExistingVideoIds.mockResolvedValue(new Set())
+      mockClassifyVideoType.mockReturnValue('episode')
+      mockListPlaylistItems = vi.fn().mockResolvedValue({ videoIds: ['ao-vivo', 'agendada', 'encerrada'], nextPageToken: undefined })
+      mockGetVideoDetailsBatch = vi.fn().mockResolvedValue([
+        live({ id: 'ao-vivo', liveBroadcastContent: 'live', duration: 0 }),
+        live({ id: 'agendada', liveBroadcastContent: 'upcoming', duration: 0 }),
+        live({ id: 'encerrada', wasLiveBroadcast: true }),
+      ])
+    })
+
+    it('flag ligada: live no ar/agendada fica para depois; encerrada entra como new', async () => {
+      mockGetPodcastAdmin.mockResolvedValue({ id: 'trendsnews', channelId: 'UC123', videoTypes: {}, features: { includeLivestreams: true } } as never)
+
+      const result = await syncVideos('trendsnews', 'token')
+
+      const creates = mockBatchWriteVideos.mock.calls[0][1].creates
+      expect(creates.map((c: { id: string }) => c.id)).toEqual(['encerrada'])
+      expect(creates[0].status).toBe('new')
+      expect(result.liveInProgressSkipped).toBe(2)
+      expect(result.added).toBe(1)
+      expect(result.addedAsSent).toBe(0)
+    })
+
+    it('flag desligada: comportamento de antes (lives excluídas)', async () => {
+      mockGetPodcastAdmin.mockResolvedValue({ id: 'pptnc', channelId: 'UC123', videoTypes: {} } as never)
+
+      const result = await syncVideos('pptnc', 'token')
+
+      expect(mockBatchWriteVideos).not.toHaveBeenCalled()
+      expect(result.liveBroadcastsExcluded).toBe(3)
+      expect(result.liveInProgressSkipped).toBeUndefined()
+    })
+  })
+})

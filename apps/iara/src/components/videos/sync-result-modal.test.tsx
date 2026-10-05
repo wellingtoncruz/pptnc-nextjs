@@ -172,4 +172,9 @@ describe('SyncResultModal — vídeos apagados do YouTube (out/2026)', () => {
     )
     expect(screen.getByText(/3 vídeos não vieram na lista do YouTube, mas ainda existem/)).toBeInTheDocument()
   })
+
+  it('avisa das lives ainda no ar que ficam para o próximo sync', () => {
+    render(<SyncResultModal isOpen onClose={vi.fn()} result={{ newVideos: 0, liveInProgressSkipped: 2 }} />)
+    expect(screen.getByText(/2 lives ainda no ar ou agendadas entram no próximo sync/)).toBeInTheDocument()
+  })
 })

@@ -166,6 +166,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       setSyncResult({
         newVideos: newCount,
         removal: result.removal,
+        liveInProgressSkipped: result.liveInProgressSkipped,
       })
       setSyncModalOpen(true)
     } catch (err) {
