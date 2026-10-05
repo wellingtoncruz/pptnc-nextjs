@@ -333,7 +333,7 @@ export function SettingsPageClient({ podcast, socialNetworks }: SettingsPageClie
             <Radio className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
             <div className="text-left">
               <div className="text-lg font-semibold">Informações do Podcast</div>
-              <div className="text-sm font-normal text-muted-foreground">Nome, canal do YouTube e nome do host</div>
+              <div className="text-sm font-normal text-muted-foreground">Nome, canal do YouTube, nome do host e máximo de convidados</div>
             </div>
           </div>
         </AccordionTrigger>

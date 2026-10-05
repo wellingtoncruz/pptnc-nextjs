@@ -598,4 +598,34 @@ describe('POST /api/guests/scrape', () => {
       expect(updatedGuests[0].photo).toBe('/api/guests/12345678/avatar')
     })
   })
+
+  // out/2026: antes um slice(0, 3) descartava o 4º LinkedIn em diante em silêncio.
+  describe('mais de 3 convidados', () => {
+    it('raspa TODOS os 6, no máximo 3 em paralelo', async () => {
+      const guests = Array.from({ length: 6 }, (_, i) => ({
+        name: `G${i}`,
+        role: 'R',
+        company: 'C',
+        linkedin: `https://www.linkedin.com/in/guest${i}`,
+      }))
+      mockGetVideoAdmin.mockResolvedValue({ ...mockEpisodeVideo, guests } as never)
+      let inFlight = 0
+      let peak = 0
+      mockScrapeLinkedInProfile.mockImplementation(async (url: string) => {
+        inFlight++
+        peak = Math.max(peak, inFlight)
+        await new Promise((r) => setTimeout(r, 5))
+        inFlight--
+        return { ...mockBrightDataProfile, url, name: url }
+      })
+      mockUpsertGuest.mockResolvedValue('guest-doc-id')
+      vi.mocked(fetch).mockResolvedValue({ ok: false, status: 404 } as never)
+
+      await POST(createRequest({ videoId: 'video-123' }))
+
+      expect(mockScrapeLinkedInProfile).toHaveBeenCalledTimes(6)
+      expect(peak).toBeLessThanOrEqual(3)
+    })
+  })
 })
+

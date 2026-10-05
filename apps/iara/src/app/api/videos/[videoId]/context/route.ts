@@ -16,8 +16,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { auth } from '@/lib/auth'
+import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
 import { getVideoAdmin, updateVideoAdmin } from '@/lib/firebase/videos-admin'
 import { PODCAST_ID } from '@/lib/firebase/config'
+import { getMaxGuests } from '@/lib/schemas/podcast'
 import { GuestSchema } from '@/lib/schemas/video'
 import { log } from '@/lib/logger'
 
@@ -130,6 +132,25 @@ export async function PUT(
         { error: { code: 'NOT_FOUND', message: 'Vídeo não encontrado' } },
         { status: 404 }
       )
+    }
+
+    // Máximo de convidados do podcast (out/2026), co-host incluído — `guests`
+    // já chega com o co-host em [0]. Vale para CRESCER: episódio que já tem
+    // mais que o limite (limite reduzido depois) salva sem perder ninguém.
+    if (contextData.guests) {
+      const limit = getMaxGuests(await getPodcastAdmin(PODCAST_ID))
+      const allowed = Math.max(limit, video.guests?.length ?? 0)
+      if (contextData.guests.length > allowed) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'TOO_MANY_GUESTS',
+              message: `Máximo de ${limit} convidados por episódio (co-host incluído)`,
+            },
+          },
+          { status: 400 }
+        )
+      }
     }
 
     // Normalize empty-string sentinels to undefined so we don't persist '' as

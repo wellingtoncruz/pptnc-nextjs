@@ -68,6 +68,24 @@ export const MAX_RESUME_LENGTH = 5000
 export const MAX_YOUTUBE_FOOTER_LENGTH = 5000
 
 /**
+ * Máximo de convidados por episódio (out/2026) — TOTAL, co-host incluído
+ * (o co-host ocupa uma vaga só quando existe). PPTNC = 4 (co-host + 3, o
+ * comportamento de antes); TrenDs = 6. Configurável em Informações do Podcast.
+ */
+export const MIN_MAX_GUESTS = 2
+export const MAX_MAX_GUESTS = 10
+export const DEFAULT_MAX_GUESTS = 4
+
+export function getMaxGuests(podcast: { maxGuests?: number } | null | undefined): number {
+  return podcast?.maxGuests ?? DEFAULT_MAX_GUESTS
+}
+
+/** Vagas de convidado no formulário: o co-host, quando existe, ocupa uma. */
+export function guestSlots(maxGuests: number, hasCoHost: boolean): number {
+  return Math.max(1, maxGuests - (hasCoHost ? 1 : 0))
+}
+
+/**
  * PromptField schema - individual prompt with description and expected output.
  *
  * Each prompt has:
@@ -469,6 +487,13 @@ export const PodcastSchema = z.object({
   videoTypes: VideoTypesConfigSchema,
   /** Name of the podcast host/presenter. Included in Phase 6 (description) prompts. */
   hostName: z.string().max(200, 'Nome do host deve ter no máximo 200 caracteres').optional(),
+  /** Máximo de convidados por episódio, co-host incluído (ver DEFAULT_MAX_GUESTS). */
+  maxGuests: z
+    .number()
+    .int('Deve ser um número inteiro')
+    .min(MIN_MAX_GUESTS, `Mínimo de ${MIN_MAX_GUESTS} convidados`)
+    .max(MAX_MAX_GUESTS, `Máximo de ${MAX_MAX_GUESTS} convidados`)
+    .optional(),
   /** YouTube footer text appended to video descriptions. */
   youtubeFooter: z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional(),
   /** IDs of social networks enabled for this podcast. Undefined/absent = none enabled. */

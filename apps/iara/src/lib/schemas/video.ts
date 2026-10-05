@@ -234,9 +234,14 @@ export const GuestDisplaySchema = z.object({
  * - theme: General topic (required)
  * - hasCoHost: Whether a co-host exists
  * - coHost: Co-host data (when hasCoHost is true)
- * - guests: 1-3 guests (required)
+ * - guests: 1+ guests (required)
  *
  * On save, coHost is inserted as guests[0] if present.
+ *
+ * O máximo NÃO fica aqui (out/2026): é do podcast (`maxGuests`, co-host
+ * incluído) e vale para ADICIONAR — episódio que já tem mais convidados que o
+ * limite (limite reduzido depois) continua salvando sem perder ninguém. A UI
+ * esconde o "Adicionar" no limite; o PUT /context recusa crescer além dele.
  */
 export const EpisodeContextFormSchema = z.object({
   theme: z.string().min(1, 'Tema é obrigatório'),
@@ -244,8 +249,7 @@ export const EpisodeContextFormSchema = z.object({
   coHost: GuestSchema.optional(),
   guests: z
     .array(GuestSchema)
-    .min(1, 'Pelo menos 1 convidado é obrigatório')
-    .max(3, 'Máximo de 3 convidados'),
+    .min(1, 'Pelo menos 1 convidado é obrigatório'),
   spotifyUrl: z.string()
     .url('URL inválida')
     .refine(

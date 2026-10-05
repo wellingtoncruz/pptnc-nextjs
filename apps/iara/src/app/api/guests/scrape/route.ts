@@ -33,8 +33,35 @@ export const runtime = 'nodejs' // REQUIRED for firebase-admin
 
 const AVATAR_DOWNLOAD_TIMEOUT_MS = 15_000
 const PLACEHOLDER_SIZE_THRESHOLD = 1000
-/** Max concurrent guest scrapes — cap matches the max number of guests in an episode. */
+/**
+ * Max concurrent guest scrapes. É CONCORRÊNCIA, não limite: todos os convidados
+ * são raspados, no máximo 3 por vez (out/2026 — antes um `slice(0, 3)`
+ * descartava em silêncio o 4º em diante; o máximo de convidados agora é
+ * configurável até 10).
+ */
 const SCRAPE_CONCURRENCY_CAP = 3
+
+/** Roda `fn` sobre todos os itens com no máximo `limit` em paralelo; mesma forma do allSettled. */
+async function settleWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = new Array(items.length)
+  let next = 0
+  async function worker() {
+    while (next < items.length) {
+      const i = next++
+      try {
+        results[i] = { status: 'fulfilled', value: await fn(items[i]) }
+      } catch (reason) {
+        results[i] = { status: 'rejected', reason }
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+  return results
+}
 
 /** Derives a stable, filesystem-safe key for the guest avatar in GCS. */
 function deriveGuestKey(linkedinUrl: string, linkedinNumId?: string | number): string {
@@ -303,12 +330,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       log('INFO', 'Guest scrape dedup hit', { videoId, skippedCount: skippedUrls.length })
     }
 
-    // Run in parallel — cap matches the max number of guests in an episode.
+    // Todos os convidados, no máximo SCRAPE_CONCURRENCY_CAP por vez.
     // No external rate-limit library needed; BrightData itself queues.
-    const runners = tasks.slice(0, SCRAPE_CONCURRENCY_CAP).map((task) =>
+    const settled = await settleWithConcurrency(tasks, SCRAPE_CONCURRENCY_CAP, (task) =>
       scrapeSingleGuest(task.index, task.linkedinUrl)
     )
-    const settled = await Promise.allSettled(runners)
 
     let scrapedCount = 0
     let errorCount = 0

@@ -386,4 +386,43 @@ describe('PodcastSettingsForm', () => {
     // API should not be called for invalid data
     expect(mockFetch).not.toHaveBeenCalled()
   })
+
+  // out/2026 — máximo de convidados por episódio, co-host incluído.
+  describe('maxGuests', () => {
+    it('sem valor salvo mostra o padrão 4', () => {
+      render(<PodcastSettingsForm podcast={createPodcastFixture()} />)
+      expect(screen.getByLabelText('Máximo de convidados por episódio')).toHaveValue(4)
+    })
+
+    it('salva o número escolhido', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(<PodcastSettingsForm podcast={createPodcastFixture()} />)
+      const input = screen.getByLabelText('Máximo de convidados por episódio')
+      await user.clear(input)
+      await user.type(input, '6')
+      await act(async () => {
+        fireEvent.blur(input)
+      })
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith('/api/podcast', expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ maxGuests: 6 }),
+        }))
+      })
+    })
+
+    it.each(['1', '11'])('recusa %s (fora de 2–10) sem chamar a API', async (value) => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(<PodcastSettingsForm podcast={createPodcastFixture()} />)
+      const input = screen.getByLabelText('Máximo de convidados por episódio')
+      await user.clear(input)
+      await user.type(input, value)
+      await act(async () => {
+        fireEvent.blur(input)
+      })
+      expect(await screen.findByText(/Mínimo de 2|Máximo de 10/)).toBeInTheDocument()
+      expect(mockFetch).not.toHaveBeenCalledWith('/api/podcast', expect.objectContaining({ body: JSON.stringify({ maxGuests: Number(value) }) }))
+    })
+  })
 })
+

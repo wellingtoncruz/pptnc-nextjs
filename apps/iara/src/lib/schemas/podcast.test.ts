@@ -1063,3 +1063,28 @@ describe('EpisodePromptsSchema extraImages (Epic 28)', () => {
     })
   })
 })
+
+// out/2026 — máximo de convidados por podcast, co-host incluído.
+describe('maxGuests', () => {
+  it('ausente = 4 (o comportamento de antes no PPTNC: co-host + 3)', async () => {
+    const { getMaxGuests, DEFAULT_MAX_GUESTS } = await import('./podcast')
+    expect(DEFAULT_MAX_GUESTS).toBe(4)
+    expect(getMaxGuests({})).toBe(4)
+    expect(getMaxGuests(null)).toBe(4)
+    expect(getMaxGuests({ maxGuests: 6 })).toBe(6)
+  })
+
+  it('o co-host ocupa uma vaga só quando existe', async () => {
+    const { guestSlots } = await import('./podcast')
+    expect(guestSlots(4, true)).toBe(3)
+    expect(guestSlots(4, false)).toBe(4)
+    expect(guestSlots(6, true)).toBe(5)
+    expect(guestSlots(2, true)).toBe(1)
+  })
+
+  it.each([[1, false], [2, true], [10, true], [11, false], [4.5, false]])('aceita %s? %s', async (value, ok) => {
+    const { PodcastUpdateSchema } = await import('./podcast')
+    expect(PodcastUpdateSchema.safeParse({ maxGuests: value }).success).toBe(ok)
+  })
+})
+

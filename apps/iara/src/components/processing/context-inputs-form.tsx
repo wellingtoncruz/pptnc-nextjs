@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { PersonForm } from './person-form'
+import { DEFAULT_MAX_GUESTS, guestSlots } from '@/lib/schemas/podcast'
 import { EpisodeContextFormSchema } from '@/lib/schemas/video'
 import type { EpisodeContextFormData, Guest } from '@/types/video'
 
@@ -21,6 +22,8 @@ interface ContextInputsFormProps {
   onCancel: () => void
   /** Whether the form is submitting */
   isSubmitting?: boolean
+  /** Máximo de convidados do podcast, co-host incluído. */
+  maxGuests?: number
 }
 
 const emptyGuest: Guest = {
@@ -43,13 +46,14 @@ function hasGuestData(guest: Guest | undefined): boolean {
  *
  * - Theme is required
  * - Co-host is optional (collapsible accordion)
- * - 1-3 guests are required
+ * - 1 até o máximo do podcast (co-host incluído) guests are required
  */
 export function ContextInputsForm({
   defaultValues,
   onSubmit,
   onCancel,
   isSubmitting = false,
+  maxGuests = DEFAULT_MAX_GUESTS,
 }: ContextInputsFormProps) {
   // Memoize initial values to avoid unnecessary resets
   const initialValues = useMemo(() => ({
@@ -91,8 +95,10 @@ export function ContextInputsForm({
     if (hasCoHostData) setCoHostOpen(true)
   }, [hasCoHostData])
 
+  const guestLimit = guestSlots(maxGuests, hasCoHostData)
+
   const handleAddGuest = () => {
-    if (guestFields.length < 3) {
+    if (guestFields.length < guestLimit) {
       append({ ...emptyGuest })
     }
   }
@@ -147,16 +153,16 @@ export function ContextInputsForm({
         )}
       </div>
 
-      {/* Guests (1-3 required) */}
+      {/* Guests (1 até o máximo do podcast) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label>
             Convidados <span className="text-destructive">*</span>
             <span className="text-muted-foreground text-xs ml-2">
-              ({guestFields.length}/3)
+              ({guestFields.length}/{guestLimit})
             </span>
           </Label>
-          {guestFields.length < 3 && (
+          {guestFields.length < guestLimit && (
             <Button
               type="button"
               variant="outline"

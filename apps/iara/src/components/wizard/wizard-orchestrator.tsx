@@ -39,6 +39,8 @@ interface WizardOrchestratorProps {
   features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
   onVideoStatusChange?: () => void
+  /** Máximo de convidados do podcast, co-host incluído (Informações do Podcast). */
+  maxGuests?: number
 }
 
 /**
@@ -60,6 +62,7 @@ export function WizardOrchestrator({
   className,
   features,
   onVideoStatusChange,
+  maxGuests,
 }: WizardOrchestratorProps) {
   const router = useRouter()
   const { startProcessing, stopProcessing } = useLLMProcessing()
@@ -2744,6 +2747,7 @@ export function WizardOrchestrator({
             video={videoData}
             critique={critiqueResult}
             onContextChange={handleContextChange}
+            maxGuests={maxGuests}
           />
         )
       case 'edit-check':
