@@ -64,7 +64,7 @@ describe('SettingsPageClient', () => {
   it('exibe descrições em cada seção do accordion', () => {
     render(<SettingsPageClient podcast={mockPodcast} />)
 
-    expect(screen.getByText('Nome, canal do YouTube e nome do host')).toBeInTheDocument()
+    expect(screen.getByText('Nome, canal do YouTube, nome do host e máximo de convidados')).toBeInTheDocument()
     expect(screen.getByText('Habilite ou desabilite seções opcionais da aplicação')).toBeInTheDocument()
     expect(screen.getByText('Limites de duração para classificação de vídeos')).toBeInTheDocument()
     expect(screen.getByText('Configure os personagens que o LLM assume em cada tarefa')).toBeInTheDocument()

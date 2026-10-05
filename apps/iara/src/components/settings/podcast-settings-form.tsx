@@ -8,7 +8,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useAutoSave } from '@/hooks/use-auto-save'
 import { log } from '@/lib/logger'
-import { MAX_YOUTUBE_FOOTER_LENGTH } from '@/lib/schemas/podcast'
+import {
+  DEFAULT_MAX_GUESTS,
+  MAX_MAX_GUESTS,
+  MAX_YOUTUBE_FOOTER_LENGTH,
+  MIN_MAX_GUESTS,
+} from '@/lib/schemas/podcast'
 import type { SerializedPodcast } from '@/types/podcast'
 
 /**
@@ -18,12 +23,17 @@ import type { SerializedPodcast } from '@/types/podcast'
 const NameSchema = z.string().min(1, 'Nome é obrigatório')
 const ChannelIdSchema = z.string().min(1, 'Channel ID é obrigatório')
 const HostNameSchema = z.string().max(200, 'Nome do host deve ter no máximo 200 caracteres').optional()
+const MaxGuestsSchema = z
+  .number({ message: 'Informe um número' })
+  .int('Deve ser um número inteiro')
+  .min(MIN_MAX_GUESTS, `Mínimo de ${MIN_MAX_GUESTS}`)
+  .max(MAX_MAX_GUESTS, `Máximo de ${MAX_MAX_GUESTS}`)
 const YoutubeFooterSchema = z.string().max(MAX_YOUTUBE_FOOTER_LENGTH, `Rodapé deve ter no máximo ${MAX_YOUTUBE_FOOTER_LENGTH} caracteres`).optional()
 
 /**
  * Updates podcast via API route (server-side).
  */
-async function updatePodcastViaApi(data: { name?: string; channelId?: string; hostName?: string; youtubeFooter?: string }): Promise<void> {
+async function updatePodcastViaApi(data: { name?: string; channelId?: string; hostName?: string; youtubeFooter?: string; maxGuests?: number }): Promise<void> {
   const response = await fetch('/api/podcast', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -57,6 +67,8 @@ export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
   const [channelId, setChannelId] = useState(podcast.channelId)
   const [hostName, setHostName] = useState(podcast.hostName ?? '')
   const [youtubeFooter, setYoutubeFooter] = useState(podcast.youtubeFooter ?? '')
+  const [maxGuests, setMaxGuests] = useState(String(podcast.maxGuests ?? DEFAULT_MAX_GUESTS))
+  const [maxGuestsError, setMaxGuestsError] = useState<string | null>(null)
   const [nameError, setNameError] = useState<string | null>(null)
   const [channelIdError, setChannelIdError] = useState<string | null>(null)
   const [hostNameError, setHostNameError] = useState<string | null>(null)
@@ -139,6 +151,34 @@ export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
         const message = err instanceof Error ? err.message : 'Erro ao salvar'
         setHostNameError(message)
         log('ERROR', 'Failed to save podcast hostName', {
+          podcastId: podcast.id,
+          error: message,
+        })
+        throw err
+      }
+    },
+    1500
+  )
+
+  const {
+    saveStatus: maxGuestsSaveStatus,
+    save: saveMaxGuests,
+  } = useAutoSave(
+    maxGuests,
+    async (value) => {
+      setMaxGuestsError(null)
+      const result = MaxGuestsSchema.safeParse(value.trim() === '' ? Number.NaN : Number(value))
+      if (!result.success) {
+        const message = result.error.issues[0]?.message || 'Valor inválido'
+        setMaxGuestsError(message)
+        throw new Error(message)
+      }
+      try {
+        await updatePodcastViaApi({ maxGuests: result.data })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao salvar'
+        setMaxGuestsError(message)
+        log('ERROR', 'Failed to save podcast maxGuests', {
           podcastId: podcast.id,
           error: message,
         })
@@ -256,6 +296,36 @@ export function PodcastSettingsForm({ podcast }: PodcastSettingsFormProps) {
         </div>
         <p id="hostName-description" className="text-xs text-muted-foreground">
           O nome do host será incluído nas descrições geradas pela IA.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="maxGuests">Máximo de convidados por episódio</Label>
+        <Input
+          id="maxGuests"
+          type="number"
+          inputMode="numeric"
+          min={MIN_MAX_GUESTS}
+          max={MAX_MAX_GUESTS}
+          step={1}
+          className="w-24"
+          value={maxGuests}
+          onChange={(e) => setMaxGuests(e.target.value)}
+          onBlur={() => saveMaxGuests()}
+          aria-invalid={!!maxGuestsError}
+          aria-describedby={maxGuestsError ? 'maxGuests-error' : 'maxGuests-description'}
+        />
+        <div className="flex items-center justify-between">
+          {maxGuestsError ? (
+            <p id="maxGuests-error" className="text-xs text-destructive">
+              {maxGuestsError}
+            </p>
+          ) : (
+            <SaveStatusIndicator status={maxGuestsSaveStatus} />
+          )}
+        </div>
+        <p id="maxGuests-description" className="text-xs text-muted-foreground">
+          Entre {MIN_MAX_GUESTS} e {MAX_MAX_GUESTS}, contando o co-host quando houver. Reduzir não apaga convidados de episódios já preenchidos; só impede adicionar além do limite.
         </p>
       </div>
 

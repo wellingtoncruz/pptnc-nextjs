@@ -16,6 +16,8 @@ interface VideoDetailPanelProps {
   features?: { thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }
   /** Callback to refresh the video list when status changes (e.g., draft→ready, ready→sent) */
   onVideoStatusChange?: () => void
+  /** Máximo de convidados do podcast, co-host incluído. */
+  maxGuests?: number
 }
 
 /**
@@ -34,6 +36,7 @@ export function VideoDetailPanel({
   video,
   features,
   onVideoStatusChange,
+  maxGuests,
 }: VideoDetailPanelProps) {
   if (!videoId) {
     return <VideoDetailEmptyState />
@@ -62,6 +65,7 @@ export function VideoDetailPanel({
         features={features}
         className="flex flex-col h-full"
         onVideoStatusChange={onVideoStatusChange}
+        maxGuests={maxGuests}
       />
     </div>
   )

@@ -42,6 +42,8 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
 
   // Podcast feature toggles (editorial, news, socialMedia, adwords, newsletter, llmDebugMode, thumbnailGeneration)
   const [podcastFeatures, setPodcastFeatures] = useState<{ editorial?: boolean; news?: boolean; socialMedia?: boolean; adwords?: boolean; newsletter?: boolean; socialPublish?: boolean; llmDebugMode?: boolean; thumbnailGeneration?: boolean; extraImagesGeneration?: boolean }>()
+  // Máximo de convidados do podcast (Informações do Podcast); ausente = padrão no wizard.
+  const [maxGuests, setMaxGuests] = useState<number | undefined>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   const [llmConfig, setLlmConfig] = useState<{ provider?: 'gemini' | 'claude'; textModel?: string }>()
   // Refetch on every view change so that toggling a feature flag inside
@@ -54,6 +56,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.data?.features) setPodcastFeatures(d.data.features)
+        if (typeof d?.data?.maxGuests === 'number') setMaxGuests(d.data.maxGuests)
         if (d?.data?.enabledSocialNetworks) setEnabledSocialNetworks(d.data.enabledSocialNetworks)
         if (d?.data?.llmConfig) setLlmConfig({ provider: d.data.llmConfig.provider, textModel: d.data.llmConfig.textModel })
       })
@@ -440,7 +443,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         }
         detail={
           <div ref={detailPanelRef} className="h-full">
-            <VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} features={podcastFeatures} onVideoStatusChange={refresh} />
+            <VideoDetailPanel videoId={selectedVideoId} video={selectedVideo} features={podcastFeatures} onVideoStatusChange={refresh} maxGuests={maxGuests} />
           </div>
         }
       />

@@ -669,20 +669,13 @@ describe('EpisodeContextFormSchema (UI form validation)', () => {
     expect(result.guests).toHaveLength(3)
   })
 
-  it('rejects form context with more than 3 guests', () => {
-    const guests = [
-      { ...validGuest, name: 'Guest 1' },
-      { ...validGuest, name: 'Guest 2' },
-      { ...validGuest, name: 'Guest 3' },
-      { ...validGuest, name: 'Guest 4' },
-    ]
+  // out/2026: o máximo é do podcast (maxGuests), não do schema — episódio com
+  // mais convidados que o limite (limite reduzido depois) tem que continuar salvando.
+  it('does not cap the number of guests (the limit is per podcast)', () => {
+    const guests = Array.from({ length: 9 }, (_, i) => ({ ...validGuest, name: `Guest ${i + 1}` }))
     expect(() =>
-      EpisodeContextFormSchema.parse({
-        theme: 'Too many guests',
-        hasCoHost: false,
-        guests,
-      })
-    ).toThrow()
+      EpisodeContextFormSchema.parse({ theme: 'Many guests', hasCoHost: false, guests })
+    ).not.toThrow()
   })
 
   it('rejects form context with no guests', () => {

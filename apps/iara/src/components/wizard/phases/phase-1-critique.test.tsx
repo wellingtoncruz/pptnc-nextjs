@@ -166,6 +166,38 @@ describe('Phase1Critique', () => {
     })
   })
 
+  // out/2026 — máximo de convidados do podcast, co-host incluído.
+  describe('máximo de convidados (Informações do Podcast)', () => {
+    const guest = (i: number) => ({ name: `G${i}`, role: 'R', company: 'C', linkedin: `https://linkedin.com/in/g${i}` })
+    const coHost = { name: 'Co', role: 'Co-host', company: 'C', linkedin: 'https://linkedin.com/in/co' }
+
+    it('padrão 4 sem co-host: 4 vagas', () => {
+      render(<Phase1Critique wizard={createMockWizard()} video={mockVideoNoContext} critique={null} />)
+      expect(screen.getByText('(1/4)')).toBeInTheDocument()
+    })
+
+    it('com co-host, ele ocupa uma vaga: 6 no podcast → 5 convidados', () => {
+      const video = { ...mockVideo, guests: [coHost, guest(1)] }
+      render(<Phase1Critique wizard={createMockWizard()} video={video} critique={null} maxGuests={6} />)
+      expect(screen.getByText('(1/5)')).toBeInTheDocument()
+    })
+
+    it('no limite, o "Adicionar" some', () => {
+      const video = { ...mockVideo, guests: [coHost, guest(1), guest(2), guest(3)] }
+      render(<Phase1Critique wizard={createMockWizard()} video={video} critique={null} maxGuests={4} />)
+      expect(screen.getByText('(3/3)')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Adicionar' })).not.toBeInTheDocument()
+    })
+
+    it('limite reduzido abaixo do que o episódio tem: mostra todos, sem perder ninguém', () => {
+      const video = { ...mockVideo, guests: [guest(1), guest(2), guest(3), guest(4), guest(5), guest(6)] }
+      render(<Phase1Critique wizard={createMockWizard()} video={video} critique={null} maxGuests={4} />)
+      expect(screen.getByText('(6/4)')).toBeInTheDocument()
+      expect(screen.getByText(/convidado 6/i)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Adicionar' })).not.toBeInTheDocument()
+    })
+  })
+
   describe('Auto-save', () => {
     it('auto-saves context when form values change', async () => {
       const wizard = createMockWizard()

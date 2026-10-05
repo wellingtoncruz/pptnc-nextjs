@@ -26,6 +26,7 @@ import { getNextPhaseNameForType } from '@/lib/wizard'
 import type { UseWizardReturn } from '@/hooks/use-wizard'
 import type { Video, Guest, EpisodeContextFormData } from '@/types/video'
 import type { Phase1Response } from '@/lib/llm'
+import { DEFAULT_MAX_GUESTS, guestSlots } from '@/lib/schemas/podcast'
 
 interface Phase1CritiqueProps {
   wizard: UseWizardReturn
@@ -34,6 +35,8 @@ interface Phase1CritiqueProps {
   critique: Phase1Response | null
   /** Callback when context (theme, guests) changes - used to sync parent state */
   onContextChange?: (context: { theme?: string; guests?: Guest[] }) => void
+  /** Máximo de convidados do podcast, co-host incluído (Informações do Podcast). */
+  maxGuests?: number
   className?: string
 }
 
@@ -86,6 +89,7 @@ export function Phase1Critique({
   video,
   critique,
   onContextChange,
+  maxGuests = DEFAULT_MAX_GUESTS,
   className,
 }: Phase1CritiqueProps) {
   // Extract co-host from guests array (first guest if they have "host" in role)
@@ -378,8 +382,11 @@ export function Phase1Critique({
     1500
   )
 
+  // Vagas de convidado: o co-host, quando existe, ocupa uma do máximo do podcast.
+  const guestLimit = guestSlots(maxGuests, hasCoHostData)
+
   const handleAddGuest = () => {
-    if (guestFields.length < 3) {
+    if (guestFields.length < guestLimit) {
       append({ ...emptyGuest })
     }
   }
@@ -525,16 +532,16 @@ export function Phase1Critique({
               </AccordionItem>
             </Accordion>
 
-            {/* Guests (1-3 required) */}
+            {/* Guests (1 até o máximo do podcast, co-host incluído) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>
                   Convidados <span className="text-destructive">*</span>
                   <span className="text-muted-foreground text-xs ml-2">
-                    ({guestFields.length}/3)
+                    ({guestFields.length}/{guestLimit})
                   </span>
                 </Label>
-                {guestFields.length < 3 && (
+                {guestFields.length < guestLimit && (
                   <Button
                     type="button"
                     variant="outline"
