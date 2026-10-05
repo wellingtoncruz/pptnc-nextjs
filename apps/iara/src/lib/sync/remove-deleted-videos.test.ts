@@ -46,8 +46,11 @@ import { removeVideosGoneFromYouTube } from './remove-deleted-videos'
 
 const NONE = { parent: null, children: [] }
 
-function run(existing: string[], onYoutube: string[], myChannels = ['UC-trends']) {
-  const youtube = { listMyChannelIds: vi.fn().mockResolvedValue(myChannels) }
+function run(existing: string[], onYoutube: string[], myChannels = ['UC-trends'], stillOnYoutubeById: string[] = []) {
+  const youtube = {
+    listMyChannelIds: vi.fn().mockResolvedValue(myChannels),
+    getVideoDetailsBatch: vi.fn(async (ids: string[]) => ids.filter((id) => stillOnYoutubeById.includes(id)).map((id) => ({ id }))),
+  }
   const promise = removeVideosGoneFromYouTube({
     podcastId: 'trendsnews',
     channelId: 'UC-trends',
@@ -69,7 +72,7 @@ describe('removeVideosGoneFromYouTube', () => {
 
   it('nada sumiu: nem consulta o canal (zero cota)', async () => {
     const { promise, youtube } = run(['a', 'b'], ['a', 'b', 'c'])
-    expect(await promise).toEqual({ removed: [], skipped: [], pendingWrongAccount: 0 })
+    expect(await promise).toEqual({ removed: [], skipped: [], missingFromPlaylist: 0, pendingWrongAccount: 0 })
     expect(youtube.listMyChannelIds).not.toHaveBeenCalled()
   })
 
@@ -91,7 +94,7 @@ describe('removeVideosGoneFromYouTube', () => {
 
     const result = await promise
 
-    expect(result).toEqual({ removed: [], skipped: [], pendingWrongAccount: 2 })
+    expect(result).toEqual({ removed: [], skipped: [], missingFromPlaylist: 0, pendingWrongAccount: 2 })
     expect(mockRecursiveDelete).not.toHaveBeenCalled()
   })
 
@@ -123,6 +126,35 @@ describe('removeVideosGoneFromYouTube', () => {
 
     expect(result.skipped).toEqual([{ id: 'v1', title: 'V1', reason: 'busy' }])
     expect(result.removed).toEqual([{ id: 'v2', title: 'V2' }])
+  })
+
+  // Regressão do incidente de 02/10/2026: playlist incompleta apagou 108 vídeos que existiam.
+  it('fora da playlist mas devolvido pelo ID: fica, e conta como playlist incompleta', async () => {
+    docs.set('ainda-existe', { title: 'Existe' })
+    docs.set('sumiu', { title: 'Sumiu' })
+    const { promise, youtube } = run(['ainda-existe', 'sumiu'], [], ['UC-trends'], ['ainda-existe'])
+
+    const result = await promise
+
+    expect(youtube.getVideoDetailsBatch).toHaveBeenCalledWith(['ainda-existe', 'sumiu'])
+    expect(result.removed).toEqual([{ id: 'sumiu', title: 'Sumiu' }])
+    expect(result.missingFromPlaylist).toBe(1)
+    expect(mockRecursiveDelete).toHaveBeenCalledTimes(1)
+  })
+
+  it('playlist toda incompleta (todos ainda existem): nada é apagado', async () => {
+    const ids = Array.from({ length: 108 }, (_, i) => `v${i}`)
+    ids.forEach((id) => docs.set(id, { title: id }))
+    const result = await run(ids, [], ['UC-trends'], ids).promise
+    expect(result.removed).toEqual([])
+    expect(result.missingFromPlaylist).toBe(108)
+    expect(mockRecursiveDelete).not.toHaveBeenCalled()
+  })
+
+  it('conta errada nem consulta pelo ID', async () => {
+    const { promise, youtube } = run(['x'], [], ['UC-pessoal'])
+    await promise
+    expect(youtube.getVideoDetailsBatch).not.toHaveBeenCalled()
   })
 
   it('falha no bucket depois de apagar o documento ainda conta como removido', async () => {

@@ -131,7 +131,7 @@ describe('SyncResultModal — vídeos apagados do YouTube (out/2026)', () => {
       <SyncResultModal
         isOpen
         onClose={vi.fn()}
-        result={{ ...base, removal: { removed: [{ id: 'g', title: 'Live apagada' }], skipped: [], pendingWrongAccount: 0 } }}
+        result={{ ...base, removal: { removed: [{ id: 'g', title: 'Live apagada' }], skipped: [], missingFromPlaylist: 0, pendingWrongAccount: 0 } }}
       />
     )
     expect(screen.getByText('Sincronização Concluída')).toBeInTheDocument()
@@ -144,7 +144,7 @@ describe('SyncResultModal — vídeos apagados do YouTube (out/2026)', () => {
       <SyncResultModal
         isOpen
         onClose={vi.fn()}
-        result={{ ...base, removal: { removed: [], skipped: [{ id: 'e', title: 'Episódio X', reason: 'linked' }], pendingWrongAccount: 0 } }}
+        result={{ ...base, removal: { removed: [], skipped: [{ id: 'e', title: 'Episódio X', reason: 'linked' }], missingFromPlaylist: 0, pendingWrongAccount: 0 } }}
       />
     )
     expect(screen.getByText(/Episódio X — vinculado a outro vídeo/)).toBeInTheDocument()
@@ -155,11 +155,21 @@ describe('SyncResultModal — vídeos apagados do YouTube (out/2026)', () => {
       <SyncResultModal
         isOpen
         onClose={vi.fn()}
-        result={{ ...base, removal: { removed: [], skipped: [], pendingWrongAccount: 2 } }}
+        result={{ ...base, removal: { removed: [], skipped: [], missingFromPlaylist: 0, pendingWrongAccount: 2 } }}
       />
     )
     expect(screen.getByText(/2 vídeos não existem mais no YouTube/)).toBeInTheDocument()
     expect(screen.getByText(/não é a do canal/)).toBeInTheDocument()
   })
-})
 
+  it('informa quantos ficaram por a lista do YouTube vir incompleta', () => {
+    render(
+      <SyncResultModal
+        isOpen
+        onClose={vi.fn()}
+        result={{ newVideos: 0, removal: { removed: [], skipped: [], missingFromPlaylist: 3, pendingWrongAccount: 0 } }}
+      />
+    )
+    expect(screen.getByText(/3 vídeos não vieram na lista do YouTube, mas ainda existem/)).toBeInTheDocument()
+  })
+})

@@ -15,9 +15,12 @@
  *   vídeo em processamento/envio ou com geração em andamento — apagar no meio
  *   deixaria um job escrevendo num documento que não existe mais.
  *
- * A lista de IDs do YouTube só chega aqui se a playlist foi lida INTEIRA (o
- * sync lança antes em qualquer falha de paginação) — leitura parcial nunca
- * vira remoção.
+ * A playlist de uploads NÃO é prova de que um vídeo sumiu. Incidente de
+ * 02/10/2026 (TrenDs): lida até a última página com o token do dono, ela
+ * devolveu 1930 entradas com ~113 repetidas e deixou de listar 108 vídeos que
+ * existem — e a versão anterior apagou os 108. Agora a playlist só aponta
+ * CANDIDATOS; cada candidato é confirmado pelo ID (videos.list, com o mesmo
+ * token do dono, que enxerga privados) e só sai o que o YouTube não devolve.
  */
 import { deleteAllVideoImages } from '@/lib/firebase/cloud-storage'
 import { getAdminDb } from '@/lib/firebase/admin'
@@ -37,6 +40,11 @@ export interface RemovalResult {
   removed: RemovedVideoRef[]
   skipped: SkippedRemoval[]
   /**
+   * Fora da playlist de uploads, mas o YouTube ainda devolve pelo ID — a
+   * playlist veio incompleta. Não são removidos.
+   */
+  missingFromPlaylist: number
+  /**
    * Quantos sumiram do YouTube mas NÃO foram avaliados porque a conta que
    * sincronizou não é a do canal. 0 quando a remoção rodou.
    */
@@ -46,6 +54,8 @@ export interface RemovalResult {
 /** Contrato mínimo do cliente do YouTube — injetável para teste. */
 export interface ChannelOwnershipSource {
   listMyChannelIds(): Promise<string[]>
+  /** videos.list por ID (lotes de 50) — devolve só os que existem para o token. */
+  getVideoDetailsBatch(videoIds: string[]): Promise<Array<{ id: string }>>
 }
 
 const BUSY_STATUSES = new Set(['processing', 'sending'])
@@ -72,19 +82,31 @@ export async function removeVideosGoneFromYouTube(args: {
   youtubeIds: Set<string>
 }): Promise<RemovalResult> {
   const { podcastId, channelId, youtube, existingIds, youtubeIds } = args
-  const result: RemovalResult = { removed: [], skipped: [], pendingWrongAccount: 0 }
+  const result: RemovalResult = { removed: [], skipped: [], missingFromPlaylist: 0, pendingWrongAccount: 0 }
 
-  const candidates = [...existingIds].filter((id) => !youtubeIds.has(id))
-  if (candidates.length === 0) return result
+  const playlistCandidates = [...existingIds].filter((id) => !youtubeIds.has(id))
+  if (playlistCandidates.length === 0) return result
 
   const myChannels = await youtube.listMyChannelIds()
   if (!myChannels.includes(channelId)) {
-    result.pendingWrongAccount = candidates.length
+    result.pendingWrongAccount = playlistCandidates.length
     log('WARN', 'Sync removal skipped: account is not the podcast channel', {
       podcastId,
-      candidates: candidates.length,
+      candidates: playlistCandidates.length,
     })
     return result
+  }
+
+  // Prova de que sumiu: o YouTube não devolve o vídeo pelo ID (1 unidade a cada 50).
+  const stillThere = new Set((await youtube.getVideoDetailsBatch(playlistCandidates)).map((v) => v.id))
+  const candidates = playlistCandidates.filter((id) => !stillThere.has(id))
+  result.missingFromPlaylist = playlistCandidates.length - candidates.length
+  if (result.missingFromPlaylist > 0) {
+    log('WARN', 'Uploads playlist incomplete: videos still on YouTube kept', {
+      podcastId,
+      missingFromPlaylist: result.missingFromPlaylist,
+      confirmedGone: candidates.length,
+    })
   }
 
   const videos = getAdminDb().collection('podcasts').doc(podcastId).collection('videos')
@@ -124,6 +146,7 @@ export async function removeVideosGoneFromYouTube(args: {
     podcastId,
     removed: result.removed.length,
     skipped: result.skipped.length,
+    missingFromPlaylist: result.missingFromPlaylist,
   })
   return result
 }
