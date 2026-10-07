@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* Tokens do histórico (D3) — fonte: protótipo do Claude Design. */
+:root {
+  --bg: #0c0c10;
+  --surface: #16161c;
+  --accent: #f26a21;
+  --accent-press: #d9591f;
+  --accent-hover: #f47a35;
+  --text: #f3f2ee;
+  --text-2: #c7c7ce;
+  --muted: #9a9aa2;
+  --on-accent: #0b0809;
+  --error: #ff7a6b;
+  --line: rgba(255, 255, 255, 0.08);
+
+  /* Celular (390) — valores do renderVals() do protótipo */
+  --padX: 20px;
+  --heroPad: 20px 20px 72px;
+  --nameMargin: 32px 0 0;
+  --nameSize: 36px;
+  --nameLH: 40px;
+  --dateSize: 88px;
+  --dateMargin: 28px 0 0;
+  --h2Size: 28px;
+  --h2LH: 32px;
+  --secGap: 80px;
+  --numCols: repeat(2, minmax(0, 1fr));
+  --impactSpan: 1 / -1;
+  --nightCols: minmax(0, 1fr);
+  --logoCols: repeat(2, minmax(0, 1fr));
+  --btnMax: 100%;
+  --confGap: 32px;
+  --recMax: 100%;
+  --finalPad: 28px 20px;
+  --noteSize: 20px;
+  --noteLH: 28px;
+  --footMargin: 80px auto 0;
+  --footPadB: 104px;
+}
+
+/* Computador — o protótipo troca de layout em largura ≥ 900 (wide). */
+@media (min-width: 900px) {
+  :root {
+    --padX: 40px;
+    --heroPad: 112px 40px 120px;
+    --nameMargin: 40px 0 0;
+    --nameSize: 64px;
+    --nameLH: 68px;
+    --dateSize: 160px;
+    --dateMargin: 40px 0 0;
+    --h2Size: 44px;
+    --h2LH: 48px;
+    --secGap: 120px;
+    --numCols: repeat(5, minmax(0, 1fr));
+    --impactSpan: auto;
+    --nightCols: repeat(4, minmax(0, 1fr));
+    --logoCols: repeat(6, minmax(0, 1fr));
+    --btnMax: 360px;
+    --confGap: 80px;
+    --recMax: 640px;
+    --finalPad: 56px;
+    --noteSize: 24px;
+    --noteLH: 34px;
+    --footMargin: 120px auto 0;
+    --footPadB: 40px;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font-family: var(--font-grotesk), sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+input::placeholder { color: #7a7a84; }
+
+.only-wide { display: none !important; }
+@media (min-width: 900px) {
+  .only-narrow { display: none !important; }
+  .only-wide { display: revert !important; }
+  .only-wide-flex { display: flex !important; }
+}
+
+/* Botão principal: pílula laranja, texto escuro (contraste do brief) */
+.btn-primary {
+  appearance: none; border: 0; cursor: pointer; height: 56px; width: 100%;
+  border-radius: 999px; background: var(--accent); color: var(--on-accent);
+  font-family: var(--font-grotesk), sans-serif; font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform 0.12s ease, background 0.12s ease, opacity 0.15s;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active, .btn-primary[aria-busy="true"] { transform: scale(0.98); background: var(--accent-press); }
+.btn-primary:focus-visible, .btn-secondary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.btn-primary:disabled { opacity: 0.4; cursor: default; transform: none; background: var(--accent); }
+
+.btn-secondary {
+  appearance: none; cursor: pointer; height: 52px; border-radius: 999px; background: transparent;
+  border: 1.5px solid var(--accent); color: var(--text);
+  font-family: var(--font-grotesk), sans-serif; font-size: 16px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-secondary:hover { background: rgba(242, 106, 33, 0.08); }
+.btn-secondary:active { background: rgba(242, 106, 33, 0.16); transform: scale(0.98); }
+
+.link-tertiary {
+  appearance: none; background: none; border: 0; min-height: 44px; padding: 0 4px;
+  color: var(--muted); font-family: var(--font-grotesk), sans-serif; font-size: 15px;
+  cursor: pointer; border-radius: 6px;
+}
+.link-tertiary:hover { color: var(--text); text-decoration: underline; }
+.link-tertiary:focus-visible, .check-row:focus-visible, .play-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check-row:hover { color: var(--text) !important; }
+
+.field {
+  height: 56px; width: 100%; border-radius: 12px; background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.16); color: var(--text); padding: 0 18px;
+  outline: none; transition: border-color 0.15s;
+}
+.field:focus { border-color: var(--accent); }
+.field[aria-invalid="true"] { border-color: var(--error); }
+
+/* Barra fixa: inferior no celular, faixa no topo no computador */
+.bar { transition: transform 0.3s ease, opacity 0.3s ease; background: rgba(22, 22, 28, 0.84); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.bar[data-vis="false"] { opacity: 0; pointer-events: none; }
+.bar-bottom[data-vis="false"] { transform: translateY(100%); }
+.bar-top[data-vis="false"] { transform: translateY(-100%); }
+
+/* Bottom sheet: sobe do pé no celular; centralizado no computador */
+.sheet-wrap { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { position: relative; width: 100%; border-radius: 24px 24px 0 0; animation: sheetUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@media (min-width: 900px) {
+  .sheet-wrap { align-items: center; padding: 24px; }
+  .sheet { max-width: 480px; border-radius: 24px; animation: fadeUp 0.25s ease both; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes tkIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@keyframes bRise { 0% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-620px) rotate(4deg); } 100% { transform: translateY(-1300px) rotate(-3deg); } }
+
+/* Redução de movimento: sem balões nem deslocamentos, só fade */
+@media (prefers-reduced-motion: reduce) {
+  .sheet { animation: fadeIn 0.25s ease both !important; }
+  .bar { transition: opacity 0.3s ease; }
+  .bar[data-vis="false"] { transform: none !important; }
+  .btn-primary:active, .btn-secondary:active { transform: none; }
+}

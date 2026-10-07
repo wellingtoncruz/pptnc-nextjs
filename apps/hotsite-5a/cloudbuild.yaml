@@ -1,0 +1,74 @@
+# Hotsite 5 anos (Epic 32) — disparado pelo trigger regional hotsite-5a-stable
+# (tag ^v[0-9]+\.[0-9]+\.[0-9]+-hotsite$, us-east1). Mesmo desenho do apps/web.
+substitutions:
+  _SERVICE_NAME: hotsite-5a
+  _REGION: us-east1
+  _REPOSITORY: pptnc
+  _SERVICE_ACCOUNT: pptnc-build@pptnc-stage.iam.gserviceaccount.com
+  _TAG: ${TAG_NAME}
+  # Banco do runtime. Produção = pptnc-prod (collection podcasts/pptnc/hotsite5a).
+  # NÃO sobrescrever na substituição do trigger (incidente de 2026-05-27).
+  _FIRESTORE_DATABASE_ID: pptnc-prod
+
+steps:
+  - name: 'node:20-alpine'
+    entrypoint: 'sh'
+    args: ['-c', 'corepack enable && pnpm install --frozen-lockfile']
+
+  # A página é force-dynamic: o build não lê o Firestore.
+  - name: 'node:20-alpine'
+    entrypoint: 'sh'
+    args: ['-c', 'corepack enable && pnpm --filter @pptnc/hotsite-5a build']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/hotsite-5a/Dockerfile'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}']
+
+  # Configuração igual à do Web (P3, medida em 2026-10-07): 1 vCPU, 512 MiB,
+  # concurrency 80, timeout 300 s, cpu-throttling, startup-cpu-boost, escala a zero.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--service-account'
+      - '${_SERVICE_ACCOUNT}'
+      - '--cpu'
+      - '1'
+      - '--memory'
+      - '512Mi'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '300'
+      - '--cpu-throttling'
+      - '--cpu-boost'
+      - '--min-instances'
+      - '0'
+      - '--update-env-vars'
+      - 'FIRESTORE_DATABASE_ID=${_FIRESTORE_DATABASE_ID}'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:${_TAG}'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:stable'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:#1A1A1F;font-family:'Space Grotesk',system-ui,sans-serif;}
+a{color:#F26A21;}a:hover{color:#E8A06B;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<section id="t1" style="padding:48px 56px 56px;">
+  <div style="display:flex;align-items:baseline;gap:12px;margin:0 0 8px;">
+    <a href="#t1" style="font:600 11px 'JetBrains Mono',monospace;padding:3px 8px;background:#F26A21;color:#0B0809;border-radius:4px;text-decoration:none;">1</a>
+    <span style="font-size:22px;font-weight:700;color:#F3F2EE;letter-spacing:-0.01em;">Hotsite 5 anos PPTNC · telas</span>
+  </div>
+  <p style="margin:0 0 8px;max-width:880px;font-size:14px;line-height:22px;color:#9A9AA2;text-wrap:pretty;">Todas as telas abaixo são o mesmo protótipo (<a href="Hotsite-5-anos.dc.html">Hotsite-5-anos</a>) em estados diferentes. Identidade herdada do flyer e do mídia kit: fundo #0C0C10, surface #16161C, laranja #F26A21, texto #F3F2EE, Space Grotesk + JetBrains Mono. Onde o brief divergia (#0B0B0F, #F26B21, #F2F1EC), valeu o histórico.</p>
+  <p style="margin:0 0 40px;max-width:880px;font-size:14px;line-height:22px;color:#9A9AA2;">Endereço confirmado: Rua Bastos Pereira, 25 · Vila Nova Conceição. Horário e prazo (19h · 22/10) seguem provisórios.</p>
+
+  <div style="font:500 12px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;margin:0 0 20px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Celular · convite e resposta</div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;margin-bottom:72px;">
+    <div id="1a" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1a" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1a</a>01 · Convite aberto, página completa</div>
+      <div style="width:390px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:40px;">
+      <div style="display:flex;flex-wrap:wrap;gap:40px;">
+        <div id="1b" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1b" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1b</a>02 · Primeira tela 390×844</div>
+          <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+            <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+          </div>
+        </div>
+        <div id="1c" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1c" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1c</a>03 · Confirmado, sem acompanhante</div>
+          <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+            <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" estado="confirmado" acompanhante="{{ false }}" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+          </div>
+        </div>
+        <div id="1d" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1d" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1d</a>04 · Confirmado, acompanhante liberado</div>
+          <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+            <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" estado="confirmado" acompanhante="{{ true }}" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:40px;">
+        <div id="1e" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1e" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1e</a>05 · Confirmado, com acompanhante</div>
+          <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+            <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" estado="confirmado" acompanhante="{{ true }}" acompanhante-nome="Rafael Albuquerque" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+          </div>
+        </div>
+        <div id="1f" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1f" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1f</a>06 · Antes de recusar (bottom sheet)</div>
+          <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+            <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" sheet="{{ true }}" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+          </div>
+        </div>
+        <div id="1g" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1g" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1g</a>07 · Recusou</div>
+          <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+            <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" estado="recusou" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font:500 12px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;margin:0 0 20px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Celular · acesso, rolagem e confirmação</div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;margin-bottom:72px;">
+    <div id="1h" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1h" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1h</a>08 · Acesso restrito, vazio</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" estado="restrito" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div id="1i" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1i" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1i</a>09 · Código inválido</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" estado="restrito" codigo-erro="{{ true }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div id="1j" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1j" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1j</a>10 · Barra fixa no meio da rolagem</div>
+      <div ref="{{ scrollRef }}" style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow-y:auto;overflow-x:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;scrollbar-width:none;">
+        <dc-import name="Hotsite-5-anos" layout="celular" forcar-barra="{{ true }}" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div id="1k" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1k" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1k</a>11a · Confirmação: toque + carregando (0–300ms)</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" anim-frame="inicio" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div id="1l" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1l" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1l</a>11b · Balões sobem, topo troca (~700ms)</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" anim-frame="meio" acompanhante="{{ true }}" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div id="1m" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1m" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1m</a>11c · Ingresso revelado (~1,5s)</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" anim-frame="fim" acompanhante="{{ true }}" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+  </div>
+
+  <div style="font:500 12px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;margin:0 0 20px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Casos-limite</div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;margin-bottom:72px;">
+    <div id="1q" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1q" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1q</a>Nome longo · 390</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" nome="Maria Fernanda Cavalcanti de Albuquerque" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div id="1r" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1r" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1r</a>Nome longo · tela pequena 360×740</div>
+      <div style="width:360px;height:740px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" nome="Maria Fernanda Cavalcanti de Albuquerque" animar-secoes="{{ false }}" hint-size="360px,740px"></dc-import>
+      </div>
+    </div>
+    <div id="1s" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1s" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1s</a>Nome curto · tela grande 430×932</div>
+      <div style="width:430px;height:932px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" nome="Ana Lu" animar-secoes="{{ false }}" hint-size="430px,932px"></dc-import>
+      </div>
+    </div>
+    <div id="1t" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1t" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1t</a>Código de 14 caracteres + acompanhante longo</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" estado="confirmado" nome="Maria Fernanda Cavalcanti de Albuquerque" codigo="MARIAFERNAN742" acompanhante="{{ true }}" acompanhante-nome="Rafael Henrique Cavalcanti de Albuquerque" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div id="1u" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1u" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1u</a>Episódio único, 860 visualizações · seção do episódio</div>
+      <div style="width:390px;height:844px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+        <div style="margin-top:-560px;">
+          <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="celular" episodios="Um" views-baixas="{{ true }}" programacao="Definida" animar-secoes="{{ false }}" hint-size="390px,844px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font:500 12px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;margin:0 0 20px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Compartilhamento</div>
+  <div id="1o" style="display:flex;flex-direction:column;gap:10px;margin-bottom:72px;">
+    <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1o" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1o</a>13 · Prévia do WhatsApp 1200×630</div>
+    <div data-screen-label="Prévia WhatsApp" style="width:1200px;height:630px;position:relative;overflow:hidden;background:#0C0C10;color:#F3F2EE;font-family:'Space Grotesk',sans-serif;display:flex;">
+      <div style="flex:1;padding:56px 64px;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <img src="assets/logo_square.png" alt="" style="width:56px;height:56px;border-radius:12px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.3em;text-transform:uppercase;color:#C7C7CE;">Convite pessoal · 5 anos</span>
+        </div>
+        <div style="margin-top:40px;font-size:72px;line-height:.94;font-weight:700;letter-spacing:-0.035em;">5 anos de<br>PPT <span style="color:#F26A21;">NÃO</span> COMPILA</div>
+        <div style="flex:1;"></div>
+        <div style="font-weight:500;font-size:176px;line-height:.86;letter-spacing:-0.05em;color:#F26A21;display:flex;align-items:baseline;margin-left:-6px;"><span>29</span><span style="font-size:.5em;font-weight:300;letter-spacing:0;margin:0 .12em;transform:translateY(-.28em);">/</span><span>10</span></div>
+        <div style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:.3em;text-transform:uppercase;color:#9A9AA2;">Quinta-feira · São Paulo</div>
+      </div>
+      <div style="flex:0 0 420px;position:relative;overflow:hidden;background:url('assets/orange.png') right center / cover no-repeat, #F26A21;">
+        <span style="position:absolute;left:30px;bottom:30px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:.3em;color:#0C0C10;">2021 — 2026</span>
+        <span style="position:absolute;right:-24px;bottom:-120px;font-weight:600;font-size:620px;line-height:1;letter-spacing:-0.06em;color:#F3F2EE;">5</span>
+        <svg viewBox="0 0 200 420" style="position:absolute;left:64px;top:44px;width:180px;height:378px;overflow:visible;"><defs><radialGradient id="waB" cx="35%" cy="28%" r="75%"><stop offset="0%" stop-color="#56565E"></stop><stop offset="100%" stop-color="#0C0C10"></stop></radialGradient></defs><path d="M100 256 C 80 300 124 340 96 420" fill="none" stroke="#0C0C10" stroke-width="2"></path><path d="M100 10 C 160 10 190 60 190 118 C 190 186 136 236 104 246 L 96 246 C 64 236 10 186 10 118 C 10 60 40 10 100 10 Z" fill="url(#waB)"></path><path d="M91 258 L100 245 L109 258 Z" fill="#0C0C10"></path><ellipse cx="62" cy="72" rx="13" ry="30" transform="rotate(-24 62 72)" fill="#ffffff" opacity="0.28"></ellipse></svg>
+      </div>
+    </div>
+  </div>
+
+  <div style="font:500 12px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;margin:0 0 20px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Folha de componentes</div>
+  <div id="1p" style="display:flex;flex-direction:column;gap:10px;margin-bottom:72px;">
+    <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1p" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1p</a>Componentes e estados</div>
+    <div style="width:1200px;background:#0C0C10;color:#F3F2EE;padding:48px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px 56px;">
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Botão principal · 56px</span>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px;">
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:999px;background:#F26A21;color:#0B0809;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;">Confirmar presença <span>→</span></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">NORMAL</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:999px;background:#D9591F;color:#0B0809;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;transform:scale(.98);">Confirmar presença <span>→</span></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">PRESSIONADO · #D9591F, ESCALA .98</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:999px;background:#F26A21;color:#0B0809;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;outline:2px solid #F26A21;outline-offset:3px;">Confirmar presença <span>→</span></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">FOCO · CONTORNO 2PX + 3PX</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:999px;background:#D9591F;display:flex;align-items:center;justify-content:center;"><span style="width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(11,8,9,.25);border-top-color:#0B0809;animation:spin .7s linear infinite;"></span></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">CARREGANDO · ATÉ 300MS</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:999px;background:#F26A21;opacity:.4;color:#0B0809;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;">Abrir convite <span>→</span></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">DESABILITADO · CAMPO VAZIO</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Botão secundário · link terciário</span>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 20px;">
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:52px;border-radius:999px;border:1.5px solid #F26A21;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;">Adicionar à agenda</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">NORMAL</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:52px;border-radius:999px;border:1.5px solid #F26A21;background:rgba(242,106,33,.16);font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;transform:scale(.98);">Adicionar à agenda</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">PRESSIONADO</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:52px;border-radius:999px;border:1.5px solid #F26A21;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;outline:2px solid #F26A21;outline-offset:3px;">Adicionar à agenda</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">FOCO</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="min-height:44px;display:flex;align-items:center;font-size:15px;color:#9A9AA2;">Não poderei ir</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">TERCIÁRIO · NORMAL</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="min-height:44px;display:flex;align-items:center;font-size:15px;color:#F3F2EE;text-decoration:underline;">Não poderei ir</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">TOQUE</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="min-height:44px;display:flex;align-items:center;"><span style="font-size:15px;color:#9A9AA2;outline:2px solid #F26A21;outline-offset:2px;border-radius:4px;padding:2px 4px;">Não poderei ir</span></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">FOCO · ÁREA 44PX</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Campo de texto · raio 12px</span>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px;">
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:12px;background:#16161C;border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;padding:0 18px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:.15em;color:#7A7A84;">EX.: NOME123</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">VAZIO</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:12px;background:#16161C;border:1px solid #F26A21;display:flex;align-items:center;padding:0 18px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:.15em;">MARI<span style="width:2px;height:24px;background:#F26A21;margin-left:2px;"></span></div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">FOCO</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:12px;background:#16161C;border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;padding:0 18px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:.15em;">MARIANA742</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">PREENCHIDO</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><div style="height:56px;border-radius:12px;background:#16161C;border:1px solid #FF7A6B;display:flex;align-items:center;padding:0 18px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:.15em;">MARIANA724</div><span style="font-size:13px;color:#FF7A6B;">Código não encontrado.</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A7A84;">ERRO · TREMOR 360MS</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Rótulo · pílula · linha do tempo</span>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>A noite</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;"><span style="border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);border-radius:999px;padding:8px 14px;font-size:14px;">CTOs</span><span style="border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);border-radius:999px;padding:8px 14px;font-size:14px;">Heads de Engenharia</span><span style="border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);border-radius:999px;padding:8px 14px;font-size:14px;">Arquitetos</span></div>
+        <div style="display:grid;grid-template-columns:16px 72px minmax(0,1fr);gap:16px;align-items:center;"><span style="width:16px;height:16px;border-radius:50%;background:#F26A21;box-shadow:0 0 0 4px rgba(242,106,33,.18);"></span><span style="font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:.1em;color:#F26A21;">19h00</span><span style="font-size:17px;font-weight:600;">Recepção e welcome drink</span></div>
+        <div style="display:grid;grid-template-columns:16px 72px minmax(0,1fr);gap:16px;align-items:center;"><span style="width:16px;height:16px;border-radius:50%;background:#56565E;"></span><span style="font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:.1em;color:#7A7A84;">--:--</span><span style="font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:.2em;color:#9A9AA2;">EM BREVE</span></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Card · card de destaque · card de número</span>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
+          <div style="background:#16161C;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;color:#F26A21;">01</span><span style="font-size:20px;font-weight:700;">Happy hour</span></div>
+          <div style="background:linear-gradient(160deg,rgba(242,106,33,.16),rgba(242,106,33,.03));border:1px solid rgba(242,106,33,.42);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;"><div style="font-size:40px;line-height:44px;font-weight:700;letter-spacing:-0.04em;color:#F26A21;">4,3<span style="font-size:22px;font-weight:600;"> mi+</span></div><span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;">PESSOAS IMPACTADAS</span></div>
+          <div style="background:#16161C;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;"><div style="font-size:40px;line-height:44px;font-weight:700;letter-spacing:-0.04em;">240<span style="font-size:22px;font-weight:600;color:#9A9AA2;">+</span></div><span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;color:#9A9AA2;">EPISÓDIOS</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Bloco de logo · miniatura de vídeo</span>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
+          <div style="background:#fff;border-radius:16px;height:96px;display:flex;align-items:center;justify-content:center;"><img src="assets/sup_54.png" alt="VMBears" style="max-height:30px;max-width:82%;"></div>
+          <div style="background:#fff;border-radius:16px;height:96px;display:flex;align-items:center;justify-content:center;"><img src="assets/sup_53.png" alt="Klever" style="max-height:24px;max-width:82%;"></div>
+          <div style="background:#fff;border-radius:16px;height:96px;display:flex;align-items:center;justify-content:center;"><img src="assets/nullplatform_logo.png" alt="NullPlatform" style="max-height:32px;max-width:82%;object-fit:contain;display:block;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">
+          <div style="position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:radial-gradient(120% 90% at 85% 20%,rgba(242,106,33,.35),rgba(12,12,16,0) 60%),linear-gradient(160deg,#1E1236,#0C0C10 70%);"><img src="assets/mic_cutout.png" alt="" style="position:absolute;right:-6%;bottom:-18%;height:118%;transform:rotate(-8deg);opacity:.85;"><span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:#F26A21;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="#0B0809"></path></svg></span></div>
+          <div style="position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;"><span style="width:24px;height:24px;border-radius:50%;border:2.5px solid rgba(242,106,33,.25);border-top-color:#F26A21;animation:spin .8s linear infinite;"></span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;color:#9A9AA2;">REPRODUZINDO</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font:500 12px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;margin:0 0 20px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Computador</div>
+  <div id="1n" style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9A9AA2;"><a href="#1n" style="font:600 10.5px 'JetBrains Mono',monospace;padding:3px 7px;background:rgba(255,255,255,.1);color:#F3F2EE;border-radius:5px;text-decoration:none;">1n</a>12 · Convite aberto, página completa 1440</div>
+    <div style="width:1440px;position:relative;transform:translateZ(0);overflow:hidden;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:#0C0C10;">
+      <dc-import name="Hotsite-5-anos" forcar-barra="{{ false }}" layout="computador" animar-secoes="{{ false }}" hint-size="1440px,900px"></dc-import>
+    </div>
+  </div>
+
+  <p style="margin:40px 0 0;font-size:13px;line-height:20px;color:#9A9AA2;">Próximos passos: "troque o ingresso para a versão creme do flyer" · "versão do topo com a foto do Wellington" · "mostre o computador nos estados confirmado e restrito"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  scrollRef = el => { this._sc = el; };
+  componentDidMount() {
+    let n = 0;
+    const tick = () => { if (this._sc && this._sc.scrollHeight > 3000) { this._sc.scrollTop = 1650; } else if (n++ < 30) this._t = setTimeout(tick, 300); };
+    tick();
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() { return { scrollRef: this.scrollRef }; }
+}
+</script>
+</body>
+</html>
