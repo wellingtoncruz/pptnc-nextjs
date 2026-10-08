@@ -11,7 +11,7 @@ export function celula(v: string | number | null | undefined): string {
   return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-export const STATUS_PT: Record<GuestDoc["status"], string> = { pendente: "Pendente", confirmado: "Confirmado", recusou: "Recusou" };
+export const STATUS_PT: Record<GuestDoc["status"], string> = { pendente: "Não confirmado", confirmado: "Confirmado", recusou: "Recusou" };
 
 export function dataBrt(d: Date | null): string {
   if (!d) return "";
@@ -83,11 +83,11 @@ export function gerarCsv(docs: GuestDoc[], problemas: Problema[] = []): string {
   }
   const t = totais(docs);
   linhas.push([], ["TOTAIS"], ["Confirmados", t.confirmados], ["Acompanhantes", t.acompanhantes],
-    ["Pessoas esperadas", t.esperados], ["Recusas", t.recusas], ["Pendentes", t.pendentes]);
+    ["Pessoas esperadas", t.esperados], ["Recusas", t.recusas], ["Não confirmados", t.pendentes]);
 
   const patrocinadores = [...new Set(docs.filter((d) => d.cotaPatrocinador).map((d) => d.patrocinador as string))].sort();
   if (patrocinadores.length) {
-    linhas.push([], ["COTAS", "Emitidos", "Confirmados", "Recusas", "Pendentes"]);
+    linhas.push([], ["COTAS", "Emitidos", "Confirmados", "Recusas", "Não confirmados"]);
     for (const p of patrocinadores) {
       const c = docs.filter((d) => d.cotaPatrocinador && d.patrocinador === p);
       linhas.push([p, c.length, c.filter((d) => d.status === "confirmado").length,

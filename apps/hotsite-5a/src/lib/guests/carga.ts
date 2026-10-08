@@ -49,6 +49,7 @@ function novoDoc(
 ): GuestDoc {
   return {
     empresa: null,
+    convidadoEm: null,
     ...base,
     acompanhantePermitido: false,
     acompanhanteNome: null,

@@ -43,6 +43,8 @@ export const GuestDocSchema = z
     celular: z.string().nullable().default(null),
     /** D30: empresa atual, gravada pela carga e confirmada/corrigida pelo convidado. */
     empresa: z.string().nullable().default(null),
+    /** Marcação interna do anfitrião (32.10): quando ele fez contato. Não muda a resposta nem a página. */
+    convidadoEm: z.date().nullable().default(null),
     episodios: z.array(EpisodioSchema),
     respondidoEm: z.date().nullable(),
     historico: z.array(HistoricoSchema),

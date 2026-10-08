@@ -151,7 +151,6 @@ input::placeholder { color: #7a7a84; }
 
 /* Painel do anfitrião (32.9) */
 .admin-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-@media (min-width: 900px) { .admin-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .seg-wrap { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
 .seg {
   min-height: 44px; padding: 0 18px; border-radius: 999px; display: inline-flex; align-items: center;
@@ -159,15 +158,33 @@ input::placeholder { color: #7a7a84; }
 }
 .seg[data-ativo="true"] { background: var(--accent); color: var(--on-accent); }
 .seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.admin-tabela-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
-.admin-tabela { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px; }
-.admin-tabela th {
-  text-align: left; padding: 12px 14px; white-space: nowrap; color: var(--muted);
-  font-family: var(--font-mono), monospace; font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
-  border-bottom: 1px solid var(--line);
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (min-width: 900px) { .admin-cards { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.admin-busca { max-width: 360px; height: 48px; }
+.admin-lista { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden; }
+.admin-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.admin-item:last-child { border-bottom: 0; }
+.admin-item[data-convidado="true"] { background: rgba(242, 106, 33, 0.06); box-shadow: inset 3px 0 0 var(--accent); }
+.admin-l1 { display: flex; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; min-width: 0; }
+.admin-nome { font-weight: 700; font-size: 16px; color: var(--text); }
+.admin-acao { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 10px; justify-self: end; }
+.admin-quando { color: var(--muted); white-space: nowrap; }
+/* Linha 2: o "·" de quem abre uma linha cai na margem negativa e some (sem ponto sobrando na quebra). */
+.admin-l2 { grid-column: 1 / -1; overflow: hidden; font-size: 13px; line-height: 18px; color: var(--muted); }
+.admin-l2 ul { list-style: none; margin: 0 0 0 -21px; padding: 0; display: flex; flex-wrap: wrap; row-gap: 4px; }
+.admin-l2 li::before { content: "·"; display: inline-block; width: 21px; text-align: center; color: rgba(255, 255, 255, 0.2); }
+.admin-btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer;
+  font-family: var(--font-grotesk), sans-serif; font-size: 13px; font-weight: 600; white-space: nowrap;
+  border: 1.5px solid rgba(255, 255, 255, 0.2); background: transparent; color: var(--text-2);
 }
-.admin-tabela td { padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--text-2); vertical-align: top; }
-.admin-tabela td { white-space: nowrap; }
-.admin-tabela td.quebra { white-space: normal; min-width: 180px; }
-.admin-tabela tbody tr:last-child td { border-bottom: 0; }
-.admin-tabela tbody tr:hover td { background: rgba(255, 255, 255, 0.02); }
+.admin-btn:hover { border-color: rgba(255, 255, 255, 0.4); color: var(--text); }
+.admin-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.admin-marca[data-on="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.admin-copiar[data-ok="true"] { border-color: #4ade80; color: #4ade80; }
+/* Celular: ações numa 3ª linha, para o nome usar a largura toda */
+@media (max-width: 600px) {
+  .admin-item { grid-template-columns: minmax(0, 1fr); }
+  .admin-acao { grid-column: 1; grid-row: 3; justify-self: start; margin-top: 6px; }
+  .admin-btn { min-height: 44px; }
+}

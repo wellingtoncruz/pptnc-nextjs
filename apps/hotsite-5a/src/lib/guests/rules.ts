@@ -117,3 +117,12 @@ export function definirAcompanhante(doc: GuestDoc, agora: Date, bruto: string): 
     },
   };
 }
+
+/**
+ * Marcação "convidado" (32.10): controle interno do anfitrião, independente da resposta.
+ * Não entra no histórico do convidado nem toca status, contato ou respondidoEm.
+ */
+export function marcarConvidado(doc: GuestDoc, agora: Date, marcar: boolean): Mudanca {
+  if (marcar === (doc.convidadoEm !== null)) return { ok: true, mudou: false };
+  return { ok: true, mudou: true, campos: { convidadoEm: marcar ? agora : null, atualizadoEm: agora } };
+}

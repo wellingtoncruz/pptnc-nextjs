@@ -22,5 +22,6 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
 
   const filtro = lerFiltro((await searchParams).filtro);
   const { docs, comProblema, espera } = await lerDadosPainel();
-  return <PainelAdmin painel={montarPainel(docs, espera, filtro)} filtro={filtro} comProblema={comProblema} />;
+  const baseUrl = process.env.HOTSITE_BASE_URL || "https://5anos.pptnaocompila.com.br";
+  return <PainelAdmin painel={montarPainel(docs, espera, filtro, baseUrl)} filtro={filtro} comProblema={comProblema} />;
 }

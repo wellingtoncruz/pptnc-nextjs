@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { confirmar, definirAcompanhante, recusar, validarNome } from "./rules";
+import { confirmar, definirAcompanhante, marcarConvidado, recusar, validarNome } from "./rules";
 import { cota, nominal, T0 } from "./test-helpers";
 import type { GuestDoc } from "./schema";
 
@@ -167,6 +167,25 @@ describe("empresa na confirmação (D30)", () => {
   it("recusar não toca a empresa", () => {
     const m = recusar(nominal({ empresa: "Klever" }), T0);
     expect(m.ok && m.mudou && "empresa" in m.campos).toBe(false);
+  });
+});
+
+describe("marcação convidado (32.10)", () => {
+  it("marca, desmarca e é idempotente; nunca toca resposta, contato nem histórico", () => {
+    const d = nominal({ status: "confirmado", email: "m@x.io", respondidoEm: T0 });
+    const m = marcarConvidado(d, T1, true);
+    expect(m.ok && m.mudou && m.campos).toEqual({ convidadoEm: T1, atualizadoEm: T1 });
+    const marcado = aplica(d, m);
+    expect(marcarConvidado(marcado, T1, true)).toEqual({ ok: true, mudou: false });
+    const des = marcarConvidado(marcado, T1, false);
+    expect(des.ok && des.mudou && des.campos).toEqual({ convidadoEm: null, atualizadoEm: T1 });
+    expect(marcarConvidado(d, T1, false)).toEqual({ ok: true, mudou: false });
+  });
+
+  it("responder não mexe na marcação", () => {
+    const d = nominal({ convidadoEm: T0, empresa: "X" });
+    const m = confirmar(d, T1, { empresa: "X", email: "m@x.io" });
+    expect(m.ok && m.mudou && "convidadoEm" in m.campos).toBe(false);
   });
 });
 
