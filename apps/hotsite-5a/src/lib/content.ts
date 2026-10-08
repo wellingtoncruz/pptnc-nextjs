@@ -46,8 +46,10 @@ export const NOITE_CHOPP = {
 
 /** horario null = item "Em breve". Definida pelo Wellington em 08/10. */
 export const PROGRAMACAO: { horario: string | null; atividade: string }[] = [
-  { horario: "20h00", atividade: "Wellington Cruz: Abertura" },
-  { horario: "21h00", atividade: "Presente Surpresa" },
+  { horario: "19h00", atividade: "Início dos trabalhos (chopp!)" },
+  { horario: "20h00", atividade: "Wellington Cruz: 5 anos de PPT Não Compila" },
+  { horario: "21h00", atividade: "Presente Surpresa (by Klever)" },
+  { horario: "22h00", atividade: "Continua o chopp!" },
 ];
 
 export const CARGOS = [
