@@ -3,7 +3,7 @@
 import { useState, type RefObject } from "react";
 import type { ConviteAberto } from "@/lib/convite";
 import type { Textos } from "@/lib/textos";
-import { APOIADORES, CARGOS, EVENTO, NOITE, NUMEROS, PROGRAMACAO } from "@/lib/content";
+import { APOIADORES, CARGOS, EVENTO, NOITE, NOITE_CHOPP, NUMEROS, PROGRAMACAO } from "@/lib/content";
 import { mesAno, resumoMaisEpisodios, visualizacoes } from "@/lib/format";
 import { card, ErroInline, h2, mono, MONO, Rotulo, SANS, Spinner } from "./ui";
 
@@ -30,12 +30,17 @@ export function SecaoEpisodio({ view }: { view: ConviteAberto }) {
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
             />
           ) : (
-            <button className="play-btn" onClick={() => setTocando(true)} aria-label="Assistir ao episódio" style={{ appearance: "none", border: 0, padding: 0, margin: 0, cursor: "pointer", position: "absolute", inset: 0, width: "100%", height: "100%", background: "radial-gradient(120% 90% at 85% 20%,rgba(242,106,33,.35),rgba(12,12,16,0) 60%),linear-gradient(160deg,#1E1236,#0C0C10 70%)", display: "block", textAlign: "left" }}>
+            <button className="play-btn" onClick={() => setTocando(true)} aria-label={`Assistir ao episódio: ${ep.titulo}`} style={{ appearance: "none", border: 0, padding: 0, margin: 0, cursor: "pointer", position: "absolute", inset: 0, width: "100%", height: "100%", background: "var(--surface)", display: "block" }}>
+              {/* Capa do próprio episódio do convidado (identificação). maxres existe nos vídeos atuais; hq é o fallback garantido. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/mic_cutout.webp" alt="" style={{ position: "absolute", right: "-6%", bottom: "-18%", height: "118%", transform: "rotate(-8deg)", opacity: 0.85, pointerEvents: "none" }} />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/logo_square_192.png" alt="" style={{ position: "absolute", left: 14, top: 14, width: 32, height: 32, borderRadius: 6 }} />
-              <span style={{ position: "absolute", left: 14, bottom: 14, maxWidth: "62%", fontFamily: SANS, fontSize: 16, lineHeight: "20px", fontWeight: 700, color: "var(--text)", textWrap: "balance" }}>{ep.titulo}</span>
+              <img
+                src={`https://i.ytimg.com/vi/${ep.videoId}/maxresdefault.jpg`}
+                onError={(e) => { const img = e.currentTarget; if (!img.src.includes("hqdefault")) img.src = `https://i.ytimg.com/vi/${ep.videoId}/hqdefault.jpg`; }}
+                alt=""
+                loading="lazy"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+              />
+              <span aria-hidden="true" style={{ position: "absolute", inset: 0, background: "rgba(12,12,16,.18)", pointerEvents: "none" }} />
               <span style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 60, height: 60, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#0B0809" /></svg>
               </span>
@@ -92,6 +97,18 @@ export function SecaoNoite() {
             <span style={{ fontSize: 15, lineHeight: "22px", color: "var(--text-2)", textWrap: "pretty" }}>{c.d}</span>
           </div>
         ))}
+      </div>
+      {/* Nota do Open Chopp: mesmo destaque laranja do card de impacto dos números. */}
+      <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 18, padding: "16px 20px", borderRadius: 16, border: "1px solid rgba(242,106,33,.42)", background: "linear-gradient(160deg,rgba(242,106,33,.16),rgba(242,106,33,.03))" }}>
+        {/* Fundo branco como nos cards de apoiadores: o logo é escuro. */}
+        <span style={{ flex: "none", width: 72, height: 72, borderRadius: 12, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 8 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={NOITE_CHOPP.logo} alt="Maralto" style={{ maxWidth: "100%", maxHeight: "100%", display: "block" }} />
+        </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+          <span style={mono(12, { color: "var(--accent)" })}>{NOITE_CHOPP.rotulo}</span>
+          <span style={{ fontSize: 17, lineHeight: "24px", fontWeight: 600, color: "var(--text)", textWrap: "pretty" }}>{NOITE_CHOPP.texto}</span>
+        </div>
       </div>
     </section>
   );

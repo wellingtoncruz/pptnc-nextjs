@@ -37,12 +37,17 @@ export const NOITE = [
   { n: "04", t: "Entre pares", d: "Uma sala só com quem fez parte da história do podcast." },
 ];
 
-/** horario null = item "Em breve" (estado do lançamento). */
+/** Nota da seção "A noite" (Wellington, 08/10). Texto a validar. */
+export const NOITE_CHOPP = {
+  rotulo: "Open Chopp",
+  texto: "Oferecido pela Maralto.",
+  logo: "/assets/maralto.webp",
+};
+
+/** horario null = item "Em breve". Definida pelo Wellington em 08/10. */
 export const PROGRAMACAO: { horario: string | null; atividade: string }[] = [
-  { horario: "19h30", atividade: "Wellington Cruz: Abertura e Agradecimentos" },
-  { horario: null, atividade: "Em breve" },
-  { horario: null, atividade: "Em breve" },
-  { horario: null, atividade: "Em breve" },
+  { horario: "20h00", atividade: "Wellington Cruz: Abertura" },
+  { horario: "21h00", atividade: "Presente Surpresa" },
 ];
 
 export const CARGOS = [
