@@ -39,6 +39,8 @@ type Onde = "topo" | "final" | "sheet" | "recusou";
 const CAMPO_DO_ERRO: Partial<Record<ErroConvite, CampoContato>> = {
   NOME_OBRIGATORIO: "nome",
   NOME_INVALIDO: "nome",
+  EMPRESA_OBRIGATORIA: "empresa",
+  EMPRESA_INVALIDA: "empresa",
   EMAIL_OBRIGATORIO: "email",
   EMAIL_INVALIDO: "email",
   CELULAR_INVALIDO: "celular",
@@ -57,10 +59,11 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
   const [celebrando, setCelebrando] = useState(false);
   const [recemConfirmado, setRecemConfirmado] = useState(false);
   const [toast, setToast] = useState("");
-  // Campos do topo: nome (só cota sem nome), email (D22, obrigatório), celular (opcional).
+  // Campos do topo: nome (só cota sem nome), empresa (D30, vem da carga), email (D22), celular (opcional).
   // Preenchidos com o contato gravado — "Mudei de ideia" reconfirma com eles (D24).
   const [valores, setValores] = useState<Record<CampoContato, string>>({
     nome: "",
+    empresa: inicial.empresa ?? "",
     email: inicial.email ?? "",
     celular: formatarCelular(inicial.celular),
   });
@@ -74,9 +77,10 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
   const heroRef = useRef<HTMLButtonElement | null>(null);
   const footRef = useRef<HTMLButtonElement | null>(null);
   const nomeRef = useRef<HTMLInputElement | null>(null);
+  const empresaRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const celularRef = useRef<HTMLInputElement | null>(null);
-  const refs = { nome: nomeRef, email: emailRef, celular: celularRef };
+  const refs = { nome: nomeRef, empresa: empresaRef, email: emailRef, celular: celularRef };
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [heroVis, setHeroVis] = useState(true);
   const [footVis, setFootVis] = useState(false);
@@ -151,6 +155,7 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
     if (loading) return;
     // Sem o que é obrigatório, nada de confirmar direto: leva ao campo que falta (32.6 AC 7).
     if (precisaNome && !valores.nome.trim()) return focar("nome");
+    if (!valores.empresa.trim()) return focar("empresa");
     if (!valores.email.trim()) return focar("email");
     setLoading(onde);
     setSheet(false);
@@ -158,6 +163,7 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
     try {
       r = await confirmarPresenca(view.codigo, {
         nome: precisaNome ? valores.nome : undefined,
+        empresa: valores.empresa,
         email: valores.email,
         celular: valores.celular,
       });

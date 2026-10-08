@@ -24,6 +24,8 @@ export interface ConviteAberto {
   /** Contato do próprio convidado (D22), só para preencher os campos de confirmação. */
   email: string | null;
   celular: string | null;
+  /** Empresa atual (D30), para preencher o campo — o convidado confirma ou corrige. */
+  empresa: string | null;
   /** Primeiro episódio (D7); null na cota. */
   episodio: EpisodioView | null;
   /** "E mais N episódios com X visualizações" — null com episódio único ou na cota. */
@@ -64,6 +66,7 @@ export function toView(doc: GuestDoc): ConviteAberto {
     acompanhanteNome: doc.acompanhanteNome,
     email: doc.email,
     celular: doc.celular,
+    empresa: doc.empresa,
     episodio: primeiro ?? null,
     maisEpisodios: outros.length ? { quantidade: outros.length, views: somaViews } : null,
   };

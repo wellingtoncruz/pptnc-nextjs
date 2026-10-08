@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planejarCargaNominal, planejarCota, type VideoInfo } from "./carga";
+import { limparEmpresa, planejarCargaNominal, planejarCota, type VideoInfo } from "./carga";
 import { GuestDocSchema, type GuestDoc } from "./schema";
 import { CODIGO_RE, CODIGO_VIP_RE } from "./codigo";
 import { cota, T0 } from "./test-helpers";
@@ -60,6 +60,32 @@ describe("planejarCargaNominal", () => {
 
   it("vídeo inexistente aborta", () => {
     expect(() => planejarCargaNominal([{ nome: "X", videoIds: ["nao"] }], [], videos, views, T0)).toThrow(/não encontrado/);
+  });
+
+  it("empresa (D30): grava ao criar, atualiza só sem resposta, preserva a do convidado", () => {
+    const comEmpresa = [{ ...entrada[0], empresa: "Klever" }, { ...entrada[1], empresa: "ND" }];
+    const [romulo, armando] = planejarCargaNominal(comEmpresa, [], videos, views, T0).criar;
+    expect(romulo.empresa).toBe("Klever");
+    expect(armando.empresa).toBeNull();
+
+    const nova = [{ ...entrada[0], empresa: "Nubank" }, { ...entrada[1], empresa: "Itaú" }];
+    const semResposta = planejarCargaNominal(nova, [romulo, armando], videos, views, T1);
+    expect(semResposta.atualizar.map((u) => u.campos.empresa).sort()).toEqual(["Itaú", "Nubank"]);
+
+    const respondeu = { ...romulo, status: "confirmado" as const, empresa: "Klever Labs", historico: [{ em: T0, status: "confirmado" as const, acompanhanteNome: null, empresa: "Klever Labs" }] };
+    const depois = planejarCargaNominal(nova, [respondeu, armando], videos, views, T1);
+    expect(depois.atualizar.map((u) => u.codigo)).toEqual([armando.codigo]);
+
+    // entrada sem o campo não apaga a empresa já carregada
+    const semCampo = planejarCargaNominal(entrada, [romulo, armando], videos, views, T1);
+    expect(semCampo.atualizar).toHaveLength(0);
+  });
+
+  it("limparEmpresa: ND e vazio viram null", () => {
+    expect(limparEmpresa("ND")).toBeNull();
+    expect(limparEmpresa("  ")).toBeNull();
+    expect(limparEmpresa(undefined)).toBeNull();
+    expect(limparEmpresa(" Mercado  Livre ")).toBe("Mercado Livre");
   });
 
   it("nunca toca documentos de cota", () => {

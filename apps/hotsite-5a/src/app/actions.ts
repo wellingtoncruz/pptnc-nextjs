@@ -15,7 +15,7 @@ async function rodar(codigoBruto: string, acao: Acao): Promise<ResultadoAcao> {
 }
 
 export async function confirmarPresenca(codigo: string, dados: DadosConfirmacao): Promise<ResultadoAcao> {
-  return rodar(codigo, { tipo: "confirmar", nome: dados?.nome, email: dados?.email, celular: dados?.celular });
+  return rodar(codigo, { tipo: "confirmar", nome: dados?.nome, empresa: dados?.empresa, email: dados?.email, celular: dados?.celular });
 }
 
 export async function recusarPresenca(codigo: string): Promise<ResultadoAcao> {

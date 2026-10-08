@@ -5,6 +5,8 @@ import type { Episodio, GuestDoc } from "./schema";
 export interface EntradaNominal {
   nome: string;
   primeiroNome?: string;
+  /** D30: "Empresa atual" da aba Relevância; só vale enquanto o convidado não respondeu. */
+  empresa?: string | null;
   videoIds: string[];
 }
 
@@ -21,6 +23,12 @@ export interface PlanoCarga {
 
 type Sorteio = () => number;
 
+/** "ND" (não disponível na planilha) e vazio viram null. */
+export function limparEmpresa(bruto: string | null | undefined): string | null {
+  const v = (bruto ?? "").trim().replace(/\s+/g, " ");
+  return v && v.toUpperCase() !== "ND" ? v.slice(0, 80) : null;
+}
+
 export function montarEpisodios(
   videoIds: string[],
   videos: Map<string, VideoInfo>,
@@ -35,8 +43,12 @@ export function montarEpisodios(
     .sort((a, b) => a.publicadoEm.localeCompare(b.publicadoEm) || a.videoId.localeCompare(b.videoId)); // [0] = primeiro (D7)
 }
 
-function novoDoc(base: Pick<GuestDoc, "codigo" | "nome" | "primeiroNome" | "episodios" | "cotaPatrocinador" | "patrocinador">, agora: Date): GuestDoc {
+function novoDoc(
+  base: Pick<GuestDoc, "codigo" | "nome" | "primeiroNome" | "episodios" | "cotaPatrocinador" | "patrocinador"> & { empresa?: string | null },
+  agora: Date
+): GuestDoc {
   return {
+    empresa: null,
     ...base,
     acompanhantePermitido: false,
     acompanhanteNome: null,
@@ -53,6 +65,7 @@ function novoDoc(base: Pick<GuestDoc, "codigo" | "nome" | "primeiroNome" | "epis
 /**
  * Carga nominal idempotente (32.2 AC 4): o convidado existente é localizado pelo NOME exato e
  * mantém o código; só o snapshot muda. Nunca toca status, acompanhante, permissão nem histórico.
+ * Empresa (D30): a carga é dona do valor inicial, o convidado do final — só muda com `historico` vazio.
  * Documentos de cota nunca são tocados.
  */
 export function planejarCargaNominal(
@@ -74,6 +87,7 @@ export function planejarCargaNominal(
   for (const e of entrada) {
     const nome = e.nome.trim().replace(/\s+/g, " ");
     const episodios = montarEpisodios(e.videoIds, videos, views);
+    const empresa = limparEmpresa(e.empresa);
     const atual = porNome.get(nome);
     if (!atual) {
       plano.criar.push(
@@ -82,6 +96,7 @@ export function planejarCargaNominal(
             codigo: gerarCodigo(nome, usados, rnd),
             nome,
             primeiroNome: e.primeiroNome?.trim() || primeiroNomeDe(nome),
+            empresa,
             episodios,
             cotaPatrocinador: false,
             patrocinador: null,
@@ -94,6 +109,7 @@ export function planejarCargaNominal(
     const campos: Partial<GuestDoc> = {};
     if (JSON.stringify(atual.episodios) !== JSON.stringify(episodios)) campos.episodios = episodios;
     if (e.primeiroNome && e.primeiroNome.trim() !== atual.primeiroNome) campos.primeiroNome = e.primeiroNome.trim();
+    if (e.empresa !== undefined && atual.historico.length === 0 && empresa !== atual.empresa) campos.empresa = empresa;
     if (Object.keys(campos).length) plano.atualizar.push({ codigo: atual.codigo, campos: { ...campos, atualizadoEm: agora } });
     else plano.semMudanca.push(atual.codigo);
   }

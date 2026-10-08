@@ -23,7 +23,7 @@ function PainelFlyer() {
   );
 }
 
-export type CampoContato = "nome" | "email" | "celular";
+export type CampoContato = "nome" | "empresa" | "email" | "celular";
 
 export interface TopoConviteProps {
   view: ConviteAberto;
@@ -41,6 +41,7 @@ export interface TopoConviteProps {
 
 const CAMPOS: Record<CampoContato, { rotulo: string; type: string; autoComplete: string; inputMode?: "tel" | "email"; placeholder: string; maxLength: number }> = {
   nome: { rotulo: "Seu nome", type: "text", autoComplete: "name", placeholder: "Nome completo", maxLength: 80 },
+  empresa: { rotulo: "Empresa atual", type: "text", autoComplete: "organization", placeholder: "Onde você trabalha", maxLength: 80 },
   email: { rotulo: "Seu email", type: "email", autoComplete: "email", inputMode: "email", placeholder: "voce@email.com", maxLength: 254 },
   celular: { rotulo: "Seu celular (opcional)", type: "tel", autoComplete: "tel", inputMode: "tel", placeholder: "(11) 98765-4321", maxLength: 20 },
 };
@@ -80,11 +81,11 @@ export function CampoTopo({ id, campo, inputRef, valor, onChange, onEnter, erro 
   );
 }
 
-/** Tela 1/2: convite aberto. Na cota, sem nome e com o campo "Seu nome" (D19/D21); email e celular (D22). */
+/** Tela 1/2: convite aberto. Na cota, sem nome e com o campo "Seu nome" (D19/D21); empresa (D30), email e celular (D22). */
 export function TopoConvite({ view, textos, loading, heroRef, refs, valores, setValor, erro, onConfirmar, onNaoPoderei }: TopoConviteProps) {
   const pedeNome = view.cota && !view.nome;
   const erroDe = (c: CampoContato) => (erro?.campo === c ? erro.msg : null);
-  const completo = (!pedeNome || valores.nome.trim() !== "") && valores.email.trim() !== "";
+  const completo = (!pedeNome || valores.nome.trim() !== "") && valores.empresa.trim() !== "" && valores.email.trim() !== "";
   const enter = () => { if (completo) onConfirmar(); };
   return (
     <section style={{ position: "relative", padding: "var(--heroPad)" }}>
@@ -107,6 +108,7 @@ export function TopoConvite({ view, textos, loading, heroRef, refs, valores, set
             {pedeNome && (
               <CampoTopo id="seu-nome" campo="nome" inputRef={refs.nome} valor={valores.nome} onChange={(v) => setValor("nome", v)} onEnter={enter} erro={erroDe("nome")} />
             )}
+            <CampoTopo id="sua-empresa" campo="empresa" inputRef={refs.empresa} valor={valores.empresa} onChange={(v) => setValor("empresa", v)} onEnter={enter} erro={erroDe("empresa")} />
             <CampoTopo id="seu-email" campo="email" inputRef={refs.email} valor={valores.email} onChange={(v) => setValor("email", v)} onEnter={enter} erro={erroDe("email")} />
             <CampoTopo id="seu-celular" campo="celular" inputRef={refs.celular} valor={valores.celular} onChange={(v) => setValor("celular", v)} onEnter={enter} erro={erroDe("celular")} />
           </div>

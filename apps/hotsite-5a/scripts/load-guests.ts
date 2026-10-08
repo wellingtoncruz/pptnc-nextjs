@@ -2,7 +2,7 @@
  * Carga de convidados do hotsite (Story 32.2). DRY-RUN por padrão; só escreve com --apply.
  *
  *   Nominais:  tsx scripts/load-guests.ts --input lista.json [--apply]
- *              lista.json = [{ "nome": "...", "primeiroNome"?: "...", "videoIds": ["..."] }]
+ *              lista.json = [{ "nome": "...", "primeiroNome"?: "...", "empresa"?: "...", "videoIds": ["..."] }]
  *   Cota VIP:  tsx scripts/load-guests.ts --cota "Klever" --quantidade 10 [--apply]
  *
  * Banco: FIRESTORE_DATABASE_ID (default pptnc-stage). Views: YOUTUBE_API_KEY ou --youtube-key-file.
@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import { getFirestoreClient, GUESTS_COLLECTION } from "../src/lib/firestore";
 import { parseGuestDoc, type GuestDoc } from "../src/lib/guests/schema";
-import { planejarCargaNominal, planejarCota, type EntradaNominal, type VideoInfo } from "../src/lib/guests/carga";
+import { limparEmpresa, planejarCargaNominal, planejarCota, type EntradaNominal, type VideoInfo } from "../src/lib/guests/carga";
 
 function arg(nome: string): string | undefined {
   const i = process.argv.indexOf(`--${nome}`);
@@ -119,8 +119,12 @@ async function main() {
   const plano = planejarCargaNominal(entrada, existentes, videos, views, agora);
   console.log(`Criar ${plano.criar.length} · atualizar ${plano.atualizar.length} · sem mudança ${plano.semMudanca.length}`);
   for (const d of plano.criar.slice(0, 5)) {
-    console.log(`  + ${d.codigo.padEnd(20)} ${d.nome} · ${d.episodios.length} ep · 1º ${d.episodios[0]?.publicadoEm}`);
+    console.log(`  + ${d.codigo.padEnd(20)} ${d.nome} · ${d.empresa ?? "(sem empresa)"} · ${d.episodios.length} ep · 1º ${d.episodios[0]?.publicadoEm}`);
   }
+  const comEmpresa = plano.atualizar.filter((a) => "empresa" in a.campos).length;
+  if (comEmpresa) console.log(`Empresa atualizada em ${comEmpresa} convite(s) ainda sem resposta (D30)`);
+  const semEmpresa = entrada.filter((e) => !limparEmpresa(e.empresa)).map((e) => e.nome);
+  console.log(`Sem empresa na entrada: ${semEmpresa.length}${semEmpresa.length ? ` — ${semEmpresa.join(", ")}` : ""}`);
   if (APPLY) {
     await gravar(plano.criar, plano.atualizar);
     console.log("Gravado.");

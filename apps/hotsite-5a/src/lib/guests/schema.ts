@@ -18,6 +18,7 @@ export const HistoricoSchema = z.object({
   nome: z.string().nullable().optional(),
   email: z.string().nullable().optional(),
   celular: z.string().nullable().optional(),
+  empresa: z.string().nullable().optional(),
 });
 export type HistoricoEntrada = z.infer<typeof HistoricoSchema>;
 
@@ -40,6 +41,8 @@ export const GuestDocSchema = z
     email: z.string().nullable().default(null),
     /** D22: opcional, só dígitos. */
     celular: z.string().nullable().default(null),
+    /** D30: empresa atual, gravada pela carga e confirmada/corrigida pelo convidado. */
+    empresa: z.string().nullable().default(null),
     episodios: z.array(EpisodioSchema),
     respondidoEm: z.date().nullable(),
     historico: z.array(HistoricoSchema),

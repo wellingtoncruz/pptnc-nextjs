@@ -7,6 +7,8 @@ export type ErroConvite =
   | "ACOMPANHANTE_NAO_PERMITIDO"
   | "NOME_INVALIDO"
   | "NOME_OBRIGATORIO"
+  | "EMPRESA_OBRIGATORIA"
+  | "EMPRESA_INVALIDA"
   | "EMAIL_OBRIGATORIO"
   | "EMAIL_INVALIDO"
   | "CELULAR_INVALIDO"
@@ -35,6 +37,7 @@ function entrada(doc: GuestDoc, agora: Date, status: Status, extra: Partial<Hist
 
 export interface DadosConfirmacao {
   nome?: string | null;
+  empresa?: string | null;
   email?: string | null;
   celular?: string | null;
 }
@@ -42,7 +45,8 @@ export interface DadosConfirmacao {
 /**
  * Confirmar: qualquer status → confirmado.
  * - Cota (D19): exige o nome enquanto ele for null; nominal ignora o nome recebido.
- * - D22: email obrigatório, celular opcional (vazio grava null). Ordem: nome → email → celular.
+ * - D30: empresa obrigatória (vem preenchida pela carga; o convidado confirma ou corrige).
+ * - D22: email obrigatório, celular opcional (vazio grava null). Ordem: nome → empresa → email → celular.
  * - Idempotente: já confirmado com o MESMO contato não muda nada; contato diferente atualiza
  *   e entra no histórico (D24). `respondidoEm` só muda com troca de status.
  */
@@ -53,6 +57,9 @@ export function confirmar(doc: GuestDoc, agora: Date, dados: DadosConfirmacao = 
     nome = validarNome(dados.nome);
     if (!nome) return { ok: false, erro: "NOME_INVALIDO" };
   }
+  if (dados.empresa == null || String(dados.empresa).trim() === "") return { ok: false, erro: "EMPRESA_OBRIGATORIA" };
+  const empresa = validarNome(dados.empresa);
+  if (!empresa) return { ok: false, erro: "EMPRESA_INVALIDA" };
   if (dados.email == null || String(dados.email).trim() === "") return { ok: false, erro: "EMAIL_OBRIGATORIO" };
   const email = validarEmail(dados.email);
   if (!email) return { ok: false, erro: "EMAIL_INVALIDO" };
@@ -61,15 +68,16 @@ export function confirmar(doc: GuestDoc, agora: Date, dados: DadosConfirmacao = 
   const celular = cel.valor;
 
   const trocaStatus = doc.status !== "confirmado";
-  const trocaContato = email !== doc.email || celular !== doc.celular;
+  const trocaContato = email !== doc.email || celular !== doc.celular || empresa !== doc.empresa;
   if (!trocaStatus && !trocaContato) return { ok: true, mudou: false };
 
   const campos: Partial<GuestDoc> = {
     status: "confirmado",
+    empresa,
     email,
     celular,
     atualizadoEm: agora,
-    historico: [...doc.historico, entrada(doc, agora, "confirmado", { email, celular, ...(nome !== doc.nome ? { nome } : {}) })],
+    historico: [...doc.historico, entrada(doc, agora, "confirmado", { empresa, email, celular, ...(nome !== doc.nome ? { nome } : {}) })],
   };
   if (trocaStatus) campos.respondidoEm = agora;
   if (nome !== doc.nome) campos.nome = nome;

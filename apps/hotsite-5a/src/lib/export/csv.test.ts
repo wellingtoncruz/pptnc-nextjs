@@ -4,7 +4,7 @@ import { cota, nominal } from "../guests/test-helpers";
 
 const docs = [
   nominal({ codigo: "ZECA100", nome: "Zeca Ávila", status: "confirmado", acompanhantePermitido: true, acompanhanteNome: "Bia", email: "zeca@x.io", celular: "11987654321" }),
-  nominal({ codigo: "ANA100", nome: "Ana Lu", status: "recusou", acompanhanteNome: "Guardado", email: "ana@guardado.io", celular: "21999998888" }),
+  nominal({ codigo: "ANA100", nome: "Ana Lu", empresa: "Acme", status: "recusou", acompanhanteNome: "Guardado", email: "ana@guardado.io", celular: "21999998888" }),
   nominal({ codigo: "ELIS100", nome: "Élis Souza", status: "pendente" }),
   cota({ status: "confirmado", nome: "Joana; \"Jo\" Prado", email: "joana@klever.io" }),
   cota({ codigo: "KLEVERVIP555" }),
@@ -16,7 +16,7 @@ describe("gerarCsv (32.5)", () => {
 
   it("começa com BOM e usa ';'", () => {
     expect(csv.charCodeAt(0)).toBe(0xfeff);
-    expect(linhas[0].split(";")).toHaveLength(11);
+    expect(linhas[0].split(";")).toHaveLength(12);
   });
 
   it("uma linha por documento, em ordem alfabética PT-BR, cota sem nome no fim", () => {
@@ -36,6 +36,12 @@ describe("gerarCsv (32.5)", () => {
     const ana = linhas.find((l) => l.startsWith("Ana Lu"))!;
     expect(ana).not.toContain("ana@guardado.io");
     expect(ana).not.toContain("99999");
+  });
+
+  it("empresa logo depois do nome, para todos os status (D30)", () => {
+    expect(linhas[0].startsWith("Nome;Empresa;Código;")).toBe(true);
+    expect(linhas.find((l) => l.startsWith("Ana Lu"))!.startsWith("Ana Lu;Acme;ANA100;Recusou;")).toBe(true);
+    expect(linhas.find((l) => l.startsWith("Élis"))!.startsWith("Élis Souza;;ELIS100;")).toBe(true);
   });
 
   it("confirmado sem email vira problema", () => {

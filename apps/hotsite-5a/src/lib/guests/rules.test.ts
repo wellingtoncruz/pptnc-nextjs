@@ -4,7 +4,7 @@ import { cota, nominal, T0 } from "./test-helpers";
 import type { GuestDoc } from "./schema";
 
 const T1 = new Date("2026-10-08T12:00:00Z");
-const E = { email: "mariana@exemplo.com.br" };
+const E = { empresa: "Exemplo SA", email: "mariana@exemplo.com.br" };
 const aplica = (doc: GuestDoc, m: ReturnType<typeof confirmar>) =>
   m.ok && m.mudou ? { ...doc, ...m.campos } : doc;
 
@@ -26,7 +26,7 @@ describe("transições (32.3 AC 5)", () => {
   });
 
   it("confirmar e recusar são idempotentes", () => {
-    expect(confirmar(nominal({ status: "confirmado", email: E.email }), T0, E)).toEqual({ ok: true, mudou: false });
+    expect(confirmar(nominal({ status: "confirmado", empresa: E.empresa, email: E.email }), T0, E)).toEqual({ ok: true, mudou: false });
     expect(recusar(nominal({ status: "recusou" }), T0)).toEqual({ ok: true, mudou: false });
   });
 
@@ -104,20 +104,21 @@ describe("cota de patrocinador (D19)", () => {
 
 describe("contato na confirmação (D22–D24)", () => {
   it("email obrigatório e validado; celular opcional e validado", () => {
-    expect(confirmar(nominal(), T0)).toEqual({ ok: false, erro: "EMAIL_OBRIGATORIO" });
-    expect(confirmar(nominal(), T0, { email: "  " })).toEqual({ ok: false, erro: "EMAIL_OBRIGATORIO" });
-    expect(confirmar(nominal(), T0, { email: "mariana@" })).toEqual({ ok: false, erro: "EMAIL_INVALIDO" });
+    expect(confirmar(nominal(), T0, { empresa: E.empresa })).toEqual({ ok: false, erro: "EMAIL_OBRIGATORIO" });
+    expect(confirmar(nominal(), T0, { empresa: E.empresa, email: "  " })).toEqual({ ok: false, erro: "EMAIL_OBRIGATORIO" });
+    expect(confirmar(nominal(), T0, { empresa: E.empresa, email: "mariana@" })).toEqual({ ok: false, erro: "EMAIL_INVALIDO" });
     expect(confirmar(nominal(), T0, { ...E, celular: "123" })).toEqual({ ok: false, erro: "CELULAR_INVALIDO" });
   });
 
-  it("cota valida na ordem nome → email → celular", () => {
+  it("cota valida na ordem nome → empresa → email → celular", () => {
     expect(confirmar(cota(), T0, { celular: "123" })).toEqual({ ok: false, erro: "NOME_OBRIGATORIO" });
-    expect(confirmar(cota(), T0, { nome: "Joana", celular: "123" })).toEqual({ ok: false, erro: "EMAIL_OBRIGATORIO" });
-    expect(confirmar(cota(), T0, { nome: "Joana", email: "joana@klever.io", celular: "123" })).toEqual({ ok: false, erro: "CELULAR_INVALIDO" });
+    expect(confirmar(cota(), T0, { nome: "Joana", celular: "123" })).toEqual({ ok: false, erro: "EMPRESA_OBRIGATORIA" });
+    expect(confirmar(cota(), T0, { nome: "Joana", empresa: "Klever", celular: "123" })).toEqual({ ok: false, erro: "EMAIL_OBRIGATORIO" });
+    expect(confirmar(cota(), T0, { nome: "Joana", empresa: "Klever", email: "joana@klever.io", celular: "123" })).toEqual({ ok: false, erro: "CELULAR_INVALIDO" });
   });
 
   it("grava email normalizado e celular só com dígitos, também no histórico", () => {
-    const m = confirmar(nominal(), T0, { email: " Mariana@Exemplo.com.br ", celular: "(11) 98765-4321" });
+    const m = confirmar(nominal(), T0, { empresa: E.empresa, email: " Mariana@Exemplo.com.br ", celular: "(11) 98765-4321" });
     expect(m.ok && m.mudou && m.campos).toMatchObject({ email: "mariana@exemplo.com.br", celular: "11987654321", respondidoEm: T0 });
     expect(m.ok && m.mudou && m.campos.historico?.[0]).toMatchObject({ email: "mariana@exemplo.com.br", celular: "11987654321" });
   });
@@ -128,8 +129,8 @@ describe("contato na confirmação (D22–D24)", () => {
   });
 
   it("já confirmado com contato diferente atualiza e gera entrada, sem mexer em respondidoEm", () => {
-    const d = nominal({ status: "confirmado", email: E.email, celular: null, respondidoEm: T0, historico: [] });
-    const m = confirmar(d, T1, { email: "novo@exemplo.com.br", celular: "11987654321" });
+    const d = nominal({ status: "confirmado", empresa: E.empresa, email: E.email, celular: null, respondidoEm: T0, historico: [] });
+    const m = confirmar(d, T1, { empresa: E.empresa, email: "novo@exemplo.com.br", celular: "11987654321" });
     expect(m.ok && m.mudou && m.campos).toMatchObject({ email: "novo@exemplo.com.br", celular: "11987654321" });
     expect(m.ok && m.mudou && m.campos.respondidoEm).toBeUndefined();
     expect(m.ok && m.mudou && m.campos.historico).toHaveLength(1);
@@ -141,6 +142,31 @@ describe("contato na confirmação (D22–D24)", () => {
     expect(m.ok && m.mudou && "email" in m.campos).toBe(false);
     const depois = aplica(d, m);
     expect(depois).toMatchObject({ email: E.email, celular: "11987654321" });
+  });
+});
+
+describe("empresa na confirmação (D30)", () => {
+  it("obrigatória e validada", () => {
+    expect(confirmar(nominal(), T0, { email: E.email })).toEqual({ ok: false, erro: "EMPRESA_OBRIGATORIA" });
+    expect(confirmar(nominal(), T0, { ...E, empresa: "  " })).toEqual({ ok: false, erro: "EMPRESA_OBRIGATORIA" });
+    expect(confirmar(nominal(), T0, { ...E, empresa: "x".repeat(81) })).toEqual({ ok: false, erro: "EMPRESA_INVALIDA" });
+  });
+
+  it("confirmar a empresa carregada grava a mesma; corrigir troca e entra no histórico", () => {
+    const d = nominal({ empresa: "Mercado Livre" });
+    const m = confirmar(d, T0, { ...E, empresa: " Mercado  Livre " });
+    expect(m.ok && m.mudou && m.campos.empresa).toBe("Mercado Livre");
+    const conf = aplica(d, m);
+    expect(confirmar(conf, T1, { ...E, empresa: "Mercado Livre" })).toEqual({ ok: true, mudou: false });
+    const troca = confirmar(conf, T1, { ...E, empresa: "Nubank" });
+    expect(troca.ok && troca.mudou && troca.campos).toMatchObject({ empresa: "Nubank" });
+    expect(troca.ok && troca.mudou && troca.campos.historico?.at(-1)).toMatchObject({ empresa: "Nubank" });
+    expect(troca.ok && troca.mudou && troca.campos.respondidoEm).toBeUndefined();
+  });
+
+  it("recusar não toca a empresa", () => {
+    const m = recusar(nominal({ empresa: "Klever" }), T0);
+    expect(m.ok && m.mudou && "empresa" in m.campos).toBe(false);
   });
 });
 

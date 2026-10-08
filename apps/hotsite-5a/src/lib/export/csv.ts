@@ -11,7 +11,7 @@ export function celula(v: string | number | null | undefined): string {
   return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-const STATUS_PT: Record<GuestDoc["status"], string> = { pendente: "Pendente", confirmado: "Confirmado", recusou: "Recusou" };
+export const STATUS_PT: Record<GuestDoc["status"], string> = { pendente: "Pendente", confirmado: "Confirmado", recusou: "Recusou" };
 
 export function dataBrt(d: Date | null): string {
   if (!d) return "";
@@ -49,7 +49,7 @@ export function totais(docs: GuestDoc[]): Totais {
 }
 
 const COLUNAS = [
-  "Nome", "Código", "Status", "Cota", "Acompanhante permitido", "Acompanhante",
+  "Nome", "Empresa", "Código", "Status", "Cota", "Acompanhante permitido", "Acompanhante",
   "Email", "Celular", "Respondido em", "Nº de respostas", "Primeiro episódio",
 ];
 
@@ -68,6 +68,7 @@ export function gerarCsv(docs: GuestDoc[], problemas: Problema[] = []): string {
   for (const d of ordenados) {
     linhas.push([
       d.nome ?? "(não preenchido)",
+      d.empresa, // D30: dado da carga, não contato coletado — vale para todos os status
       d.codigo,
       STATUS_PT[d.status],
       d.cotaPatrocinador ? d.patrocinador : "",
