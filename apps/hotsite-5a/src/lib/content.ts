@@ -31,7 +31,7 @@ export const NUMEROS = {
 };
 
 export const NOITE = [
-  { n: "01", t: "Happy hour", d: "Comida, bebida e boa conversa, com uma fala breve dos apoiadores no palco." },
+  { n: "01", t: "Happy hour", d: "Comida, bebida e tempo de sobra para conversar com quem vive os mesmos desafios que você." },
   { n: "02", t: "Quinta, 29/10", d: "A partir das 19h, no início da noite, em São Paulo." },
   { n: "03", t: "Vila Nova Conceição, SP", d: "Rua Bastos Pereira, 25." },
   { n: "04", t: "Entre pares", d: "Uma sala só com quem fez parte da história do podcast." },
