@@ -55,9 +55,9 @@ describe("getConvite (32.3 AC 1-2)", () => {
 describe("executarAcao", () => {
   it("histórico nunca perde entrada: confirmar → recusar → confirmar", async () => {
     const store = memoryStore([nominal()]);
-    await executarAcao(store, "MARIANA742", { tipo: "confirmar" }, T0);
+    await executarAcao(store, "MARIANA742", { tipo: "confirmar", email: "mariana@exemplo.com.br" }, T0);
     await executarAcao(store, "MARIANA742", { tipo: "recusar" }, T0);
-    const r = await executarAcao(store, "MARIANA742", { tipo: "confirmar" }, T0);
+    const r = await executarAcao(store, "MARIANA742", { tipo: "confirmar", email: "mariana@exemplo.com.br" }, T0);
     expect(r.ok && r.convite.estado).toBe("confirmado");
     expect(store.data.get("MARIANA742")?.historico).toHaveLength(3);
   });
@@ -69,7 +69,7 @@ describe("executarAcao", () => {
 
   it("falha do banco → FALHA_TEMPORARIA, sem lançar", async () => {
     const quebrado = { get: async () => null, mutate: async () => { throw new Error("UNAVAILABLE"); } };
-    const r = await executarAcao(quebrado, "MARIANA742", { tipo: "confirmar" }, T0);
+    const r = await executarAcao(quebrado, "MARIANA742", { tipo: "confirmar", email: "mariana@exemplo.com.br" }, T0);
     expect(r).toEqual({ ok: false, erro: "FALHA_TEMPORARIA" });
   });
 

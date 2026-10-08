@@ -1,4 +1,5 @@
 import type { ErroConvite } from "./guests/rules";
+import type { ErroEspera } from "./espera/espera";
 
 /**
  * Mensagens de erro das ações — TEXTO NOVO (o protótipo não tinha falha: era um setTimeout).
@@ -9,5 +10,22 @@ export const MENSAGEM_ERRO: Record<ErroConvite, string> = {
   NOME_OBRIGATORIO: "Informe seu nome para confirmar a presença.",
   NOME_INVALIDO: "Confira o nome: use até 80 caracteres.",
   ACOMPANHANTE_NAO_PERMITIDO: "Não foi possível incluir o acompanhante neste convite.",
+  // D27 (aprovados em 2026-10-08)
+  EMAIL_OBRIGATORIO: "Confira o email digitado.",
+  EMAIL_INVALIDO: "Confira o email digitado.",
+  CELULAR_INVALIDO: "Confira o celular, com DDD.",
   CODIGO_INVALIDO: "Este convite não está mais disponível. Confira a mensagem do convite.",
+};
+
+/**
+ * Lista de espera (32.7). Email e celular: D27 (aprovados). Os demais reaproveitam o tom acima;
+ * CAMPO_OBRIGATORIO e EMPRESA_INVALIDA são novos e entram na mesma validação do Wellington.
+ */
+export const MENSAGEM_ESPERA: Record<ErroEspera | "FALHA_TEMPORARIA", string> = {
+  CAMPO_OBRIGATORIO: "Preencha este campo.",
+  NOME_INVALIDO: MENSAGEM_ERRO.NOME_INVALIDO,
+  EMPRESA_INVALIDA: "Confira a empresa: use até 80 caracteres.",
+  EMAIL_INVALIDO: MENSAGEM_ERRO.EMAIL_INVALIDO,
+  CELULAR_INVALIDO: MENSAGEM_ERRO.CELULAR_INVALIDO,
+  FALHA_TEMPORARIA: MENSAGEM_ERRO.FALHA_TEMPORARIA,
 };

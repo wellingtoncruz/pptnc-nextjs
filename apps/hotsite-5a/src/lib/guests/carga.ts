@@ -41,6 +41,8 @@ function novoDoc(base: Pick<GuestDoc, "codigo" | "nome" | "primeiroNome" | "epis
     acompanhantePermitido: false,
     acompanhanteNome: null,
     status: "pendente",
+    email: null,
+    celular: null,
     respondidoEm: null,
     historico: [],
     criadoEm: agora,

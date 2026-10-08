@@ -16,6 +16,8 @@ export const HistoricoSchema = z.object({
   status: z.enum(STATUS),
   acompanhanteNome: z.string().nullable(),
   nome: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  celular: z.string().nullable().optional(),
 });
 export type HistoricoEntrada = z.infer<typeof HistoricoSchema>;
 
@@ -34,6 +36,10 @@ export const GuestDocSchema = z
     acompanhantePermitido: z.boolean(),
     acompanhanteNome: z.string().nullable(),
     status: z.enum(STATUS),
+    /** D22: obrigatório ao confirmar; ausente em docs antigos → null. */
+    email: z.string().nullable().default(null),
+    /** D22: opcional, só dígitos. */
+    celular: z.string().nullable().default(null),
     episodios: z.array(EpisodioSchema),
     respondidoEm: z.date().nullable(),
     historico: z.array(HistoricoSchema),

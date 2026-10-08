@@ -7,7 +7,9 @@ import { EVENTO } from "@/lib/content";
 import { MENSAGEM_ERRO } from "@/lib/mensagens";
 import { confirmarPresenca, recusarPresenca, salvarAcompanhante } from "@/app/actions";
 import { Restrito } from "./restrito";
-import { TopoConfirmado, TopoConvite, TopoRecusou } from "./topo";
+import { TopoConfirmado, TopoConvite, TopoRecusou, type CampoContato } from "./topo";
+import { formatarCelular } from "@/lib/contato";
+import type { ErroConvite } from "@/lib/guests/rules";
 import { BlocoFinal, Rodape, SecaoApoiadores, SecaoEpisodio, SecaoNetworking, SecaoNoite, SecaoNota, SecaoNumeros, SecaoProgramacao } from "./secoes";
 import { Baloes } from "./baloes";
 import { LOGO, mono, SANS, Spinner } from "./ui";
@@ -33,20 +35,35 @@ export function Hotsite({ inicial }: { inicial: ConviteView }) {
 
 type Onde = "topo" | "final" | "sheet" | "recusou";
 
+/** Erro que pertence a um campo do topo (aparece inline sob ele). */
+const CAMPO_DO_ERRO: Partial<Record<ErroConvite, CampoContato>> = {
+  NOME_OBRIGATORIO: "nome",
+  NOME_INVALIDO: "nome",
+  EMAIL_OBRIGATORIO: "email",
+  EMAIL_INVALIDO: "email",
+  CELULAR_INVALIDO: "celular",
+};
+
 function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
   const [view, setView] = useState(inicial);
-  // Cota que recusou sem informar o nome e quer voltar: mostra o topo do convite com o campo (D19).
+  // Quem recusou sem nunca ter deixado o email (ou a cota sem nome) e quer voltar: topo do convite com os campos.
   const [forcarConvite, setForcarConvite] = useState(false);
   const estado = forcarConvite ? "convite" : view.estado;
   const textos = textosPara(view);
 
   const [sheet, setSheet] = useState(false);
   const [loading, setLoading] = useState<Onde | null>(null);
-  const [erro, setErro] = useState<{ onde: Onde; msg: string } | null>(null);
+  const [erro, setErro] = useState<{ onde: Onde; msg: string; campo?: CampoContato } | null>(null);
   const [celebrando, setCelebrando] = useState(false);
   const [recemConfirmado, setRecemConfirmado] = useState(false);
   const [toast, setToast] = useState("");
-  const [nomeCota, setNomeCota] = useState("");
+  // Campos do topo: nome (só cota sem nome), email (D22, obrigatório), celular (opcional).
+  // Preenchidos com o contato gravado — "Mudei de ideia" reconfirma com eles (D24).
+  const [valores, setValores] = useState<Record<CampoContato, string>>({
+    nome: "",
+    email: inicial.email ?? "",
+    celular: formatarCelular(inicial.celular),
+  });
 
   const [acompAberto, setAcompAberto] = useState(false);
   const [acompDraft, setAcompDraft] = useState("");
@@ -57,6 +74,9 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
   const heroRef = useRef<HTMLButtonElement | null>(null);
   const footRef = useRef<HTMLButtonElement | null>(null);
   const nomeRef = useRef<HTMLInputElement | null>(null);
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const celularRef = useRef<HTMLInputElement | null>(null);
+  const refs = { nome: nomeRef, email: emailRef, celular: celularRef };
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [heroVis, setHeroVis] = useState(true);
   const [footVis, setFootVis] = useState(false);
@@ -107,34 +127,46 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
       setErro(null);
       return true;
     }
-    setErro({ onde, msg: MENSAGEM_ERRO[r.erro] });
+    const campo = CAMPO_DO_ERRO[r.erro];
+    // Erro de campo sempre aparece no topo, sob o campo; os demais onde a ação partiu.
+    setErro({ onde: campo ? "topo" : onde, msg: MENSAGEM_ERRO[r.erro], campo });
+    if (campo) focar(campo);
     return false;
   };
 
-  const focarNome = () => {
+  /** Leva ao topo do convite e foca o campo (barra, sheet, bloco final, "Mudei de ideia"). */
+  const focar = (campo: CampoContato) => {
     setForcarConvite(true);
     setSheet(false);
     scrollTopo();
-    setTimeout(() => nomeRef.current?.focus({ preventScroll: true }), reduzido() ? 0 : 400);
+    setTimeout(() => refs[campo].current?.focus({ preventScroll: true }), reduzido() ? 0 : 400);
+  };
+
+  const setValor = (campo: CampoContato, v: string) => {
+    setValores((atual) => ({ ...atual, [campo]: v }));
+    if (erro?.onde === "topo") setErro(null);
   };
 
   const confirmar = useCallback(async (onde: Onde) => {
     if (loading) return;
-    if (precisaNome && !nomeCota.trim()) return focarNome();
+    // Sem o que é obrigatório, nada de confirmar direto: leva ao campo que falta (32.6 AC 7).
+    if (precisaNome && !valores.nome.trim()) return focar("nome");
+    if (!valores.email.trim()) return focar("email");
     setLoading(onde);
     setSheet(false);
     let r: ResultadoAcao;
     try {
-      r = await confirmarPresenca(view.codigo, precisaNome ? nomeCota : undefined);
+      r = await confirmarPresenca(view.codigo, {
+        nome: precisaNome ? valores.nome : undefined,
+        email: valores.email,
+        celular: valores.celular,
+      });
     } catch {
       r = { ok: false, erro: "FALHA_TEMPORARIA" };
     }
     setLoading(null);
     // Quem falhou dentro do sheet (que já fechou) vê o erro no topo.
-    if (!aplicar(r, onde === "sheet" ? "topo" : onde)) {
-      if (precisaNome) nomeRef.current?.focus();
-      return;
-    }
+    if (!aplicar(r, onde === "sheet" ? "topo" : onde)) return;
     setForcarConvite(false);
     scrollTopo();
     // Celebração só com sucesso real (32.4 AC 7).
@@ -142,7 +174,7 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
     setCelebrando(!r0);
     setRecemConfirmado(true);
     setTimeout(() => setCelebrando(false), r0 ? 300 : 1600);
-  }, [loading, precisaNome, nomeCota, view.codigo]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loading, precisaNome, valores, view.codigo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const recusar = async () => {
     if (loading) return;
@@ -161,7 +193,8 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
     }
   };
 
-  const mudeiDeIdeia = (onde: Onde) => (precisaNome ? focarNome() : confirmar(onde));
+  // Com o contato gravado, reconfirma direto; sem ele, o confirmar leva aos campos.
+  const mudeiDeIdeia = (onde: Onde) => confirmar(onde);
 
   const incluirAcomp = async () => {
     const nome = acompDraft.trim();
@@ -240,9 +273,9 @@ function ConviteAbertoPagina({ inicial }: { inicial: ConviteAberto }) {
 
       {estado === "convite" && (
         <TopoConvite
-          view={view} textos={textos} loading={loading === "topo"} heroRef={heroRef} nomeRef={nomeRef}
-          nomeCota={nomeCota} setNomeCota={(v) => { setNomeCota(v); if (erro?.onde === "topo") setErro(null); }}
-          erro={erroEm("topo")} onConfirmar={() => confirmar("topo")} onNaoPoderei={() => setSheet(true)}
+          view={view} textos={textos} loading={loading === "topo"} heroRef={heroRef} refs={refs}
+          valores={valores} setValor={setValor}
+          erro={erro?.onde === "topo" ? { msg: erro.msg, campo: erro.campo } : null} onConfirmar={() => confirmar("topo")} onNaoPoderei={() => setSheet(true)}
         />
       )}
       {estado === "confirmado" && (

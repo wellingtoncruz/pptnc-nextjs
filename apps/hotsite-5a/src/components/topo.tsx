@@ -23,22 +23,69 @@ function PainelFlyer() {
   );
 }
 
+export type CampoContato = "nome" | "email" | "celular";
+
 export interface TopoConviteProps {
   view: ConviteAberto;
   textos: Textos;
   loading: boolean;
   heroRef: RefObject<HTMLButtonElement | null>;
-  nomeRef: RefObject<HTMLInputElement | null>;
-  nomeCota: string;
-  setNomeCota: (v: string) => void;
-  erro: string | null;
+  refs: Record<CampoContato, RefObject<HTMLInputElement | null>>;
+  valores: Record<CampoContato, string>;
+  setValor: (campo: CampoContato, v: string) => void;
+  /** Erro de um campo (inline, sob ele) ou geral (sob o botão). */
+  erro: { msg: string; campo?: CampoContato } | null;
   onConfirmar: () => void;
   onNaoPoderei: () => void;
 }
 
-/** Tela 1/2: convite aberto. Na cota, sem nome e com o campo "Seu nome" (D19/D21). */
-export function TopoConvite({ view, textos, loading, heroRef, nomeRef, nomeCota, setNomeCota, erro, onConfirmar, onNaoPoderei }: TopoConviteProps) {
+const CAMPOS: Record<CampoContato, { rotulo: string; type: string; autoComplete: string; inputMode?: "tel" | "email"; placeholder: string; maxLength: number }> = {
+  nome: { rotulo: "Seu nome", type: "text", autoComplete: "name", placeholder: "Nome completo", maxLength: 80 },
+  email: { rotulo: "Seu email", type: "email", autoComplete: "email", inputMode: "email", placeholder: "voce@email.com", maxLength: 254 },
+  celular: { rotulo: "Seu celular (opcional)", type: "tel", autoComplete: "tel", inputMode: "tel", placeholder: "(11) 98765-4321", maxLength: 20 },
+};
+
+/** Campo no padrão do "Seu nome" da cota (D26): rótulo mono, campo de 52px, erro inline sob ele. */
+export function CampoTopo({ id, campo, inputRef, valor, onChange, onEnter, erro }: {
+  id: string;
+  campo: CampoContato;
+  inputRef?: RefObject<HTMLInputElement | null>;
+  valor: string;
+  onChange: (v: string) => void;
+  onEnter?: () => void;
+  erro: string | null;
+}) {
+  const c = CAMPOS[campo];
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <label htmlFor={id} style={mono(12, { color: "var(--muted)" })}>{c.rotulo}</label>
+      <input
+        id={id}
+        ref={inputRef}
+        className="field"
+        type={c.type}
+        inputMode={c.inputMode}
+        value={valor}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter" && onEnter) { e.preventDefault(); onEnter(); } }}
+        autoComplete={c.autoComplete}
+        maxLength={c.maxLength}
+        placeholder={c.placeholder}
+        aria-invalid={!!erro}
+        aria-describedby={erro ? `${id}-erro` : undefined}
+        style={{ height: 52, fontFamily: SANS, fontSize: 17, padding: "0 16px" }}
+      />
+      {erro && <div id={`${id}-erro`}><ErroInline>{erro}</ErroInline></div>}
+    </div>
+  );
+}
+
+/** Tela 1/2: convite aberto. Na cota, sem nome e com o campo "Seu nome" (D19/D21); email e celular (D22). */
+export function TopoConvite({ view, textos, loading, heroRef, refs, valores, setValor, erro, onConfirmar, onNaoPoderei }: TopoConviteProps) {
   const pedeNome = view.cota && !view.nome;
+  const erroDe = (c: CampoContato) => (erro?.campo === c ? erro.msg : null);
+  const completo = (!pedeNome || valores.nome.trim() !== "") && valores.email.trim() !== "";
+  const enter = () => { if (completo) onConfirmar(); };
   return (
     <section style={{ position: "relative", padding: "var(--heroPad)" }}>
       <div className="only-narrow" aria-hidden="true">
@@ -56,35 +103,24 @@ export function TopoConvite({ view, textos, loading, heroRef, nomeRef, nomeCota,
             <span>{EVENTO.endereco}</span>
             <span>{EVENTO.bairro} · {EVENTO.uf}</span>
           </div>
-          {pedeNome && (
-            <div style={{ marginTop: 28, maxWidth: "var(--btnMax)", display: "flex", flexDirection: "column", gap: 10 }}>
-              <label htmlFor="seu-nome" style={mono(12, { color: "var(--muted)" })}>Seu nome</label>
-              <input
-                id="seu-nome"
-                ref={nomeRef}
-                className="field"
-                value={nomeCota}
-                onChange={(e) => setNomeCota(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && nomeCota.trim()) onConfirmar(); }}
-                autoComplete="name"
-                maxLength={80}
-                placeholder="Nome completo"
-                aria-invalid={!!erro}
-                style={{ height: 52, fontFamily: SANS, fontSize: 17, padding: "0 16px" }}
-              />
-            </div>
-          )}
+          <div style={{ marginTop: 28, maxWidth: "var(--btnMax)", display: "flex", flexDirection: "column", gap: 16 }}>
+            {pedeNome && (
+              <CampoTopo id="seu-nome" campo="nome" inputRef={refs.nome} valor={valores.nome} onChange={(v) => setValor("nome", v)} onEnter={enter} erro={erroDe("nome")} />
+            )}
+            <CampoTopo id="seu-email" campo="email" inputRef={refs.email} valor={valores.email} onChange={(v) => setValor("email", v)} onEnter={enter} erro={erroDe("email")} />
+            <CampoTopo id="seu-celular" campo="celular" inputRef={refs.celular} valor={valores.celular} onChange={(v) => setValor("celular", v)} onEnter={enter} erro={erroDe("celular")} />
+          </div>
           <button
             ref={heroRef}
             className="btn-primary"
             onClick={onConfirmar}
             aria-busy={loading}
-            disabled={pedeNome && !nomeCota.trim()}
-            style={{ marginTop: pedeNome ? 14 : 28, maxWidth: "var(--btnMax)" }}
+            disabled={!completo}
+            style={{ marginTop: 20, maxWidth: "var(--btnMax)" }}
           >
             {loading ? <Spinner /> : <><span>Confirmar presença</span><span>→</span></>}
           </button>
-          {erro && <ErroInline style={{ marginTop: 12, maxWidth: "var(--btnMax)" }}>{erro}</ErroInline>}
+          {erro && !erro.campo && <ErroInline style={{ marginTop: 12, maxWidth: "var(--btnMax)" }}>{erro.msg}</ErroInline>}
           {/* D15: sem a linha de prazo */}
           <div style={{ marginTop: 12, maxWidth: "var(--btnMax)", display: "flex", justifyContent: "flex-end" }}>
             <button className="link-tertiary" onClick={onNaoPoderei} style={{ marginRight: -4 }}>Não poderei ir</button>

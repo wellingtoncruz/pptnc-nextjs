@@ -1,4 +1,6 @@
 import type { GuestDoc } from "../guests/schema";
+import { formatarCelular } from "../contato";
+import type { EsperaDoc } from "../espera/espera";
 
 /** CSV PT-BR (32.5): UTF-8 com BOM, separador ';', CRLF. Abre direto no Excel e no Sheets. */
 const BOM = "﻿";
@@ -48,8 +50,15 @@ export function totais(docs: GuestDoc[]): Totais {
 
 const COLUNAS = [
   "Nome", "Código", "Status", "Cota", "Acompanhante permitido", "Acompanhante",
-  "Respondido em", "Nº de respostas", "Primeiro episódio",
+  "Email", "Celular", "Respondido em", "Nº de respostas", "Primeiro episódio",
 ];
+
+/** Confirmado sem email (D22) é dado inconsistente: vai também para "Com problema". */
+export function problemasDeContato(docs: GuestDoc[]): Problema[] {
+  return docs
+    .filter((d) => d.status === "confirmado" && !d.email)
+    .map((d) => ({ codigo: d.codigo, motivo: "confirmado sem email" }));
+}
 
 export function gerarCsv(docs: GuestDoc[], problemas: Problema[] = []): string {
   const ordenados = [...docs].sort((a, b) =>
@@ -64,6 +73,8 @@ export function gerarCsv(docs: GuestDoc[], problemas: Problema[] = []): string {
       d.cotaPatrocinador ? d.patrocinador : "",
       d.acompanhantePermitido ? "Sim" : "Não",
       d.status === "confirmado" ? d.acompanhanteNome : "", // D16: guardado no doc, fora da lista
+      d.status === "confirmado" ? d.email : "", // D23: idem para o contato de quem recusou
+      d.status === "confirmado" ? formatarCelular(d.celular) : "",
       dataBrt(d.respondidoEm),
       d.historico.length,
       d.episodios[0]?.titulo ?? "",
@@ -82,6 +93,19 @@ export function gerarCsv(docs: GuestDoc[], problemas: Problema[] = []): string {
         c.filter((d) => d.status === "recusou").length, c.filter((d) => d.status === "pendente").length]);
     }
   }
+  if (problemas.length) {
+    linhas.push([], ["COM PROBLEMA", "Motivo"]);
+    for (const p of problemas) linhas.push([p.codigo, p.motivo]);
+  }
+  return BOM + linhas.map((l) => l.map(celula).join(SEP)).join("\r\n") + "\r\n";
+}
+
+/** Lista de espera (32.7): ordem de chegada, sem deduplicar (D24), total de envios no fim. */
+export function gerarCsvEspera(docs: EsperaDoc[], problemas: Problema[] = []): string {
+  const ordenados = [...docs].sort((a, b) => a.criadoEm.getTime() - b.criadoEm.getTime());
+  const linhas: (string | number | null)[][] = [["Nome", "Empresa", "Email", "Celular", "Enviado em"]];
+  for (const d of ordenados) linhas.push([d.nome, d.empresa, d.email, formatarCelular(d.celular), dataBrt(d.criadoEm)]);
+  linhas.push([], ["Total de envios", docs.length]);
   if (problemas.length) {
     linhas.push([], ["COM PROBLEMA", "Motivo"]);
     for (const p of problemas) linhas.push([p.codigo, p.motivo]);

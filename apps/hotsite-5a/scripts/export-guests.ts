@@ -5,7 +5,7 @@
 import { writeFileSync } from "node:fs";
 import { getFirestoreClient, GUESTS_COLLECTION } from "../src/lib/firestore";
 import { GuestDocSchema, fromFirestore, type GuestDoc } from "../src/lib/guests/schema";
-import { gerarCsv, totais, type Problema } from "../src/lib/export/csv";
+import { gerarCsv, problemasDeContato, totais, type Problema } from "../src/lib/export/csv";
 
 async function main() {
   const i = process.argv.indexOf("--out");
@@ -30,7 +30,7 @@ async function main() {
   const [c, r, p] = await Promise.all([contar("confirmado"), contar("recusou"), contar("pendente")]);
   const confere = c === t.confirmados && r === t.recusas && p === t.pendentes && docs.length + problemas.length === snap.size;
 
-  writeFileSync(out, gerarCsv(docs, problemas));
+  writeFileSync(out, gerarCsv(docs, [...problemas, ...problemasDeContato(docs)]));
   console.log(`${out}: ${docs.length} convidados${problemas.length ? ` + ${problemas.length} com problema` : ""}`);
   console.log(`Confirmados ${t.confirmados} · acompanhantes ${t.acompanhantes} · esperados ${t.esperados} · recusas ${t.recusas} · pendentes ${t.pendentes}`);
   console.log(confere ? "Conferência com count() direto: OK" : `⚠️ DIVERGÊNCIA com count(): confirmado ${c}, recusou ${r}, pendente ${p}`);

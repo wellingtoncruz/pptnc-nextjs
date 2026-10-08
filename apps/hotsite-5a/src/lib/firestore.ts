@@ -27,3 +27,5 @@ export async function getFirestoreClient(): Promise<Firestore> {
 /** O hotsite é do PPTNC (D4): mora no tenant do PPTNC. */
 export const PODCAST_ID = "pptnc";
 export const GUESTS_COLLECTION = `podcasts/${PODCAST_ID}/hotsite5a`;
+/** Lista de espera (D28): collection separada, nunca misturada com os convites. */
+export const ESPERA_COLLECTION = `podcasts/${PODCAST_ID}/hotsite5a-espera`;

@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "load-guests": "tsx scripts/load-guests.ts",
-    "export-guests": "tsx scripts/export-guests.ts"
+    "export-guests": "tsx scripts/export-guests.ts",
+    "export-waitlist": "tsx scripts/export-waitlist.ts"
   },
   "dependencies": {
     "@google-cloud/firestore": "^8.2.0",

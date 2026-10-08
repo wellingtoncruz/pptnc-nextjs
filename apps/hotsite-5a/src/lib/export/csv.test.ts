@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { celula, dataBrt, gerarCsv, totais } from "./csv";
+import { celula, dataBrt, gerarCsv, problemasDeContato, totais } from "./csv";
 import { cota, nominal } from "../guests/test-helpers";
 
 const docs = [
-  nominal({ codigo: "ZECA100", nome: "Zeca Ávila", status: "confirmado", acompanhantePermitido: true, acompanhanteNome: "Bia" }),
-  nominal({ codigo: "ANA100", nome: "Ana Lu", status: "recusou", acompanhanteNome: "Guardado" }),
+  nominal({ codigo: "ZECA100", nome: "Zeca Ávila", status: "confirmado", acompanhantePermitido: true, acompanhanteNome: "Bia", email: "zeca@x.io", celular: "11987654321" }),
+  nominal({ codigo: "ANA100", nome: "Ana Lu", status: "recusou", acompanhanteNome: "Guardado", email: "ana@guardado.io", celular: "21999998888" }),
   nominal({ codigo: "ELIS100", nome: "Élis Souza", status: "pendente" }),
-  cota({ status: "confirmado", nome: "Joana; \"Jo\" Prado" }),
+  cota({ status: "confirmado", nome: "Joana; \"Jo\" Prado", email: "joana@klever.io" }),
   cota({ codigo: "KLEVERVIP555" }),
 ];
 
@@ -16,7 +16,7 @@ describe("gerarCsv (32.5)", () => {
 
   it("começa com BOM e usa ';'", () => {
     expect(csv.charCodeAt(0)).toBe(0xfeff);
-    expect(linhas[0].split(";")).toHaveLength(9);
+    expect(linhas[0].split(";")).toHaveLength(11);
   });
 
   it("uma linha por documento, em ordem alfabética PT-BR, cota sem nome no fim", () => {
@@ -28,6 +28,20 @@ describe("gerarCsv (32.5)", () => {
     const ana = linhas.find((l) => l.startsWith("Ana Lu"))!;
     expect(ana).not.toContain("Guardado");
     expect(linhas.find((l) => l.startsWith("Zeca"))).toContain(";Bia;");
+  });
+
+  it("email e celular só para confirmado (D23), celular formatado", () => {
+    expect(linhas[0]).toContain(";Email;Celular;");
+    expect(linhas.find((l) => l.startsWith("Zeca"))).toContain(";zeca@x.io;(11) 98765-4321;");
+    const ana = linhas.find((l) => l.startsWith("Ana Lu"))!;
+    expect(ana).not.toContain("ana@guardado.io");
+    expect(ana).not.toContain("99999");
+  });
+
+  it("confirmado sem email vira problema", () => {
+    expect(problemasDeContato([...docs, nominal({ codigo: "SEMEMAIL1", status: "confirmado" })])).toEqual([
+      { codigo: "SEMEMAIL1", motivo: "confirmado sem email" },
+    ]);
   });
 
   it("totais batem com a contagem", () => {
