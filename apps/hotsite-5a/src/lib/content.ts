@@ -4,9 +4,12 @@
  * números atuais, programação, apoiadores, foto e nota finais (Wellington).
  */
 export const EVENTO = {
-  dataCurta: "29/10",
-  dia: "29",
-  mes: "10",
+  // Reagendado de 29/10 para 05/11 (Wellington, 2026-10-08).
+  dataCurta: "05/11",
+  dia: "05",
+  mes: "11",
+  /** Dia por extenso nas frases ("Te esperamos no dia 5"). */
+  diaFrase: "5",
   diaSemana: "Quinta-feira",
   diaSemanaCurto: "Qui",
   horario: "19h",
@@ -16,8 +19,8 @@ export const EVENTO = {
   cidade: "São Paulo",
   uf: "SP",
   // .ics: 19h–23h em São Paulo (UTC-3, sem horário de verão)
-  icsInicio: "20261029T220000Z",
-  icsFim: "20261030T020000Z",
+  icsInicio: "20261105T220000Z",
+  icsFim: "20261106T020000Z",
 } as const;
 
 export const NUMEROS = {
@@ -32,7 +35,7 @@ export const NUMEROS = {
 
 export const NOITE = [
   { n: "01", t: "Happy hour", d: "Comida, bebida e tempo de sobra para conversar com quem vive os mesmos desafios que você." },
-  { n: "02", t: "Quinta, 29/10", d: "A partir das 19h, no início da noite, em São Paulo." },
+  { n: "02", t: "Quinta, 05/11", d: "A partir das 19h, no início da noite, em São Paulo." },
   { n: "03", t: "Vila Nova Conceição, SP", d: "Rua Bastos Pereira, 25." },
   { n: "04", t: "Entre pares", d: "Uma sala só com quem fez parte da história do podcast." },
 ];

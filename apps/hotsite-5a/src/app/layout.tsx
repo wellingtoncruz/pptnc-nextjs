@@ -11,16 +11,16 @@ const baseUrl = process.env.HOTSITE_BASE_URL || "https://5anos.pptnaocompila.com
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: "5 anos de PPT Não Compila",
-  description: "Convite pessoal · 29/10 · Quinta-feira · São Paulo",
+  description: "Convite pessoal · 05/11 · Quinta-feira · São Paulo",
   robots: { index: false, follow: false },
   openGraph: {
     title: "5 anos de PPT Não Compila",
-    description: "Convite pessoal · 29/10 · Quinta-feira · São Paulo",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "5 anos de PPT Não Compila · 29/10" }],
+    description: "Convite pessoal · 05/11 · Quinta-feira · São Paulo",
+    images: [{ url: "/og.jpg?v=0511", width: 1200, height: 630, alt: "5 anos de PPT Não Compila · 05/11" }],
     type: "website",
     locale: "pt_BR",
   },
-  twitter: { card: "summary_large_image", images: ["/og.jpg"] },
+  twitter: { card: "summary_large_image", images: ["/og.jpg?v=0511"] },
 };
 
 export const viewport: Viewport = { themeColor: "#0C0C10", width: "device-width", initialScale: 1 };

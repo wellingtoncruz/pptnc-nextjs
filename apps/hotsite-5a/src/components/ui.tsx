@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { EVENTO } from "@/lib/content";
 
 export const MONO = "var(--font-mono), monospace";
 export const SANS = "var(--font-grotesk), sans-serif";
@@ -50,13 +51,13 @@ export function BalaoSvg({ style, fill = "var(--accent)", stroke = 3, brilho = f
   );
 }
 
-/** 29/10 no estilo do flyer. */
+/** Data do evento no estilo do flyer (EVENTO.dia/EVENTO.mes). */
 export function Data({ size, style }: { size: number | string; style?: CSSProperties }) {
   return (
     <div style={{ fontWeight: 500, fontSize: size, lineHeight: 0.86, letterSpacing: "-0.05em", display: "flex", alignItems: "baseline", ...style }}>
-      <span>29</span>
+      <span>{EVENTO.dia}</span>
       <span style={{ fontSize: ".5em", fontWeight: 300, letterSpacing: 0, margin: "0 .12em", transform: "translateY(-.28em)" }}>/</span>
-      <span>10</span>
+      <span>{EVENTO.mes}</span>
     </div>
   );
 }

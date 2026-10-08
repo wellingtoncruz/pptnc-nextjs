@@ -1,4 +1,5 @@
 import type { ConviteAberto } from "./convite";
+import { EVENTO } from "./content";
 
 /**
  * Textos que mudam entre convidado nominal e cota de patrocinador.
@@ -29,12 +30,12 @@ export function textosPara(c: Pick<ConviteAberto, "cota" | "patrocinador" | "pri
       rotulo: `Convite ${c.patrocinador ?? ""} · 5 anos`.replace(/\s+/g, " "),
       titulo: "Um convite para você",
       frase: "O PPT Não Compila faz cinco anos. Queremos comemorar com você.",
-      confirmado: "Te esperamos no dia 29. Seu nome já está na lista.",
+      confirmado: `Te esperamos no dia ${EVENTO.diaFrase}. Seu nome já está na lista.`,
       recusouTitulo: "Que pena.",
       sheetTitulo: "Tem certeza?",
       sheetFrase: "Se der para ajustar a agenda, a gente vai gostar muito de te ver lá.",
       finalPergunta: "Te vejo lá?",
-      finalConfirmado: "Até dia 29.",
+      finalConfirmado: `Até dia ${EVENTO.diaFrase}.`,
       nota: "Em cinco anos, o PPT Não Compila virou o que é por causa de quem dividiu com a gente suas histórias. Essa noite é para celebrar, e vai ser um prazer ter você lá.",
     };
   }
@@ -44,12 +45,12 @@ export function textosPara(c: Pick<ConviteAberto, "cota" | "patrocinador" | "pri
     rotulo: "Convite pessoal · 5 anos",
     titulo: null,
     frase: "Você faz parte dos cinco anos do PPT Não Compila. Queremos comemorar com você.",
-    confirmado: `Te esperamos no dia 29, ${n}. Seu nome já está na lista.`,
+    confirmado: `Te esperamos no dia ${EVENTO.diaFrase}, ${n}. Seu nome já está na lista.`,
     recusouTitulo: `Que pena, ${n}.`,
     sheetTitulo: `Tem certeza, ${n}?`,
     sheetFrase: "A noite foi pensada para quem fez parte desses cinco anos. Se der para ajustar a agenda, a gente vai gostar muito de te ver lá.",
     finalPergunta: `Te vejo lá, ${n}?`,
-    finalConfirmado: `Até dia 29, ${n}.`,
+    finalConfirmado: `Até dia ${EVENTO.diaFrase}, ${n}.`,
     nota: `${n}, em cinco anos o PPT Não Compila virou o que é por causa de quem topou dividir com a gente suas histórias e o que aprendeu no caminho. Essa noite é para agradecer pessoalmente. Conto com você lá.`,
   };
 }

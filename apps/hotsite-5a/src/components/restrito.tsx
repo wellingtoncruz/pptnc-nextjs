@@ -6,6 +6,7 @@ import { normalizarCodigo } from "@/lib/guests/codigo";
 import type { ConviteRestrito } from "@/lib/convite";
 import { BalaoSvg, ErroInline, mono, Selo, Spinner } from "./ui";
 import { ListaEspera } from "./lista-espera";
+import { EVENTO } from "@/lib/content";
 
 /** Telas 8 e 9: acesso restrito (campo vazio / código inválido). */
 export function Restrito({ view }: { view: ConviteRestrito }) {
@@ -79,7 +80,7 @@ export function Restrito({ view }: { view: ConviteRestrito }) {
         </form>
         <ListaEspera />
         <div style={{ ...mono(12, { color: "var(--muted)" }), marginTop: 72, paddingTop: 20, borderTop: "1px solid var(--line)" }}>
-          29/10 · Quinta-feira · São Paulo
+          {EVENTO.dataCurta} · {EVENTO.diaSemana} · {EVENTO.cidade}
         </div>
       </div>
     </section>
