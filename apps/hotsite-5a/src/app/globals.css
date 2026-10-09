@@ -182,9 +182,13 @@ input::placeholder { color: #7a7a84; }
 .admin-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .admin-marca[data-on="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
 .admin-copiar[data-ok="true"] { border-color: #4ade80; color: #4ade80; }
+.admin-confirma { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.admin-confirma-txt { font-size: 13px; color: var(--text); }
+.admin-perigo { border-color: var(--error); color: var(--error); }
+.admin-perigo:hover { border-color: var(--error); background: var(--error); color: var(--text); }
 /* Celular: ações numa 3ª linha, para o nome usar a largura toda */
 @media (max-width: 600px) {
   .admin-item { grid-template-columns: minmax(0, 1fr); }
-  .admin-acao { grid-column: 1; grid-row: 3; justify-self: start; margin-top: 6px; }
+  .admin-acao { grid-column: 1; grid-row: 3; justify-self: start; margin-top: 6px; flex-wrap: wrap; }
   .admin-btn { min-height: 44px; }
 }

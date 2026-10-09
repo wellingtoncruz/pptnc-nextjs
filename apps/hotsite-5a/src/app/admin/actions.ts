@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { COOKIE_ADMIN, criarToken, senhaAdmin, senhaConfere, SESSAO_MS, tokenValido } from "@/lib/admin/sessao";
 import { codigoValido, normalizarCodigo } from "@/lib/guests/codigo";
-import { marcarConvidado as regraMarcar } from "@/lib/guests/rules";
+import { marcarConvidado as regraMarcar, permitirAcompanhante as regraPermitir } from "@/lib/guests/rules";
 import { firestoreGuestStore } from "@/lib/guests/store";
 
 export interface EstadoLogin {
@@ -44,7 +44,7 @@ async function sessaoValida(): Promise<boolean> {
   return tokenValido((await cookies()).get(COOKIE_ADMIN)?.value, senha, new Date());
 }
 
-/** Marcação "convidado" (32.10): a única escrita do painel. */
+/** Marcação "convidado" (32.10). */
 export async function marcarConvidado(codigoBruto: string, marcar: boolean): Promise<void> {
   if (!(await sessaoValida())) redirect("/admin");
   const codigo = normalizarCodigo(codigoBruto);
@@ -53,6 +53,19 @@ export async function marcarConvidado(codigoBruto: string, marcar: boolean): Pro
     await firestoreGuestStore.mutate(codigo, (d) => regraMarcar(d, new Date(), marcar === true));
   } catch (e) {
     console.error("[ADMIN] falha ao marcar convidado", codigo, e);
+  }
+  revalidatePath("/admin");
+}
+
+/** Permissão de acompanhante (32.11). */
+export async function permitirAcompanhante(codigoBruto: string, permitir: boolean): Promise<void> {
+  if (!(await sessaoValida())) redirect("/admin");
+  const codigo = normalizarCodigo(codigoBruto);
+  if (!codigoValido(codigo)) return;
+  try {
+    await firestoreGuestStore.mutate(codigo, (d) => regraPermitir(d, new Date(), permitir === true));
+  } catch (e) {
+    console.error("[ADMIN] falha ao mudar acompanhante", codigo, e);
   }
   revalidatePath("/admin");
 }

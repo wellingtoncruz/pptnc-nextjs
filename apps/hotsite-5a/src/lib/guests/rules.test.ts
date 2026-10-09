@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { confirmar, definirAcompanhante, marcarConvidado, recusar, validarNome } from "./rules";
+import { confirmar, definirAcompanhante, marcarConvidado, permitirAcompanhante, recusar, validarNome } from "./rules";
 import { cota, nominal, T0 } from "./test-helpers";
 import type { GuestDoc } from "./schema";
 
@@ -186,6 +186,32 @@ describe("marcação convidado (32.10)", () => {
     const d = nominal({ convidadoEm: T0, empresa: "X" });
     const m = confirmar(d, T1, { empresa: "X", email: "m@x.io" });
     expect(m.ok && m.mudou && "convidadoEm" in m.campos).toBe(false);
+  });
+});
+
+describe("permissão de acompanhante pelo painel (32.11)", () => {
+  it("libera e bloqueia sem nome; idempotente; não toca status, resposta nem histórico", () => {
+    const d = nominal({ status: "confirmado", respondidoEm: T0 });
+    const lib = permitirAcompanhante(d, T1, true);
+    expect(lib.ok && lib.mudou && lib.campos).toEqual({ acompanhantePermitido: true, atualizadoEm: T1 });
+    const liberado = aplica(d, lib);
+    expect(permitirAcompanhante(liberado, T1, true)).toEqual({ ok: true, mudou: false });
+    const bl = permitirAcompanhante(liberado, T1, false);
+    expect(bl.ok && bl.mudou && bl.campos).toEqual({ acompanhantePermitido: false, atualizadoEm: T1 });
+    expect(permitirAcompanhante(d, T1, false)).toEqual({ ok: true, mudou: false });
+  });
+
+  it("bloquear quem já informou o +1 apaga o nome e registra no histórico", () => {
+    const d = nominal({ status: "confirmado", respondidoEm: T0, acompanhantePermitido: true, acompanhanteNome: "Bia" });
+    const m = permitirAcompanhante(d, T1, false);
+    expect(m.ok && m.mudou && m.campos).toMatchObject({ acompanhantePermitido: false, acompanhanteNome: null });
+    expect(m.ok && m.mudou && m.campos.historico?.at(-1)).toEqual({ em: T1, status: "confirmado", acompanhanteNome: null });
+    expect(m.ok && m.mudou && "respondidoEm" in m.campos).toBe(false);
+  });
+
+  it("liberado, o convidado confirmado pode informar o +1", () => {
+    const d = aplica(nominal({ status: "confirmado" }), permitirAcompanhante(nominal({ status: "confirmado" }), T0, true));
+    expect(definirAcompanhante(d, T1, "Bia").ok).toBe(true);
   });
 });
 

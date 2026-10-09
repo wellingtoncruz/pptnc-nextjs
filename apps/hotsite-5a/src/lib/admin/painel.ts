@@ -31,6 +31,9 @@ export interface LinhaPainel {
   detalhes: { texto: string; mono?: boolean }[];
   convidado: boolean;
   convidadoEm: string;
+  /** 32.11: permissão de +1 e o nome já informado (para a confirmação de remover). */
+  acompanhanteLiberado: boolean;
+  acompanhanteNome: string | null;
   url: string;
 }
 
@@ -87,6 +90,8 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
       detalhes,
       convidado: d.convidadoEm !== null,
       convidadoEm: curta(d.convidadoEm),
+      acompanhanteLiberado: d.acompanhantePermitido,
+      acompanhanteNome: d.acompanhantePermitido ? d.acompanhanteNome : null,
       url: `${base}/c/${d.codigo}`,
     };
   });

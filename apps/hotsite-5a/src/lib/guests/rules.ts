@@ -126,3 +126,18 @@ export function marcarConvidado(doc: GuestDoc, agora: Date, marcar: boolean): Mu
   if (marcar === (doc.convidadoEm !== null)) return { ok: true, mudou: false };
   return { ok: true, mudou: true, campos: { convidadoEm: marcar ? agora : null, atualizadoEm: agora } };
 }
+
+/**
+ * Permissão de acompanhante pelo painel (32.11): liberar/bloquear, idempotente.
+ * Bloquear quem já informou o +1 apaga o nome e registra no histórico; não toca status nem respondidoEm.
+ */
+export function permitirAcompanhante(doc: GuestDoc, agora: Date, permitir: boolean): Mudanca {
+  if (permitir === doc.acompanhantePermitido) return { ok: true, mudou: false };
+  if (permitir) return { ok: true, mudou: true, campos: { acompanhantePermitido: true, atualizadoEm: agora } };
+  const campos: Partial<GuestDoc> = { acompanhantePermitido: false, atualizadoEm: agora };
+  if (doc.acompanhanteNome) {
+    campos.acompanhanteNome = null;
+    campos.historico = [...doc.historico, { em: agora, status: doc.status, acompanhanteNome: null }];
+  }
+  return { ok: true, mudou: true, campos };
+}

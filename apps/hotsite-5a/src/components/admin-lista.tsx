@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { marcarConvidado } from "@/app/admin/actions";
+import { marcarConvidado, permitirAcompanhante } from "@/app/admin/actions";
 import { filtrarPorNome, type LinhaPainel } from "@/lib/admin/painel";
 import { mono } from "./ui";
 
@@ -42,10 +42,11 @@ const IconeOk = () => (
   </svg>
 );
 
-/** Lista do painel (32.10): duas linhas por convidado, busca por nome no navegador, copiar link e marcar convidado. */
+/** Lista do painel (32.10/32.11): duas linhas por convidado, busca por nome no navegador, copiar link, marcar convidado e liberar +1. */
 export function ListaConvites({ linhas }: { linhas: LinhaPainel[] }) {
   const [busca, setBusca] = useState("");
   const [copiado, setCopiado] = useState<string | null>(null);
+  const [removendo, setRemovendo] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
@@ -90,6 +91,27 @@ export function ListaConvites({ linhas }: { linhas: LinhaPainel[] }) {
                     {l.convidado ? "✓ Convidado" : "Marcar convidado"}
                   </button>
                 </form>
+                {removendo === l.codigo ? (
+                  <span className="admin-confirma" role="group" aria-label={`Remover +1 de ${l.nome}`}>
+                    <span className="admin-confirma-txt">Remover +1 de {l.acompanhanteNome}?</span>
+                    <form action={permitirAcompanhante.bind(null, l.codigo, false)} onSubmit={() => setRemovendo(null)}>
+                      <button type="submit" className="admin-btn admin-perigo">Confirmar</button>
+                    </form>
+                    <button type="button" className="admin-btn" onClick={() => setRemovendo(null)}>Cancelar</button>
+                  </span>
+                ) : l.acompanhanteLiberado && l.acompanhanteNome ? (
+                  <button type="button" className="admin-btn admin-marca" data-on="true" onClick={() => setRemovendo(l.codigo)}
+                    aria-label={`Bloquear acompanhante de ${l.nome}`}>
+                    ✓ +1 liberado
+                  </button>
+                ) : (
+                  <form action={permitirAcompanhante.bind(null, l.codigo, !l.acompanhanteLiberado)}>
+                    <button type="submit" className="admin-btn admin-marca" data-on={l.acompanhanteLiberado}
+                      aria-label={l.acompanhanteLiberado ? `Bloquear acompanhante de ${l.nome}` : `Liberar acompanhante de ${l.nome}`}>
+                      {l.acompanhanteLiberado ? "✓ +1 liberado" : "Liberar +1"}
+                    </button>
+                  </form>
+                )}
               </div>
               <div className="admin-l2">
                 <ul>
