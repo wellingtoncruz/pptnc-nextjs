@@ -67,4 +67,7 @@ export const APOIADORES = [
   { nome: "Elven", img: "/assets/sup_57.png", h: 56, mw: "82%" },
   { nome: "Maralto", img: "/assets/maralto.webp", h: 76, mw: "82%" },
   { nome: "Trends News", img: "/assets/trends_news.webp", h: 64, mw: "100%" },
+  // "echrom" escurecido (#2B4470, cor do próprio T) até a Techrom mandar a versão para fundo claro.
+  { nome: "Techrom", img: "/assets/techrom.png", h: 48, mw: "82%" },
+  { nome: "Suporte 24x7", img: "/assets/suporte24x7.png", h: 56, mw: "82%" },
 ];

@@ -55,7 +55,7 @@
     --numCols: repeat(5, minmax(0, 1fr));
     --impactSpan: auto;
     --nightCols: repeat(4, minmax(0, 1fr));
-    --logoCols: repeat(6, minmax(0, 1fr));
+    --logoCols: repeat(4, minmax(0, 1fr));
     --btnMax: 360px;
     --confGap: 80px;
     --recMax: 640px;
