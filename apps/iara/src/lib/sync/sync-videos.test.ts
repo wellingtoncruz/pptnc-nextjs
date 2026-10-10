@@ -82,6 +82,13 @@ vi.mock('./remove-deleted-videos', () => ({
   removeVideosGoneFromYouTube: vi.fn(),
 }))
 
+// Releitura de data/privacidade (out/2026) — testada em
+// refresh-publication-dates.test.ts; aqui só o acoplamento com o sync.
+vi.mock('./refresh-publication-dates', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./refresh-publication-dates')>()),
+  refreshPublicationDates: vi.fn().mockResolvedValue({ checked: 0, updated: 0 }),
+}))
+
 import { getAllVideosRaw, batchWriteVideos, getExistingVideoIds } from '@/lib/firebase/videos-admin'
 import { removeVideosGoneFromYouTube } from './remove-deleted-videos'
 import { getPodcastAdmin } from '@/lib/firebase/podcasts-admin'
@@ -177,6 +184,7 @@ describe('sync-videos.ts - Video import (create only)', () => {
         skipped: 0,
         liveBroadcastsExcluded: 0,
         newVideos: 0,
+        datesRefresh: { checked: 0, updated: 0 },
       })
       // batchWriteVideos should NOT be called when there are no new videos
       expect(mockBatchWriteVideos).not.toHaveBeenCalled()

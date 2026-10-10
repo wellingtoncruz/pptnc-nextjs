@@ -336,6 +336,9 @@ export const VideoSchema = z.object({
   videoType: VideoTypeSchema.optional(),
   youtubePrivacyStatus: YouTubePrivacyStatusSchema.optional(),
   visibilityUpdatedAt: TimestampSchema.optional().catch(undefined),
+  // Data que ordena as listas (out/2026): agendamento do YouTube, senão a publicação real.
+  // `publishedAt` fica congelado no dia do sync; este campo acompanha o YouTube.
+  effectivePublishedAt: TimestampSchema.optional().catch(undefined),
 
   // Campos gerados por IA
   // Phase 1 returns { critique, highlights, suggestions } but only 'critique' is persisted.
@@ -401,6 +404,7 @@ export const VideoCreateSchema = z.object({
   videoType: VideoTypeSchema,
   youtubePrivacyStatus: YouTubePrivacyStatusSchema,
   visibilityUpdatedAt: TimestampSchema.optional(),
+  effectivePublishedAt: TimestampSchema.optional(),
 
   // Thumbnail stored in Firebase Storage (works for draft/private videos)
   storageThumbnailUrl: z.string().optional(), // Can be URL or data URL (base64)

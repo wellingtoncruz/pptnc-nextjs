@@ -57,6 +57,19 @@ function parsePublishedAt(value: unknown): Date {
 }
 
 /**
+ * Data que ordena as listas de vídeos (out/2026): `effectivePublishedAt`
+ * (agendamento do YouTube, senão a publicação real) quando o sync já gravou;
+ * `publishedAt` nos demais.
+ */
+export function videoSortDate(raw: { effectivePublishedAt?: unknown; publishedAt?: unknown }): Date {
+  if (raw.effectivePublishedAt != null) {
+    const effective = parsePublishedAt(raw.effectivePublishedAt)
+    if (effective.getTime() > 0) return effective
+  }
+  return parsePublishedAt(raw.publishedAt)
+}
+
+/**
  * Options for listing videos.
  */
 export interface GetVideosByPodcastAdminOptions {
@@ -231,7 +244,7 @@ export async function getVideosForDisplayAdmin(
     // vídeos com transcrição, thumbnail base64 e embedding derrubavam o
     // contêiner de 1 GiB quando a lista vinha sem filtro). 1ª leitura: só os
     // campos que filtram e ordenam; os documentos inteiros, só da página.
-    const snapshot = await query.select('publishedAt', 'videoType', 'status').get()
+    const snapshot = await query.select('publishedAt', 'effectivePublishedAt', 'videoType', 'status').get()
 
     if (snapshot.empty) {
       log('INFO', 'No videos found for display (admin)', { podcastId, videoType })
@@ -268,10 +281,10 @@ export async function getVideosForDisplayAdmin(
         }
       }
 
-      candidates.push({ id: docSnap.id, publishedAt: parsePublishedAt(light.publishedAt) })
+      candidates.push({ id: docSnap.id, publishedAt: videoSortDate(light) })
     }
 
-    // Sort by publishedAt descending
+    // Mais recentes primeiro; agendados para o futuro ficam no topo (videoSortDate)
     candidates.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())
 
     // Calculate pagination
@@ -867,7 +880,7 @@ export async function searchEpisodesByTitle(
       .where('videoType', '==', 'episode')
       .select(
         'title', 'description', 'duration', 'status', 'videoType',
-        'guests', 'thumbnails', 'storageThumbnailUrl', 'publishedAt'
+        'guests', 'thumbnails', 'storageThumbnailUrl', 'publishedAt', 'effectivePublishedAt'
       )
       .get()
 
@@ -894,7 +907,7 @@ export async function searchEpisodesByTitle(
         guests: rawData.guests as VideoSummary['guests'],
         thumbnails: rawData.thumbnails as VideoSummary['thumbnails'],
         storageThumbnailUrl: rawData.storageThumbnailUrl as string | undefined,
-        _publishedAt: parsePublishedAt(rawData.publishedAt),
+        _publishedAt: videoSortDate(rawData),
       })
     }
 
@@ -979,7 +992,7 @@ export async function getEpisodesWithContext(
       if (rawData.standalone === true) continue
 
       // Parse publishedAt safely for sorting
-      const publishedAtDate = parsePublishedAt(rawData.publishedAt)
+      const publishedAtDate = videoSortDate(rawData)
 
       episodes.push({
         id: docSnap.id,

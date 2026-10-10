@@ -281,7 +281,7 @@ describe('GET /api/editorial/episodes', () => {
 
       expect(whereMock).toHaveBeenCalledWith('videoType', '==', 'episode')
       expect(selectMock).toHaveBeenCalledWith(
-        'title', 'description', 'status', 'thumbnails', 'storageThumbnailUrl', 'publishedAt'
+        'title', 'description', 'status', 'thumbnails', 'storageThumbnailUrl', 'publishedAt', 'effectivePublishedAt'
       )
     })
   })

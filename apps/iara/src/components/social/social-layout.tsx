@@ -29,7 +29,8 @@ export function SocialLayout({ enabledSocialNetworks = [] }: SocialLayoutProps) 
   // Epic 26: episodes are now included in the social view (no type exclusion).
   // The query is scoped to ready+sent (Epic 26 / TD-11), so only videos with
   // finalized metadata or already published appear here.
-  // Order: preserve the API order (publishedAt desc, recent-first). Sent videos
+  // Order: preserve the API order (effective publication date desc — scheduled
+  // videos first, see videoSortDate). Sent videos
   // are visually highlighted by VideoListPanel, not floated to the top (Story 25.12).
 
   // Fetch social networks catalog once

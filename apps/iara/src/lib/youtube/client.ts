@@ -84,6 +84,8 @@ export interface YouTubeVideoDataFromAPI {
   duration: number // seconds (converted from ISO 8601)
   publishedAt: string // ISO 8601 datetime
   privacyStatus: 'public' | 'unlisted' | 'private'
+  /** Scheduled publish time (ISO 8601). Only present while a private video is scheduled. */
+  publishAt?: string
   /** Live broadcast status: 'live', 'upcoming', or 'none' */
   liveBroadcastContent: 'live' | 'upcoming' | 'none'
   /**
@@ -359,6 +361,7 @@ export class YouTubeClient {
       duration: parseYouTubeDuration(item.contentDetails.duration),
       publishedAt: item.snippet.publishedAt,
       privacyStatus: item.status?.privacyStatus ?? 'public',
+      ...(item.status?.publishAt && { publishAt: item.status.publishAt }),
       liveBroadcastContent: (item.snippet.liveBroadcastContent as 'live' | 'upcoming' | 'none') ?? 'none',
       // A video is a finished live broadcast if it has actualEndTime in liveStreamingDetails
       wasLiveBroadcast: Boolean(item.liveStreamingDetails?.actualEndTime),

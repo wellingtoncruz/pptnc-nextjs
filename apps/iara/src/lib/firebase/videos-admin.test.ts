@@ -756,12 +756,30 @@ describe('videos-admin.ts - Admin SDK operations', () => {
 
       const result = await getVideosForDisplayAdmin('pptnc', { page: 1, limit: 2 })
 
-      expect(mockSelect).toHaveBeenCalledWith('publishedAt', 'videoType', 'status')
+      expect(mockSelect).toHaveBeenCalledWith('publishedAt', 'effectivePublishedAt', 'videoType', 'status')
       expect(mockGetAll.mock.calls[0].map((r: { id: string }) => r.id)).toEqual(['v4', 'v5'])
       expect(result.data.map((v) => v.id)).toEqual(['v4', 'v5'])
       expect(result.data[0].title).toBe('Título v4')
       expect(result.data[0].transcriptionTXT).toBe('longa')
       expect(result.pagination).toEqual({ page: 1, limit: 2, totalCount: 5, totalPages: 3 })
+    })
+
+    // out/2026: agendado para o futuro sobe; publicado depois do upload vai para a data real.
+    it('ordena pela data efetiva (agendamento/publicação real) quando existe; publishedAt nos demais', async () => {
+      mockGet.mockResolvedValueOnce({
+        empty: false,
+        docs: [
+          light('publicado', '2026-10-09'),
+          light('agendado', '2026-10-04', { effectivePublishedAt: at('2026-10-13') }),
+          light('antigo', '2026-10-07'),
+          light('publicado-depois', '2026-09-20', { effectivePublishedAt: at('2026-10-08') }),
+        ],
+      })
+      mockGetAll.mockImplementation(async (...refs: Array<{ id: string }>) => refs.map((r) => full(r.id)))
+
+      const result = await getVideosForDisplayAdmin('pptnc', {})
+
+      expect(result.data.map((v) => v.id)).toEqual(['agendado', 'publicado', 'publicado-depois', 'antigo'])
     })
 
     it('página além do fim: não lê nenhum documento inteiro', async () => {
