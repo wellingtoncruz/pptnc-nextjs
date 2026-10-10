@@ -21,6 +21,7 @@ import { log } from '@/lib/logger'
 import { classifyVideoType } from '@/lib/video-utils'
 import { YouTubeClient, type YouTubeVideoDataFromAPI } from '@/lib/youtube'
 import { isLiveInProgress, youtubeToVideoCreate } from '@/lib/sync/sync-videos'
+import { effectivePublishedAt } from '@/lib/sync/refresh-publication-dates'
 import { embedVideos } from '@/lib/embedding/video-embedding'
 
 /**
@@ -168,6 +169,19 @@ function hasMetadataChanged(
 }
 
 /**
+ * A data efetiva (agendamento, senão publicação real) fica fora de
+ * `hasMetadataChanged` de propósito: lá, qualquer diferença regrava também o
+ * `publishedAt`, que o site público lê. Aqui só o campo de ordenação muda.
+ */
+function hasEffectiveDateChanged(
+  firestoreVideo: Record<string, unknown>,
+  youtubeVideo: YouTubeVideoDataFromAPI
+): boolean {
+  const stored = firestoreVideo.effectivePublishedAt as { toMillis?: () => number } | undefined
+  return stored?.toMillis?.() !== effectivePublishedAt(youtubeVideo).getTime()
+}
+
+/**
  * Best-effort embedding generation for a list of videos.
  * Logs success/failure but never throws (best-effort pattern).
  */
@@ -304,6 +318,7 @@ export async function fullSyncVideos(
             duration: ytVideo.duration,
             publishedAt: Timestamp.fromDate(new Date(ytVideo.publishedAt)),
             youtubePrivacyStatus: ytVideo.privacyStatus,
+            effectivePublishedAt: Timestamp.fromDate(effectivePublishedAt(ytVideo)),
             updatedAt: FieldValue.serverTimestamp(),
           })
           // Track updated videos with title/description changes for re-embedding (Story 17.5)
@@ -311,6 +326,11 @@ export async function fullSyncVideos(
             updatedVideosList.push({ videoId: ytVideo.id, title: ytVideo.title, description: ytVideo.description })
           }
           updated++
+        } else if (hasEffectiveDateChanged(existingVideo, ytVideo)) {
+          batch.update(docRef, {
+            effectivePublishedAt: Timestamp.fromDate(effectivePublishedAt(ytVideo)),
+          })
+          unchanged++
         } else {
           unchanged++
         }

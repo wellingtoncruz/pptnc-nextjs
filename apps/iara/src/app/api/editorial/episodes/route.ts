@@ -20,6 +20,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { PODCAST_ID } from '@/lib/firebase/config'
 import { getAdminDb } from '@/lib/firebase/admin'
+import { videoSortDate } from '@/lib/firebase/videos-admin'
 import { log } from '@/lib/logger'
 
 export const runtime = 'nodejs'
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const snapshot = await videosRef
       .where('videoType', '==', 'episode')
-      .select('title', 'description', 'status', 'thumbnails', 'storageThumbnailUrl', 'publishedAt')
+      .select('title', 'description', 'status', 'thumbnails', 'storageThumbnailUrl', 'publishedAt', 'effectivePublishedAt')
       .get()
 
     if (snapshot.empty) {
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         status: data.status ?? 'new',
         thumbnailUrl,
         publishedAt: publishedAt.getTime() > 0 ? publishedAt.toISOString() : undefined,
-        _sortDate: publishedAt,
+        _sortDate: videoSortDate(data),
       })
     }
 

@@ -307,6 +307,7 @@ describe('full-sync-videos.ts', () => {
         thumbnails: { high: { url: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg' } },
         duration: 3600,
         youtubePrivacyStatus: 'public',
+        effectivePublishedAt: { toMillis: () => new Date('2024-01-15T00:00:00Z').getTime() },
       }
 
       mockListPlaylistItems.mockResolvedValue({ videoIds: ['existing-video'], nextPageToken: undefined })
@@ -320,6 +321,41 @@ describe('full-sync-videos.ts', () => {
       expect(result.added).toBe(0)
       expect(mockBatchSet).not.toHaveBeenCalled()
       expect(mockBatchUpdate).not.toHaveBeenCalled()
+    })
+
+    // out/2026: a data de ordenação não pode arrastar o publishedAt, que o site público lê.
+    it('grava só effectivePublishedAt quando o resto não mudou', async () => {
+      const ytVideo = {
+        id: 'existing-video',
+        title: 'Same Title',
+        description: 'Same Desc',
+        thumbnails: { high: { url: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg', width: 480, height: 360 } },
+        duration: 3600,
+        publishedAt: '2024-01-15T00:00:00Z',
+        privacyStatus: 'private' as const,
+        publishAt: '2024-02-01T10:00:00Z',
+        liveBroadcastContent: 'none' as const,
+      }
+      const firestoreVideo = {
+        id: 'existing-video',
+        title: 'Same Title',
+        description: 'Same Desc',
+        thumbnails: { high: { url: 'https://i.ytimg.com/vi/existing-video/hqdefault.jpg' } },
+        duration: 3600,
+        youtubePrivacyStatus: 'private',
+      }
+
+      mockListPlaylistItems.mockResolvedValue({ videoIds: ['existing-video'], nextPageToken: undefined })
+      mockGetVideoDetailsBatch.mockResolvedValue([ytVideo])
+      mockGetAllVideosRaw.mockResolvedValue([firestoreVideo])
+
+      const result = await fullSyncVideos('pptnc', 'access-token', 'user-123')
+
+      expect(result.updated).toBe(0)
+      expect(mockBatchUpdate).toHaveBeenCalledTimes(1)
+      const fields = mockBatchUpdate.mock.calls[0][1]
+      expect(Object.keys(fields)).toEqual(['effectivePublishedAt'])
+      expect(fields.effectivePublishedAt.toDate()).toEqual(new Date('2024-02-01T10:00:00Z'))
     })
   })
 

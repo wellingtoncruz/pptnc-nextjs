@@ -31,6 +31,7 @@ import { classifyVideoType, getBestThumbnailUrl } from '@/lib/video-utils'
 import { YouTubeClient, type YouTubeVideoDataFromAPI } from '@/lib/youtube'
 import { embedVideos } from '@/lib/embedding/video-embedding'
 import { removeVideosGoneFromYouTube, type RemovalResult } from './remove-deleted-videos'
+import { effectivePublishedAt, refreshPublicationDates, type DatesRefreshResult } from './refresh-publication-dates'
 import type { VideoCreate } from '@/types/video'
 
 /** Maximum concurrent thumbnail uploads to avoid overwhelming Firebase Storage */
@@ -102,6 +103,8 @@ export interface SyncResult {
    * `features.syncRemovesDeletedVideos` ligada.
    */
   removal?: RemovalResult
+  /** Releitura de data/privacidade dos vídeos ainda não públicos (out/2026). */
+  datesRefresh?: DatesRefreshResult
 }
 
 /**
@@ -305,6 +308,7 @@ export function youtubeToVideoCreate(
     videoType,
     youtubePrivacyStatus: youtubeVideo.privacyStatus,
     visibilityUpdatedAt: Timestamp.now(),
+    effectivePublishedAt: Timestamp.fromDate(effectivePublishedAt(youtubeVideo)),
     // Thumbnail stored in Firebase Storage (works for draft/private videos)
     ...(storageThumbnailUrl && { storageThumbnailUrl }),
     // Embedding flag (Epic 17) — starts as false, set to true after embedding generation
@@ -331,6 +335,11 @@ export function youtubeToVideoCreate(
  * way back to draft is the explicit user-triggered reopen flow
  * (POST /api/videos/[videoId]/reopen). Videos are NEVER deleted. Live
  * broadcasts are never imported.
+ *
+ * Single exception (out/2026): videos still stored as non-public get their
+ * `effectivePublishedAt` and `youtubePrivacyStatus` refreshed, so scheduled
+ * videos sort by their schedule — see refresh-publication-dates.ts. The IAra
+ * `status` is never touched.
  *
  * @param podcastId - The podcast document ID
  * @param accessToken - YouTube OAuth access token
@@ -511,6 +520,9 @@ export async function syncVideos(
       })
     : undefined
 
+  // 10. Data efetiva (agendamento/publicação) dos vídeos ainda não públicos.
+  const datesRefresh = await refreshPublicationDates({ podcastId, youtube: client })
+
   const result: SyncResult = {
     added: addedAsNew,
     addedAsSent,
@@ -520,6 +532,7 @@ export async function syncVideos(
     // Summary fields for UI
     newVideos: toCreate.length,
     ...(removal && { removal }),
+    datesRefresh,
   }
 
   log('INFO', 'Video import completed', { podcastId, ...result })
