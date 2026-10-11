@@ -32,16 +32,6 @@ export interface ModelOption {
  */
 export const AVAILABLE_TEXT_MODELS: ModelOption[] = [
   {
-    id: 'gemini-2.0-flash',
-    label: 'Gemini 2.0 Flash',
-    description: 'Econômico, boa qualidade geral. $0,15/$0,60 por 1M tokens.',
-  },
-  {
-    id: 'gemini-2.0-flash-lite',
-    label: 'Gemini 2.0 Flash Lite',
-    description: 'Ultra-econômico, tarefas simples. $0,075/$0,30 por 1M tokens.',
-  },
-  {
     id: 'gemini-2.5-flash',
     label: 'Gemini 2.5 Flash',
     description: 'Padrão atual — melhor custo-benefício. $0,30/$2,50 por 1M tokens.',
@@ -72,14 +62,29 @@ export const AVAILABLE_TEXT_MODELS: ModelOption[] = [
     description: 'GA — mais econômico da família 3.x. $0,25/$1,50 por 1M tokens.',
   },
   {
+    id: 'gemini-3.5-flash-lite',
+    label: 'Gemini 3.5 Flash Lite',
+    description: 'GA — o mais rápido e econômico da família 3.5. $0,30/$2,50 por 1M tokens.',
+  },
+  {
     id: 'gemini-3.5-flash',
     label: 'Gemini 3.5 Flash',
-    description: 'GA — geração Flash mais capaz. $1,50/$9 por 1M tokens.',
+    description: 'GA — $1,50/$9 por 1M tokens. Os Flash mais novos custam menos.',
   },
   {
     id: 'gemini-3.6-flash',
     label: 'Gemini 3.6 Flash',
-    description: 'GA — sucessor do 3.5 Flash, output mais barato. $1,50/$7,50 por 1M tokens.',
+    description: 'GA — geração anterior do Flash. $0,75/$3,75 por 1M até 31-dez-2026 (depois $1,50/$7,50).',
+  },
+  {
+    id: 'gemini-3.7-flash',
+    label: 'Gemini 3.7 Flash',
+    description: 'GA — $0,75/$3,75 por 1M até 31-dez-2026 (depois $1,50/$7,50).',
+  },
+  {
+    id: 'gemini-3.8-flash',
+    label: 'Gemini 3.8 Flash',
+    description: 'GA — o Flash mais inteligente. $0,75/$3,75 por 1M até 31-dez-2026 (depois $1,50/$7,50).',
   },
 ]
 
@@ -94,6 +99,10 @@ export const AVAILABLE_TEXT_MODELS: ModelOption[] = [
  */
 export const LEGACY_TEXT_MODEL_ALIASES: Record<string, string> = {
   'gemini-3.1-flash-lite-preview': 'gemini-3.1-flash-lite',
+  // Família 2.0 retirada do Vertex: 404 em 2026-10-11. O 2.5 Flash Lite é o
+  // econômico equivalente ainda no ar.
+  'gemini-2.0-flash': 'gemini-2.5-flash-lite',
+  'gemini-2.0-flash-lite': 'gemini-2.5-flash-lite',
 }
 
 /** Resolve um ID de modelo de texto legado para o sucessor GA. Passthrough se não houver alias. */
@@ -130,6 +139,16 @@ export const AVAILABLE_IMAGE_MODELS: ModelOption[] = [
     label: 'Gemini 3 Pro Image',
     description: 'GA — Nano Banana com reasoning. Melhor para gerações multi-turn e edições complexas. Custo maior.',
   },
+  {
+    id: 'gemini-3.1-flash-lite-image',
+    label: 'Gemini 3.1 Flash Lite Image (Nano Banana 2 Lite)',
+    description: 'GA — o mais rápido e barato (~$0,034 por imagem), só 1K. Não é otimizado para várias imagens de referência.',
+  },
+  {
+    id: 'gemini-nano-banana-2.1',
+    label: 'Nano Banana 2.1',
+    description: 'GA — recomendado pelo Google para projetos novos: melhor qualidade visual e tipografia que o Nano Banana 2, a custo de Flash (~$0,034 por imagem 1K).',
+  },
 ]
 
 /**
@@ -156,7 +175,8 @@ export function resolveImageModelId<T extends string | undefined>(modelId: T): T
 
 /**
  * Available Claude models (Anthropic API direta) — Epic 23 / Story 23.4,
- * revisado em 2026-07-27 contra a doc oficial de modelos da Anthropic.
+ * revisado em 2026-07-27 e em **2026-10-11** (geração 5.5 adicionada; padrão
+ * passou do Sonnet 4.6 para o Sonnet 5.5 por decisão do Wellington).
  *
  * **Correção de preço:** o `claude-opus-4-7` estava catalogado a $15/$75, que é
  * o preço do Opus **4.1** (hoje depreciado). O Opus 4.7 real custa $5/$25 — a
@@ -167,19 +187,34 @@ export function resolveImageModelId<T extends string | undefined>(modelId: T): T
  */
 export const AVAILABLE_CLAUDE_MODELS: ModelOption[] = [
   {
-    id: 'claude-sonnet-4-6',
-    label: 'Claude Sonnet 4.6',
-    description: 'Padrão atual — frontier intelligence a $3/$15 por 1M tokens. 1M context.',
+    id: 'claude-sonnet-5-5',
+    label: 'Claude Sonnet 5.5',
+    description: 'Padrão atual — melhor combinação de velocidade e inteligência. $2/$10 por 1M tokens.',
   },
   {
     id: 'claude-sonnet-5',
     label: 'Claude Sonnet 5',
-    description: 'Qualidade quase-Opus no preço do Sonnet. $3/$15 por 1M (promo $2/$10 até 31-ago-2026).',
+    description: 'Geração anterior do Sonnet, mesmo preço do 5.5. $2/$10 por 1M tokens.',
+  },
+  {
+    id: 'claude-sonnet-4-6',
+    label: 'Claude Sonnet 4.6',
+    description: 'Sonnet legado — mais caro que os sucessores. $3/$15 por 1M tokens.',
+  },
+  {
+    id: 'claude-opus-5-5',
+    label: 'Claude Opus 5.5',
+    description: 'Trabalho longo e complexo, mais barato que o Opus 5. $4/$20 por 1M tokens.',
+  },
+  {
+    id: 'claude-fable-5-1',
+    label: 'Claude Fable 5.1',
+    description: 'Topo de linha para raciocínio exigente; mais lento. $10/$50 por 1M tokens.',
   },
   {
     id: 'claude-opus-5',
     label: 'Claude Opus 5',
-    description: 'Reasoning complexo e trabalho agêntico. $5/$25 por 1M tokens.',
+    description: 'Geração anterior do Opus. $5/$25 por 1M tokens.',
   },
   {
     id: 'claude-opus-4-8',
@@ -192,9 +227,14 @@ export const AVAILABLE_CLAUDE_MODELS: ModelOption[] = [
     description: 'Opus legado, mantido para comparação. $5/$25 por 1M tokens.',
   },
   {
+    id: 'claude-haiku-5-5',
+    label: 'Claude Haiku 5.5',
+    description: 'O mais rápido e barato — $0,10/$0,50 por 1M tokens (prompts acima de 100 mil tokens: $0,50/$2,50).',
+  },
+  {
     id: 'claude-haiku-4-5-20251001',
     label: 'Claude Haiku 4.5',
-    description: 'Econômico e rápido — $1/$5 por 1M tokens. Bom pra volumes altos.',
+    description: 'Haiku legado — $1/$5 por 1M tokens. Aposentadoria prevista a partir de 15-out-2026.',
   },
 ]
 
@@ -219,6 +259,12 @@ export const MODELS_WITHOUT_TEMPERATURE_SUPPORT: ReadonlySet<string> = new Set([
   'claude-opus-4-8',
   'claude-opus-5',
   'claude-sonnet-5',
+  // Geração 5.5: HTTP 400 "`temperature` is deprecated for this model",
+  // conferido com chamada real em 2026-10-11.
+  'claude-opus-5-5',
+  'claude-sonnet-5-5',
+  'claude-haiku-5-5',
+  'claude-fable-5-1',
 ])
 
 /** `true` quando o modelo aceita o parâmetro `temperature` na request. */
@@ -238,7 +284,7 @@ export function getTextModelsForProvider(provider: LLMProviderId): ModelOption[]
  * Default text model por provider quando produtor não tem `textModel` salvo.
  */
 export function getDefaultTextModelForProvider(provider: LLMProviderId): string {
-  return provider === 'claude' ? 'claude-sonnet-4-6' : DEFAULT_TEXT_MODEL
+  return provider === 'claude' ? 'claude-sonnet-5-5' : DEFAULT_TEXT_MODEL
 }
 
 /** Text model IDs array (Gemini) for legacy Zod enum validation. */
@@ -256,13 +302,15 @@ export const IMAGE_MODEL_IDS = AVAILABLE_IMAGE_MODELS.map(m => m.id)
 /** Default text model when no override is configured. */
 export const DEFAULT_TEXT_MODEL = 'gemini-2.5-flash'
 
-/** Default image model (Newsletter) when no override is configured. */
-export const DEFAULT_IMAGE_MODEL = 'gemini-2.5-flash-image'
-
 /**
- * Default image model for Thumbnail wizard phase (Epic 22).
- * Separado do DEFAULT_IMAGE_MODEL porque o Thumbnail depende de reference
- * images com qualidade que o 2.5 não entrega. GA desde 2026-07 — antes disso
- * apontava para `gemini-3.1-flash-image-preview`, que passou a dar 404.
+ * Modelo de imagem quando o podcast não escolheu um. Vale para TODA geração de
+ * imagem (newsletter, notícias, thumbnail, imagens extras): o `image-client`
+ * cai aqui sempre que não recebe override.
+ *
+ * Nano Banana 2.1 desde 2026-10-11 (decisão do Wellington). Antes era o
+ * `gemini-2.5-flash-image`, que o Google já dá como legado.
+ *
+ * Havia um `DEFAULT_THUMBNAIL_IMAGE_MODEL` separado (Epic 22) que nenhum código
+ * lia: thumbnail sem modelo escolhido sempre caiu neste padrão. Removido.
  */
-export const DEFAULT_THUMBNAIL_IMAGE_MODEL = 'gemini-3.1-flash-image'
+export const DEFAULT_IMAGE_MODEL = 'gemini-nano-banana-2.1'

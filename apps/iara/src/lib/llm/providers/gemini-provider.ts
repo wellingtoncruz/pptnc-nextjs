@@ -23,6 +23,7 @@ import { log } from '@/lib/logger'
 
 import { LLMError, createLLMError } from '../errors'
 import { DEFAULT_TEXT_MODEL } from '../models'
+import { calculateCallCostUsd } from '../pricing'
 
 import type {
   GenerateTextOptions,
@@ -33,27 +34,6 @@ import type {
   ProviderAttachment,
   StreamTextOptions,
 } from './types'
-
-/**
- * Pricing por modelo (USD por 1M tokens). Usado pra `estimatedCostUsd` em
- * cada chamada. Numbers conforme [Vertex AI pricing 2026-05].
- */
-const PRICING_USD_PER_M: Record<string, { input: number; output: number }> = {
-  'gemini-2.0-flash': { input: 0.075, output: 0.3 },
-  'gemini-2.0-flash-lite': { input: 0.05, output: 0.2 },
-  'gemini-2.5-flash': { input: 0.075, output: 0.3 },
-  'gemini-2.5-flash-lite': { input: 0.05, output: 0.2 },
-  'gemini-2.5-pro': { input: 1.25, output: 5 },
-  'gemini-3.1-pro-preview': { input: 2, output: 10 }, // estimativa preview
-  'gemini-3-flash-preview': { input: 0.1, output: 0.4 }, // estimativa preview
-  'gemini-3.1-flash-lite-preview': { input: 0.05, output: 0.2 }, // estimativa preview
-}
-
-function calculateCost(model: string, usage: GenerateTextUsage): number {
-  const tier = PRICING_USD_PER_M[model]
-  if (!tier) return 0
-  return (usage.promptTokens / 1_000_000) * tier.input + (usage.completionTokens / 1_000_000) * tier.output
-}
 
 let providerInstance: GeminiProvider | undefined
 
@@ -148,7 +128,7 @@ export class GeminiProvider implements LLMProvider {
       return {
         text: fullText,
         usage,
-        estimatedCostUsd: calculateCost(model, usage),
+        estimatedCostUsd: calculateCallCostUsd(model, usage),
         latencyMs,
         modelUsed: model,
       }
@@ -194,7 +174,7 @@ export class GeminiProvider implements LLMProvider {
       yield {
         type: 'done',
         usage,
-        estimatedCostUsd: calculateCost(model, usage),
+        estimatedCostUsd: calculateCallCostUsd(model, usage),
         modelUsed: model,
       }
     } catch (error) {

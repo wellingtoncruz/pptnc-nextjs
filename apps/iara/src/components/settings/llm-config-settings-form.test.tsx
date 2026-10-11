@@ -11,7 +11,7 @@ vi.mock('./cost-estimate-badge', () => ({
 }))
 
 import { LlmConfigSettingsForm } from './llm-config-settings-form'
-import { AVAILABLE_TEXT_MODELS, AVAILABLE_CLAUDE_MODELS } from '@/lib/llm/models'
+import { AVAILABLE_IMAGE_MODELS, AVAILABLE_TEXT_MODELS, AVAILABLE_CLAUDE_MODELS } from '@/lib/llm/models'
 
 const mockFetch = vi.fn()
 
@@ -64,9 +64,8 @@ describe('LlmConfigSettingsForm', () => {
   it('lists all available image models plus system default', () => {
     render(<LlmConfigSettingsForm />)
     const imageSelect = screen.getByLabelText('Modelo de Imagem (Newsletter)')
-    // 3 modelos GA (2.5-flash-image, 3.1-flash-image, 3-pro-image — a família 3.x
-    // saiu de preview em 2026-07) + 1 "Padrão do sistema" option
-    expect(imageSelect.querySelectorAll('option')).toHaveLength(4)
+    // Todos os modelos do catálogo + 1 "Padrão do sistema" option
+    expect(imageSelect.querySelectorAll('option')).toHaveLength(AVAILABLE_IMAGE_MODELS.length + 1)
   })
 
   it('displays model label and description in option text', () => {

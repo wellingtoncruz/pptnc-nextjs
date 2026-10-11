@@ -7,8 +7,8 @@ import {
   IMAGE_MODEL_IDS,
   DEFAULT_TEXT_MODEL,
   DEFAULT_IMAGE_MODEL,
-  DEFAULT_THUMBNAIL_IMAGE_MODEL,
   LEGACY_IMAGE_MODEL_ALIASES,
+  getDefaultTextModelForProvider,
   resolveImageModelId,
   AVAILABLE_CLAUDE_MODELS,
   ALL_TEXT_MODEL_IDS,
@@ -33,8 +33,6 @@ describe('LLM Models constants', () => {
   it('includes expected text model IDs', () => {
     const ids = AVAILABLE_TEXT_MODELS.map(m => m.id)
     // GA models (used in production)
-    expect(ids).toContain('gemini-2.0-flash')
-    expect(ids).toContain('gemini-2.0-flash-lite')
     expect(ids).toContain('gemini-2.5-flash')
     expect(ids).toContain('gemini-2.5-flash-lite')
     expect(ids).toContain('gemini-2.5-pro')
@@ -43,6 +41,10 @@ describe('LLM Models constants', () => {
     expect(ids).toContain('gemini-3-flash-preview')
     // GA da família 3.x (2026-07-27)
     expect(ids).toContain('gemini-3.1-flash-lite')
+    // Catálogo de 2026-10-11
+    expect(ids).toContain('gemini-3.5-flash-lite')
+    expect(ids).toContain('gemini-3.7-flash')
+    expect(ids).toContain('gemini-3.8-flash')
     expect(ids).toContain('gemini-3.5-flash')
     expect(ids).toContain('gemini-3.6-flash')
   })
@@ -88,6 +90,8 @@ describe('LLM Models constants', () => {
     expect(ids).toContain('gemini-2.5-flash-image')
     expect(ids).toContain('gemini-3.1-flash-image')
     expect(ids).toContain('gemini-3-pro-image')
+    expect(ids).toContain('gemini-3.1-flash-lite-image')
+    expect(ids).toContain('gemini-nano-banana-2.1')
   })
 
   it('no longer offers the retired `-preview` image models', () => {
@@ -121,12 +125,6 @@ describe('LLM Models constants', () => {
     })
   })
 
-  it('DEFAULT_THUMBNAIL_IMAGE_MODEL points at a live model', () => {
-    const ids = AVAILABLE_IMAGE_MODELS.map(m => m.id)
-    expect(ids).toContain(DEFAULT_THUMBNAIL_IMAGE_MODEL)
-    expect(DEFAULT_THUMBNAIL_IMAGE_MODEL).not.toMatch(/-preview$/)
-  })
-
   it('TEXT_MODEL_IDS matches AVAILABLE_TEXT_MODELS ids', () => {
     const expected = AVAILABLE_TEXT_MODELS.map(m => m.id)
     expect(TEXT_MODEL_IDS).toEqual(expected)
@@ -141,8 +139,8 @@ describe('LLM Models constants', () => {
     expect(DEFAULT_TEXT_MODEL).toBe('gemini-2.5-flash')
   })
 
-  it('DEFAULT_IMAGE_MODEL is gemini-2.5-flash-image', () => {
-    expect(DEFAULT_IMAGE_MODEL).toBe('gemini-2.5-flash-image')
+  it('DEFAULT_IMAGE_MODEL is gemini-nano-banana-2.1', () => {
+    expect(DEFAULT_IMAGE_MODEL).toBe('gemini-nano-banana-2.1')
   })
 
   it('defaults are included in their respective model lists', () => {
@@ -181,6 +179,10 @@ describe('Claude catalog', () => {
     const ids = AVAILABLE_CLAUDE_MODELS.map(m => m.id)
     expect(ids).toContain('claude-sonnet-4-6')
     expect(ids).toContain('claude-sonnet-5')
+    expect(ids).toContain('claude-sonnet-5-5')
+    expect(ids).toContain('claude-opus-5-5')
+    expect(ids).toContain('claude-haiku-5-5')
+    expect(ids).toContain('claude-fable-5-1')
     expect(ids).toContain('claude-opus-5')
     expect(ids).toContain('claude-opus-4-8')
     expect(ids).toContain('claude-opus-4-7')
@@ -203,6 +205,11 @@ describe('supportsTemperature', () => {
     expect(supportsTemperature('claude-opus-4-8')).toBe(false)
     expect(supportsTemperature('claude-opus-5')).toBe(false)
     expect(supportsTemperature('claude-sonnet-5')).toBe(false)
+    // Geração 5.5 — conferido com chamada real em 2026-10-11.
+    expect(supportsTemperature('claude-sonnet-5-5')).toBe(false)
+    expect(supportsTemperature('claude-opus-5-5')).toBe(false)
+    expect(supportsTemperature('claude-haiku-5-5')).toBe(false)
+    expect(supportsTemperature('claude-fable-5-1')).toBe(false)
   })
 
   it('returns true for models that still accept temperature', () => {
@@ -214,5 +221,26 @@ describe('supportsTemperature', () => {
 
   it('treats an unset model as temperature-capable (default path)', () => {
     expect(supportsTemperature(undefined)).toBe(true)
+  })
+})
+
+describe('catálogo de 2026-10-11', () => {
+  it('a família Gemini 2.0 saiu do catálogo e resolve para um modelo no ar', () => {
+    const ids = AVAILABLE_TEXT_MODELS.map(m => m.id)
+    for (const dead of ['gemini-2.0-flash', 'gemini-2.0-flash-lite']) {
+      expect(ids).not.toContain(dead)
+      expect(resolveTextModelId(dead)).toBe('gemini-2.5-flash-lite')
+    }
+  })
+
+  it('o padrão do provider Claude é o Sonnet 5.5 e está no catálogo', () => {
+    expect(getDefaultTextModelForProvider('claude')).toBe('claude-sonnet-5-5')
+    expect(AVAILABLE_CLAUDE_MODELS.map(m => m.id)).toContain(getDefaultTextModelForProvider('claude'))
+  })
+
+  it('o Sonnet 5 não anuncia mais o preço de $3/$15', () => {
+    const sonnet5 = AVAILABLE_CLAUDE_MODELS.find(m => m.id === 'claude-sonnet-5')
+    expect(sonnet5!.description).toMatch(/\$2\/\$10/)
+    expect(sonnet5!.description).not.toMatch(/\$3\/\$15/)
   })
 })

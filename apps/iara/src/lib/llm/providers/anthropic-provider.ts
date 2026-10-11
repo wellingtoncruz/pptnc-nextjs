@@ -28,7 +28,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { log } from '@/lib/logger'
 
 import { LLMError, createLLMError } from '../errors'
-import { supportsTemperature } from '../models'
+import { getDefaultTextModelForProvider, supportsTemperature } from '../models'
+import { calculateCallCostUsd } from '../pricing'
 
 import type {
   GenerateTextOptions,
@@ -40,22 +41,7 @@ import type {
   StreamTextOptions,
 } from './types'
 
-/**
- * Pricing por modelo (USD por 1M tokens). Auditado em 2026-07-27 contra a doc
- * oficial da Anthropic. O `claude-opus-4-7` estava a $15/$75 — preço do Opus
- * **4.1** (depreciado), não do 4.7. Manter em sincronia com a tabela gêmea em
- * `cost-estimator.ts`.
- */
-const PRICING_USD_PER_M: Record<string, { input: number; output: number }> = {
-  'claude-opus-5': { input: 5, output: 25 },
-  'claude-opus-4-8': { input: 5, output: 25 },
-  'claude-opus-4-7': { input: 5, output: 25 },
-  'claude-sonnet-5': { input: 3, output: 15 },
-  'claude-sonnet-4-6': { input: 3, output: 15 },
-  'claude-haiku-4-5-20251001': { input: 1, output: 5 },
-}
-
-const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-6'
+const DEFAULT_CLAUDE_MODEL = getDefaultTextModelForProvider('claude')
 
 /**
  * Teto de tokens de saída por request.
@@ -100,12 +86,6 @@ function buildSamplingParams(
     requestedTemperature: temperature,
   })
   return {}
-}
-
-function calculateCost(model: string, usage: GenerateTextUsage): number {
-  const tier = PRICING_USD_PER_M[model]
-  if (!tier) return 0
-  return (usage.promptTokens / 1_000_000) * tier.input + (usage.completionTokens / 1_000_000) * tier.output
 }
 
 let providerInstance: AnthropicProvider | undefined
@@ -193,7 +173,7 @@ export class AnthropicProvider implements LLMProvider {
       return {
         text,
         usage,
-        estimatedCostUsd: calculateCost(model, usage),
+        estimatedCostUsd: calculateCallCostUsd(model, usage),
         latencyMs,
         modelUsed: model,
       }
@@ -231,7 +211,7 @@ export class AnthropicProvider implements LLMProvider {
       yield {
         type: 'done',
         usage,
-        estimatedCostUsd: calculateCost(model, usage),
+        estimatedCostUsd: calculateCallCostUsd(model, usage),
         modelUsed: model,
       }
     } catch (error) {
