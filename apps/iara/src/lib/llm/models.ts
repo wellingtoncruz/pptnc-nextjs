@@ -309,13 +309,8 @@ export const DEFAULT_TEXT_MODEL = 'gemini-2.5-flash'
  *
  * Nano Banana 2.1 desde 2026-10-11 (decisão do Wellington). Antes era o
  * `gemini-2.5-flash-image`, que o Google já dá como legado.
+ *
+ * Havia um `DEFAULT_THUMBNAIL_IMAGE_MODEL` separado (Epic 22) que nenhum código
+ * lia: thumbnail sem modelo escolhido sempre caiu neste padrão. Removido.
  */
 export const DEFAULT_IMAGE_MODEL = 'gemini-nano-banana-2.1'
-
-/**
- * Default image model for Thumbnail wizard phase (Epic 22).
- * Separado do DEFAULT_IMAGE_MODEL porque o Thumbnail depende de reference
- * images com qualidade que o 2.5 não entrega. GA desde 2026-07 — antes disso
- * apontava para `gemini-3.1-flash-image-preview`, que passou a dar 404.
- */
-export const DEFAULT_THUMBNAIL_IMAGE_MODEL = 'gemini-3.1-flash-image'

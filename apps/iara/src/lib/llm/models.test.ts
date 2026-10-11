@@ -7,7 +7,6 @@ import {
   IMAGE_MODEL_IDS,
   DEFAULT_TEXT_MODEL,
   DEFAULT_IMAGE_MODEL,
-  DEFAULT_THUMBNAIL_IMAGE_MODEL,
   LEGACY_IMAGE_MODEL_ALIASES,
   getDefaultTextModelForProvider,
   resolveImageModelId,
@@ -124,12 +123,6 @@ describe('LLM Models constants', () => {
     it('passes undefined through untouched', () => {
       expect(resolveImageModelId(undefined)).toBeUndefined()
     })
-  })
-
-  it('DEFAULT_THUMBNAIL_IMAGE_MODEL points at a live model', () => {
-    const ids = AVAILABLE_IMAGE_MODELS.map(m => m.id)
-    expect(ids).toContain(DEFAULT_THUMBNAIL_IMAGE_MODEL)
-    expect(DEFAULT_THUMBNAIL_IMAGE_MODEL).not.toMatch(/-preview$/)
   })
 
   it('TEXT_MODEL_IDS matches AVAILABLE_TEXT_MODELS ids', () => {
