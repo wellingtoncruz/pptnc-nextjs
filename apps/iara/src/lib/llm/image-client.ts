@@ -154,8 +154,10 @@ export async function callGenAIImage(
     })
 
     // Extract first inline image from response parts
+    // Modelos com thinking (Nano Banana 2.1) mandam antes um RASCUNHO marcado
+    // `thought: true`; a imagem final é a parte sem a marca.
     for (const part of response.candidates?.[0]?.content?.parts ?? []) {
-      if (part.inlineData?.data) {
+      if (part.inlineData?.data && !part.thought) {
         const buffer = Buffer.from(part.inlineData.data, 'base64')
         if (buffer.length === 0) {
           throw new LLMError('INVALID_RESPONSE', 'Imagem retornada vazia pelo Gemini', false)

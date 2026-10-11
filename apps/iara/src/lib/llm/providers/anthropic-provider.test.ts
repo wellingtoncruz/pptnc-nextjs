@@ -59,7 +59,7 @@ describe('AnthropicProvider', () => {
     it('exposes name="claude" and defaultModel', () => {
       const p = new AnthropicProvider()
       expect(p.name).toBe('claude')
-      expect(p.defaultModel).toBe('claude-sonnet-4-6')
+      expect(p.defaultModel).toBe('claude-sonnet-5-5')
     })
 
     it('throws if ANTHROPIC_API_KEY is missing', () => {
@@ -100,7 +100,7 @@ describe('AnthropicProvider', () => {
       expect(result.usage).toEqual({ promptTokens: 100, completionTokens: 50, totalTokens: 150 })
       expect(result.estimatedCostUsd).toBeGreaterThan(0) // Sonnet pricing
       expect(result.latencyMs).toBeGreaterThanOrEqual(0)
-      expect(result.modelUsed).toBe('claude-sonnet-4-6')
+      expect(result.modelUsed).toBe('claude-sonnet-5-5')
     })
 
     it('uses model override when provided', async () => {
@@ -147,7 +147,8 @@ describe('AnthropicProvider', () => {
       })
 
       const p = new AnthropicProvider()
-      await p.generateText({ systemPrompt: 'sys', userPrompt: 'u', temperature: 0.3 })
+      // O padrão (Sonnet 5.5) rejeita temperature; o 4.6 ainda aceita.
+      await p.generateText({ systemPrompt: 'sys', userPrompt: 'u', model: 'claude-sonnet-4-6', temperature: 0.3 })
 
       expect(mockMessagesCreate).toHaveBeenCalledWith(
         expect.objectContaining({ temperature: 0.3 })
@@ -173,7 +174,7 @@ describe('AnthropicProvider', () => {
      * edit-check / risk / chapters, que passam 0.3.
      */
     describe('modelos que rejeitam sampling params', () => {
-      for (const model of ['claude-opus-4-7', 'claude-opus-4-8', 'claude-opus-5', 'claude-sonnet-5']) {
+      for (const model of ['claude-opus-4-7', 'claude-opus-4-8', 'claude-opus-5', 'claude-sonnet-5', 'claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5', 'claude-fable-5-1']) {
         it(`omite temperature em ${model} mesmo quando a fase pede 0.3`, async () => {
           mockMessagesCreate.mockResolvedValue({
             content: [{ type: 'text', text: '{}' }],
@@ -284,7 +285,7 @@ describe('AnthropicProvider', () => {
       expect(done).toBeDefined()
       if (done?.type === 'done') {
         expect(done.usage.totalTokens).toBe(7)
-        expect(done.modelUsed).toBe('claude-sonnet-4-6')
+        expect(done.modelUsed).toBe('claude-sonnet-5-5')
       }
     })
 

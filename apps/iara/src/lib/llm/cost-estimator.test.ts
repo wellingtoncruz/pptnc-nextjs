@@ -77,15 +77,29 @@ describe('estimateMonthlyCostFromDefaults', () => {
       ['claude-opus-5', 18.9],
       ['claude-opus-4-8', 18.9],
       ['claude-opus-4-7', 18.9],
-      // Sonnet tier — $3/$15. Sonnet 5 usa preço de tabela, não o promocional.
-      ['claude-sonnet-5', 11.34],
+      // Sonnet 4.6 — $3/$15.
       ['claude-sonnet-4-6', 11.34],
-      // Haiku — $1/$5.
+      // Sonnet 5 e 5.5 — $2/$10. O Sonnet 5 estava a $3/$15: o preço de
+      // lançamento virou o padrão e a estimativa do PPTNC ficou 50% inflada.
+      ['claude-sonnet-5', 7.56],
+      ['claude-sonnet-5-5', 7.56],
+      // Geração 5.5 (2026-10-11).
+      ['claude-opus-5-5', 15.12],
+      ['claude-fable-5-1', 37.8],
+      ['claude-haiku-5-5', 0.378],
+      // Haiku 4.5 — $1/$5.
       ['claude-haiku-4-5-20251001', 3.78],
       // Gemini padrão — $0,30/$2,50. Estava a $0,075/$0,30: 5,7x subestimado.
       ['gemini-2.5-flash', 1.48],
       ['gemini-2.5-pro', 6.02],
       ['gemini-3.1-flash-lite', 1.03],
+      ['gemini-3.5-flash-lite', 1.48],
+      // Flash 3.6/3.7/3.8 — $0,75/$3,75 vigente até 31-dez-2026.
+      ['gemini-3.6-flash', 2.835],
+      ['gemini-3.7-flash', 2.835],
+      ['gemini-3.8-flash', 2.835],
+      // Família 2.0 saiu do Vertex: o ID antigo é estimado como o sucessor.
+      ['gemini-2.0-flash', 0.343],
     ]
 
     for (const [model, expectedUsd] of cases) {

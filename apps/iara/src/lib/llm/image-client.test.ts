@@ -94,6 +94,26 @@ describe('callGenAIImage', () => {
     expect(result.mimeType).toBe('image/png')
   })
 
+  // Nano Banana 2.1 (out/2026): a 1ª imagem da resposta é um rascunho do thinking.
+  it('ignora a imagem de rascunho marcada como thought e devolve a final', async () => {
+    const draft = Buffer.from('rascunho')
+    const final = Buffer.from('imagem-final')
+    mockGenerateContent.mockResolvedValue({
+      candidates: [{
+        content: {
+          parts: [
+            { thought: true, inlineData: { data: draft.toString('base64'), mimeType: 'image/png' } },
+            { inlineData: { data: final.toString('base64'), mimeType: 'image/png' } },
+          ],
+        },
+      }],
+    })
+
+    const result = await callGenAIImage('Generate an image')
+
+    expect(result.imageBuffer).toEqual(final)
+  })
+
   it('defaults mimeType to image/png when not provided', async () => {
     const imageData = Buffer.from('data')
     mockGenerateContent.mockResolvedValue({
