@@ -178,3 +178,29 @@ describe('SyncResultModal — vídeos apagados do YouTube (out/2026)', () => {
     expect(screen.getByText(/2 lives ainda no ar ou agendadas entram no próximo sync/)).toBeInTheDocument()
   })
 })
+
+describe('SyncResultModal — datas de publicação atualizadas (out/2026)', () => {
+  it('sem datas alteradas, a linha não aparece', () => {
+    render(<SyncResultModal isOpen onClose={vi.fn()} result={{ newVideos: 2, datesChanged: 0 }} />)
+    expect(screen.queryByText(/data de publicação atualizada/)).not.toBeInTheDocument()
+  })
+
+  it('mostra a contagem ao lado dos novos, sem listar títulos (plural)', () => {
+    render(<SyncResultModal isOpen onClose={vi.fn()} result={{ newVideos: 3, datesChanged: 2 }} />)
+    expect(screen.getByText('novos vídeos encontrados')).toBeInTheDocument()
+    expect(screen.getByText('vídeos com data de publicação atualizada')).toBeInTheDocument()
+    expect(screen.getByText('2')).toBeInTheDocument()
+  })
+
+  it('só data alterada já conta como sincronização com mudança (singular)', () => {
+    render(<SyncResultModal isOpen onClose={vi.fn()} result={{ newVideos: 0, datesChanged: 1 }} />)
+    expect(screen.getByText('Sincronização Concluída')).toBeInTheDocument()
+    expect(screen.getByText('vídeo com data de publicação atualizada')).toBeInTheDocument()
+  })
+
+  it('avisa quando a releitura das datas falhou', () => {
+    render(<SyncResultModal isOpen onClose={vi.fn()} result={{ newVideos: 0, datesRefreshFailed: true }} />)
+    expect(screen.getByText('Não foi possível atualizar as datas de publicação neste sync.')).toBeInTheDocument()
+    expect(screen.getByText('Nenhum Vídeo Novo')).toBeInTheDocument()
+  })
+})

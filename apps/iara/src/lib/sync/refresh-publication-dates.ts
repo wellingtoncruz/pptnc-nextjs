@@ -28,6 +28,12 @@ export interface DatesRefreshResult {
   /** Vídeos não públicos no banco, relidos do YouTube. */
   checked: number
   updated: number
+  /**
+   * Dos atualizados, quantos mudaram de posição na lista: a data de ordenação
+   * (`effectivePublishedAt`, senão `publishedAt`) era outra. Mudança só de
+   * privacidade não conta. É o número que a janela do sync mostra.
+   */
+  datesChanged: number
   /** A releitura falhou; o resto do sync seguiu e as datas ficaram como estavam. */
   failed?: boolean
 }
@@ -56,10 +62,11 @@ export async function refreshPublicationDates(params: {
 
   let checked = 0
   let updated = 0
+  let datesChanged = 0
   try {
     const snapshot = await videosRef
       .where('youtubePrivacyStatus', 'in', ['private', 'unlisted'])
-      .select('youtubePrivacyStatus', 'effectivePublishedAt')
+      .select('youtubePrivacyStatus', 'effectivePublishedAt', 'publishedAt')
       .get()
     checked = snapshot.size
 
@@ -74,12 +81,12 @@ export async function refreshPublicationDates(params: {
       if (!current) continue
       const effective = effectivePublishedAt(ytVideo)
       if (Number.isNaN(effective.getTime())) continue
-      if (
-        current.youtubePrivacyStatus === ytVideo.privacyStatus &&
-        toMillis(current.effectivePublishedAt) === effective.getTime()
-      ) {
+      const storedEffective = toMillis(current.effectivePublishedAt)
+      if (current.youtubePrivacyStatus === ytVideo.privacyStatus && storedEffective === effective.getTime()) {
         continue
       }
+      // Sem data efetiva gravada, a lista ordenava pelo publishedAt.
+      if ((storedEffective ?? toMillis(current.publishedAt)) !== effective.getTime()) datesChanged++
       batch.update(videosRef.doc(ytVideo.id), {
         effectivePublishedAt: Timestamp.fromDate(effective),
         youtubePrivacyStatus: ytVideo.privacyStatus,
@@ -94,16 +101,17 @@ export async function refreshPublicationDates(params: {
     }
     if (batchCount > 0) await batch.commit()
 
-    log('INFO', 'Publication dates refreshed', { podcastId, checked, updated })
-    return { checked, updated }
+    log('INFO', 'Publication dates refreshed', { podcastId, checked, updated, datesChanged })
+    return { checked, updated, datesChanged }
   } catch (error) {
     // O que o sync tinha de criar já foi criado; a ordem da lista não justifica derrubá-lo.
     log('ERROR', 'Failed to refresh publication dates', {
       podcastId,
       checked,
       updated,
+      datesChanged,
       error: error instanceof Error ? error.message : String(error),
     })
-    return { checked, updated, failed: true }
+    return { checked, updated, datesChanged, failed: true }
   }
 }

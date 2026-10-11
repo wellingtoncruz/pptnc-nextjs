@@ -82,9 +82,9 @@ describe('refreshPublicationDates', () => {
     const result = await promise
 
     expect(mockWhere).toHaveBeenCalledWith('youtubePrivacyStatus', 'in', ['private', 'unlisted'])
-    expect(mockSelect).toHaveBeenCalledWith('youtubePrivacyStatus', 'effectivePublishedAt')
+    expect(mockSelect).toHaveBeenCalledWith('youtubePrivacyStatus', 'effectivePublishedAt', 'publishedAt')
     expect(youtube.getVideoDetailsBatch).toHaveBeenCalledWith(['a', 'b'])
-    expect(result).toEqual({ checked: 2, updated: 0 })
+    expect(result).toEqual({ checked: 2, updated: 0, datesChanged: 0 })
   })
 
   it('vídeo agendado depois de já estar na IAra: grava a data do agendamento', async () => {
@@ -92,7 +92,7 @@ describe('refreshPublicationDates', () => {
 
     const result = await run([live('a', { publishAt: '2026-10-13T10:00:00Z' })]).promise
 
-    expect(result).toEqual({ checked: 1, updated: 1 })
+    expect(result).toEqual({ checked: 1, updated: 1, datesChanged: 1 })
     const [ref, fields] = mockUpdate.mock.calls[0]
     expect(ref.id).toBe('a')
     expect(fields.effectivePublishedAt.toMillis()).toBe(new Date('2026-10-13T10:00:00Z').getTime())
@@ -124,9 +124,26 @@ describe('refreshPublicationDates', () => {
 
     const result = await run([live('a')]).promise
 
-    expect(result).toEqual({ checked: 1, updated: 0 })
+    expect(result).toEqual({ checked: 1, updated: 0, datesChanged: 0 })
     expect(mockUpdate).not.toHaveBeenCalled()
     expect(mockCommit).not.toHaveBeenCalled()
+  })
+
+  it('mudança só de privacidade atualiza, mas não conta como data alterada', async () => {
+    stored.set('a', { youtubePrivacyStatus: 'private', effectivePublishedAt: ts('2026-10-04T15:00:00Z') })
+
+    const result = await run([live('a', { privacyStatus: 'unlisted' })]).promise
+
+    expect(result).toEqual({ checked: 1, updated: 1, datesChanged: 0 })
+  })
+
+  it('sem data efetiva gravada, compara com o publishedAt que ordenava a lista', async () => {
+    stored.set('igual', { youtubePrivacyStatus: 'private', publishedAt: ts('2026-10-04T15:00:00Z') })
+    stored.set('outra', { youtubePrivacyStatus: 'private', publishedAt: ts('2026-10-01T15:00:00Z') })
+
+    const result = await run([live('igual'), live('outra')]).promise
+
+    expect(result).toEqual({ checked: 2, updated: 2, datesChanged: 1 })
   })
 
   it('vídeo que o YouTube não devolve fica como está (ausência não é mudança)', async () => {
@@ -135,7 +152,7 @@ describe('refreshPublicationDates', () => {
 
     const result = await run([live('a', { publishAt: '2026-10-13T10:00:00Z' })]).promise
 
-    expect(result).toEqual({ checked: 2, updated: 1 })
+    expect(result).toEqual({ checked: 2, updated: 1, datesChanged: 1 })
     expect(mockUpdate.mock.calls.map(([ref]) => ref.id)).toEqual(['a'])
   })
 
@@ -145,7 +162,7 @@ describe('refreshPublicationDates', () => {
 
     const result = await refreshPublicationDates({ podcastId: 'pptnc', youtube })
 
-    expect(result).toEqual({ checked: 1, updated: 0, failed: true })
+    expect(result).toEqual({ checked: 1, updated: 0, datesChanged: 0, failed: true })
     expect(mockUpdate).not.toHaveBeenCalled()
   })
 })
