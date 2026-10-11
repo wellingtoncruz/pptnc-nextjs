@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 
-import { parseJSONFromLLM, parseJSONFromLLMOrThrow } from './parse-json'
+import { escapeControlCharsInStrings, parseJSONFromLLM, parseJSONFromLLMOrThrow } from './parse-json'
 
 vi.mock('@/lib/logger', () => ({
   log: vi.fn(),
@@ -198,6 +198,36 @@ Please review these issues.`
     it('returns null for truncated JSON', () => {
       const result = parseJSONFromLLM('{"name": "test", "value":')
       expect(result).toBeNull()
+    })
+  })
+
+  // PROD 08–11/10/2026: claude-sonnet-5 separa parágrafos com newline cru
+  // dentro da string. 13 jobs de descrição perdidos com o texto correto.
+  describe('raw control characters inside strings', () => {
+    const paragraphs = 'Primeiro parágrafo.\n\nSegundo parágrafo.'
+
+    it('parses a bare object with raw newlines in the value', () => {
+      const raw = `{\n  "description": "${paragraphs}"\n}`
+      expect(parseJSONFromLLM(raw)).toEqual({ description: paragraphs })
+    })
+
+    it('parses a fenced object with raw newlines in the value', () => {
+      const raw = '```json\n{\n  "description": "' + paragraphs + '"\n}\n```'
+      expect(parseJSONFromLLM(raw)).toEqual({ description: paragraphs })
+    })
+
+    it('keeps escaped quotes and already-escaped newlines intact', () => {
+      const raw = '{"description": "Ele disse \\"oi\\".\\nFim\n\tcom tab"}'
+      expect(parseJSONFromLLM(raw)).toEqual({ description: 'Ele disse "oi".\nFim\n\tcom tab' })
+    })
+
+    it('does not touch whitespace outside strings', () => {
+      const raw = '{\n\t"a": "x",\r\n\t"b": [1,\n2]\n}'
+      expect(escapeControlCharsInStrings(raw)).toBe(raw)
+    })
+
+    it('still returns null when the JSON is broken for another reason', () => {
+      expect(parseJSONFromLLM('{"description": "linha\nquebrada", "x":')).toBeNull()
     })
   })
 

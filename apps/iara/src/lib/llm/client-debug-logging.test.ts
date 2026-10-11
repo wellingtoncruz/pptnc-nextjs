@@ -202,4 +202,51 @@ describe('callGenAI debug logging', () => {
       component: 'wizard/phase-5b',
     }))
   })
+
+  // A aba de depuração só mostrava chamadas bem-sucedidas (out/2026).
+  it('saves one debug log per attempt when the response cannot be parsed', async () => {
+    mockGenerateContentStream.mockImplementation(async () => createMockStream('isto não é JSON'))
+
+    const debugContext = {
+      component: 'wizard/phase-description',
+      videoId: 'video-789',
+      videoType: 'cut',
+      podcastId: 'pptnc',
+    }
+
+    await expect(
+      callGenAI('System prompt', 'User prompt', 120000, undefined, debugContext)
+    ).rejects.toMatchObject({ code: 'PARSE_ERROR' })
+
+    expect(mockSaveLlmLog).toHaveBeenCalledTimes(3)
+    expect(mockSaveLlmLog).toHaveBeenLastCalledWith('pptnc', expect.objectContaining({
+      component: 'wizard/phase-description',
+      response: 'isto não é JSON',
+      usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+      error: { code: 'PARSE_ERROR', message: expect.stringContaining('3/3') },
+    }))
+  }, 30000)
+
+  it('saves a debug log when the provider call itself fails', async () => {
+    // Valor que não é Error vira UNKNOWN (não retentável): sem as esperas do retry.
+    mockGenerateContentStream.mockRejectedValue('falha crua')
+
+    const debugContext = {
+      component: 'wizard/phase-title',
+      videoId: 'video-000',
+      videoType: 'episode',
+      podcastId: 'pptnc',
+    }
+
+    await expect(
+      callGenAI('System prompt', 'User prompt', 120000, undefined, debugContext)
+    ).rejects.toBeInstanceOf(Error)
+
+    expect(mockSaveLlmLog).toHaveBeenCalledOnce()
+    expect(mockSaveLlmLog).toHaveBeenLastCalledWith('pptnc', expect.objectContaining({
+      component: 'wizard/phase-title',
+      response: '',
+      error: { code: expect.any(String), message: expect.any(String) },
+    }))
+  })
 })

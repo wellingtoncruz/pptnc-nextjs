@@ -126,7 +126,10 @@ IMPORTANTE: Você DEVE incluir TODOS os convidados listados na seção "Convidad
 Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "description": "Descrição completa aqui..."
-}`,
+}
+
+O valor de "description" é uma string JSON em UMA única linha: represente cada quebra de linha do texto como \\n (barra invertida + n), nunca como quebra de linha real dentro das aspas. Exemplo: {"description": "Primeiro parágrafo.\\n\\nSegundo parágrafo."}
+Responda somente com o JSON, sem bloco de código markdown.`,
 
   tags: `Você é um especialista em SEO para YouTube e análise de palavras-chave.
 Gere uma lista de tags relevantes para o vídeo baseado na transcrição e contexto.
@@ -393,7 +396,10 @@ IMPORTANTE: O campo "timestamp" DEVE ser uma STRING no formato "HH:MM:SS" ou "MM
   description: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {
   "description": "Descrição completa aqui..."
-}`,
+}
+
+O valor de "description" é uma string JSON em UMA única linha: represente cada quebra de linha do texto como \\n (barra invertida + n), nunca como quebra de linha real dentro das aspas. Exemplo: {"description": "Primeiro parágrafo.\\n\\nSegundo parágrafo."}
+Responda somente com o JSON, sem bloco de código markdown.`,
 
   tags: `Sua resposta DEVE ser um JSON válido com a seguinte estrutura:
 {

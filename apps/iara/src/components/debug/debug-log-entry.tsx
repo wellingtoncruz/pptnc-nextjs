@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Clock, Cpu, DollarSign, Film, Layers, Paperclip, Coins } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronRight, Clock, Cpu, DollarSign, Film, Layers, Paperclip, Coins } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 import { Badge } from '@/components/ui/badge'
@@ -36,6 +36,12 @@ export function DebugLogEntry({ log }: DebugLogEntryProps) {
             <Clock className="h-3.5 w-3.5" />
             <span>{time}</span>
           </div>
+          {log.error && (
+            <Badge variant="destructive" className="text-xs" data-testid="debug-log-error">
+              <AlertTriangle className="mr-1 h-3 w-3" />
+              {log.error.code}
+            </Badge>
+          )}
           <Badge variant="secondary" className="text-xs">
             <Layers className="mr-1 h-3 w-3" />
             {log.component}
@@ -69,6 +75,11 @@ export function DebugLogEntry({ log }: DebugLogEntryProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
+        {log.error && (
+          <p className="text-sm text-destructive" data-testid="debug-log-error-message">
+            {log.error.message}
+          </p>
+        )}
         {/* Prompt section */}
         <button
           onClick={() => setShowPrompt(!showPrompt)}

@@ -319,6 +319,38 @@ async function _callGenAIInner<T>(
   debugContext: DebugContext | undefined,
   temperature: number | undefined
 ): Promise<{ data: T; usage: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
+  // Toda chamada vai para a aba de depuração, inclusive as que falham: é
+  // justamente a falha que se quer inspecionar ali.
+  const saveDebugLog = async (entry: {
+    model: string
+    response: string
+    usage?: { promptTokens: number; completionTokens: number; totalTokens: number }
+    estimatedCostUsd?: number
+    error?: { code: string; message: string }
+  }) => {
+    if (!debugContext) return
+    try {
+      const { saveLlmLog } = await import('@/lib/firebase/llm-log-admin')
+      await saveLlmLog(debugContext.podcastId, {
+        component: debugContext.component,
+        model: entry.model,
+        videoId: debugContext.videoId,
+        videoType: debugContext.videoType,
+        prompt: { system: systemPrompt, user: userPrompt },
+        response: entry.response,
+        attachment: attachmentInfo,
+        usage: entry.usage,
+        provider: provider.name,
+        estimatedCostUsd: entry.estimatedCostUsd ?? 0,
+        ...(entry.error && { error: entry.error }),
+      })
+    } catch (logError) {
+      log('WARN', 'Failed to save LLM debug log', {
+        error: logError instanceof Error ? logError.message : JSON.stringify(logError),
+      })
+    }
+  }
+
   // Parse retry loop - only for PARSE_ERROR. Retryable errors (RATE_LIMIT,
   // TIMEOUT...) propagam pra fora e ficam por conta do outer retry loop
   // em callGenAI.
@@ -368,6 +400,16 @@ async function _callGenAIInner<T>(
           rawResponseTruncated: text.length > FULL_PAYLOAD_LIMIT,
           dumpPath,
         })
+        await saveDebugLog({
+          model: result.modelUsed,
+          response: text,
+          usage,
+          estimatedCostUsd: result.estimatedCostUsd,
+          error: {
+            code: 'PARSE_ERROR',
+            message: `Resposta fora do formato JSON esperado (tentativa ${attempt}/${MAX_PARSE_RETRIES})`,
+          },
+        })
 
         if (attempt < MAX_PARSE_RETRIES) {
           log('INFO', `Retrying LLM call (attempt ${attempt + 1}/${MAX_PARSE_RETRIES})`)
@@ -390,35 +432,26 @@ async function _callGenAIInner<T>(
         log('INFO', `LLM call succeeded on attempt ${attempt}/${MAX_PARSE_RETRIES}`)
       }
 
-      // Save debug log if debugContext provided
-      if (debugContext) {
-        try {
-          const { saveLlmLog } = await import('@/lib/firebase/llm-log-admin')
-          await saveLlmLog(debugContext.podcastId, {
-            component: debugContext.component,
-            model: result.modelUsed,
-            videoId: debugContext.videoId,
-            videoType: debugContext.videoType,
-            prompt: { system: systemPrompt, user: userPrompt },
-            response: text,
-            attachment: attachmentInfo,
-            usage,
-            provider: provider.name,
-            estimatedCostUsd: result.estimatedCostUsd ?? 0,
-          })
-        } catch (logError) {
-          log('WARN', 'Failed to save LLM debug log', {
-            error: logError instanceof Error ? logError.message : JSON.stringify(logError),
-          })
-        }
-      }
+      await saveDebugLog({
+        model: result.modelUsed,
+        response: text,
+        usage,
+        estimatedCostUsd: result.estimatedCostUsd,
+      })
 
       return { data, usage }
     } catch (error) {
-      if (error instanceof LLMError) {
+      // O PARSE_ERROR final já foi registrado tentativa a tentativa.
+      if (error instanceof LLMError && error.code === 'PARSE_ERROR') {
         throw error
       }
-      throw createLLMError(error)
+      const llmError = error instanceof LLMError ? error : createLLMError(error)
+      await saveDebugLog({
+        model: modelName,
+        response: '',
+        error: { code: llmError.code, message: llmError.message },
+      })
+      throw llmError
     }
   }
 

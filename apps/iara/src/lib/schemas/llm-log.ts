@@ -34,6 +34,15 @@ export const LlmLogCreateSchema = z.object({
   estimatedCostUsd: z.number().nonnegative().default(0).catch(0),
   /** Flag opcional indicando se a chamada se beneficiou de prompt caching. */
   cacheHit: z.boolean().optional(),
+  /**
+   * Presente quando a chamada falhou (out/2026). Sem isso a aba de depuração
+   * só mostrava as chamadas que deram certo. `response` traz o que o modelo
+   * devolveu (PARSE_ERROR) ou fica vazio (erro antes da resposta).
+   */
+  error: z.object({
+    code: z.string().min(1),
+    message: z.string(),
+  }).optional(),
 })
 
 /**
