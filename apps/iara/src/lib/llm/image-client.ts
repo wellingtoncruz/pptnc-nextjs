@@ -1,7 +1,7 @@
 /**
  * Image generation via Gemini.
  *
- * Uses `gemini-2.5-flash-image` with `responseModalities: ['TEXT', 'IMAGE']`
+ * Uses `DEFAULT_IMAGE_MODEL` (unless overridden) with `responseModalities: ['TEXT', 'IMAGE']`
  * for generating newsletter cover images and (Epic 22) video thumbnails.
  *
  * Separated from client.ts because image generation has a different API surface
@@ -15,11 +15,12 @@ import type { DebugContext } from '@/types/llm-log'
 
 import { getAI } from './client'
 import { createLLMError, LLMError } from './errors'
+import { DEFAULT_IMAGE_MODEL } from './models'
 
 /**
  * Image generation model. Override via GEMINI_IMAGE_MODEL env var.
  */
-export const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image'
+export const IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || DEFAULT_IMAGE_MODEL
 
 /**
  * Role of a reference image — internal metadata for logging/debug only.

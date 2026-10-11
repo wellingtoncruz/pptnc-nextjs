@@ -146,8 +146,8 @@ describe('LLM Models constants', () => {
     expect(DEFAULT_TEXT_MODEL).toBe('gemini-2.5-flash')
   })
 
-  it('DEFAULT_IMAGE_MODEL is gemini-2.5-flash-image', () => {
-    expect(DEFAULT_IMAGE_MODEL).toBe('gemini-2.5-flash-image')
+  it('DEFAULT_IMAGE_MODEL is gemini-nano-banana-2.1', () => {
+    expect(DEFAULT_IMAGE_MODEL).toBe('gemini-nano-banana-2.1')
   })
 
   it('defaults are included in their respective model lists', () => {

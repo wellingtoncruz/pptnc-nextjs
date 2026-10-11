@@ -302,8 +302,15 @@ export const IMAGE_MODEL_IDS = AVAILABLE_IMAGE_MODELS.map(m => m.id)
 /** Default text model when no override is configured. */
 export const DEFAULT_TEXT_MODEL = 'gemini-2.5-flash'
 
-/** Default image model (Newsletter) when no override is configured. */
-export const DEFAULT_IMAGE_MODEL = 'gemini-2.5-flash-image'
+/**
+ * Modelo de imagem quando o podcast não escolheu um. Vale para TODA geração de
+ * imagem (newsletter, notícias, thumbnail, imagens extras): o `image-client`
+ * cai aqui sempre que não recebe override.
+ *
+ * Nano Banana 2.1 desde 2026-10-11 (decisão do Wellington). Antes era o
+ * `gemini-2.5-flash-image`, que o Google já dá como legado.
+ */
+export const DEFAULT_IMAGE_MODEL = 'gemini-nano-banana-2.1'
 
 /**
  * Default image model for Thumbnail wizard phase (Epic 22).

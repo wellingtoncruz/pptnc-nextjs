@@ -192,7 +192,7 @@ describe('callGenAIImage', () => {
   })
 
   it('has correct default IMAGE_MODEL', () => {
-    expect(IMAGE_MODEL).toBe('gemini-2.5-flash-image')
+    expect(IMAGE_MODEL).toBe('gemini-nano-banana-2.1')
   })
 
   it('saves debug log when debugContext is provided', async () => {
