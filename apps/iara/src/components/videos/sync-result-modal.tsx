@@ -20,6 +20,10 @@ export interface SyncResultData {
   removal?: RemovalResult
   /** Lives ainda no ar/agendadas — entram no sync depois que terminarem. */
   liveInProgressSkipped?: number
+  /** Vídeos já existentes cuja data de publicação/agendamento mudou neste sync. */
+  datesChanged?: number
+  /** A releitura das datas falhou; o resto do sync seguiu. */
+  datesRefreshFailed?: boolean
 }
 
 const SKIP_REASON: Record<'linked' | 'busy', string> = {
@@ -156,7 +160,8 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
 
   const hasNewVideos = result.newVideos > 0
   const hasRemoved = (result.removal?.removed.length ?? 0) > 0
-  const hasChanges = hasNewVideos || hasRemoved
+  const datesChanged = result.datesChanged ?? 0
+  const hasChanges = hasNewVideos || hasRemoved || datesChanged > 0
 
   const Icon = hasChanges ? CheckCircle2 : Info
   const iconColor = hasChanges ? 'text-green-500' : 'text-muted-foreground'
@@ -194,6 +199,19 @@ export function SyncResultModal({ isOpen, onClose, result, error }: SyncResultMo
           ) : (
             <p className="text-sm text-muted-foreground">
               Nenhum vídeo novo foi encontrado no canal.
+            </p>
+          )}
+          {datesChanged > 0 && (
+            <p className="text-sm">
+              <span className="font-medium">{datesChanged}</span>{' '}
+              {datesChanged === 1
+                ? 'vídeo com data de publicação atualizada'
+                : 'vídeos com data de publicação atualizada'}
+            </p>
+          )}
+          {result.datesRefreshFailed && (
+            <p className="text-sm text-amber-600 dark:text-amber-400">
+              Não foi possível atualizar as datas de publicação neste sync.
             </p>
           )}
           {(result.liveInProgressSkipped ?? 0) > 0 && (
