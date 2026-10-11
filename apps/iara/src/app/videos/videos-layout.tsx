@@ -46,6 +46,8 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   const [maxGuests, setMaxGuests] = useState<number | undefined>()
   const [enabledSocialNetworks, setEnabledSocialNetworks] = useState<string[]>([])
   const [llmConfig, setLlmConfig] = useState<{ provider?: 'gemini' | 'claude'; textModel?: string }>()
+  // `podcastFeatures` indefinido significa "ainda carregando", não "desligado".
+  const [featuresLoaded, setFeaturesLoaded] = useState(false)
   // Refetch on every view change so that toggling a feature flag inside
   // Settings and navigating back to the videos/editorial/news view picks up
   // the new value immediately (the layout component does not unmount when
@@ -61,6 +63,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         if (d?.data?.llmConfig) setLlmConfig({ provider: d.data.llmConfig.provider, textModel: d.data.llmConfig.textModel })
       })
       .catch(() => { /* features default to enabled on error */ })
+      .finally(() => setFeaturesLoaded(true))
   }, [currentView])
 
   // Track if initial mount check has been done
@@ -190,6 +193,17 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
       router.replace('/videos')
     }
   }, [currentView, podcastFeatures?.newsletter, router])
+
+  // Aba de depuração: só redireciona depois de saber a resposta. Redirecionar
+  // durante o render tratava "carregando" como "desligado": um F5 na aba caía
+  // em /videos e, no servidor, estourava `location is not defined` (out/2026).
+  const debugViewLoading = !featuresLoaded || isLoadingUser
+  const debugViewDenied = !debugViewLoading && (podcastFeatures?.llmDebugMode !== true || !isAdmin)
+  useEffect(() => {
+    if (currentView === 'debug' && debugViewDenied) {
+      router.replace('/videos')
+    }
+  }, [currentView, debugViewDenied, router])
 
   // When in settings view, show only sidebar and settings panel (no video list)
   if (currentView === 'settings') {
@@ -322,13 +336,8 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
   }
 
   // When in debug view, show sidebar and debug logs layout
-  // Redirect if feature is disabled or user is not admin
   if (currentView === 'debug') {
-    if (podcastFeatures?.llmDebugMode === false || podcastFeatures?.llmDebugMode === undefined) {
-      router.replace('/videos')
-      return null
-    }
-    if (isLoadingUser) {
+    if (debugViewLoading) {
       return (
         <div className="flex h-screen">
           <div className="shrink-0">
@@ -340,8 +349,7 @@ export function VideosLayout({ userName }: VideosLayoutProps) {
         </div>
       )
     }
-    if (!isAdmin) {
-      router.replace('/videos')
+    if (debugViewDenied) {
       return null
     }
     return (

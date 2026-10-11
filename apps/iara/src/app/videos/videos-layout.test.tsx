@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test-utils'
 import userEvent from '@testing-library/user-event'
 
+import { useCurrentUser } from '@/hooks/use-current-user'
+
 import { VideosLayout } from './videos-layout'
 
 // Mock next/navigation
@@ -86,6 +88,10 @@ vi.mock('@/components/social/social-layout', () => ({
   SocialLayout: ({ enabledSocialNetworks }: { enabledSocialNetworks?: string[] }) => (
     <div data-testid="social-layout" data-networks={enabledSocialNetworks?.join(',') ?? ''}>SocialLayout</div>
   ),
+}))
+
+vi.mock('@/components/debug/debug-logs-layout', () => ({
+  DebugLogsLayout: () => <div data-testid="debug-logs-layout">DebugLogsLayout</div>,
 }))
 
 vi.mock('@/components/adwords/adwords-layout', () => ({
@@ -311,6 +317,66 @@ describe('VideosLayout', () => {
 
     await vi.waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/videos')
+    })
+  })
+
+  // PROD out/2026: F5 em ?view=debug redirecionava no render, antes das
+  // features chegarem, e no servidor estourava `location is not defined`.
+  describe('view=debug', () => {
+    const asUser = (user: { isAdmin: boolean; isLoading: boolean }) =>
+      vi.mocked(useCurrentUser).mockReturnValue(user as ReturnType<typeof useCurrentUser>)
+    const withFeatures = (features: Record<string, boolean>) => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: { features } }),
+      })
+    }
+
+    beforeEach(() => {
+      mockGet.mockImplementation((key: string) => (key === 'view' ? 'debug' : null))
+    })
+
+    it('não redireciona enquanto as features carregam e depois mostra a depuração', async () => {
+      asUser({ isAdmin: true, isLoading: false })
+      withFeatures({ llmDebugMode: true })
+
+      render(<VideosLayout />)
+
+      // Primeiro render: features ainda indefinidas.
+      expect(mockReplace).not.toHaveBeenCalled()
+      expect(screen.queryByTestId('debug-logs-layout')).not.toBeInTheDocument()
+
+      expect(await screen.findByTestId('debug-logs-layout')).toBeInTheDocument()
+      expect(mockReplace).not.toHaveBeenCalled()
+    })
+
+    it('redireciona quando a feature está desligada', async () => {
+      asUser({ isAdmin: true, isLoading: false })
+      withFeatures({ llmDebugMode: false })
+
+      render(<VideosLayout />)
+
+      await vi.waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/videos'))
+      expect(screen.queryByTestId('debug-logs-layout')).not.toBeInTheDocument()
+    })
+
+    it('redireciona quem não é admin', async () => {
+      asUser({ isAdmin: false, isLoading: false })
+      withFeatures({ llmDebugMode: true })
+
+      render(<VideosLayout />)
+
+      await vi.waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/videos'))
+      expect(screen.queryByTestId('debug-logs-layout')).not.toBeInTheDocument()
+    })
+
+    it('redireciona se a leitura das features falhar', async () => {
+      asUser({ isAdmin: true, isLoading: false })
+      global.fetch = vi.fn().mockRejectedValue(new Error('rede'))
+
+      render(<VideosLayout />)
+
+      await vi.waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/videos'))
     })
   })
 })
