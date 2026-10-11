@@ -8,6 +8,60 @@
 import { log } from '@/lib/logger'
 
 /**
+ * Escapes raw control characters (U+0000–U+001F) found INSIDE JSON strings.
+ *
+ * `claude-sonnet-5` separa parágrafos com quebra de linha crua dentro do valor
+ * (`"description": "p1\n\np2"` com newline literal), o que o JSON estrito
+ * rejeita. Em PROD (08–11/10/2026) isso derrubou 13 jobs de descrição com o
+ * texto inteiro e correto. Fora de strings nada muda, então JSON válido passa
+ * intacto.
+ */
+export function escapeControlCharsInStrings(text: string): string {
+  let out = ''
+  let inString = false
+  let escaped = false
+  for (const ch of text) {
+    if (!inString) {
+      if (ch === '"') inString = true
+      out += ch
+      continue
+    }
+    if (escaped) {
+      escaped = false
+      out += ch
+      continue
+    }
+    if (ch === '\\') {
+      escaped = true
+      out += ch
+      continue
+    }
+    if (ch === '"') {
+      inString = false
+      out += ch
+      continue
+    }
+    const code = ch.charCodeAt(0)
+    if (code >= 0x20) out += ch
+    else if (ch === '\n') out += '\\n'
+    else if (ch === '\r') out += '\\r'
+    else if (ch === '\t') out += '\\t'
+    else out += `\\u${code.toString(16).padStart(4, '0')}`
+  }
+  return out
+}
+
+function parseLenient<T>(json: string): T {
+  try {
+    return JSON.parse(json) as T
+  } catch (error) {
+    const repaired = escapeControlCharsInStrings(json)
+    if (repaired === json) throw error
+    return JSON.parse(repaired) as T
+  }
+}
+
+/**
  * Attempts to parse JSON from an LLM response.
  *
  * Tries multiple strategies in order:
@@ -16,13 +70,16 @@ import { log } from '@/lib/logger'
  * 3. Extract from markdown code blocks (```json ... ```)
  * 4. Find JSON object/array in the text
  *
+ * Each strategy retries once with raw control characters escaped inside
+ * strings (see `escapeControlCharsInStrings`).
+ *
  * @param text - Raw text from LLM response
  * @returns Parsed JSON object or null if parsing fails
  */
 export function parseJSONFromLLM<T>(text: string): T | null {
   // Strategy 1: Direct parse (most common case with responseMimeType: 'application/json')
   try {
-    return JSON.parse(text) as T
+    return parseLenient<T>(text)
   } catch {
     // Continue to next strategy
   }
@@ -32,7 +89,7 @@ export function parseJSONFromLLM<T>(text: string): T | null {
   const jsonResponseMatch = text.match(/<json_response>\s*([\s\S]*?)\s*<\/json_response>/)
   if (jsonResponseMatch) {
     try {
-      return JSON.parse(jsonResponseMatch[1].trim()) as T
+      return parseLenient<T>(jsonResponseMatch[1].trim())
     } catch {
       // Continue to next strategy
     }
@@ -51,7 +108,7 @@ export function parseJSONFromLLM<T>(text: string): T | null {
       .trim()
     if (stripped !== trimmed) {
       try {
-        return JSON.parse(stripped) as T
+        return parseLenient<T>(stripped)
       } catch {
         // Continue to next strategy
       }
@@ -63,7 +120,7 @@ export function parseJSONFromLLM<T>(text: string): T | null {
   const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/)
   if (codeBlockMatch) {
     try {
-      return JSON.parse(codeBlockMatch[1].trim()) as T
+      return parseLenient<T>(codeBlockMatch[1].trim())
     } catch {
       // Continue to next strategy
     }
@@ -74,7 +131,7 @@ export function parseJSONFromLLM<T>(text: string): T | null {
   const jsonMatch = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/)
   if (jsonMatch) {
     try {
-      return JSON.parse(jsonMatch[1]) as T
+      return parseLenient<T>(jsonMatch[1])
     } catch {
       // All strategies failed
     }

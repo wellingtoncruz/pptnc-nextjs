@@ -29,6 +29,7 @@ export interface LlmLogEntry {
   provider: 'gemini' | 'claude'
   estimatedCostUsd: number
   cacheHit?: boolean
+  error?: { code: string; message: string }
 }
 
 /**

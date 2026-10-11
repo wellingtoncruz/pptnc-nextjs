@@ -122,4 +122,26 @@ describe('DebugLogEntry', () => {
 
     expect(screen.queryByTestId('debug-log-image')).not.toBeInTheDocument()
   })
+
+  it('destaca a chamada que falhou com código e mensagem do erro', () => {
+    render(
+      <DebugLogEntry
+        log={{
+          ...mockLog,
+          provider: 'claude',
+          estimatedCostUsd: 0.02,
+          error: { code: 'PARSE_ERROR', message: 'Resposta fora do formato JSON esperado (tentativa 1/3)' },
+        }}
+      />
+    )
+
+    expect(screen.getByTestId('debug-log-error')).toHaveTextContent('PARSE_ERROR')
+    expect(screen.getByTestId('debug-log-error-message')).toHaveTextContent('tentativa 1/3')
+  })
+
+  it('não mostra erro em chamada bem-sucedida', () => {
+    render(<DebugLogEntry log={{ ...mockLog, provider: 'gemini', estimatedCostUsd: 0 }} />)
+
+    expect(screen.queryByTestId('debug-log-error')).not.toBeInTheDocument()
+  })
 })
