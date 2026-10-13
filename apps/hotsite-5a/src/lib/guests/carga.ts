@@ -50,6 +50,7 @@ function novoDoc(
   return {
     empresa: null,
     convidadoEm: null,
+    excluidoEm: null,
     ...base,
     acompanhantePermitido: false,
     acompanhanteNome: null,

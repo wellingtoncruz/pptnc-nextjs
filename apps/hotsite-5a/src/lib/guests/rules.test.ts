@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { confirmar, definirAcompanhante, marcarConvidado, permitirAcompanhante, recusar, validarNome } from "./rules";
+import { confirmar, definirAcompanhante, excluir, marcarConvidado, permitirAcompanhante, recusar, validarNome } from "./rules";
 import { cota, nominal, T0 } from "./test-helpers";
 import type { GuestDoc } from "./schema";
 
@@ -219,5 +219,34 @@ describe("validarNome", () => {
   it("rejeita caractere de controle", () => {
     expect(validarNome("Ana\u0007")).toBeNull();
     expect(validarNome("Ana Lu")).toBe("Ana Lu");
+  });
+});
+
+describe("exclusão lógica (32.12)", () => {
+  const confirmado = nominal({ status: "confirmado", email: "m@x.io", celular: "11987654321", empresa: "Exemplo SA",
+    acompanhantePermitido: true, acompanhanteNome: "Bia", respondidoEm: T0, convidadoEm: T0 });
+
+  it("qualquer status → excluido, com data e entrada no histórico; não apaga nada", () => {
+    for (const d of [nominal(), confirmado, nominal({ status: "recusou", respondidoEm: T0 }), cota()]) {
+      const m = excluir(d, T1);
+      const depois = aplica(d, m);
+      expect(depois.status).toBe("excluido");
+      expect(depois.excluidoEm).toEqual(T1);
+      expect(depois.historico.at(-1)).toMatchObject({ em: T1, status: "excluido" });
+      expect(depois.historico).toHaveLength(d.historico.length + 1);
+    }
+    const depois = aplica(confirmado, excluir(confirmado, T1));
+    expect(depois).toMatchObject({ email: "m@x.io", celular: "11987654321", empresa: "Exemplo SA", acompanhanteNome: "Bia", respondidoEm: T0, convidadoEm: T0 });
+  });
+
+  it("idempotente: excluir de novo não muda nada", () => {
+    const depois = aplica(confirmado, excluir(confirmado, T1));
+    expect(excluir(depois, new Date("2026-10-09T12:00:00Z"))).toEqual({ ok: true, mudou: false });
+  });
+
+  it("excluído não aceita marcação nem mudança de +1 pelo painel", () => {
+    const depois = aplica(confirmado, excluir(confirmado, T1));
+    expect(marcarConvidado(depois, T1, false)).toEqual({ ok: true, mudou: false });
+    expect(permitirAcompanhante(depois, T1, false)).toEqual({ ok: true, mudou: false });
   });
 });

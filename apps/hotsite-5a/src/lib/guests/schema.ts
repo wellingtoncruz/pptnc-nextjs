@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const STATUS = ["pendente", "confirmado", "recusou"] as const;
+/** `excluido` (32.12): exclusão lógica pelo painel; para o convidado o código deixa de existir. */
+export const STATUS = ["pendente", "confirmado", "recusou", "excluido"] as const;
 export type Status = (typeof STATUS)[number];
 
 export const EpisodioSchema = z.object({
@@ -45,6 +46,8 @@ export const GuestDocSchema = z
     empresa: z.string().nullable().default(null),
     /** Marcação interna do anfitrião (32.10): quando ele fez contato. Não muda a resposta nem a página. */
     convidadoEm: z.date().nullable().default(null),
+    /** 32.12: quando o anfitrião excluiu o convite. Sem volta pelo painel. */
+    excluidoEm: z.date().nullable().default(null),
     episodios: z.array(EpisodioSchema),
     respondidoEm: z.date().nullable(),
     historico: z.array(HistoricoSchema),

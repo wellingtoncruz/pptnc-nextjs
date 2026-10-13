@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { marcarConvidado, permitirAcompanhante } from "@/app/admin/actions";
+import { excluirConvite, marcarConvidado, permitirAcompanhante } from "@/app/admin/actions";
 import { filtrarPorNome, type LinhaPainel } from "@/lib/admin/painel";
 import { mono } from "./ui";
 
@@ -9,6 +9,7 @@ const COR_STATUS: Record<LinhaPainel["status"], string> = {
   confirmado: "var(--accent)",
   pendente: "var(--muted)",
   recusou: "var(--error)",
+  excluido: "var(--muted)",
 };
 
 async function copiar(texto: string): Promise<boolean> {
@@ -42,11 +43,12 @@ const IconeOk = () => (
   </svg>
 );
 
-/** Lista do painel (32.10/32.11): duas linhas por convidado, busca por nome no navegador, copiar link, marcar convidado e liberar +1. */
+/** Lista do painel (32.10–32.12): duas linhas por convidado, busca por nome no navegador, copiar link, marcar convidado, liberar +1 e excluir. */
 export function ListaConvites({ linhas }: { linhas: LinhaPainel[] }) {
   const [busca, setBusca] = useState("");
   const [copiado, setCopiado] = useState<string | null>(null);
   const [removendo, setRemovendo] = useState<string | null>(null);
+  const [excluindo, setExcluindo] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
@@ -73,11 +75,16 @@ export function ListaConvites({ linhas }: { linhas: LinhaPainel[] }) {
       ) : (
         <ul className="admin-lista">
           {visiveis.map((l) => (
-            <li key={l.codigo} className="admin-item" data-convidado={l.convidado}>
+            <li key={l.codigo} className="admin-item" data-convidado={l.convidado} data-status={l.status}>
               <div className="admin-l1">
                 <span className="admin-nome" style={l.nome.startsWith("(") ? { color: "var(--muted)" } : undefined}>{l.nome}</span>
-                <span style={{ color: COR_STATUS[l.status], fontSize: 13, fontWeight: 600 }}>{l.statusTexto}</span>
+                {l.status === "recusou" ? (
+                  <span className="admin-selo-recusou">{l.statusTexto}</span>
+                ) : (
+                  <span style={{ color: COR_STATUS[l.status], fontSize: 13, fontWeight: 600 }}>{l.statusTexto}</span>
+                )}
               </div>
+              {l.status !== "excluido" && (
               <div className="admin-acao">
                 <button type="button" className="admin-btn admin-copiar" data-ok={copiado === l.codigo} onClick={() => aoCopiar(l)}
                   aria-label={copiado === l.codigo ? `Link de ${l.nome} copiado` : `Copiar link de ${l.nome}`}>
@@ -112,7 +119,22 @@ export function ListaConvites({ linhas }: { linhas: LinhaPainel[] }) {
                     </button>
                   </form>
                 )}
+                {excluindo === l.codigo ? (
+                  <span className="admin-confirma" role="group" aria-label={`Excluir convite de ${l.nome}`}>
+                    <span className="admin-confirma-txt">Excluir convite de {l.nome}?</span>
+                    <form action={excluirConvite.bind(null, l.codigo)} onSubmit={() => setExcluindo(null)}>
+                      <button type="submit" className="admin-btn admin-perigo">Confirmar</button>
+                    </form>
+                    <button type="button" className="admin-btn" onClick={() => setExcluindo(null)}>Cancelar</button>
+                  </span>
+                ) : (
+                  <button type="button" className="admin-btn admin-perigo" onClick={() => setExcluindo(l.codigo)}
+                    aria-label={`Excluir convite de ${l.nome}`}>
+                    Excluir
+                  </button>
+                )}
               </div>
+              )}
               <div className="admin-l2">
                 <ul>
                   {l.detalhes.map((d, i) => (

@@ -80,3 +80,28 @@ describe("executarAcao", () => {
     expect(store.data.get("MARIANA742")?.historico).toHaveLength(0);
   });
 });
+
+describe("convite excluído (32.12): como se nunca tivesse existido", () => {
+  const excluido = () => nominal({ status: "excluido", excluidoEm: T0 });
+
+  it("abrir o link dá a mesma resposta de código inexistente", async () => {
+    const store = memoryStore([excluido()]);
+    const inexistente = await getConvite("NAOEXISTE9", store.get);
+    const view = await getConvite("MARIANA742", store.get);
+    expect(view).toEqual({ ...inexistente, codigoDigitado: "MARIANA742" });
+    expect(view.estado).toBe("restrito");
+  });
+
+  it("confirmar, recusar e acompanhante → CODIGO_INVALIDO, sem mudar o documento", async () => {
+    const store = memoryStore([excluido()]);
+    const antes = structuredClone(store.data.get("MARIANA742"));
+    for (const acao of [
+      { tipo: "confirmar", empresa: "Exemplo SA", email: "mariana@exemplo.com.br" },
+      { tipo: "recusar" },
+      { tipo: "acompanhante", nome: "Bia" },
+    ] as const) {
+      expect(await executarAcao(store, "MARIANA742", acao, T0)).toEqual({ ok: false, erro: "CODIGO_INVALIDO" });
+    }
+    expect(store.data.get("MARIANA742")).toEqual(antes);
+  });
+});

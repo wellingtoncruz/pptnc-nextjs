@@ -27,13 +27,13 @@ async function main() {
   // Verificação AI 38: totais conferidos com count() direto no Firestore.
   const t = totais(docs);
   const contar = async (status: string) => (await col.where("status", "==", status).count().get()).data().count;
-  const [c, r, p] = await Promise.all([contar("confirmado"), contar("recusou"), contar("pendente")]);
-  const confere = c === t.confirmados && r === t.recusas && p === t.pendentes && docs.length + problemas.length === snap.size;
+  const [c, r, p, x] = await Promise.all([contar("confirmado"), contar("recusou"), contar("pendente"), contar("excluido")]);
+  const confere = c === t.confirmados && r === t.recusas && p === t.pendentes && x === t.excluidos && docs.length + problemas.length === snap.size;
 
   writeFileSync(out, gerarCsv(docs, [...problemas, ...problemasDeContato(docs)]));
   console.log(`${out}: ${docs.length} convidados${problemas.length ? ` + ${problemas.length} com problema` : ""}`);
-  console.log(`Confirmados ${t.confirmados} · acompanhantes ${t.acompanhantes} · esperados ${t.esperados} · recusas ${t.recusas} · pendentes ${t.pendentes}`);
-  console.log(confere ? "Conferência com count() direto: OK" : `⚠️ DIVERGÊNCIA com count(): confirmado ${c}, recusou ${r}, pendente ${p}`);
+  console.log(`Confirmados ${t.confirmados} · acompanhantes ${t.acompanhantes} · esperados ${t.esperados} · recusas ${t.recusas} · pendentes ${t.pendentes} · excluídos ${t.excluidos}`);
+  console.log(confere ? "Conferência com count() direto: OK" : `⚠️ DIVERGÊNCIA com count(): confirmado ${c}, recusou ${r}, pendente ${p}, excluido ${x}`);
   if (!confere) process.exit(1);
 }
 

@@ -40,6 +40,7 @@ export function PainelAdmin({ painel, filtro, comProblema }: { painel: Painel; f
         <Contador rotulo="Confirmados" valor={c.confirmados} destaque />
         <Contador rotulo="Não confirmados" valor={c.naoConfirmados} />
         <Contador rotulo="Recusados" valor={c.recusados} />
+        <Contador rotulo="Excluídos" valor={c.excluidos} />
         <Contador rotulo="Pessoas esperadas" valor={c.pessoas} destaque />
         <Contador rotulo="Lista de espera" valor={c.espera} />
       </section>

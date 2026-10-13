@@ -51,12 +51,12 @@ describe("gerarCsv (32.5)", () => {
   });
 
   it("totais batem com a contagem", () => {
-    expect(totais(docs)).toEqual({ confirmados: 2, acompanhantes: 1, esperados: 3, recusas: 1, pendentes: 2 });
+    expect(totais(docs)).toEqual({ confirmados: 2, acompanhantes: 1, esperados: 3, recusas: 1, pendentes: 2, excluidos: 0 });
     expect(csv).toContain("Pessoas esperadas;3");
   });
 
   it("totais por patrocinador e seção de problemas", () => {
-    expect(csv).toContain("Klever;2;1;0;1");
+    expect(csv).toContain("Klever;2;1;0;1;0");
     expect(csv).toContain("QUEBRADO1;nome ausente");
   });
 });
@@ -71,5 +71,25 @@ describe("helpers", () => {
   it("data em horário de Brasília", () => {
     expect(dataBrt(new Date("2026-10-29T22:05:00Z"))).toBe("29/10/2026 19:05");
     expect(dataBrt(null)).toBe("");
+  });
+});
+
+describe("exclusão lógica no CSV (32.12)", () => {
+  const comExcluido = [...docs,
+    nominal({ codigo: "BRUNO978", nome: "Bruno Campos", status: "excluido", acompanhanteNome: "Guardado", email: "bruno@guardado.io" }),
+    cota({ codigo: "KLEVERVIP999", status: "excluido" })];
+  const csv = gerarCsv(comExcluido);
+
+  it("a linha continua, com status Excluído e sem contato nem acompanhante", () => {
+    const linha = csv.split("\r\n").find((l) => l.startsWith("Bruno Campos;"))!;
+    expect(linha.split(";")[3]).toBe("Excluído");
+    expect(linha).not.toContain("Guardado");
+    expect(linha).not.toContain("bruno@guardado.io");
+  });
+
+  it("totais e cotas contam os excluídos à parte", () => {
+    expect(totais(comExcluido)).toMatchObject({ confirmados: 2, esperados: 3, recusas: 1, pendentes: 2, excluidos: 2 });
+    expect(csv).toContain("Excluídos;2");
+    expect(csv).toContain("Klever;3;1;0;1;1");
   });
 });

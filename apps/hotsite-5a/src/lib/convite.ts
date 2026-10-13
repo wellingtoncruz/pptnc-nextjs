@@ -44,7 +44,9 @@ export type ResultadoAcao =
   | { ok: true; convite: ConviteAberto }
   | { ok: false; erro: ErroConvite };
 
-const ESTADO: Record<GuestDoc["status"], ConviteAberto["estado"]> = {
+type StatusAberto = Exclude<GuestDoc["status"], "excluido">;
+
+const ESTADO: Record<StatusAberto, ConviteAberto["estado"]> = {
   pendente: "convite",
   confirmado: "confirmado",
   recusou: "recusou",
@@ -56,7 +58,8 @@ export function toView(doc: GuestDoc): ConviteAberto {
   const conhecidos = outros.filter((e) => e.views != null);
   const somaViews = conhecidos.length ? conhecidos.reduce((s, e) => s + (e.views ?? 0), 0) : null;
   return {
-    estado: ESTADO[doc.status],
+    // Excluído (32.12) nunca chega aqui: getConvite e executarAcao respondem como código inexistente.
+    estado: ESTADO[doc.status as StatusAberto],
     codigo: doc.codigo,
     cota: doc.cotaPatrocinador,
     patrocinador: doc.patrocinador,
@@ -76,7 +79,7 @@ export function restrito(codigoDigitado = "", erro: ConviteRestrito["erro"] = nu
   return { estado: "restrito", codigoDigitado, erro };
 }
 
-/** Malformado e inexistente dão a mesma resposta (32.3 AC 1). */
+/** Malformado, inexistente e excluído (32.12) dão a mesma resposta (32.3 AC 1). */
 export async function getConvite(
   bruto: string | null | undefined,
   get: (codigo: string) => Promise<GuestDoc | null>
@@ -85,5 +88,5 @@ export async function getConvite(
   if (!codigo) return restrito();
   if (!codigoValido(codigo)) return restrito(codigo, "CODIGO_INVALIDO");
   const doc = await get(codigo);
-  return doc ? toView(doc) : restrito(codigo, "CODIGO_INVALIDO");
+  return doc && doc.status !== "excluido" ? toView(doc) : restrito(codigo, "CODIGO_INVALIDO");
 }

@@ -17,6 +17,7 @@ export function nominal(over: Partial<GuestDoc> = {}): GuestDoc {
     celular: null,
     empresa: null,
     convidadoEm: null,
+    excluidoEm: null,
     episodios: [
       { videoId: "a", titulo: "Primeiro", publicadoEm: "2022-03-14", views: 1000 },
       { videoId: "b", titulo: "Segundo", publicadoEm: "2023-01-01", views: 12400 },

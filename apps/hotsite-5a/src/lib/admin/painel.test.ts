@@ -21,7 +21,7 @@ describe("painel do anfitrião (32.9/32.10)", () => {
     const t = totais(docs);
     for (const f of ["todos", "confirmados"] as const) {
       const c = montarPainel(docs, 7, f, BASE).contadores;
-      expect(c).toEqual({ criados: 5, convidados: 2, confirmados: t.confirmados, naoConfirmados: t.pendentes, recusados: t.recusas, pessoas: t.esperados, espera: 7 });
+      expect(c).toEqual({ criados: 5, convidados: 2, confirmados: t.confirmados, naoConfirmados: t.pendentes, recusados: t.recusas, excluidos: 0, pessoas: t.esperados, espera: 7 });
       expect(c.criados).toBe(c.confirmados + c.naoConfirmados + c.recusados);
     }
   });
@@ -64,5 +64,37 @@ describe("busca por nome (32.10)", () => {
     expect(filtrarPorNome(ls, "")).toHaveLength(5);
     expect(filtrarPorNome(ls, "ninguém")).toHaveLength(0);
     expect(normalizarBusca("Rômulo  Barbosa")).toBe("romulo barbosa");
+  });
+});
+
+describe("exclusão lógica no painel (32.12)", () => {
+  const X = new Date("2026-10-13T18:40:00Z");
+  const comExcluido = [
+    ...docs,
+    nominal({ codigo: "BRUNO978", nome: "Bruno Campos", empresa: "Klever", status: "excluido", excluidoEm: X, convidadoEm: M,
+      acompanhantePermitido: true, acompanhanteNome: "Guardado", email: "bruno@guardado.io", respondidoEm: R }),
+  ];
+  const painel = (f: "todos" | "confirmados" = "todos") => montarPainel(comExcluido, 0, f, BASE);
+
+  it("criados = confirmados + não confirmados + recusados + excluídos; excluído sai de convidados e de pessoas", () => {
+    const c = painel().contadores;
+    expect(c.excluidos).toBe(1);
+    expect(c.criados).toBe(c.confirmados + c.naoConfirmados + c.recusados + c.excluidos);
+    expect(c.convidados).toBe(2);
+    expect(c.pessoas).toBe(montarPainel(docs, 0, "todos", BASE).contadores.pessoas);
+  });
+
+  it("linha do excluído: fica na lista, só com identificação e data; sem marcação, +1 nem contato", () => {
+    const l = painel().linhas.find((x) => x.codigo === "BRUNO978")!;
+    expect(l.status).toBe("excluido");
+    expect(l.statusTexto).toBe("Excluído");
+    expect(l.detalhes.map((d) => d.texto)).toEqual(["Klever", "BRUNO978", "Nominal", "Excluído 13/10 15:40"]);
+    expect(l.convidado).toBe(false);
+    expect(l.acompanhanteLiberado).toBe(false);
+    expect(l.acompanhanteNome).toBeNull();
+  });
+
+  it("filtro de confirmados não traz o excluído", () => {
+    expect(painel("confirmados").linhas.some((l) => l.codigo === "BRUNO978")).toBe(false);
   });
 });

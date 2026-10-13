@@ -10,6 +10,8 @@ export type Acao =
 export async function executarAcao(store: GuestStore, codigo: string, acao: Acao, agora: Date): Promise<ResultadoAcao> {
   try {
     const { doc, mudanca } = await store.mutate(codigo, (d) => {
+      // 32.12: convite excluído responde como código inexistente.
+      if (d.status === "excluido") return { ok: false, erro: "CODIGO_INVALIDO" };
       if (acao.tipo === "confirmar") return confirmar(d, agora, acao);
       if (acao.tipo === "recusar") return recusar(d, agora);
       return definirAcompanhante(d, agora, acao.nome);

@@ -10,13 +10,14 @@ export function lerFiltro(bruto: string | string[] | undefined): Filtro {
 }
 
 export interface Contadores {
-  /** Todo convite nasce criado: criados = confirmados + não confirmados + recusados. */
+  /** Todo convite nasce criado: criados = confirmados + não confirmados + recusados + excluídos (32.12). */
   criados: number;
-  /** Marcação interna do anfitrião (32.10), independente da resposta. */
+  /** Marcação interna do anfitrião (32.10), independente da resposta. Excluído não conta. */
   convidados: number;
   confirmados: number;
   naoConfirmados: number;
   recusados: number;
+  excluidos: number;
   /** Confirmados + acompanhantes confirmados. */
   pessoas: number;
   espera: number;
@@ -62,10 +63,11 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
   const t = totais(docs);
   const contadores: Contadores = {
     criados: docs.length,
-    convidados: docs.filter((d) => d.convidadoEm).length,
+    convidados: docs.filter((d) => d.convidadoEm && d.status !== "excluido").length,
     confirmados: t.confirmados,
     naoConfirmados: t.pendentes,
     recusados: t.recusas,
+    excluidos: t.excluidos,
     pessoas: t.esperados,
     espera,
   };
@@ -73,25 +75,30 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
   const visiveis = filtro === "confirmados" ? docs.filter((d) => d.status === "confirmado") : docs;
   const linhas = ordenar(visiveis).map((d): LinhaPainel => {
     const conf = d.status === "confirmado"; // D23: contato só de quem confirmou
+    const excluido = d.status === "excluido"; // 32.12: linha só com identificação e data da exclusão
     const detalhes: LinhaPainel["detalhes"] = [];
     if (d.empresa) detalhes.push({ texto: d.empresa });
     detalhes.push({ texto: d.codigo, mono: true });
     detalhes.push({ texto: d.cotaPatrocinador ? `Cota · ${d.patrocinador}` : "Nominal" });
-    const acomp = acompanhante(d);
-    if (acomp) detalhes.push({ texto: acomp });
-    if (conf && d.email) detalhes.push({ texto: d.email });
-    if (conf && d.celular) detalhes.push({ texto: formatarCelular(d.celular) });
-    if (d.respondidoEm) detalhes.push({ texto: `Respondeu ${curta(d.respondidoEm)}` });
+    if (excluido) {
+      detalhes.push({ texto: `Excluído ${curta(d.excluidoEm)}`.trim() });
+    } else {
+      const acomp = acompanhante(d);
+      if (acomp) detalhes.push({ texto: acomp });
+      if (conf && d.email) detalhes.push({ texto: d.email });
+      if (conf && d.celular) detalhes.push({ texto: formatarCelular(d.celular) });
+      if (d.respondidoEm) detalhes.push({ texto: `Respondeu ${curta(d.respondidoEm)}` });
+    }
     return {
       codigo: d.codigo,
       nome: d.nome ?? "(não preenchido)",
       status: d.status,
       statusTexto: STATUS_PT[d.status],
       detalhes,
-      convidado: d.convidadoEm !== null,
+      convidado: !excluido && d.convidadoEm !== null,
       convidadoEm: curta(d.convidadoEm),
-      acompanhanteLiberado: d.acompanhantePermitido,
-      acompanhanteNome: d.acompanhantePermitido ? d.acompanhanteNome : null,
+      acompanhanteLiberado: !excluido && d.acompanhantePermitido,
+      acompanhanteNome: !excluido && d.acompanhantePermitido ? d.acompanhanteNome : null,
       url: `${base}/c/${d.codigo}`,
     };
   });

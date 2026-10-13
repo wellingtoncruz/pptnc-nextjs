@@ -11,7 +11,7 @@ export function celula(v: string | number | null | undefined): string {
   return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-export const STATUS_PT: Record<GuestDoc["status"], string> = { pendente: "Não confirmado", confirmado: "Confirmado", recusou: "Recusou" };
+export const STATUS_PT: Record<GuestDoc["status"], string> = { pendente: "Não confirmado", confirmado: "Confirmado", recusou: "Recusou", excluido: "Excluído" };
 
 export function dataBrt(d: Date | null): string {
   if (!d) return "";
@@ -34,6 +34,7 @@ export interface Totais {
   esperados: number;
   recusas: number;
   pendentes: number;
+  excluidos: number;
 }
 
 export function totais(docs: GuestDoc[]): Totais {
@@ -45,6 +46,7 @@ export function totais(docs: GuestDoc[]): Totais {
     esperados: conf.length + acomp,
     recusas: docs.filter((d) => d.status === "recusou").length,
     pendentes: docs.filter((d) => d.status === "pendente").length,
+    excluidos: docs.filter((d) => d.status === "excluido").length,
   };
 }
 
@@ -83,15 +85,16 @@ export function gerarCsv(docs: GuestDoc[], problemas: Problema[] = []): string {
   }
   const t = totais(docs);
   linhas.push([], ["TOTAIS"], ["Confirmados", t.confirmados], ["Acompanhantes", t.acompanhantes],
-    ["Pessoas esperadas", t.esperados], ["Recusas", t.recusas], ["Não confirmados", t.pendentes]);
+    ["Pessoas esperadas", t.esperados], ["Recusas", t.recusas], ["Não confirmados", t.pendentes], ["Excluídos", t.excluidos]);
 
   const patrocinadores = [...new Set(docs.filter((d) => d.cotaPatrocinador).map((d) => d.patrocinador as string))].sort();
   if (patrocinadores.length) {
-    linhas.push([], ["COTAS", "Emitidos", "Confirmados", "Recusas", "Não confirmados"]);
+    linhas.push([], ["COTAS", "Emitidos", "Confirmados", "Recusas", "Não confirmados", "Excluídos"]);
     for (const p of patrocinadores) {
       const c = docs.filter((d) => d.cotaPatrocinador && d.patrocinador === p);
       linhas.push([p, c.length, c.filter((d) => d.status === "confirmado").length,
-        c.filter((d) => d.status === "recusou").length, c.filter((d) => d.status === "pendente").length]);
+        c.filter((d) => d.status === "recusou").length, c.filter((d) => d.status === "pendente").length,
+        c.filter((d) => d.status === "excluido").length]);
     }
   }
   if (problemas.length) {

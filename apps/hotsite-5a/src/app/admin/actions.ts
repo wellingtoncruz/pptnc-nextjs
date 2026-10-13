@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { COOKIE_ADMIN, criarToken, senhaAdmin, senhaConfere, SESSAO_MS, tokenValido } from "@/lib/admin/sessao";
 import { codigoValido, normalizarCodigo } from "@/lib/guests/codigo";
-import { marcarConvidado as regraMarcar, permitirAcompanhante as regraPermitir } from "@/lib/guests/rules";
+import { excluir as regraExcluir, marcarConvidado as regraMarcar, permitirAcompanhante as regraPermitir } from "@/lib/guests/rules";
 import { firestoreGuestStore } from "@/lib/guests/store";
 
 export interface EstadoLogin {
@@ -66,6 +66,19 @@ export async function permitirAcompanhante(codigoBruto: string, permitir: boolea
     await firestoreGuestStore.mutate(codigo, (d) => regraPermitir(d, new Date(), permitir === true));
   } catch (e) {
     console.error("[ADMIN] falha ao mudar acompanhante", codigo, e);
+  }
+  revalidatePath("/admin");
+}
+
+/** Exclusão lógica do convite (32.12): sem volta pelo painel; o documento continua no banco. */
+export async function excluirConvite(codigoBruto: string): Promise<void> {
+  if (!(await sessaoValida())) redirect("/admin");
+  const codigo = normalizarCodigo(codigoBruto);
+  if (!codigoValido(codigo)) return;
+  try {
+    await firestoreGuestStore.mutate(codigo, (d) => regraExcluir(d, new Date()));
+  } catch (e) {
+    console.error("[ADMIN] falha ao excluir convite", codigo, e);
   }
   revalidatePath("/admin");
 }
