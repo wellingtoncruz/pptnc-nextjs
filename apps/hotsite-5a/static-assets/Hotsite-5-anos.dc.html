@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;background:#0C0C10;}
+a{color:#F26A21;}a:hover{color:#E8A06B;}
+input::placeholder{color:#7A7A84;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes tkIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes bRise{0%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-620px) rotate(4deg)}100%{transform:translateY(-1300px) rotate(-3deg)}}
+</style>
+</helmet>
+<div ref="{{ rootRef }}" data-screen-label="Hotsite 5 anos" style="background:#0C0C10;color:#F3F2EE;font-family:'Space Grotesk',sans-serif;position:relative;overflow-x:clip;min-height:100vh;-webkit-font-smoothing:antialiased;">
+
+  <sc-if value="{{ showTopBar }}" hint-placeholder-val="{{ false }}">
+    <div style="position:sticky;top:0;z-index:40;height:72px;margin-bottom:-72px;transform:{{ barTransform }};opacity:{{ barOpacity }};pointer-events:{{ barPe }};transition:transform .3s ease, opacity .3s ease;background:rgba(22,22,28,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08);">
+      <div style="max-width:1200px;height:100%;margin:0 auto;padding:0 40px;display:flex;align-items:center;gap:24px;">
+        <img src="assets/logo_square.png" alt="PPT Não Compila" style="width:36px;height:36px;border-radius:8px;display:block;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;white-space:nowrap;flex:none;">Convite pessoal · 5 anos</span>
+        <span style="flex:1;"></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F3F2EE;white-space:nowrap;flex:none;">29/10 · Qui · 19h</span>
+        <button onClick="{{ confirmar }}" style="appearance:none;border:0;cursor:pointer;height:48px;width:280px;border-radius:999px;background:#F26A21;color:#0B0809;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;" style-active="transform:scale(.98);background:#D9591F" style-focus="outline:2px solid #F26A21;outline-offset:3px">Confirmar presença <span>→</span></button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isRestrito }}" hint-placeholder-val="{{ false }}">
+    <section style="position:relative;min-height:100vh;padding:20px 20px 40px;overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute;right:-48px;top:90px;font-weight:600;font-size:400px;line-height:1;letter-spacing:-0.06em;color:rgba(242,106,33,.08);pointer-events:none;">5</div>
+      <svg aria-hidden="true" viewBox="0 0 200 420" style="position:absolute;right:120px;top:70px;width:84px;height:176px;opacity:.22;pointer-events:none;"><path d="M100 256 C 80 300 124 340 96 420" fill="none" stroke="#F26A21" stroke-width="3"></path><path d="M100 10 C 160 10 190 60 190 118 C 190 186 136 236 104 246 L 96 246 C 64 236 10 186 10 118 C 10 60 40 10 100 10 Z" fill="#F26A21"></path><path d="M91 258 L100 245 L109 258 Z" fill="#F26A21"></path></svg>
+      <div style="position:relative;max-width:440px;margin:0 auto;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="assets/logo_square.png" alt="PPT Não Compila" style="width:36px;height:36px;border-radius:8px;display:block;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">PPT Não Compila · 5 anos</span>
+        </div>
+        <div style="margin-top:96px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Acesso restrito</div>
+        <h1 style="margin:16px 0 0;font-size:36px;line-height:40px;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;">Este convite é pessoal</h1>
+        <p style="margin:14px 0 0;font-size:17px;line-height:26px;color:#C7C7CE;text-wrap:pretty;">Digite o código que veio na mensagem do convite para abrir a sua página.</p>
+        <form onSubmit="{{ submitCode }}" style="margin:36px 0 0;display:flex;flex-direction:column;gap:10px;">
+          <label for="codigo" style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Código do convite</label>
+          <input id="codigo" value="{{ code }}" onChange="{{ onCode }}" onFocus="{{ focusCode }}" onBlur="{{ blurField }}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="EX.: NOME123" style="height:56px;width:100%;border-radius:12px;background:#16161C;border:1px solid {{ codeBorder }};color:#F3F2EE;padding:0 18px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:.15em;text-transform:uppercase;outline:none;animation:{{ shakeAnim }};transition:border-color .15s;">
+          <sc-if value="{{ codeErr }}" hint-placeholder-val="{{ false }}">
+            <div role="alert" style="display:flex;gap:10px;align-items:flex-start;color:#FF7A6B;font-size:15px;line-height:22px;"><span style="flex:none;width:20px;height:20px;margin-top:1px;border-radius:50%;border:1.5px solid #FF7A6B;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">!</span><span>Código não encontrado. Confira a mensagem do convite e tente de novo.</span></div>
+          </sc-if>
+          <button type="submit" disabled="{{ codeEmpty }}" style="margin-top:14px;appearance:none;border:0;cursor:pointer;height:56px;width:100%;border-radius:999px;background:#F26A21;color:#0B0809;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ codeBtnOpacity }};transition:opacity .15s;" style-active="transform:scale(.98);background:#D9591F" style-focus="outline:2px solid #F26A21;outline-offset:3px">Abrir convite <span>→</span></button>
+        </form>
+        <div style="margin-top:72px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">29/10 · Quinta-feira · São Paulo</div>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ notRestrito }}" hint-placeholder-val="{{ true }}">
+
+    <sc-if value="{{ isConvite }}" hint-placeholder-val="{{ true }}">
+      <section style="position:relative;padding:{{ heroPad }};">
+        <sc-if value="{{ narrow }}" hint-placeholder-val="{{ true }}">
+          <div aria-hidden="true" style="position:absolute;right:-44px;top:64px;font-weight:600;font-size:380px;line-height:1;letter-spacing:-0.06em;color:rgba(242,106,33,.09);pointer-events:none;">5</div>
+          <svg aria-hidden="true" viewBox="0 0 200 420" style="position:absolute;right:136px;top:56px;width:80px;height:168px;opacity:.2;pointer-events:none;"><path d="M100 256 C 80 300 124 340 96 420" fill="none" stroke="#F26A21" stroke-width="3"></path><path d="M100 10 C 160 10 190 60 190 118 C 190 186 136 236 104 246 L 96 246 C 64 236 10 186 10 118 C 10 60 40 10 100 10 Z" fill="#F26A21"></path><path d="M91 258 L100 245 L109 258 Z" fill="#F26A21"></path></svg>
+        </sc-if>
+        <div style="position:relative;max-width:1120px;margin:0 auto;display:flex;flex-wrap:wrap;gap:56px;align-items:stretch;">
+          <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <img src="assets/logo_square.png" alt="PPT Não Compila" style="width:36px;height:36px;border-radius:8px;display:block;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">Convite pessoal · 5 anos</span>
+            </div>
+            <h1 style="margin:{{ nameMargin }};font-size:{{ nameSize }}px;line-height:{{ nameLH }}px;font-weight:700;letter-spacing:-0.025em;text-wrap:balance;max-width:620px;">{{ nome }}</h1>
+            <p style="margin:12px 0 0;font-size:17px;line-height:26px;color:#C7C7CE;max-width:420px;text-wrap:pretty;">Você faz parte dos cinco anos do PPT Não Compila. Queremos comemorar com você.</p>
+            <div style="margin:{{ dateMargin }};font-weight:500;font-size:{{ dateSize }}px;line-height:.86;letter-spacing:-0.05em;color:#F26A21;display:flex;align-items:baseline;margin-left:-4px;"><span>29</span><span style="font-size:.5em;font-weight:300;letter-spacing:0;margin:0 .12em;transform:translateY(-.28em);">/</span><span>10</span></div>
+            <div style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:20px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;display:flex;flex-direction:column;"><span>Quinta-feira · a partir das 19h</span><span>Rua Bastos Pereira, 25</span><span>Vila Nova Conceição · SP</span></div>
+            <button ref="{{ heroRef }}" onClick="{{ confirmar }}" aria-busy="{{ loading }}" style="margin-top:28px;appearance:none;border:0;cursor:pointer;height:56px;width:100%;max-width:{{ btnMax }};border-radius:999px;background:{{ ctaBg }};color:#0B0809;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;transform:{{ ctaScale }};transition:transform .12s ease, background .12s ease;" style-hover="background:#F47A35" style-active="transform:scale(.98);background:#D9591F" style-focus="outline:2px solid #F26A21;outline-offset:3px">
+              <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}"><span style="width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(11,8,9,.25);border-top-color:#0B0809;animation:spin .7s linear infinite;"></span></sc-if>
+              <sc-if value="{{ notLoading }}" hint-placeholder-val="{{ true }}"><span>Confirmar presença</span><span>→</span></sc-if>
+            </button>
+            <div style="margin-top:12px;max-width:{{ btnMax }};display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Confirme até 22/10</span>
+              <button onClick="{{ openSheet }}" style="appearance:none;background:none;border:0;min-height:44px;padding:0 4px;margin-right:-4px;color:#9A9AA2;font-family:'Space Grotesk',sans-serif;font-size:15px;cursor:pointer;border-radius:6px;" style-hover="color:#F3F2EE;text-decoration:underline" style-focus="outline:2px solid #F26A21;outline-offset:2px">Não poderei ir</button>
+            </div>
+          </div>
+          <sc-if value="{{ wide }}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" style="flex:0 0 440px;min-height:560px;position:relative;overflow:hidden;border-radius:24px;background:url('assets/orange.png') right center / cover no-repeat, #F26A21;">
+              <span style="position:absolute;left:32px;bottom:32px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:.3em;color:#0C0C10;">2021 — 2026</span>
+              <span style="position:absolute;right:-22px;bottom:-110px;font-weight:600;font-size:560px;line-height:1;letter-spacing:-0.06em;color:#F3F2EE;">5</span>
+              <svg viewBox="0 0 200 420" style="position:absolute;left:56px;top:40px;width:170px;height:357px;overflow:visible;"><defs><radialGradient id="hsBalloon" cx="35%" cy="28%" r="75%"><stop offset="0%" stop-color="#56565E"></stop><stop offset="100%" stop-color="#0C0C10"></stop></radialGradient></defs><path d="M100 256 C 80 300 124 340 96 420" fill="none" stroke="#0C0C10" stroke-width="2"></path><path d="M100 10 C 160 10 190 60 190 118 C 190 186 136 236 104 246 L 96 246 C 64 236 10 186 10 118 C 10 60 40 10 100 10 Z" fill="url(#hsBalloon)"></path><path d="M91 258 L100 245 L109 258 Z" fill="#0C0C10"></path><ellipse cx="62" cy="72" rx="13" ry="30" transform="rotate(-24 62 72)" fill="#ffffff" opacity="0.28"></ellipse></svg>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isConfirmado }}" hint-placeholder-val="{{ false }}">
+      <section style="position:relative;padding:{{ heroPad }};">
+        <div style="position:absolute;top:-180px;right:-160px;width:560px;height:560px;background:radial-gradient(circle,rgba(242,106,33,.18),rgba(242,106,33,0) 64%);pointer-events:none;"></div>
+        <div style="position:relative;max-width:1120px;margin:0 auto;display:flex;flex-wrap:wrap;gap:{{ confGap }};align-items:center;">
+          <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <img src="assets/logo_square.png" alt="PPT Não Compila" style="width:36px;height:36px;border-radius:8px;display:block;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">Convite pessoal · 5 anos</span>
+            </div>
+            <h1 style="margin:{{ nameMargin }};font-size:{{ nameSize }}px;line-height:{{ nameLH }}px;font-weight:700;letter-spacing:-0.025em;text-wrap:balance;">Presença <span style="color:#F26A21;">confirmada!</span></h1>
+            <p style="margin:12px 0 0;font-size:17px;line-height:26px;color:#C7C7CE;max-width:420px;text-wrap:pretty;">Te esperamos no dia 29, {{ firstName }}. Seu nome já está na lista.</p>
+          </div>
+          <div style="flex:1 1 340px;max-width:440px;min-width:0;display:flex;flex-direction:column;gap:16px;">
+            <div style="animation:{{ ticketAnim }};opacity:{{ tkOp }};transform:scale({{ tkScale }});transform-origin:50% 40%;">
+              <div role="img" aria-label="Ingresso simbólico de {{ nome }}" style="position:relative;border-radius:20px;overflow:hidden;">
+                <div style="position:relative;overflow:hidden;padding:22px 22px 26px;background:url('assets/orange.png') right center / cover no-repeat, #F26A21;color:#0B0809;">
+                  <span aria-hidden="true" style="position:absolute;right:-16px;bottom:-70px;font-weight:600;font-size:280px;line-height:1;letter-spacing:-0.06em;color:#F3F2EE;opacity:.9;">5</span>
+                  <svg aria-hidden="true" viewBox="0 0 200 420" style="position:absolute;right:118px;top:46px;width:46px;height:97px;"><path d="M100 256 C 80 300 124 340 96 420" fill="none" stroke="#0C0C10" stroke-width="4"></path><path d="M100 10 C 160 10 190 60 190 118 C 190 186 136 236 104 246 L 96 246 C 64 236 10 186 10 118 C 10 60 40 10 100 10 Z" fill="#0C0C10"></path><path d="M91 258 L100 245 L109 258 Z" fill="#0C0C10"></path></svg>
+                  <div style="position:relative;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;"><span>PPT Não Compila · 5 anos</span><span>Ingresso</span></div>
+                  <div style="position:relative;margin-top:30px;max-width:64%;font-size:22px;line-height:26px;font-weight:700;letter-spacing:-0.01em;text-wrap:balance;">{{ nome }}</div>
+                  <sc-if value="{{ hasAcomp }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:relative;margin-top:6px;max-width:64%;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;">+1 · {{ acompNome }}</div>
+                  </sc-if>
+                  <div style="position:relative;margin-top:26px;font-weight:500;font-size:64px;line-height:.86;letter-spacing:-0.05em;display:flex;align-items:baseline;margin-left:-2px;"><span>29</span><span style="font-size:.5em;font-weight:300;letter-spacing:0;margin:0 .12em;transform:translateY(-.28em);">/</span><span>10</span></div>
+                  <div style="position:relative;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;letter-spacing:.18em;text-transform:uppercase;font-weight:500;">Qui · 19h · V. Nova Conceição</div>
+                </div>
+                <div style="position:relative;height:0;">
+                  <span style="position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#0C0C10;"></span>
+                  <span style="position:absolute;right:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#0C0C10;"></span>
+                  <span style="position:absolute;left:20px;right:20px;top:-1px;border-top:2px dashed #0C0C10;"></span>
+                </div>
+                <div style="background:#16161C;border:1px solid rgba(255,255,255,.08);border-top:0;border-radius:0 0 20px 20px;padding:18px 22px 22px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;">
+                  <div style="display:flex;flex-direction:column;gap:8px;min-width:0;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9A9AA2;white-space:nowrap;">Entrada</span>
+                    <span style="font-size:20px;line-height:26px;font-weight:600;color:#F3F2EE;">Seu nome está na lista</span>
+                  </div>
+                  <img src="assets/logo_square.png" alt="" style="flex:none;width:40px;height:40px;border-radius:8px;display:block;">
+                </div>
+              </div>
+            </div>
+
+            <sc-if value="{{ showAcompQ }}" hint-placeholder-val="{{ false }}">
+              <div style="animation:{{ acompAnim }};display:flex;flex-direction:column;gap:12px;">
+                <button onClick="{{ toggleAcomp }}" role="checkbox" aria-checked="{{ acompOpen }}" style="align-self:flex-start;appearance:none;background:none;border:0;min-height:44px;padding:0 4px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#C7C7CE;font-family:'Space Grotesk',sans-serif;font-size:15px;border-radius:6px;" style-hover="color:#F3F2EE" style-focus="outline:2px solid #F26A21;outline-offset:2px">
+                  <span style="flex:none;width:20px;height:20px;border-radius:5px;border:1.5px solid {{ acompBoxBorder }};background:{{ acompBoxBg }};display:flex;align-items:center;justify-content:center;color:#0B0809;font-size:13px;font-weight:700;line-height:1;transition:background .15s, border-color .15s;">{{ acompCheck }}</span>
+                  <span>Quero levar um acompanhante</span>
+                </button>
+                <sc-if value="{{ acompOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="animation:{{ acompOpenAnim }};display:flex;flex-direction:column;gap:10px;">
+                    <input value="{{ acompDraft }}" onChange="{{ onDraft }}" onFocus="{{ focusAcomp }}" onBlur="{{ blurField }}" onKeyDown="{{ acompKey }}" placeholder="Nome completo do acompanhante" aria-label="Nome do acompanhante" style="height:52px;width:100%;box-sizing:border-box;border-radius:12px;background:#16161C;border:1px solid {{ acompBorder }};color:#F3F2EE;padding:0 16px;font-family:'Space Grotesk',sans-serif;font-size:17px;outline:none;transition:border-color .15s;">
+                    <button onClick="{{ addAcomp }}" style="appearance:none;cursor:pointer;height:48px;border-radius:999px;background:transparent;border:1.5px solid #F26A21;color:#F3F2EE;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;" style-hover="background:rgba(242,106,33,.08)" style-active="background:rgba(242,106,33,.16);transform:scale(.98)" style-focus="outline:2px solid #F26A21;outline-offset:3px">Incluir na lista</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ hasAcomp }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;padding:4px 4px 0;font-size:15px;line-height:22px;color:#C7C7CE;">
+                <span style="min-width:0;flex:1;">Acompanhante: <span style="color:#F3F2EE;">{{ acompNome }}</span></span>
+                <button onClick="{{ alterarAcomp }}" style="appearance:none;background:none;border:0;min-height:44px;padding:0 4px;color:#9A9AA2;font-family:'Space Grotesk',sans-serif;font-size:15px;cursor:pointer;text-decoration:underline;border-radius:6px;" style-hover="color:#F3F2EE" style-focus="outline:2px solid #F26A21;outline-offset:2px">alterar</button>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <button onClick="{{ addAgenda }}" style="flex:1 1 200px;appearance:none;cursor:pointer;height:52px;border-radius:999px;background:transparent;border:1.5px solid #F26A21;color:#F3F2EE;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;" style-hover="background:rgba(242,106,33,.08)" style-active="background:rgba(242,106,33,.16);transform:scale(.98)" style-focus="outline:2px solid #F26A21;outline-offset:3px">Adicionar à agenda</button>
+              <button onClick="{{ openSheet }}" style="appearance:none;background:none;border:0;min-height:44px;padding:0 6px;color:#9A9AA2;font-family:'Space Grotesk',sans-serif;font-size:15px;cursor:pointer;border-radius:6px;" style-hover="color:#F3F2EE;text-decoration:underline" style-focus="outline:2px solid #F26A21;outline-offset:2px">Não poderei ir</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isRecusou }}" hint-placeholder-val="{{ false }}">
+      <section style="position:relative;padding:{{ heroPad }};">
+        <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;max-width:{{ recMax }};">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="assets/logo_square.png" alt="PPT Não Compila" style="width:36px;height:36px;border-radius:8px;display:block;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">Convite pessoal · 5 anos</span>
+          </div>
+          <h1 style="margin:{{ nameMargin }};font-size:{{ nameSize }}px;line-height:{{ nameLH }}px;font-weight:700;letter-spacing:-0.025em;text-wrap:balance;">Que pena, {{ firstName }}.</h1>
+          <p style="margin:12px 0 0;font-size:17px;line-height:26px;color:#C7C7CE;max-width:440px;text-wrap:pretty;">Sua resposta foi registrada. Se a agenda mudar, ainda dá para confirmar até 22/10.</p>
+          <div style="margin-top:28px;padding:18px 0;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);font-family:'JetBrains Mono',monospace;font-size:12px;line-height:20px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;display:flex;flex-direction:column;"><span>29/10 · Quinta-feira · 19h</span><span>Rua Bastos Pereira, 25 · Vila Nova Conceição · SP</span></div>
+          <button onClick="{{ confirmar }}" style="margin-top:24px;appearance:none;cursor:pointer;height:52px;width:100%;max-width:{{ btnMax }};border-radius:999px;background:transparent;border:1.5px solid #F26A21;color:#F3F2EE;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;" style-hover="background:rgba(242,106,33,.08)" style-active="background:rgba(242,106,33,.16);transform:scale(.98)" style-focus="outline:2px solid #F26A21;outline-offset:3px">Mudei de ideia, quero ir <span>→</span></button>
+        </div>
+      </section>
+    </sc-if>
+
+    <div style="max-width:1200px;margin:0 auto;padding:0 {{ padX }}px;display:flex;flex-direction:column;gap:{{ secGap }}px;">
+
+      <section data-reveal="1" style="display:flex;flex-direction:column;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Seu episódio</div>
+        <h2 style="margin:14px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;">Aqui você fez história junto com a gente</h2>
+        <div style="margin-top:24px;position:relative;overflow:hidden;border-radius:16px;border:1px solid rgba(242,106,33,.4);background:linear-gradient(165deg,rgba(242,106,33,.16),rgba(242,106,33,.03));padding:12px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;">
+          <div style="position:absolute;top:-140px;right:-120px;width:380px;height:380px;background:radial-gradient(circle,rgba(242,106,33,.24),rgba(242,106,33,0) 66%);pointer-events:none;"></div>
+          <div style="position:relative;flex:1 1 300px;min-width:0;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#16161C;">
+            <sc-if value="{{ notPlaying }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ play }}" aria-label="Assistir ao episódio" style="appearance:none;border:0;padding:0;margin:0;cursor:pointer;position:absolute;inset:0;width:100%;height:100%;background:radial-gradient(120% 90% at 85% 20%,rgba(242,106,33,.35),rgba(12,12,16,0) 60%),linear-gradient(160deg,#1E1236,#0C0C10 70%);display:block;text-align:left;" style-focus="outline:2px solid #F26A21;outline-offset:-2px">
+                <img src="assets/mic_cutout.png" alt="" style="position:absolute;right:-6%;bottom:-18%;height:118%;transform:rotate(-8deg);opacity:.85;pointer-events:none;">
+                <img src="assets/logo_square.png" alt="" style="position:absolute;left:14px;top:14px;width:32px;height:32px;border-radius:6px;">
+                <span style="position:absolute;left:14px;bottom:14px;max-width:62%;font-family:'Space Grotesk',sans-serif;font-size:16px;line-height:20px;font-weight:700;color:#F3F2EE;text-wrap:balance;">{{ epTitle }}</span>
+                <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:#F26A21;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 5v14l11-7z" fill="#0B0809"></path></svg></span>
+              </button>
+            </sc-if>
+            <sc-if value="{{ playing }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                <span style="width:28px;height:28px;border-radius:50%;border:2.5px solid rgba(242,106,33,.25);border-top-color:#F26A21;animation:spin .8s linear infinite;"></span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Player do YouTube carrega aqui</span>
+              </div>
+            </sc-if>
+          </div>
+          <div style="position:relative;flex:1 1 260px;min-width:0;padding:4px 8px 8px;display:flex;flex-direction:column;gap:10px;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">Seu último episódio · {{ epDate }}</span>
+            <span style="font-size:20px;line-height:26px;font-weight:600;text-wrap:pretty;">{{ epTitle }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">{{ epViews }}</span>
+            <sc-if value="{{ hasMoreEps }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:6px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:15px;line-height:22px;color:#C7C7CE;text-wrap:pretty;">{{ moreEps }}</div>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+
+      <section data-reveal="1" style="display:flex;flex-direction:column;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>5 anos em números</div>
+        <h2 style="margin:14px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;">O que construímos juntos desde 2021</h2>
+        <div style="margin-top:24px;display:grid;grid-template-columns:{{ numCols }};gap:12px;">
+          <div style="grid-column:{{ impactSpan }};background:linear-gradient(160deg,rgba(242,106,33,.16),rgba(242,106,33,.03));border:1px solid rgba(242,106,33,.42);border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:center;gap:10px;min-height:120px;">
+            <div style="font-size:40px;line-height:44px;font-weight:700;letter-spacing:-0.04em;color:#F26A21;">4,3<span style="font-size:24px;font-weight:600;"> mi+</span></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F3F2EE;">Pessoas impactadas</div>
+          </div>
+          <sc-for list="{{ nums }}" as="n" hint-placeholder-count="4">
+            <div style="background:#16161C;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:center;gap:10px;min-height:120px;">
+              <div style="font-size:40px;line-height:44px;font-weight:700;letter-spacing:-0.04em;white-space:nowrap;">{{ n.v }}<span style="font-size:22px;font-weight:600;color:#9A9AA2;">{{ n.s }}</span></div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">{{ n.l }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section data-reveal="1" style="display:flex;flex-direction:column;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>A noite</div>
+        <h2 style="margin:14px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;">Cinco anos de conversas, agora na mesma sala</h2>
+        <div style="margin-top:24px;display:grid;grid-template-columns:{{ nightCols }};gap:12px;">
+          <sc-for list="{{ noite }}" as="c" hint-placeholder-count="4">
+            <div style="background:#16161C;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;color:#F26A21;">{{ c.n }}</span>
+              <span style="font-size:20px;line-height:26px;font-weight:700;letter-spacing:-0.01em;">{{ c.t }}</span>
+              <span style="font-size:15px;line-height:22px;color:#C7C7CE;text-wrap:pretty;">{{ c.d }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section data-reveal="1" style="display:flex;flex-direction:column;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Programação</div>
+        <h2 style="margin:14px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;">Como vai ser a noite</h2>
+        <div style="margin-top:24px;position:relative;display:flex;flex-direction:column;max-width:640px;">
+          <div style="position:absolute;left:7px;top:14px;bottom:14px;width:2px;background:rgba(255,255,255,.12);"></div>
+          <sc-for list="{{ prog }}" as="p" hint-placeholder-count="3">
+            <div style="position:relative;display:grid;grid-template-columns:16px 72px minmax(0,1fr);gap:16px;align-items:center;padding:14px 0;">
+              <span style="width:16px;height:16px;border-radius:50%;background:{{ p.dot }};border:3px solid #0C0C10;box-shadow:{{ p.ring }};"></span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:.1em;color:{{ p.tc }};">{{ p.h }}</span>
+              <span style="font-size:17px;line-height:24px;font-weight:{{ p.fw }};color:{{ p.ac }};font-family:{{ p.ff }};letter-spacing:{{ p.ls }};text-transform:{{ p.tt }};">{{ p.a }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin:12px 0 0;font-size:15px;line-height:22px;color:#9A9AA2;">{{ progNote }}</p>
+      </section>
+
+      <section data-reveal="1" style="display:flex;flex-direction:column;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Networking</div>
+        <h2 style="margin:14px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;">Quem você vai encontrar</h2>
+        <p style="margin:12px 0 0;font-size:17px;line-height:26px;color:#C7C7CE;max-width:560px;text-wrap:pretty;">Lideranças de tecnologia que passaram pelos mais de 240 episódios do podcast.</p>
+        <div style="margin-top:22px;display:flex;flex-wrap:wrap;gap:8px;">
+          <sc-for list="{{ cargos }}" as="r" hint-placeholder-count="8">
+            <span style="border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);border-radius:999px;padding:8px 14px;font-size:14px;line-height:18px;color:#F3F2EE;">{{ r }}</span>
+          </sc-for>
+        </div>
+      </section>
+
+      <section data-reveal="1" style="display:flex;flex-direction:column;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Apoiadores</div>
+        <h2 style="margin:14px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;">Quem torna a noite possível</h2>
+        <div style="margin-top:24px;display:grid;grid-template-columns:{{ logoCols }};gap:12px;">
+          <sc-for list="{{ logos }}" as="l" hint-placeholder-count="6">
+            <div style="background:#FFFFFF;border-radius:16px;height:96px;display:flex;align-items:center;justify-content:center;padding:14px;">
+              <sc-if value="{{ l.img }}" hint-placeholder-val="{{ true }}"><img src="{{ l.img }}" alt="{{ l.name }}" style="max-height:{{ l.h }}px;max-width:{{ l.mw }};object-fit:contain;display:block;"></sc-if>
+              <sc-if value="{{ l.ph }}" hint-placeholder-val="{{ false }}"><span style="width:100%;height:100%;border:1.5px dashed #C7C7CE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#56565E;text-align:center;">{{ l.name }}</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section data-reveal="1" style="display:flex;flex-direction:column;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Uma nota</div>
+        <div style="margin-top:20px;background:#16161C;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;">
+          <p style="flex:1 1 300px;margin:0;font-size:{{ noteSize }}px;line-height:{{ noteLH }}px;font-weight:500;letter-spacing:-0.01em;text-wrap:pretty;">{{ firstName }}, em cinco anos o PPT Não Compila virou o que é por causa de quem topou dividir com a gente suas histórias e o que aprendeu no caminho. Essa noite é para agradecer pessoalmente. Conto com você lá.</p>
+          <div style="flex:0 1 260px;display:flex;align-items:center;gap:16px;">
+            <img src="assets/wellington.jpg" alt="Foto de Wellington Cruz" style="flex:none;width:72px;height:88px;border-radius:12px;object-fit:cover;object-position:50% 12%;display:block;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <span style="font-size:18px;line-height:22px;font-weight:700;">Wellington Cruz</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;letter-spacing:.18em;text-transform:uppercase;color:#9A9AA2;">Host · PPT Não Compila</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-reveal="1" style="position:relative;overflow:hidden;border-radius:24px;border:1px solid rgba(242,106,33,.36);background:linear-gradient(165deg,rgba(242,106,33,.14),rgba(242,106,33,.02));padding:{{ finalPad }};display:flex;flex-direction:column;">
+        <div aria-hidden="true" style="position:absolute;right:-30px;bottom:-90px;font-weight:600;font-size:300px;line-height:1;letter-spacing:-0.06em;color:rgba(242,106,33,.10);pointer-events:none;">5</div>
+        <sc-if value="{{ isConvite }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative;display:flex;flex-direction:column;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">29/10 · Quinta-feira · 19h · Vila Nova Conceição</span>
+            <h2 style="margin:12px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;">Te vejo lá, {{ firstName }}?</h2>
+            <button ref="{{ footRef }}" onClick="{{ confirmar }}" style="margin-top:24px;appearance:none;border:0;cursor:pointer;height:56px;width:100%;max-width:{{ btnMax }};border-radius:999px;background:#F26A21;color:#0B0809;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;" style-hover="background:#F47A35" style-active="transform:scale(.98);background:#D9591F" style-focus="outline:2px solid #F26A21;outline-offset:3px">Confirmar presença <span>→</span></button>
+            <div style="margin-top:12px;max-width:{{ btnMax }};display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">Confirme até 22/10</span>
+              <button onClick="{{ openSheet }}" style="appearance:none;background:none;border:0;min-height:44px;padding:0 4px;margin-right:-4px;color:#9A9AA2;font-family:'Space Grotesk',sans-serif;font-size:15px;cursor:pointer;border-radius:6px;" style-hover="color:#F3F2EE;text-decoration:underline" style-focus="outline:2px solid #F26A21;outline-offset:2px">Não poderei ir</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isConfirmado }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;display:flex;flex-direction:column;gap:12px;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">Presença confirmada</span>
+            <h2 style="margin:0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;">Até dia 29, {{ firstName }}.</h2>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+              <span style="font-size:17px;line-height:26px;color:#C7C7CE;">Seu nome está na lista.</span>
+              <button onClick="{{ scrollToTop }}" style="appearance:none;background:none;border:0;min-height:44px;padding:0 4px;color:#9A9AA2;font-family:'Space Grotesk',sans-serif;font-size:15px;cursor:pointer;border-radius:6px;" style-hover="color:#F3F2EE;text-decoration:underline" style-focus="outline:2px solid #F26A21;outline-offset:2px">Ver ingresso ↑</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isRecusou }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;display:flex;flex-direction:column;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">Ainda dá tempo até 22/10</span>
+            <h2 style="margin:12px 0 0;font-size:{{ h2Size }}px;line-height:{{ h2LH }}px;font-weight:700;letter-spacing:-0.02em;">A agenda mudou?</h2>
+            <button onClick="{{ confirmar }}" style="margin-top:24px;appearance:none;cursor:pointer;height:52px;width:100%;max-width:{{ btnMax }};border-radius:999px;background:transparent;border:1.5px solid #F26A21;color:#F3F2EE;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;" style-hover="background:rgba(242,106,33,.08)" style-active="background:rgba(242,106,33,.16);transform:scale(.98)" style-focus="outline:2px solid #F26A21;outline-offset:3px">Mudei de ideia, quero ir →</button>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+
+    <footer style="max-width:1200px;margin:{{ footMargin }};padding:24px {{ padX }}px {{ footPadB }}px;">
+      <div style="padding-top:24px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;">
+        <img src="assets/logo_square.png" alt="PPT Não Compila" style="width:32px;height:32px;border-radius:7px;display:block;">
+        <span style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9A9AA2;">PPT Não Compila</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;color:#9A9AA2;">2021 — 2026</span>
+      </div>
+    </footer>
+  </sc-if>
+
+  <sc-if value="{{ showBottomBar }}" hint-placeholder-val="{{ false }}">
+    <div style="position:sticky;bottom:0;z-index:40;margin-top:-80px;height:80px;padding:12px 20px;display:flex;align-items:center;gap:14px;transform:{{ barTransform }};opacity:{{ barOpacity }};pointer-events:{{ barPe }};transition:transform .3s ease, opacity .3s ease;background:rgba(22,22,28,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.08);">
+      <div style="display:flex;flex-direction:column;gap:2px;flex:none;">
+        <span style="font-size:20px;line-height:22px;font-weight:600;color:#F26A21;letter-spacing:-0.02em;">29/10</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#C7C7CE;">Qui · 19h</span>
+      </div>
+      <button onClick="{{ confirmar }}" style="flex:1;appearance:none;border:0;cursor:pointer;height:52px;border-radius:999px;background:#F26A21;color:#0B0809;font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;" style-active="transform:scale(.98);background:#D9591F" style-focus="outline:2px solid #F26A21;outline-offset:3px">Confirmar presença <span>→</span></button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ sheet }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:70;display:flex;align-items:{{ sheetAlign }};justify-content:center;padding:{{ sheetOuterPad }};">
+      <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(5,5,8,.68);animation:{{ dimAnim }};"></div>
+      <div role="dialog" aria-modal="true" aria-labelledby="sheetTitle" style="position:relative;width:100%;max-width:{{ sheetMax }};background:#16161C;border:1px solid rgba(255,255,255,.08);border-radius:{{ sheetRadius }};padding:12px 20px 28px;display:flex;flex-direction:column;animation:{{ sheetAnim }};">
+        <span style="align-self:center;width:40px;height:4px;border-radius:4px;background:#56565E;"></span>
+        <div style="margin-top:22px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F26A21;display:flex;align-items:center;gap:12px;"><span style="width:24px;height:2px;background:#F26A21;"></span>Antes de responder</div>
+        <h2 id="sheetTitle" style="margin:12px 0 0;font-size:28px;line-height:32px;font-weight:700;letter-spacing:-0.02em;">Tem certeza, {{ firstName }}?</h2>
+        <p style="margin:12px 0 0;font-size:17px;line-height:26px;color:#C7C7CE;text-wrap:pretty;">A noite foi pensada para quem fez parte desses cinco anos. Se der para ajustar a agenda, a gente vai gostar muito de te ver lá.</p>
+        <div style="margin-top:18px;padding:14px 16px;border-radius:12px;background:#0C0C10;border:1px solid rgba(255,255,255,.08);font-family:'JetBrains Mono',monospace;font-size:12px;line-height:20px;letter-spacing:.2em;text-transform:uppercase;color:#C7C7CE;">29/10 · Qui · 19h · Vila Nova Conceição</div>
+        <button onClick="{{ sheetPrimary }}" style="margin-top:22px;appearance:none;border:0;cursor:pointer;height:56px;width:100%;border-radius:999px;background:#F26A21;color:#0B0809;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;" style-active="transform:scale(.98);background:#D9591F" style-focus="outline:2px solid #F26A21;outline-offset:3px">{{ sheetPrimaryLabel }}</button>
+        <button onClick="{{ recusar }}" style="margin-top:6px;align-self:center;appearance:none;background:none;border:0;min-height:44px;padding:0 10px;color:#9A9AA2;font-family:'Space Grotesk',sans-serif;font-size:15px;cursor:pointer;border-radius:6px;" style-hover="color:#F3F2EE;text-decoration:underline" style-focus="outline:2px solid #F26A21;outline-offset:2px">Não poderei ir mesmo</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:80;background:#F3F2EE;color:#0B0809;border-radius:999px;padding:12px 20px;font-size:15px;font-weight:600;animation:fadeUp .25s ease both;white-space:nowrap;">{{ toast }}</div>
+  </sc-if>
+
+  {{ balloonLayer }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;convite&quot;,&quot;confirmado&quot;,&quot;recusou&quot;,&quot;restrito&quot;],&quot;default&quot;:&quot;convite&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;nome&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Mariana Albuquerque&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;codigo&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;MARIANA742&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;acompanhante&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Convidado&quot;},&quot;episodios&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Um&quot;,&quot;Três&quot;,&quot;Muitos&quot;],&quot;default&quot;:&quot;Três&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Convidado&quot;},&quot;viewsBaixas&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Convidado&quot;},&quot;programacao&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Em breve&quot;,&quot;Definida&quot;],&quot;default&quot;:&quot;Em breve&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Evento&quot;},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;celular&quot;,&quot;computador&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Visualização&quot;},&quot;reduzirMovimento&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Visualização&quot;},&quot;acompanhanteNome&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sheet&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;codigoErro&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;animFrame&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;forcarBarra&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;animarSecoes&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const BALLOON = 'M100 10 C 160 10 190 60 190 118 C 190 186 136 236 104 246 L 96 246 C 64 236 10 186 10 118 C 10 60 40 10 100 10 Z';
+const BS = [[4,44,1.0,0],[16,32,1.18,.12],[28,54,.92,.04],[42,38,1.22,.2],[55,60,.95,0],[68,36,1.12,.1],[80,50,1.02,.06],[10,28,1.3,.26],[62,28,1.28,.3],[90,36,.88,.14],[36,30,1.1,.34]];
+const BC = ['#F26A21','#D9591F','#E8A06B','#F26A21','#F3F2EE'];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const p = props || {};
+    const af = p.animFrame;
+    this.state = {
+      estado: af === 'meio' || af === 'fim' ? 'confirmado' : af === 'inicio' ? 'convite' : (p.estado || 'convite'),
+      acompNome: p.acompanhanteNome || '', acompDraft: '', acompSolo: false, acompOpen: false,
+      sheet: !!p.sheet, loading: af === 'inicio', celebrating: false, justConfirmed: 0,
+      code: p.codigoErro ? 'MARIANA724' : '', codeErr: !!p.codigoErro, shaking: false, focus: null,
+      playing: false, heroVis: true, footVis: false,
+      w: typeof window !== 'undefined' ? window.innerWidth : 390, toast: ''
+    };
+    this.io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(es => {
+      es.forEach(e => {
+        if (e.target === this._hero) this.setState({ heroVis: e.isIntersecting });
+        if (e.target === this._foot) this.setState({ footVis: e.isIntersecting });
+      });
+    }) : null;
+  }
+  heroRef = el => { if (this._hero && this.io) this.io.unobserve(this._hero); this._hero = el; if (el && this.io) this.io.observe(el); };
+  footRef = el => { if (this._foot && this.io) this.io.unobserve(this._foot); this._foot = el; if (el && this.io) this.io.observe(el); };
+  rootRef = el => {
+    if (this.ro) this.ro.disconnect();
+    this._root = el;
+    if (el && typeof ResizeObserver !== 'undefined') {
+      this.ro = new ResizeObserver(([e]) => { const w = e.contentRect.width; if (Math.abs(w - this.state.w) > 1) this.setState({ w }); });
+      this.ro.observe(el);
+    }
+  };
+  componentDidMount() { setTimeout(() => this.setupReveal(), 60); }
+  componentWillUnmount() { [this.io, this.ro, this.rio].forEach(o => o && o.disconnect()); clearTimeout(this._t1); clearTimeout(this._t2); clearTimeout(this._t3); }
+  componentDidUpdate(pp) {
+    const p = this.props;
+    if (pp.estado !== p.estado && p.estado) this.setState({ estado: p.estado, sheet: false });
+    if (pp.acompanhanteNome !== p.acompanhanteNome) this.setState({ acompNome: p.acompanhanteNome || '' });
+    if (pp.acompanhante !== p.acompanhante) this.setState({ acompSolo: false });
+  }
+  reduced() { return !!this.props.reduzirMovimento || (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  setupReveal() {
+    if (this.props.animarSecoes === false || this.reduced() || !this._root || typeof IntersectionObserver === 'undefined') return;
+    this.rio = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'none'; this.rio.unobserve(e.target); }
+    }), { threshold: 0.1 });
+    this._root.querySelectorAll('[data-reveal]').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight) return;
+      el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; el.style.transition = 'opacity .5s ease, transform .5s ease';
+      this.rio.observe(el);
+    });
+  }
+  scrollToTop = () => {
+    const beh = this.reduced() ? 'auto' : 'smooth';
+    let el = this._root && this._root.parentElement;
+    while (el) {
+      const s = getComputedStyle(el).overflowY;
+      if ((s === 'auto' || s === 'scroll') && el.scrollHeight > el.clientHeight) { el.scrollTo({ top: 0, behavior: beh }); return; }
+      el = el.parentElement;
+    }
+    window.scrollTo({ top: 0, behavior: beh });
+  };
+  confirmar = () => {
+    if (this.state.loading) return;
+    this.setState({ loading: true, sheet: false });
+    this._t1 = setTimeout(() => {
+      this.scrollToTop();
+      const r = this.reduced();
+      this.setState({ loading: false, estado: 'confirmado', celebrating: !r, justConfirmed: Date.now() });
+      this._t2 = setTimeout(() => this.setState({ celebrating: false }), r ? 300 : 1600);
+    }, 300);
+  };
+  openSheet = () => this.setState({ sheet: true });
+  closeSheet = () => this.setState({ sheet: false });
+  recusar = () => { this.setState({ sheet: false, estado: 'recusou' }); this.scrollToTop(); };
+  onCode = e => this.setState({ code: e.target.value.toUpperCase().replace(/\s/g, ''), codeErr: false });
+  submitCode = e => {
+    if (e && e.preventDefault) e.preventDefault();
+    const c = (this.state.code || '').trim();
+    if (!c) return;
+    if (c === (this.props.codigo || 'MARIANA742')) { this.setState({ estado: 'convite', codeErr: false }); setTimeout(() => this.setupReveal(), 60); }
+    else { this.setState({ codeErr: true, shaking: true }); clearTimeout(this._t3); this._t3 = setTimeout(() => this.setState({ shaking: false }), 400); }
+  };
+  focusCode = () => this.setState({ focus: 'code' });
+  focusAcomp = () => this.setState({ focus: 'acomp' });
+  blurField = () => this.setState({ focus: null });
+  onDraft = e => this.setState({ acompDraft: e.target.value });
+  addAcomp = () => { const n = this.state.acompDraft.trim(); if (n) this.setState({ acompNome: n, acompDraft: '', acompOpen: false }); };
+  acompKey = e => { if (e.key === 'Enter') this.addAcomp(); };
+  toggleAcomp = () => this.setState(st => ({ acompOpen: !st.acompOpen }));
+  alterarAcomp = () => this.setState(s => ({ acompDraft: s.acompNome, acompNome: '', acompSolo: false, acompOpen: true }));
+  play = () => this.setState({ playing: true });
+  addAgenda = () => {
+    const cod = this.props.codigo || 'MARIANA742';
+    const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//PPT Nao Compila//5 anos//PT','BEGIN:VEVENT','UID:pptnc-5anos-' + cod + '@pptnaocompila.com.br','DTSTAMP:20261007T120000Z','DTSTART:20261029T220000Z','DTEND:20261030T020000Z','SUMMARY:5 anos de PPT Não Compila','LOCATION:Rua Bastos Pereira\\, 25 · Vila Nova Conceição · São Paulo','DESCRIPTION:Seu nome está na lista.','END:VEVENT','END:VCALENDAR'].join('\r\n');
+    try {
+      const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+      const a = document.createElement('a'); a.href = url; a.download = 'pptnc-5-anos.ics'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (err) {}
+    this.setState({ toast: 'Evento salvo na agenda' });
+    setTimeout(() => this.setState({ toast: '' }), 2200);
+  };
+
+  balloons(wide) {
+    const af = this.props.animFrame;
+    const live = this.state.celebrating;
+    if (!live && af !== 'inicio' && af !== 'meio' && af !== 'fim') return null;
+    const prog = af === 'inicio' ? 0.1 : af === 'meio' ? 0.55 : af === 'fim' ? 1.05 : 0;
+    const k = wide ? 1.4 : 1;
+    return React.createElement('div', { 'aria-hidden': true, style: { position: 'fixed', inset: 0, zIndex: 60, pointerEvents: 'none', overflow: 'hidden' } },
+      BS.map(([x, s, sp, d], i) => {
+        const c = BC[i % BC.length];
+        const size = s * k;
+        const st = { position: 'absolute', left: x + '%', bottom: -size * 2.2, width: size, height: size * 2.1 };
+        if (live) st.animation = `bRise ${(1.25 / sp).toFixed(2)}s cubic-bezier(.35,.1,.45,1) ${d}s both`;
+        else st.transform = `translateY(${-Math.max(0, (prog - d * 0.6) * sp) * 1250}px) rotate(${(i % 3 - 1) * 4}deg)`;
+        return React.createElement('div', { key: i, style: st },
+          React.createElement('svg', { viewBox: '0 0 200 420', style: { width: '100%', height: '100%', overflow: 'visible', display: 'block' } },
+            React.createElement('path', { d: 'M100 256 C 80 300 124 340 96 420', fill: 'none', stroke: c, strokeWidth: 3 }),
+            React.createElement('path', { d: BALLOON, fill: c }),
+            React.createElement('path', { d: 'M91 258 L100 245 L109 258 Z', fill: c }),
+            React.createElement('ellipse', { cx: 62, cy: 72, rx: 13, ry: 30, transform: 'rotate(-24 62 72)', fill: '#fff', opacity: 0.3 })));
+      }));
+  }
+
+  renderVals() {
+    const P = this.props, S = this.state;
+    const lay = P.layout || 'auto';
+    const wide = lay === 'computador' || (lay !== 'celular' && S.w >= 900);
+    const nome = P.nome || 'Mariana Albuquerque';
+    const firstName = nome.split(' ')[0];
+    const codigo = P.codigo || 'MARIANA742';
+    const estado = S.estado;
+    const isConvite = estado === 'convite', isConfirmado = estado === 'confirmado', isRecusou = estado === 'recusou', isRestrito = estado === 'restrito';
+    const reduced = this.reduced();
+    const af = P.animFrame;
+    const barVis = P.forcarBarra === false ? false : !!P.forcarBarra || (isConvite && !S.heroVis && !S.footVis && !S.sheet && !S.loading);
+    const eps = P.episodios || 'Três';
+    const moreEps = eps === 'Muitos' ? 'E mais 7 episódios com 41,2 mil visualizações, desde 14/03/2022.' : 'E mais 2 episódios com 18,9 mil visualizações, desde 14/03/2022.';
+    const progDef = (P.programacao || 'Em breve') === 'Definida';
+    const soon = { dot: '#56565E', ring: 'none', tc: '#7A7A84', ac: '#9A9AA2', fw: 500, ff: "'JetBrains Mono',monospace", ls: '.2em', tt: 'uppercase' };
+    const def = { dot: '#F26A21', ring: '0 0 0 4px rgba(242,106,33,.18)', tc: '#F26A21', ac: '#F3F2EE', fw: 600, ff: "'Space Grotesk',sans-serif", ls: '0', tt: 'none' };
+    const prog = progDef
+      ? [{ h: '19h00', a: 'Recepção e welcome drink', ...def }, { h: '20h00', a: 'Brinde dos cinco anos', ...def }, { h: '20h30', a: 'Happy hour e networking', ...def }]
+      : [{ h: '19h30', a: 'Wellington Cruz: Abertura e Agradecimentos', ...def }, { h: '--:--', a: 'Em breve', ...soon }, { h: '--:--', a: 'Em breve', ...soon }, { h: '--:--', a: 'Em breve', ...soon }];
+    const tkStatic = af === 'meio';
+    return {
+      rootRef: this.rootRef, heroRef: this.heroRef, footRef: this.footRef,
+      wide, narrow: !wide, nome, firstName, codigo,
+      isConvite, isConfirmado, isRecusou, isRestrito, notRestrito: !isRestrito,
+      padX: wide ? 40 : 20,
+      heroPad: wide ? '112px 40px 120px' : '20px 20px 72px',
+      nameMargin: wide ? '40px 0 0' : '32px 0 0',
+      nameSize: wide ? 64 : 36, nameLH: wide ? 68 : 40,
+      dateSize: wide ? 160 : 88, dateMargin: wide ? '40px 0 0' : '28px 0 0',
+      h2Size: wide ? 44 : 28, h2LH: wide ? 48 : 32,
+      secGap: wide ? 120 : 80,
+      numCols: wide ? 'repeat(5,minmax(0,1fr))' : 'repeat(2,minmax(0,1fr))',
+      impactSpan: wide ? 'auto' : '1 / -1',
+      nightCols: wide ? 'repeat(4,minmax(0,1fr))' : 'minmax(0,1fr)',
+      logoCols: wide ? 'repeat(6,minmax(0,1fr))' : 'repeat(2,minmax(0,1fr))',
+      btnMax: wide ? '360px' : '100%',
+      confGap: wide ? '80px' : '32px',
+      recMax: wide ? '640px' : '100%',
+      finalPad: wide ? '56px' : '28px 20px',
+      noteSize: wide ? 24 : 20, noteLH: wide ? 34 : 28,
+      footMargin: wide ? '120px auto 0' : '80px auto 0',
+      footPadB: wide ? 40 : 104,
+      showTopBar: wide && !isRestrito, showBottomBar: !wide && !isRestrito,
+      barTransform: barVis ? 'translateY(0)' : (wide ? 'translateY(-100%)' : 'translateY(100%)'),
+      barOpacity: barVis ? 1 : 0, barPe: barVis ? 'auto' : 'none',
+      loading: S.loading, notLoading: !S.loading,
+      ctaBg: S.loading ? '#D9591F' : '#F26A21', ctaScale: S.loading ? 'scale(.98)' : 'none',
+      confirmar: this.confirmar, openSheet: this.openSheet, closeSheet: this.closeSheet, recusar: this.recusar,
+      sheet: S.sheet,
+      sheetAlign: wide ? 'center' : 'flex-end', sheetOuterPad: wide ? '24px' : '0',
+      sheetMax: wide ? '480px' : '100%', sheetRadius: wide ? '24px' : '24px 24px 0 0',
+      sheetAnim: reduced ? 'fadeIn .25s ease both' : (wide ? 'fadeUp .25s ease both' : 'sheetUp .25s cubic-bezier(.2,.8,.2,1) both'),
+      dimAnim: 'fadeIn .25s ease both',
+      sheetPrimary: isConfirmado ? this.closeSheet : this.confirmar,
+      sheetPrimaryLabel: isConfirmado ? 'Manter minha presença' : 'Quero ir: confirmar presença',
+      ticketAnim: S.justConfirmed ? (reduced ? 'fadeIn .3s ease both' : 'tkIn .5s cubic-bezier(.2,.8,.2,1) .35s both') : 'none',
+      tkOp: tkStatic ? 0.5 : 1, tkScale: tkStatic ? 0.975 : 1,
+      codeSize: codigo.length > 11 ? 22 : 28,
+      hasAcomp: isConfirmado && !!S.acompNome && af !== 'meio',
+      acompNome: S.acompNome,
+      showAcompQ: isConfirmado && !!P.acompanhante && !S.acompNome && !S.acompSolo && !S.celebrating && af !== 'meio' && af !== 'inicio',
+      acompAnim: S.justConfirmed && !reduced ? 'fadeUp .4s ease both' : 'none',
+      acompDraft: S.acompDraft, onDraft: this.onDraft, addAcomp: this.addAcomp, acompKey: this.acompKey, toggleAcomp: this.toggleAcomp, alterarAcomp: this.alterarAcomp,
+      acompOpen: S.acompOpen, acompCheck: S.acompOpen ? '✓' : '', acompBoxBg: S.acompOpen ? '#F26A21' : 'transparent', acompBoxBorder: S.acompOpen ? '#F26A21' : 'rgba(255,255,255,.32)',
+      acompOpenAnim: reduced ? 'none' : 'fadeUp .25s ease both',
+      acompBorder: S.focus === 'acomp' ? '#F26A21' : 'rgba(255,255,255,.16)',
+      focusAcomp: this.focusAcomp, focusCode: this.focusCode, blurField: this.blurField,
+      addAgenda: this.addAgenda, scrollToTop: this.scrollToTop,
+      code: S.code, onCode: this.onCode, submitCode: this.submitCode, codeErr: S.codeErr,
+      codeEmpty: !S.code, codeBtnOpacity: S.code ? 1 : 0.4,
+      codeBorder: S.codeErr ? '#FF7A6B' : (S.focus === 'code' ? '#F26A21' : 'rgba(255,255,255,.16)'),
+      shakeAnim: S.shaking && !reduced ? 'shake .36s ease' : 'none',
+      playing: S.playing, notPlaying: !S.playing, play: this.play,
+      epTitle: 'Plataformas internas: como escalar engenharia sem escalar o caos',
+      epDate: 'mai/2026',
+      epViews: P.viewsBaixas ? '860 visualizações' : '12,4 mil visualizações',
+      hasMoreEps: eps !== 'Um', moreEps,
+      nums: [{ v: '240', s: '+', l: 'Episódios' }, { v: '45', s: ' mil', l: 'Seguidores e inscritos' }, { v: '2,65', s: ' mi', l: 'Visualizações' }, { v: '172', s: ' mil+', l: 'Horas assistidas' }],
+      noite: [
+        { n: '01', t: 'Happy hour', d: 'Comida, bebida e boa conversa, com uma fala breve dos apoiadores no palco.' },
+        { n: '02', t: 'Quinta, 29/10', d: 'A partir das 19h, no início da noite, em São Paulo.' },
+        { n: '03', t: 'Vila Nova Conceição, SP', d: 'Rua Bastos Pereira, 25.' },
+        { n: '04', t: 'Entre pares', d: 'Uma sala só com quem fez parte da história do podcast.' }
+      ],
+      prog, progNote: progDef ? 'Horários sujeitos a pequenos ajustes.' : 'Os demais horários serão publicados aqui.',
+      cargos: ['CTOs', 'CIOs', 'CDOs', 'CISOs', 'Heads de Engenharia', 'Heads de Plataforma', 'Arquitetos', 'Staff Engineers', 'Founders & CEOs', 'Diretores de TI', 'Líderes de Dados & IA'],
+      logos: [
+        { name: 'NullPlatform', img: 'assets/nullplatform_logo.png', h: 32, mw: '82%' }, { name: 'VMBears', img: 'assets/sup_54.png', h: 30, mw: '82%' }, { name: 'Klever', img: 'assets/sup_53.png', h: 24, mw: '82%' },
+        { name: 'Elven', img: 'assets/sup_57.png', h: 56, mw: '82%' }, { name: 'Maralto', img: 'assets/maralto.png', h: 76, mw: '82%' }, { name: 'Trends News', img: 'assets/trends_news.png', h: 64, mw: '100%' }
+      ],
+      toast: S.toast,
+      balloonLayer: this.balloons(wide)
+    };
+  }
+}
+</script>
+</body>
+</html>

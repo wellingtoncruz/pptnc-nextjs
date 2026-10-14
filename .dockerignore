@@ -4,6 +4,11 @@ npm-debug.log*
 
 # Re-include node_modules inside standalone output (required for runtime)
 !apps/web/.next/standalone/**/node_modules
+!apps/hotsite-5a/.next/standalone/**/node_modules
+
+# Hotsite: referência de design do Claude Design e cache de build fora do contexto
+apps/hotsite-5a/static-assets
+apps/hotsite-5a/.next/cache
 
 # Next.js build cache (keep standalone output for stage/local builds)
 apps/web/.next/cache
