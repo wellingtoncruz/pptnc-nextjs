@@ -92,12 +92,19 @@ export function ListaConvites({ linhas }: { linhas: LinhaPainel[] }) {
                   <span className="admin-copiar-txt">{copiado === l.codigo ? "Link copiado" : "Copiar link"}</span>
                 </button>
                 {l.convidado && <span className="admin-quando" style={mono(11, { letterSpacing: ".04em", textTransform: "none" })}>{l.convidadoEm}</span>}
+                {l.marcaTravada ? (
+                  <button type="button" className="admin-btn admin-marca" data-on="true" disabled
+                    title="Quem respondeu ao convite fica marcado como convidado">
+                    ✓ Convidado
+                  </button>
+                ) : (
                 <form action={marcarConvidado.bind(null, l.codigo, !l.convidado)}>
                   <button type="submit" className="admin-btn admin-marca" data-on={l.convidado}
                     aria-label={l.convidado ? `Desfazer convidado de ${l.nome}` : `Marcar ${l.nome} como convidado`}>
                     {l.convidado ? "✓ Convidado" : "Marcar convidado"}
                   </button>
                 </form>
+                )}
                 {removendo === l.codigo ? (
                   <span className="admin-confirma" role="group" aria-label={`Remover +1 de ${l.nome}`}>
                     <span className="admin-confirma-txt">Remover +1 de {l.acompanhanteNome}?</span>

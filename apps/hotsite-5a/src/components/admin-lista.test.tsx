@@ -89,3 +89,19 @@ describe("ListaConvites: recusa e exclusão (32.12)", () => {
     expect(screen.getByRole("button", { name: "Excluir convite de Ana Lu" })).toBeInTheDocument();
   });
 });
+
+describe("ListaConvites: marca travada (32.13)", () => {
+  const resp = montarPainel(
+    [nominal({ codigo: "CAIO1", nome: "Caio Reis", status: "confirmado", convidadoEm: new Date("2026-10-08T17:02:00Z") }),
+      nominal({ codigo: "ANA1", nome: "Ana Lu", convidadoEm: new Date("2026-10-08T17:02:00Z") })],
+    0, "todos", "https://5anos.pptnaocompila.com.br"
+  ).linhas;
+
+  it("confirmado mostra ✓ Convidado desabilitado; pendente marcado ainda desfaz", () => {
+    render(<ListaConvites linhas={resp} />);
+    const caio = screen.getByText("Caio Reis").closest("li")!;
+    const travado = [...caio.querySelectorAll("button")].find((b) => b.textContent === "✓ Convidado")!;
+    expect(travado).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Desfazer convidado de Ana Lu" })).toBeEnabled();
+  });
+});

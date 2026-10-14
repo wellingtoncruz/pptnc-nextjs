@@ -81,10 +81,14 @@ export function confirmar(doc: GuestDoc, agora: Date, dados: DadosConfirmacao = 
   };
   if (trocaStatus) campos.respondidoEm = agora;
   if (nome !== doc.nome) campos.nome = nome;
+  if (doc.convidadoEm === null) campos.convidadoEm = agora; // 32.13: responder pelo convite marca como convidado
   return { ok: true, mudou: true, campos };
 }
 
-/** Recusar: qualquer status → recusou, idempotente. Não apaga acompanhante nem contato (D16, D23) e não exige nada. */
+/**
+ * Recusar: qualquer status → recusou, idempotente. Não apaga acompanhante nem contato (D16, D23) e não exige nada.
+ * 32.13: como na confirmação, quem responde passa a ficar marcado como convidado.
+ */
 export function recusar(doc: GuestDoc, agora: Date): Mudanca {
   if (doc.status === "recusou") return { ok: true, mudou: false };
   return {
@@ -95,6 +99,7 @@ export function recusar(doc: GuestDoc, agora: Date): Mudanca {
       respondidoEm: agora,
       atualizadoEm: agora,
       historico: [...doc.historico, entrada(doc, agora, "recusou")],
+      ...(doc.convidadoEm === null ? { convidadoEm: agora } : {}), // 32.13
     },
   };
 }
@@ -119,11 +124,17 @@ export function definirAcompanhante(doc: GuestDoc, agora: Date, bruto: string): 
 }
 
 /**
- * Marcação "convidado" (32.10): controle interno do anfitrião, independente da resposta.
+ * Marcação "convidado" (32.10): controle interno do anfitrião.
  * Não entra no histórico do convidado nem toca status, contato ou respondidoEm.
+ * 32.13: quem já respondeu (confirmou ou recusou) foi convidado; a marcação não se desfaz.
  */
+export function respondeu(doc: Pick<GuestDoc, "status">): boolean {
+  return doc.status === "confirmado" || doc.status === "recusou";
+}
+
 export function marcarConvidado(doc: GuestDoc, agora: Date, marcar: boolean): Mudanca {
   if (doc.status === "excluido") return { ok: true, mudou: false };
+  if (!marcar && respondeu(doc)) return { ok: true, mudou: false };
   if (marcar === (doc.convidadoEm !== null)) return { ok: true, mudou: false };
   return { ok: true, mudou: true, campos: { convidadoEm: marcar ? agora : null, atualizadoEm: agora } };
 }

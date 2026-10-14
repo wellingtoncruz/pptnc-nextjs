@@ -157,6 +157,9 @@ input::placeholder { color: #7a7a84; }
   color: var(--text-2); text-decoration: none; font-size: 15px; font-weight: 600;
 }
 .seg[data-ativo="true"] { background: var(--accent); color: var(--on-accent); }
+/* 32.13: quatro filtros; no celular a barra quebra em mais de uma linha */
+.seg { white-space: nowrap; }
+@media (max-width: 600px) { .seg-wrap { display: flex; flex-wrap: wrap; border-radius: 22px; width: 100%; } }
 .seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @media (min-width: 900px) { .admin-cards { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
@@ -190,6 +193,8 @@ input::placeholder { color: #7a7a84; }
 .admin-btn:hover { border-color: rgba(255, 255, 255, 0.4); color: var(--text); }
 .admin-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .admin-marca[data-on="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+/* 32.13: quem respondeu não desmarca; o botão fica aceso, sem cara de clicável */
+.admin-marca:disabled { cursor: default; opacity: 0.85; }
 .admin-copiar[data-ok="true"] { border-color: #4ade80; color: #4ade80; }
 .admin-confirma { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .admin-confirma-txt { font-size: 13px; color: var(--text); }

@@ -1,12 +1,32 @@
 import type { GuestDoc } from "../guests/schema";
 import { formatarCelular } from "../contato";
 import { dataBrt, STATUS_PT, totais } from "../export/csv";
+import { respondeu } from "../guests/rules";
 
 /** Painel do anfitrião (32.9/32.10): dados puros, sem Firestore. */
-export type Filtro = "todos" | "confirmados";
+export const FILTROS = ["todos", "confirmados", "convidados-nao-confirmados", "nao-convidados"] as const;
+export type Filtro = (typeof FILTROS)[number];
 
 export function lerFiltro(bruto: string | string[] | undefined): Filtro {
-  return bruto === "confirmados" ? "confirmados" : "todos";
+  return FILTROS.find((f) => f === bruto) ?? "todos";
+}
+
+/**
+ * Filtros da lista (32.10, 32.13). Os dois novos deixam o excluído de fora (D46):
+ * - convidados não confirmados = marcado como convidado E status "pendente";
+ * - não convidados = sem a marcação (quem respondeu sempre está marcado, D47).
+ */
+export function aplicarFiltro(docs: GuestDoc[], filtro: Filtro): GuestDoc[] {
+  switch (filtro) {
+    case "confirmados":
+      return docs.filter((d) => d.status === "confirmado");
+    case "convidados-nao-confirmados":
+      return docs.filter((d) => d.convidadoEm !== null && d.status === "pendente");
+    case "nao-convidados":
+      return docs.filter((d) => d.convidadoEm === null && d.status !== "excluido");
+    default:
+      return docs;
+  }
 }
 
 export interface Contadores {
@@ -32,6 +52,8 @@ export interface LinhaPainel {
   detalhes: { texto: string; mono?: boolean }[];
   convidado: boolean;
   convidadoEm: string;
+  /** 32.13: quem respondeu fica marcado como convidado; o botão não desfaz. */
+  marcaTravada: boolean;
   /** 32.11: permissão de +1 e o nome já informado (para a confirmação de remover). */
   acompanhanteLiberado: boolean;
   acompanhanteNome: string | null;
@@ -72,7 +94,7 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
     espera,
   };
   const base = baseUrl.replace(/\/+$/, "");
-  const visiveis = filtro === "confirmados" ? docs.filter((d) => d.status === "confirmado") : docs;
+  const visiveis = aplicarFiltro(docs, filtro);
   const linhas = ordenar(visiveis).map((d): LinhaPainel => {
     const conf = d.status === "confirmado"; // D23: contato só de quem confirmou
     const excluido = d.status === "excluido"; // 32.12: linha só com identificação e data da exclusão
@@ -97,6 +119,7 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
       detalhes,
       convidado: !excluido && d.convidadoEm !== null,
       convidadoEm: curta(d.convidadoEm),
+      marcaTravada: !excluido && respondeu(d) && d.convidadoEm !== null,
       acompanhanteLiberado: !excluido && d.acompanhantePermitido,
       acompanhanteNome: !excluido && d.acompanhantePermitido ? d.acompanhanteNome : null,
       url: `${base}/c/${d.codigo}`,

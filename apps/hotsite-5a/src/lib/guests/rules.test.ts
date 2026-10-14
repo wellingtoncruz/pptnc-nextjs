@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { confirmar, definirAcompanhante, excluir, marcarConvidado, permitirAcompanhante, recusar, validarNome } from "./rules";
+import { confirmar, definirAcompanhante, excluir, marcarConvidado, permitirAcompanhante, recusar, respondeu, validarNome } from "./rules";
 import { cota, nominal, T0 } from "./test-helpers";
 import type { GuestDoc } from "./schema";
 
@@ -172,7 +172,8 @@ describe("empresa na confirmação (D30)", () => {
 
 describe("marcação convidado (32.10)", () => {
   it("marca, desmarca e é idempotente; nunca toca resposta, contato nem histórico", () => {
-    const d = nominal({ status: "confirmado", email: "m@x.io", respondidoEm: T0 });
+    // Pendente: quem já respondeu não desmarca (32.13), coberto abaixo.
+    const d = nominal({ email: "m@x.io" });
     const m = marcarConvidado(d, T1, true);
     expect(m.ok && m.mudou && m.campos).toEqual({ convidadoEm: T1, atualizadoEm: T1 });
     const marcado = aplica(d, m);
@@ -248,5 +249,36 @@ describe("exclusão lógica (32.12)", () => {
     const depois = aplica(confirmado, excluir(confirmado, T1));
     expect(marcarConvidado(depois, T1, false)).toEqual({ ok: true, mudou: false });
     expect(permitirAcompanhante(depois, T1, false)).toEqual({ ok: true, mudou: false });
+  });
+});
+
+describe("responder marca como convidado (32.13)", () => {
+  it("confirmar sem a marcação marca com a hora da confirmação", () => {
+    const m = confirmar(nominal(), T0, E);
+    expect(m.ok && m.mudou && m.campos.convidadoEm).toEqual(T0);
+  });
+
+  it("recusar sem a marcação marca com a hora da recusa", () => {
+    const m = recusar(nominal(), T0);
+    expect(m.ok && m.mudou && m.campos.convidadoEm).toEqual(T0);
+  });
+
+  it("já marcado: confirmar e recusar mantêm a data original", () => {
+    const d = nominal({ convidadoEm: T1 });
+    const c = confirmar(d, T0, E);
+    const r = recusar(d, T0);
+    expect(c.ok && c.mudou && "convidadoEm" in c.campos).toBe(false);
+    expect(r.ok && r.mudou && "convidadoEm" in r.campos).toBe(false);
+  });
+
+  it("quem respondeu não desmarca; quem não respondeu desmarca", () => {
+    expect(marcarConvidado(nominal({ status: "confirmado", convidadoEm: T1 }), T0, false)).toEqual({ ok: true, mudou: false });
+    expect(marcarConvidado(nominal({ status: "recusou", convidadoEm: T1 }), T0, false)).toEqual({ ok: true, mudou: false });
+    const m = marcarConvidado(nominal({ convidadoEm: T1 }), T0, false);
+    expect(m.ok && m.mudou && m.campos.convidadoEm).toBeNull();
+  });
+
+  it("respondeu = confirmado ou recusou", () => {
+    expect(["pendente", "confirmado", "recusou", "excluido"].map((status) => respondeu({ status } as never))).toEqual([false, true, true, false]);
   });
 });

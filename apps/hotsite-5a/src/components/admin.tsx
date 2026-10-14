@@ -3,7 +3,7 @@ import type { Filtro, Painel } from "@/lib/admin/painel";
 import { ListaConvites } from "./admin-lista";
 import { card, ErroInline, mono, Rotulo, Selo } from "./ui";
 
-/** Painel do anfitrião (32.9/32.10): contadores e filtro no servidor; lista e busca no cliente. */
+/** Painel do anfitrião (32.9/32.10/32.13): contadores e filtro no servidor; lista e busca no cliente. */
 function Contador({ rotulo, valor, destaque = false }: { rotulo: string; valor: number; destaque?: boolean }) {
   return (
     <div style={{ ...card, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
@@ -17,7 +17,7 @@ export function PainelAdmin({ painel, filtro, comProblema }: { painel: Painel; f
   const c = painel.contadores;
   const opcao = (valor: Filtro, texto: string) => (
     <a
-      href={valor === "todos" ? "/admin" : "/admin?filtro=confirmados"}
+      href={valor === "todos" ? "/admin" : `/admin?filtro=${valor}`}
       aria-current={filtro === valor ? "page" : undefined}
       className="seg"
       data-ativo={filtro === valor}
@@ -55,6 +55,8 @@ export function PainelAdmin({ painel, filtro, comProblema }: { painel: Painel; f
           <nav aria-label="Filtro" className="seg-wrap">
             {opcao("todos", "Todos")}
             {opcao("confirmados", "Apenas confirmados")}
+            {opcao("convidados-nao-confirmados", "Convidados não confirmados")}
+            {opcao("nao-convidados", "Não convidados")}
           </nav>
         </div>
         <ListaConvites linhas={painel.linhas} />

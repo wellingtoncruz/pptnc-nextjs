@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filtrarPorNome, lerFiltro, montarPainel, normalizarBusca } from "./painel";
+import { filtrarPorNome, lerFiltro, montarPainel, normalizarBusca, type Filtro } from "./painel";
 import { totais } from "../export/csv";
 import { cota, nominal } from "../guests/test-helpers";
 
@@ -13,7 +13,7 @@ const docs = [
   cota({ status: "confirmado", nome: "Joana Prado", email: "joana@klever.io" }),
   cota({ codigo: "KLEVERVIP555" }),
 ];
-const linha = (codigo: string, f: "todos" | "confirmados" = "todos") => montarPainel(docs, 0, f, BASE).linhas.find((l) => l.codigo === codigo)!;
+const linha = (codigo: string, f: Filtro = "todos") => montarPainel(docs, 0, f, BASE).linhas.find((l) => l.codigo === codigo)!;
 const textos = (codigo: string) => linha(codigo).detalhes.map((d) => d.texto);
 
 describe("painel do anfitrião (32.9/32.10)", () => {
@@ -74,7 +74,7 @@ describe("exclusão lógica no painel (32.12)", () => {
     nominal({ codigo: "BRUNO978", nome: "Bruno Campos", empresa: "Klever", status: "excluido", excluidoEm: X, convidadoEm: M,
       acompanhantePermitido: true, acompanhanteNome: "Guardado", email: "bruno@guardado.io", respondidoEm: R }),
   ];
-  const painel = (f: "todos" | "confirmados" = "todos") => montarPainel(comExcluido, 0, f, BASE);
+  const painel = (f: Filtro = "todos") => montarPainel(comExcluido, 0, f, BASE);
 
   it("criados = confirmados + não confirmados + recusados + excluídos; excluído sai de convidados e de pessoas", () => {
     const c = painel().contadores;
@@ -96,5 +96,45 @@ describe("exclusão lógica no painel (32.12)", () => {
 
   it("filtro de confirmados não traz o excluído", () => {
     expect(painel("confirmados").linhas.some((l) => l.codigo === "BRUNO978")).toBe(false);
+  });
+});
+
+describe("filtros de marcação (32.13)", () => {
+  const X = new Date("2026-10-13T18:40:00Z");
+  const base = [
+    nominal({ codigo: "CONF1", nome: "Carla", status: "confirmado", convidadoEm: M, respondidoEm: R }),
+    nominal({ codigo: "RECU1", nome: "Rui", status: "recusou", convidadoEm: M, respondidoEm: R }),
+    nominal({ codigo: "PMAR1", nome: "Paula", convidadoEm: M }),
+    nominal({ codigo: "PSEM1", nome: "Pedro" }),
+    cota({ codigo: "KLEVERVIP900" }),
+    nominal({ codigo: "EXCL1", nome: "Ester", status: "excluido", excluidoEm: X }),
+    nominal({ codigo: "EXCL2", nome: "Edu", status: "excluido", excluidoEm: X, convidadoEm: M }),
+  ];
+  const codigos = (f: Filtro) => montarPainel(base, 0, f, BASE).linhas.map((l) => l.codigo).sort();
+
+  it("convidados não confirmados = marcado E pendente", () => {
+    expect(codigos("convidados-nao-confirmados")).toEqual(["PMAR1"]);
+  });
+
+  it("não convidados = sem marcação, sem o excluído (D46)", () => {
+    expect(codigos("nao-convidados")).toEqual(["KLEVERVIP900", "PSEM1"]);
+  });
+
+  it("contadores não mudam com os filtros novos", () => {
+    const todos = montarPainel(base, 0, "todos", BASE).contadores;
+    expect(montarPainel(base, 0, "nao-convidados", BASE).contadores).toEqual(todos);
+    expect(montarPainel(base, 0, "convidados-nao-confirmados", BASE).contadores).toEqual(todos);
+  });
+
+  it("filtros novos vêm da URL", () => {
+    expect(lerFiltro("convidados-nao-confirmados")).toBe("convidados-nao-confirmados");
+    expect(lerFiltro("nao-convidados")).toBe("nao-convidados");
+    expect(lerFiltro("outro")).toBe("todos");
+  });
+
+  it("marca travada só em quem respondeu e está marcado", () => {
+    const comLegado = [...base, nominal({ codigo: "LEG1", nome: "Lia", status: "confirmado", respondidoEm: R })];
+    const l = (c: string) => montarPainel(comLegado, 0, "todos", BASE).linhas.find((x) => x.codigo === c)!;
+    expect(["CONF1", "RECU1", "PMAR1", "PSEM1", "EXCL2", "LEG1"].map((c) => l(c).marcaTravada)).toEqual([true, true, false, false, false, false]);
   });
 });
