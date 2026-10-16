@@ -28,7 +28,21 @@ describe("painel do anfitrião (32.9/32.10)", () => {
 
   it("filtro: todos = uma linha por documento; confirmados só os confirmados", () => {
     expect(montarPainel(docs, 0, "todos", BASE).linhas).toHaveLength(5);
-    expect(montarPainel(docs, 0, "confirmados", BASE).linhas.map((l) => l.codigo)).toEqual(["KLEVERVIP417", "ZECA100"]);
+    // 32.14: Zeca tem data de confirmação; a cota confirmada sem data vai para o fim.
+    expect(montarPainel(docs, 0, "confirmados", BASE).linhas.map((l) => l.codigo)).toEqual(["ZECA100", "KLEVERVIP417"]);
+  });
+
+  it("32.14: 'Apenas confirmados' vai da confirmação mais antiga à mais recente; os outros filtros seguem alfabéticos", () => {
+    const d = (iso: string) => new Date(iso);
+    const conf = [
+      nominal({ codigo: "BIA1", nome: "Bia", status: "confirmado", respondidoEm: d("2026-10-12T10:00:00Z") }),
+      nominal({ codigo: "ANA1", nome: "Ana", status: "confirmado", respondidoEm: d("2026-10-14T10:00:00Z") }),
+      nominal({ codigo: "CAIO1", nome: "Caio", status: "confirmado", respondidoEm: d("2026-10-09T10:00:00Z") }),
+      nominal({ codigo: "DUDA1", nome: "Duda", status: "confirmado", respondidoEm: d("2026-10-12T10:00:00Z") }),
+      nominal({ codigo: "EVA1", nome: "Eva", status: "pendente" }),
+    ];
+    expect(montarPainel(conf, 0, "confirmados", BASE).linhas.map((l) => l.nome)).toEqual(["Caio", "Bia", "Duda", "Ana"]);
+    expect(montarPainel(conf, 0, "todos", BASE).linhas.map((l) => l.nome)).toEqual(["Ana", "Bia", "Caio", "Duda", "Eva"]);
   });
 
   it("ordem do CSV (A4): alfabética PT-BR, cota sem nome no fim", () => {

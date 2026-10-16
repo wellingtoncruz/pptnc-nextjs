@@ -78,6 +78,18 @@ function ordenar(docs: GuestDoc[]): GuestDoc[] {
   );
 }
 
+/**
+ * 32.14: em "Apenas confirmados", da confirmação mais antiga à mais recente.
+ * respondidoEm só muda quando o status vira confirmado (atualizar contato não mexe); sem data vai para o fim.
+ * Empate (ou sem data) cai na ordem alfabética.
+ */
+function ordenarPorConfirmacao(docs: GuestDoc[]): GuestDoc[] {
+  const alfa = ordenar(docs);
+  const pos = new Map(alfa.map((d, i) => [d.codigo, i]));
+  const t = (d: GuestDoc) => d.respondidoEm?.getTime() ?? Infinity;
+  return alfa.sort((a, b) => t(a) - t(b) || pos.get(a.codigo)! - pos.get(b.codigo)!);
+}
+
 /** "08/10 14:02" — a data curta da marcação e da resposta. */
 const curta = (d: Date | null) => (d ? dataBrt(d).replace(/\/\d{4}/, "") : "");
 
@@ -95,7 +107,7 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
   };
   const base = baseUrl.replace(/\/+$/, "");
   const visiveis = aplicarFiltro(docs, filtro);
-  const linhas = ordenar(visiveis).map((d): LinhaPainel => {
+  const linhas = (filtro === "confirmados" ? ordenarPorConfirmacao : ordenar)(visiveis).map((d): LinhaPainel => {
     const conf = d.status === "confirmado"; // D23: contato só de quem confirmou
     const excluido = d.status === "excluido"; // 32.12: linha só com identificação e data da exclusão
     const detalhes: LinhaPainel["detalhes"] = [];
