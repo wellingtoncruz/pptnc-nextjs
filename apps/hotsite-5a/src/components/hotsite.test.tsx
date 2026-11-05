@@ -46,6 +46,13 @@ describe("Hotsite — 4 estados (32.4 AC 14)", () => {
     expect(screen.getByRole("img", { name: /Ingresso simbólico de Mariana/ })).not.toHaveTextContent("MARIANA742");
   });
 
+  it("confirmado: mostra o endereço com link para o mapa", () => {
+    render(<Hotsite inicial={toView(nominal({ status: "confirmado" }))} />);
+    const link = screen.getByRole("link", { name: "Rua Bastos Pereira, 25" });
+    expect(link).toHaveAttribute("href", expect.stringContaining("google.com/maps"));
+    expect(link).toHaveAttribute("target", "_blank");
+  });
+
   it("recusou: textos D15", () => {
     render(<Hotsite inicial={toView(nominal({ status: "recusou" }))} />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Que pena, Mariana.");

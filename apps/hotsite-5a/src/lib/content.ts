@@ -18,6 +18,8 @@ export const EVENTO = {
   bairroCurto: "V. Nova Conceição",
   cidade: "São Paulo",
   uf: "SP",
+  /** Link do endereço na tela de confirmado (Wellington, 04/11). */
+  mapsUrl: "https://www.google.com/maps/search/?api=1&query=Rua%20Bastos%20Pereira%2C%2025%2C%20Vila%20Nova%20Concei%C3%A7%C3%A3o%2C%20S%C3%A3o%20Paulo%20-%20SP",
   // .ics: 19h–23h em São Paulo (UTC-3, sem horário de verão)
   icsInicio: "20261105T220000Z",
   icsFim: "20261106T020000Z",

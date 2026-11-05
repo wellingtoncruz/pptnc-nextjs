@@ -203,6 +203,14 @@ export function TopoConfirmado(p: TopoConfirmadoProps) {
           <Selo texto={textos.rotulo} />
           <h1 style={TITULO}>Presença <span style={{ color: "var(--accent)" }}>confirmada!</span></h1>
           <p style={FRASE}>{textos.confirmado}</p>
+          {/* Endereço também depois de confirmar (Wellington, 04/11): antes só aparecia no convite aberto. */}
+          <div style={{ ...mono(12, { color: "var(--text-2)" }), marginTop: 18, lineHeight: "20px", display: "flex", flexDirection: "column" }}>
+            <span>{EVENTO.diaSemana} · a partir das {EVENTO.horario}</span>
+            <a href={EVENTO.mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 3, alignSelf: "flex-start" }}>
+              {EVENTO.endereco}
+            </a>
+            <span>{EVENTO.bairro} · {EVENTO.uf}</span>
+          </div>
         </div>
         <div style={{ flex: "1 1 340px", maxWidth: 440, minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
           <Ingresso nome={view.nome ?? ""} acompanhante={temAcomp ? view.acompanhanteNome : null} animacao={p.ingressoAnim} />
