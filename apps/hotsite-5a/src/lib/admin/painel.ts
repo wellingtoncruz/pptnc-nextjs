@@ -52,6 +52,8 @@ export interface LinhaPainel {
   detalhes: { texto: string; mono?: boolean }[];
   convidado: boolean;
   convidadoEm: string;
+  /** Esteve no evento (lista da porta de 05/11). */
+  presente: boolean;
   /** 32.13: quem respondeu fica marcado como convidado; o botão não desfaz. */
   marcaTravada: boolean;
   /** 32.11: permissão de +1 e o nome já informado (para a confirmação de remover). */
@@ -131,6 +133,7 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
       detalhes,
       convidado: !excluido && d.convidadoEm !== null,
       convidadoEm: curta(d.convidadoEm),
+      presente: !excluido && d.presenteEm !== null,
       marcaTravada: !excluido && respondeu(d) && d.convidadoEm !== null,
       acompanhanteLiberado: !excluido && d.acompanhantePermitido,
       acompanhanteNome: !excluido && d.acompanhantePermitido ? d.acompanhanteNome : null,

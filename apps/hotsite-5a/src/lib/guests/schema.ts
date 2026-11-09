@@ -48,6 +48,8 @@ export const GuestDocSchema = z
     convidadoEm: z.date().nullable().default(null),
     /** 32.12: quando o anfitrião excluiu o convite. Sem volta pelo painel. */
     excluidoEm: z.date().nullable().default(null),
+    /** Presença no evento (05/11), lançada a partir da lista da porta. Não muda a resposta nem a página. */
+    presenteEm: z.date().nullable().default(null),
     episodios: z.array(EpisodioSchema),
     respondidoEm: z.date().nullable(),
     historico: z.array(HistoricoSchema),

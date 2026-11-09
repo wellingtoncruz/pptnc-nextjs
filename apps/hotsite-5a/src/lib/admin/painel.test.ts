@@ -62,6 +62,18 @@ describe("painel do anfitrião (32.9/32.10)", () => {
     expect(linha("ZECA100")).toMatchObject({ statusTexto: "Confirmado", convidado: true, convidadoEm: "08/10 14:02" });
   });
 
+  it("presença no evento: só quem tem presenteEm, e nunca excluído", () => {
+    const P = new Date("2026-11-05T23:00:00Z");
+    const d = [
+      nominal({ codigo: "VEIO1", nome: "Veio", status: "confirmado", presenteEm: P }),
+      nominal({ codigo: "WALK1", nome: "Walk-in", status: "pendente", convidadoEm: P, presenteEm: P }),
+      nominal({ codigo: "NAO1", nome: "Não veio", status: "confirmado" }),
+      nominal({ codigo: "EXC1", nome: "Excluído", status: "excluido", excluidoEm: P, presenteEm: P }),
+    ];
+    const p = (c: string) => montarPainel(d, 0, "todos", BASE).linhas.find((l) => l.codigo === c)!.presente;
+    expect([p("VEIO1"), p("WALK1"), p("NAO1"), p("EXC1")]).toEqual([true, true, false, false]);
+  });
+
   it("filtro da URL", () => {
     expect(lerFiltro("confirmados")).toBe("confirmados");
     expect(lerFiltro(undefined)).toBe("todos");

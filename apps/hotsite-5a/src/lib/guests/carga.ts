@@ -51,6 +51,7 @@ function novoDoc(
     empresa: null,
     convidadoEm: null,
     excluidoEm: null,
+    presenteEm: null,
     ...base,
     acompanhantePermitido: false,
     acompanhanteNome: null,

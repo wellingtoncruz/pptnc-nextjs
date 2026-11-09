@@ -83,6 +83,7 @@ export function ListaConvites({ linhas }: { linhas: LinhaPainel[] }) {
                 ) : (
                   <span style={{ color: COR_STATUS[l.status], fontSize: 13, fontWeight: 600 }}>{l.statusTexto}</span>
                 )}
+                {l.presente && <span className="admin-selo-presente">Presente</span>}
               </div>
               {l.status !== "excluido" && (
               <div className="admin-acao">

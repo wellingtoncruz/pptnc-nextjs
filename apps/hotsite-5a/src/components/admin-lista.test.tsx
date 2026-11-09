@@ -105,3 +105,18 @@ describe("ListaConvites: marca travada (32.13)", () => {
     expect(screen.getByRole("button", { name: "Desfazer convidado de Ana Lu" })).toBeEnabled();
   });
 });
+
+describe("ListaConvites: presença no evento", () => {
+  const P = new Date("2026-11-05T23:00:00Z");
+  const pres = montarPainel(
+    [nominal({ codigo: "CAIO1", nome: "Caio Reis", status: "confirmado", presenteEm: P }),
+      nominal({ codigo: "ANA1", nome: "Ana Lu", status: "confirmado" })],
+    0, "todos", "https://5anos.pptnaocompila.com.br"
+  ).linhas;
+
+  it("selo Presente só em quem esteve no evento", () => {
+    render(<ListaConvites linhas={pres} />);
+    expect(screen.getByText("Caio Reis").closest("li")).toHaveTextContent("Presente");
+    expect(screen.getByText("Ana Lu").closest("li")).not.toHaveTextContent("Presente");
+  });
+});
