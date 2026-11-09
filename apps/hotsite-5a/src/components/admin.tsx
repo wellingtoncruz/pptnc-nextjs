@@ -42,7 +42,7 @@ export function PainelAdmin({ painel, filtro, comProblema }: { painel: Painel; f
         <Contador rotulo="Recusados" valor={c.recusados} />
         <Contador rotulo="Excluídos" valor={c.excluidos} />
         <Contador rotulo="Pessoas esperadas" valor={c.pessoas} destaque />
-        <Contador rotulo="Lista de espera" valor={c.espera} />
+        <Contador rotulo="Presentes" valor={c.presentes} destaque />
       </section>
 
       {comProblema > 0 && (

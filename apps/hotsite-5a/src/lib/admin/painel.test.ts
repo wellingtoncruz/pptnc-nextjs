@@ -21,7 +21,7 @@ describe("painel do anfitrião (32.9/32.10)", () => {
     const t = totais(docs);
     for (const f of ["todos", "confirmados"] as const) {
       const c = montarPainel(docs, 7, f, BASE).contadores;
-      expect(c).toEqual({ criados: 5, convidados: 2, confirmados: t.confirmados, naoConfirmados: t.pendentes, recusados: t.recusas, excluidos: 0, pessoas: t.esperados, espera: 7 });
+      expect(c).toEqual({ criados: 5, convidados: 2, confirmados: t.confirmados, naoConfirmados: t.pendentes, recusados: t.recusas, excluidos: 0, pessoas: t.esperados, espera: 7, presentes: 0 });
       expect(c.criados).toBe(c.confirmados + c.naoConfirmados + c.recusados);
     }
   });
@@ -72,6 +72,7 @@ describe("painel do anfitrião (32.9/32.10)", () => {
     ];
     const p = (c: string) => montarPainel(d, 0, "todos", BASE).linhas.find((l) => l.codigo === c)!.presente;
     expect([p("VEIO1"), p("WALK1"), p("NAO1"), p("EXC1")]).toEqual([true, true, false, false]);
+    expect(montarPainel(d, 0, "todos", BASE).contadores.presentes).toBe(2);
   });
 
   it("filtro da URL", () => {

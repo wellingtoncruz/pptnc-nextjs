@@ -41,6 +41,8 @@ export interface Contadores {
   /** Confirmados + acompanhantes confirmados. */
   pessoas: number;
   espera: number;
+  /** Estiveram no evento (presenteEm); excluído não conta. */
+  presentes: number;
 }
 
 export interface LinhaPainel {
@@ -106,6 +108,7 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
     excluidos: t.excluidos,
     pessoas: t.esperados,
     espera,
+    presentes: docs.filter((d) => d.presenteEm && d.status !== "excluido").length,
   };
   const base = baseUrl.replace(/\/+$/, "");
   const visiveis = aplicarFiltro(docs, filtro);
