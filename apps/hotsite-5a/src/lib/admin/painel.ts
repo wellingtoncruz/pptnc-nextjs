@@ -41,7 +41,10 @@ export interface Contadores {
   /** Confirmados + acompanhantes confirmados. */
   pessoas: number;
   espera: number;
-  /** Estiveram no evento (presenteEm); excluído não conta. */
+  /**
+   * Pessoas no evento: convite com presenteEm + o acompanhante nomeado desse convite
+   * (o +1 não tem convite próprio; vale a regra "veio o titular, veio o +1"). Excluído não conta.
+   */
   presentes: number;
 }
 
@@ -108,7 +111,9 @@ export function montarPainel(docs: GuestDoc[], espera: number, filtro: Filtro, b
     excluidos: t.excluidos,
     pessoas: t.esperados,
     espera,
-    presentes: docs.filter((d) => d.presenteEm && d.status !== "excluido").length,
+    presentes: docs
+      .filter((d) => d.presenteEm && d.status !== "excluido")
+      .reduce((n, d) => n + 1 + (d.acompanhantePermitido && d.acompanhanteNome ? 1 : 0), 0),
   };
   const base = baseUrl.replace(/\/+$/, "");
   const visiveis = aplicarFiltro(docs, filtro);

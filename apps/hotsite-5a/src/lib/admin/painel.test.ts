@@ -65,14 +65,17 @@ describe("painel do anfitrião (32.9/32.10)", () => {
   it("presença no evento: só quem tem presenteEm, e nunca excluído", () => {
     const P = new Date("2026-11-05T23:00:00Z");
     const d = [
-      nominal({ codigo: "VEIO1", nome: "Veio", status: "confirmado", presenteEm: P }),
+      nominal({ codigo: "VEIO1", nome: "Veio", status: "confirmado", presenteEm: P, acompanhantePermitido: true, acompanhanteNome: "Bia" }),
+      nominal({ codigo: "SO1", nome: "Liberado sem nome", status: "confirmado", presenteEm: P, acompanhantePermitido: true }),
+      nominal({ codigo: "AUS1", nome: "Ausente com +1", status: "confirmado", acompanhantePermitido: true, acompanhanteNome: "Rafa" }),
       nominal({ codigo: "WALK1", nome: "Walk-in", status: "pendente", convidadoEm: P, presenteEm: P }),
       nominal({ codigo: "NAO1", nome: "Não veio", status: "confirmado" }),
       nominal({ codigo: "EXC1", nome: "Excluído", status: "excluido", excluidoEm: P, presenteEm: P }),
     ];
     const p = (c: string) => montarPainel(d, 0, "todos", BASE).linhas.find((l) => l.codigo === c)!.presente;
     expect([p("VEIO1"), p("WALK1"), p("NAO1"), p("EXC1")]).toEqual([true, true, false, false]);
-    expect(montarPainel(d, 0, "todos", BASE).contadores.presentes).toBe(2);
+    // pessoas: Veio + Bia, Walk-in, Liberado sem nome; ausente e excluído não contam
+    expect(montarPainel(d, 0, "todos", BASE).contadores.presentes).toBe(4);
   });
 
   it("filtro da URL", () => {
