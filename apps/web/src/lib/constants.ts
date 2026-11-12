@@ -5,6 +5,7 @@ export const EXTERNAL_LINKS = {
   youtube: "https://www.youtube.com/@PPTNaoCompila",
   youtubeSubscribe: "https://www.youtube.com/channel/UCOvTsuQyJq-fpydse7BY2PQ?sub_confirmation=1",
   spotify: "https://open.spotify.com/show/5aKHRdBlylb2wj5Ac8Kqpj",
+  applePodcasts: "https://podcasts.apple.com/br/podcast/id1592357026",
   instagram: "https://www.instagram.com/pptnaocompila",
   linkedin: "https://www.linkedin.com/company/ppt-nao-compila",
 } as const;

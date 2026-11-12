@@ -73,6 +73,29 @@ describe("SubscriptionCta", () => {
     expect(spotifyLink).toBeInTheDocument();
   });
 
+  it("renders Apple Podcasts link with correct URL", () => {
+    render(<SubscriptionCta />);
+
+    const appleLink = screen.getByRole("link", {
+      name: /seguir na apple podcasts \(abre em nova aba\)/i,
+    });
+
+    expect(appleLink).toHaveAttribute("href", EXTERNAL_LINKS.applePodcasts);
+    expect(appleLink).toHaveAttribute("target", "_blank");
+    expect(appleLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("orders platform links Spotify, Apple Podcasts, YouTube", () => {
+    render(<SubscriptionCta />);
+
+    const hrefs = screen.getAllByRole("link").map((l) => l.getAttribute("href"));
+    expect(hrefs).toEqual([
+      EXTERNAL_LINKS.spotify,
+      EXTERNAL_LINKS.applePodcasts,
+      EXTERNAL_LINKS.youtubeSubscribe,
+    ]);
+  });
+
   it("renders card with visual distinction styling", () => {
     const { container } = render(<SubscriptionCta />);
 
@@ -88,10 +111,10 @@ describe("SubscriptionCta", () => {
     expect(card).toHaveClass("mt-8");
   });
 
-  it("renders both buttons", () => {
+  it("renders the three platform buttons", () => {
     render(<SubscriptionCta />);
 
     const buttons = screen.getAllByRole("link");
-    expect(buttons).toHaveLength(2);
+    expect(buttons).toHaveLength(3);
   });
 });

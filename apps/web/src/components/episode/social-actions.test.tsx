@@ -74,6 +74,14 @@ describe("SocialActions", () => {
       render(<SocialActions episodeUrl="https://example.com/ep1" />);
       expect(screen.getByText("Seguir no Spotify")).toBeInTheDocument();
     });
+
+    it("renders Apple Podcasts link to the show", () => {
+      render(<SocialActions episodeUrl="https://example.com/ep1" />);
+      expect(screen.getByText("Seguir na Apple Podcasts").closest("a")).toHaveAttribute(
+        "href",
+        "https://podcasts.apple.com/br/podcast/id1592357026"
+      );
+    });
   });
 
   describe("Copy link button", () => {

@@ -73,6 +73,10 @@ describe("MobileNav", () => {
     expect(screen.getByText(/plataformas/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /youtube/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /spotify/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /apple podcasts/i })).toHaveAttribute(
+      "href",
+      "https://podcasts.apple.com/br/podcast/id1592357026"
+    );
   });
 
   it("displays theme toggle in the sheet", async () => {

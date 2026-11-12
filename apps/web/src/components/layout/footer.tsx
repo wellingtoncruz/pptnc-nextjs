@@ -4,6 +4,7 @@ import { Youtube } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import {
+  ApplePodcastsIcon,
   SpotifyIcon,
   InstagramIcon,
   LinkedInIcon,
@@ -15,23 +16,28 @@ import { EXTERNAL_LINKS, NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
  */
 const socialLinks = [
   {
-    href: EXTERNAL_LINKS.youtube,
-    label: "YouTube",
-    icon: Youtube,
-  },
-  {
     href: EXTERNAL_LINKS.spotify,
-    label: "Spotify",
+    label: "Seguir no Spotify",
     icon: SpotifyIcon,
   },
   {
+    href: EXTERNAL_LINKS.applePodcasts,
+    label: "Seguir na Apple Podcasts",
+    icon: ApplePodcastsIcon,
+  },
+  {
+    href: EXTERNAL_LINKS.youtube,
+    label: "Seguir no YouTube",
+    icon: Youtube,
+  },
+  {
     href: EXTERNAL_LINKS.instagram,
-    label: "Instagram",
+    label: "Seguir no Instagram",
     icon: InstagramIcon,
   },
   {
     href: EXTERNAL_LINKS.linkedin,
-    label: "LinkedIn",
+    label: "Seguir no LinkedIn",
     icon: LinkedInIcon,
   },
 ];
@@ -87,7 +93,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground transition-colors hover:text-primary"
-                  aria-label={`Seguir no ${link.label}`}
+                  aria-label={link.label}
                 >
                   <link.icon className="h-5 w-5" />
                 </a>

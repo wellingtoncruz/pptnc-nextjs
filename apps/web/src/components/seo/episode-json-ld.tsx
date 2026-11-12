@@ -1,5 +1,5 @@
 import type { Episode } from "@/types";
-import { SITE_CONFIG } from "@/lib/constants";
+import { EXTERNAL_LINKS, SITE_CONFIG } from "@/lib/constants";
 
 export interface EpisodeJsonLdProps {
   episode: Episode;
@@ -39,6 +39,11 @@ export function EpisodeJsonLd({ episode, baseUrl }: EpisodeJsonLdProps) {
       "@type": "PodcastSeries",
       name: SITE_CONFIG.name,
       url: baseUrl,
+      sameAs: [
+        EXTERNAL_LINKS.spotify,
+        EXTERNAL_LINKS.applePodcasts,
+        EXTERNAL_LINKS.youtube,
+      ],
     },
     associatedMedia: {
       "@type": "VideoObject",

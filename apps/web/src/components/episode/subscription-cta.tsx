@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SpotifyIcon } from "@/components/icons/social-icons";
+import { ApplePodcastsIcon, SpotifyIcon } from "@/components/icons/social-icons";
 import { cn } from "@/lib/utils";
 import { EXTERNAL_LINKS, SITE_CONFIG } from "@/lib/constants";
 
@@ -37,17 +37,6 @@ export function SubscriptionCta({ className }: SubscriptionCtaProps) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <a
-              href={EXTERNAL_LINKS.youtubeSubscribe}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Inscrever no YouTube (abre em nova aba)"
-            >
-              <Youtube className="mr-2 h-4 w-4" />
-              Inscrever no YouTube
-            </a>
-          </Button>
           <Button variant="outline" asChild>
             <a
               href={EXTERNAL_LINKS.spotify}
@@ -57,6 +46,28 @@ export function SubscriptionCta({ className }: SubscriptionCtaProps) {
             >
               <SpotifyIcon className="mr-2 h-4 w-4" />
               Seguir no Spotify
+            </a>
+          </Button>
+          <Button variant="outline" asChild>
+            <a
+              href={EXTERNAL_LINKS.applePodcasts}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Seguir na Apple Podcasts (abre em nova aba)"
+            >
+              <ApplePodcastsIcon className="mr-2 h-4 w-4" />
+              Seguir na Apple Podcasts
+            </a>
+          </Button>
+          <Button asChild>
+            <a
+              href={EXTERNAL_LINKS.youtubeSubscribe}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Inscrever no YouTube (abre em nova aba)"
+            >
+              <Youtube className="mr-2 h-4 w-4" />
+              Inscrever no YouTube
             </a>
           </Button>
         </div>

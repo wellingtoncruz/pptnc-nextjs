@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SpotifyIcon } from "@/components/icons/social-icons";
+import { ApplePodcastsIcon, SpotifyIcon } from "@/components/icons/social-icons";
 import { EXTERNAL_LINKS, NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
 
 /**
@@ -70,16 +70,6 @@ export function MobileNav() {
             Plataformas
           </span>
           <a
-            href={EXTERNAL_LINKS.youtube}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-            onClick={() => setOpen(false)}
-          >
-            <Youtube className="h-4 w-4" />
-            YouTube
-          </a>
-          <a
             href={EXTERNAL_LINKS.spotify}
             target="_blank"
             rel="noopener noreferrer"
@@ -88,6 +78,26 @@ export function MobileNav() {
           >
             <SpotifyIcon className="h-4 w-4" />
             Spotify
+          </a>
+          <a
+            href={EXTERNAL_LINKS.applePodcasts}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            onClick={() => setOpen(false)}
+          >
+            <ApplePodcastsIcon className="h-4 w-4" />
+            Apple Podcasts
+          </a>
+          <a
+            href={EXTERNAL_LINKS.youtube}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+            onClick={() => setOpen(false)}
+          >
+            <Youtube className="h-4 w-4" />
+            YouTube
           </a>
         </div>
 

@@ -6,7 +6,7 @@ import { Youtube, Copy, Check, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { SpotifyIcon, XIcon, LinkedInIcon } from "@/components/icons/social-icons";
+import { ApplePodcastsIcon, SpotifyIcon, XIcon, LinkedInIcon } from "@/components/icons/social-icons";
 import { cn } from "@/lib/utils";
 import { EXTERNAL_LINKS } from "@/lib/constants";
 
@@ -63,19 +63,6 @@ export function SocialActions({
 
   return (
     <div className={cn("flex flex-wrap gap-3", className)}>
-      {/* YouTube Link */}
-      <Button variant="outline" size="sm" asChild>
-        <a
-          href={EXTERNAL_LINKS.youtube}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Seguir no YouTube (abre em nova aba)"
-        >
-          <Youtube className="mr-2 h-4 w-4" />
-          Seguir no YouTube
-        </a>
-      </Button>
-
       {/* Spotify Link */}
       <Button variant="outline" size="sm" asChild>
         <a
@@ -86,6 +73,32 @@ export function SocialActions({
         >
           <SpotifyIcon className="mr-2 h-4 w-4" />
           Seguir no Spotify
+        </a>
+      </Button>
+
+      {/* Apple Podcasts Link */}
+      <Button variant="outline" size="sm" asChild>
+        <a
+          href={EXTERNAL_LINKS.applePodcasts}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Seguir na Apple Podcasts (abre em nova aba)"
+        >
+          <ApplePodcastsIcon className="mr-2 h-4 w-4" />
+          Seguir na Apple Podcasts
+        </a>
+      </Button>
+
+      {/* YouTube Link */}
+      <Button variant="outline" size="sm" asChild>
+        <a
+          href={EXTERNAL_LINKS.youtube}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Seguir no YouTube (abre em nova aba)"
+        >
+          <Youtube className="mr-2 h-4 w-4" />
+          Seguir no YouTube
         </a>
       </Button>
 
