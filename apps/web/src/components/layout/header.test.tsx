@@ -73,6 +73,27 @@ describe("Header", () => {
     );
   });
 
+  it("renders Apple Podcasts CTA on desktop and mobile, linking to the show", () => {
+    render(<Header />);
+    const appleLinks = screen.getAllByRole("link", { name: /apple podcasts/i });
+    expect(appleLinks).toHaveLength(2);
+    appleLinks.forEach((link) =>
+      expect(link).toHaveAttribute("href", "https://podcasts.apple.com/br/podcast/id1592357026")
+    );
+  });
+
+  it("orders desktop CTAs Spotify, Apple Podcasts, YouTube", () => {
+    render(<Header />);
+    const labels = screen
+      .getAllByRole("link", { name: /spotify|apple podcasts|youtube/i })
+      .map((l) => l.getAttribute("aria-label"));
+    expect(labels.slice(0, 3)).toEqual([
+      "Ouça no Spotify",
+      "Ouça na Apple Podcasts",
+      "Assista no YouTube",
+    ]);
+  });
+
   it("renders YouTube CTA link on desktop", () => {
     render(<Header />);
     const youtubeLink = screen.getByRole("link", { name: /youtube/i });

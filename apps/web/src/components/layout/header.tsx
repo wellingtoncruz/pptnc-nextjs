@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Container } from "@/components/layout/container";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { SpotifyIcon } from "@/components/icons/social-icons";
+import { ApplePodcastsIcon, SpotifyIcon } from "@/components/icons/social-icons";
 import { EXTERNAL_LINKS, NAV_LINKS, SITE_CONFIG } from "@/lib/constants";
 
 /**
@@ -47,11 +47,33 @@ function DesktopNav() {
 }
 
 /**
- * CTA buttons for desktop - YouTube (secondary) and Spotify (primary)
+ * CTA buttons for desktop - Spotify (primary), Apple Podcasts and YouTube (secondary)
  */
 function DesktopCTAs() {
   return (
     <div className="hidden lg:flex lg:items-center lg:gap-2">
+      <Button size="sm" asChild>
+        <a
+          href={EXTERNAL_LINKS.spotify}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Ouça no Spotify"
+        >
+          <SpotifyIcon className="mr-2 h-4 w-4" />
+          Spotify
+        </a>
+      </Button>
+      <Button variant="outline" size="sm" asChild>
+        <a
+          href={EXTERNAL_LINKS.applePodcasts}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Ouça na Apple Podcasts"
+        >
+          <ApplePodcastsIcon className="mr-2 h-4 w-4" />
+          Apple Podcasts
+        </a>
+      </Button>
       <Button variant="outline" size="sm" asChild>
         <a
           href={EXTERNAL_LINKS.youtube}
@@ -63,6 +85,16 @@ function DesktopCTAs() {
           YouTube
         </a>
       </Button>
+    </div>
+  );
+}
+
+/**
+ * Mobile CTA - Spotify (primary) and Apple Podcasts; YouTube stays in the menu
+ */
+function MobileCTA() {
+  return (
+    <div className="flex items-center gap-2 lg:hidden">
       <Button size="sm" asChild>
         <a
           href={EXTERNAL_LINKS.spotify}
@@ -74,25 +106,16 @@ function DesktopCTAs() {
           Spotify
         </a>
       </Button>
-    </div>
-  );
-}
-
-/**
- * Mobile CTA - only Spotify (primary) to save space
- */
-function MobileCTA() {
-  return (
-    <div className="lg:hidden">
-      <Button size="sm" asChild>
+      <Button variant="outline" size="sm" asChild>
         <a
-          href={EXTERNAL_LINKS.spotify}
+          href={EXTERNAL_LINKS.applePodcasts}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Ouça no Spotify"
+          aria-label="Ouça na Apple Podcasts"
         >
-          <SpotifyIcon className="mr-2 h-4 w-4" />
-          Spotify
+          <ApplePodcastsIcon className="h-4 w-4 sm:mr-2" />
+          {/* Abaixo de 640px o nome empurra o logo para fora; só o ícone, e o aria-label mantém o nome */}
+          <span className="max-sm:sr-only">Apple Podcasts</span>
         </a>
       </Button>
     </div>

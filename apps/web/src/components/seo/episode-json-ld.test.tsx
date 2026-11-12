@@ -133,6 +133,22 @@ describe("EpisodeJsonLd", () => {
     expect(jsonLd.partOfSeries.url).toBe(baseUrl);
   });
 
+  it("links the series to Spotify, Apple Podcasts and YouTube via sameAs", () => {
+    const episode = createMockEpisode();
+    const { container } = render(
+      <EpisodeJsonLd episode={episode} baseUrl={baseUrl} />
+    );
+
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const jsonLd = JSON.parse(script?.textContent || "{}");
+
+    expect(jsonLd.partOfSeries.sameAs).toEqual([
+      "https://open.spotify.com/show/5aKHRdBlylb2wj5Ac8Kqpj",
+      "https://podcasts.apple.com/br/podcast/id1592357026",
+      "https://www.youtube.com/@PPTNaoCompila",
+    ]);
+  });
+
   it("includes VideoObject in associatedMedia", () => {
     const episode = createMockEpisode({ youtubeId: "xyz789" });
     const { container } = render(

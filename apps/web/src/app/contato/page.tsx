@@ -3,7 +3,7 @@ import { Youtube, Instagram, Linkedin } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { Card } from "@/components/ui/card";
-import { SpotifyIcon } from "@/components/icons/social-icons";
+import { ApplePodcastsIcon, SpotifyIcon } from "@/components/icons/social-icons";
 import { EXTERNAL_LINKS } from "@/lib/constants";
 import { ContactForm } from "./contact-form";
 
@@ -25,18 +25,25 @@ export const metadata: Metadata = {
 
 const socialLinks = [
   {
-    name: "YouTube",
-    href: EXTERNAL_LINKS.youtube,
-    icon: Youtube,
-    description: "Assista aos episódios completos",
-    color: "hover:text-red-500",
-  },
-  {
     name: "Spotify",
     href: EXTERNAL_LINKS.spotify,
     icon: SpotifyIcon,
     description: "Ouça onde quiser",
     color: "hover:text-green-500",
+  },
+  {
+    name: "Apple Podcasts",
+    href: EXTERNAL_LINKS.applePodcasts,
+    icon: ApplePodcastsIcon,
+    description: "Ouça no iPhone, iPad e Mac",
+    color: "hover:text-purple-500",
+  },
+  {
+    name: "YouTube",
+    href: EXTERNAL_LINKS.youtube,
+    icon: Youtube,
+    description: "Assista aos episódios completos",
+    color: "hover:text-red-500",
   },
   {
     name: "Instagram",

@@ -75,6 +75,27 @@ describe("Footer", () => {
     );
   });
 
+  it("renders Apple Podcasts social link", () => {
+    render(<Footer />);
+    const appleLink = screen.getByRole("link", { name: /seguir na apple podcasts/i });
+    expect(appleLink).toHaveAttribute(
+      "href",
+      "https://podcasts.apple.com/br/podcast/id1592357026"
+    );
+  });
+
+  it("orders platform links Spotify, Apple Podcasts, YouTube", () => {
+    render(<Footer />);
+    const names = screen
+      .getAllByRole("link", { name: /^seguir n[oa] /i })
+      .map((l) => l.getAttribute("aria-label"));
+    expect(names.slice(0, 3)).toEqual([
+      "Seguir no Spotify",
+      "Seguir na Apple Podcasts",
+      "Seguir no YouTube",
+    ]);
+  });
+
   it("renders Instagram social link", () => {
     render(<Footer />);
     const instagramLink = screen.getByRole("link", {
